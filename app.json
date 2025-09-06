@@ -10,7 +10,7 @@
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#F4F2EE"
     },
     "ios": {
       "supportsTablet": true
@@ -27,6 +27,9 @@
     },
     "plugins": [
       "expo-font"
+    ],
+    "assetBundlePatterns": [
+      "assets/fonts/*"
     ]
   }
 }

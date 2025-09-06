@@ -1,13 +1,21 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { Text, View, StyleSheet } from 'react-native';
+import { useAuth } from '../contexts/AuthContext';
+import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
+import LoginScreen from '../screens/auth/LoginScreen';
 
 const Stack = createNativeStackNavigator();
 
-// Temporary placeholder screen
+// Temporary placeholder for authenticated screens
 const HomeScreen = () => (
   <View style={styles.container}>
-    <Text style={styles.text}>DishList App Starting...</Text>
+    <Text style={styles.text}>Welcome to DishList!</Text>
+  </View>
+);
+
+const LoadingScreen = () => (
+  <View style={styles.container}>
+    <ActivityIndicator size="large" color="#2563eb" />
   </View>
 );
 
@@ -25,9 +33,19 @@ const styles = StyleSheet.create({
 });
 
 export default function MainNavigator() {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return <LoadingScreen />;
+  }
+
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="Home" component={HomeScreen} />
+      {user ? (
+        <Stack.Screen name="Home" component={HomeScreen} />
+      ) : (
+        <Stack.Screen name="Login" component={LoginScreen} />
+      )}
     </Stack.Navigator>
   );
 }
