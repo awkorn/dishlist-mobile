@@ -108,7 +108,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   logo: { 
-    height: 100,
+    height: 80,
   },
   logoText: {
     fontSize: 32,
@@ -116,7 +116,6 @@ const styles = StyleSheet.create({
   title: {
     ...typography.heading1,
     color: "#00295B",
-    marginBottom: 6,
   },
   form: {
     marginBottom: 30,

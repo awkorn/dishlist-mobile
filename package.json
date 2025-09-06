@@ -22,9 +22,12 @@
     "expo-font": "~13.3.2",
     "expo-status-bar": "~2.2.3",
     "firebase": "^12.2.1",
+    "lucide-react-native": "^0.542.0",
     "react": "19.0.0",
     "react-hook-form": "^7.62.0",
     "react-native": "^0.79.5",
+    "react-native-pager-view": "^6.7.1",
+    "react-native-reanimated": "^3.17.4",
     "react-native-safe-area-context": "5.4.0",
     "react-native-screens": "~4.11.1",
     "yup": "^1.7.0"

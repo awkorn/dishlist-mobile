@@ -1,16 +1,18 @@
-import React from "react";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { useAuth } from "../contexts/AuthContext";
-import { View, Text, ActivityIndicator, StyleSheet } from "react-native";
-import LoginScreen from "../screens/auth/LoginScreen";
-import SignUpScreen from "../screens/auth/SignUpScreen";
+import React, { useState } from 'react';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { useAuth } from '../contexts/AuthContext';
+import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
+import LoginScreen from '../screens/auth/LoginScreen';
+import SignUpScreen from '../screens/auth/SignUpScreen';
+import DishListsScreen from '../screens/main/DishListsScreen';
+import BottomNavigation from '../components/navigation/BottomNavigation';
 
 const Stack = createNativeStackNavigator();
 
-// Temporary placeholder for authenticated screens
-const HomeScreen = () => (
+// Temporary placeholder screens for other tabs
+const PlaceholderScreen = ({ title }: { title: string }) => (
   <View style={styles.container}>
-    <Text style={styles.text}>Welcome to DishList!</Text>
+    <Text style={styles.text}>{title} - Coming Soon!</Text>
   </View>
 );
 
@@ -20,16 +22,47 @@ const LoadingScreen = () => (
   </View>
 );
 
+const AuthenticatedApp = () => {
+  const [activeTab, setActiveTab] = useState('dishlist');
+
+  const renderActiveScreen = () => {
+    switch (activeTab) {
+      case 'dishlist':
+        return <DishListsScreen />;
+      case 'grocery':
+        return <PlaceholderScreen title="Grocery List" />;
+      case 'search':
+        return <PlaceholderScreen title="Search" />;
+      case 'builder':
+        return <PlaceholderScreen title="Recipe Builder" />;
+      case 'profile':
+        return <PlaceholderScreen title="Profile" />;
+      default:
+        return <DishListsScreen />;
+    }
+  };
+
+  return (
+    <View style={{ flex: 1 }}>
+      {renderActiveScreen()}
+      <BottomNavigation
+        activeTab={activeTab}
+        onTabPress={setActiveTab}
+      />
+    </View>
+  );
+};
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#f5f5f5",
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f5f5f5',
   },
   text: {
     fontSize: 18,
-    fontWeight: "600",
+    fontWeight: '600',
   },
 });
 
@@ -43,7 +76,7 @@ export default function MainNavigator() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       {user ? (
-        <Stack.Screen name="Home" component={HomeScreen} />
+        <Stack.Screen name="Home" component={AuthenticatedApp} />
       ) : (
         <>
           <Stack.Screen name="Login" component={LoginScreen} />
