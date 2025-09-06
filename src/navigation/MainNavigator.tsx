@@ -1,8 +1,9 @@
-import React from 'react';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { useAuth } from '../contexts/AuthContext';
-import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
-import LoginScreen from '../screens/auth/LoginScreen';
+import React from "react";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { useAuth } from "../contexts/AuthContext";
+import { View, Text, ActivityIndicator, StyleSheet } from "react-native";
+import LoginScreen from "../screens/auth/LoginScreen";
+import SignUpScreen from "../screens/auth/SignUpScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -22,13 +23,13 @@ const LoadingScreen = () => (
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#f5f5f5',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#f5f5f5",
   },
   text: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });
 
@@ -44,7 +45,10 @@ export default function MainNavigator() {
       {user ? (
         <Stack.Screen name="Home" component={HomeScreen} />
       ) : (
-        <Stack.Screen name="Login" component={LoginScreen} />
+        <>
+          <Stack.Screen name="Login" component={LoginScreen} />
+          <Stack.Screen name="SignUp" component={SignUpScreen} />
+        </>
       )}
     </Stack.Navigator>
   );

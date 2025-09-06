@@ -91,8 +91,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       const result = await authService.signUpWithEmail(email, password);
       if (result.error) {
+        console.log('Firebase signup failed:', result.error);
         return { error: result.error };
       }
+
+      console.log('Firebase signup success, calling backend...');
 
       // Call backend to register user
       if (result.user) {
@@ -116,6 +119,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
       return { error: null };
     } catch (error: any) {
+      console.log('Signup error:', error.message);
       return { error: error.message };
     }
   };
