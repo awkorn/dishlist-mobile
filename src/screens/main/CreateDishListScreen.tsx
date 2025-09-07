@@ -224,16 +224,8 @@ export default function CreateDishListScreen({
           </View>
         </ScrollView>
 
-        {/* Footer Buttons */}
+        {/* Footer Button */}
         <View style={styles.footer}>
-          <TouchableOpacity
-            style={styles.cancelButtonFooter}
-            onPress={handleCancel}
-            disabled={isLoading}
-          >
-            <Text style={styles.cancelButtonText}>Cancel</Text>
-          </TouchableOpacity>
-
           <TouchableOpacity
             style={[
               styles.createButton,
@@ -288,7 +280,7 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     padding: 30,
-    marginTop: 10
+    marginTop: 10,
   },
   inputSection: {
     marginBottom: 16,
@@ -359,26 +351,13 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   footer: {
-    flexDirection: "row",
     paddingHorizontal: 20,
     paddingVertical: 16,
     paddingBottom: Platform.OS === "ios" ? 34 : 16,
-    gap: 12,
-  },
-  cancelButtonFooter: {
-    flex: 1,
-    paddingVertical: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#E5E5E5",
-    alignItems: "center",
-  },
-  cancelButtonText: {
-    ...typography.button,
-    color: "#666",
+    alignItems: "center", 
   },
   createButton: {
-    flex: 2,
+    width: "90%", 
     paddingVertical: 16,
     borderRadius: 12,
     backgroundColor: "#2563eb",
