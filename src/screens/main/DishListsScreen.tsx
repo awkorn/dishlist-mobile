@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -7,102 +7,184 @@ import {
   TextInput,
   ScrollView,
   TouchableOpacity,
+  ActivityIndicator,
+  RefreshControl,
+  Alert,
+  Dimensions,
 } from "react-native";
 import PagerView from "react-native-pager-view";
 import { Search, Plus } from "lucide-react-native";
 import { typography } from "../../styles/typography";
 import DishListTile from "../../components/dishlist/DishListTile";
+import { getDishLists, DishList } from "../../services/api";
+import { useAuth } from "../../contexts/AuthContext";
 
 type TabType = "All" | "My DishLists" | "Collaborations" | "Following";
 
-// Mock data - replace with actual API calls
-const mockDishLists = [
-  {
-    id: "1",
-    title: "My Recipes",
-    recipeCount: 12,
-    isDefault: true,
-    isOwner: true,
-    isCollaborator: false,
-    isFollowing: false,
-    visibility: "PRIVATE" as const,
-  },
-  {
-    id: "2",
-    title: "Family Recipes",
-    recipeCount: 8,
-    isDefault: false,
-    isOwner: true,
-    isCollaborator: false,
-    isFollowing: false,
-    visibility: "PUBLIC" as const,
-  },
-  {
-    id: "3",
-    title: "Summer BBQ Ideas",
-    recipeCount: 15,
-    isDefault: false,
-    isOwner: false,
-    isCollaborator: true,
-    isFollowing: false,
-    visibility: "PUBLIC" as const,
-  },
-    {
-    id: "4",
-    title: "Crockpot",
-    recipeCount: 8,
-    isDefault: false,
-    isOwner: false,
-    isCollaborator: false,
-    isFollowing: true,
-    visibility: "PUBLIC" as const,
-  },
-];
+const { width } = Dimensions.get('window');
+const tileWidth = (width - 60) / 2;
+
+// Skeleton component for smooth loading
+const SkeletonTile = () => (
+  <View style={[styles.skeletonContainer, { width: tileWidth }]}>
+    <View style={styles.skeletonContent}>
+      <View style={styles.skeletonTitle} />
+      <View style={styles.skeletonText} />
+      <View style={styles.skeletonBadges}>
+        <View style={styles.skeletonBadge} />
+        <View style={styles.skeletonBadge} />
+      </View>
+    </View>
+  </View>
+);
 
 export default function DishListsScreen() {
   const [activeTab, setActiveTab] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
+  
+  // Get preloaded data from auth context
+  const { dishListsCache, isDishListsPreloaded } = useAuth();
+  
+  // Local state for additional data and loading
+  const [tabData, setTabData] = useState<{[key: string]: DishList[]}>({});
+  const [loadedTabs, setLoadedTabs] = useState<Set<string>>(new Set());
+  const [isTabLoading, setIsTabLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  
   const pagerRef = useRef<PagerView>(null);
 
   const tabs: TabType[] = [
     "All",
-    "My DishLists",
+    "My DishLists", 
     "Collaborations",
     "Following",
   ];
 
-  const filterDishLists = (tab: TabType) => {
-    let filtered = [...mockDishLists];
+  const tabToApiParam = {
+    "All": "all",
+    "My DishLists": "my", 
+    "Collaborations": "collaborations",
+    "Following": "following",
+  };
 
-    switch (tab) {
-      case "My DishLists":
-        filtered = filtered.filter((list) => list.isOwner);
-        break;
-      case "Collaborations":
-        filtered = filtered.filter((list) => list.isCollaborator);
-        break;
-      case "Following":
-        filtered = filtered.filter((list) => list.isFollowing);
-        break;
-      default:
-        break;
+  // Initialize with preloaded data
+  useEffect(() => {
+    if (isDishListsPreloaded && Object.keys(dishListsCache).length > 0) {
+      setTabData(dishListsCache);
+      setLoadedTabs(new Set(Object.keys(dishListsCache)));
+      console.log('Using preloaded DishLists data');
     }
+  }, [isDishListsPreloaded, dishListsCache]);
 
-    if (searchQuery) {
-      filtered = filtered.filter((list) =>
-        list.title.toLowerCase().includes(searchQuery.toLowerCase())
+  const fetchDishLists = async (tab: TabType, isRefresh = false) => {
+    try {
+      const apiParam = tabToApiParam[tab];
+      
+      // Show loading indicator unless we have cached data
+      const hasData = tabData[apiParam]?.length > 0;
+      if (!hasData && !isRefresh) {
+        setIsTabLoading(true);
+      }
+
+      const data = await getDishLists(apiParam);
+      
+      // Cache the data
+      setTabData(prev => ({ ...prev, [apiParam]: data }));
+      setLoadedTabs(prev => new Set([...prev, apiParam]));
+      
+    } catch (error) {
+      console.error('Failed to fetch dishlists:', error);
+      Alert.alert('Error', 'Failed to load DishLists');
+    } finally {
+      setIsTabLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  // Load data when tab changes (only if not preloaded)
+  useEffect(() => {
+    const currentTab = tabs[activeTab];
+    const apiParam = tabToApiParam[currentTab];
+    
+    // Only fetch if we don't have cached data
+    if (!loadedTabs.has(apiParam)) {
+      fetchDishLists(currentTab);
+    }
+  }, [activeTab]);
+
+  const handleRefresh = () => {
+    setRefreshing(true);
+    fetchDishLists(tabs[activeTab], true);
+  };
+
+  const handleTabChange = (index: number) => {
+    setActiveTab(index);
+    pagerRef.current?.setPage(index);
+  };
+
+  const filterDishLists = (lists: DishList[]) => {
+    if (!searchQuery.trim()) return lists;
+    
+    return lists.filter((list) =>
+      list.title.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  };
+
+  const getCurrentTabData = () => {
+    const apiParam = tabToApiParam[tabs[activeTab]];
+    return tabData[apiParam] || [];
+  };
+
+  const renderDishLists = (tab: TabType) => {
+    const apiParam = tabToApiParam[tab];
+    const currentData = tabData[apiParam] || [];
+    const hasData = currentData.length > 0;
+    const isFirstLoad = !loadedTabs.has(apiParam) && isTabLoading;
+
+    // Show skeleton loading only on first load with no data
+    if (isFirstLoad && !hasData) {
+      return (
+        <ScrollView showsVerticalScrollIndicator={false}>
+          <View style={styles.grid}>
+            {Array(4).fill(0).map((_, index) => (
+              <SkeletonTile key={index} />
+            ))}
+          </View>
+        </ScrollView>
       );
     }
 
-    if (tab === "All" || tab === "My DishLists") {
-      filtered.sort((a, b) => {
-        if (a.isDefault) return -1;
-        if (b.isDefault) return 1;
-        return 0;
-      });
+    const filteredLists = filterDishLists(currentData);
+
+    // Show empty state
+    if (!isTabLoading && filteredLists.length === 0 && loadedTabs.has(apiParam)) {
+      return (
+        <View style={styles.centerContainer}>
+          <Text style={styles.emptyText}>
+            {searchQuery ? 'No DishLists match your search' : 'No DishLists found'}
+          </Text>
+        </View>
+      );
     }
 
-    return filtered;
+    return (
+      <ScrollView 
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            colors={['#2563eb']}
+          />
+        }
+      >
+        <View style={styles.grid}>
+          {filteredLists.map((dishList) => (
+            <DishListTile key={dishList.id} dishList={dishList} />
+          ))}
+        </View>
+      </ScrollView>
+    );
   };
 
   return (
@@ -114,6 +196,14 @@ export default function DishListsScreen() {
           <Plus size={24} color="#2563eb" />
         </TouchableOpacity>
       </View>
+
+      {/* Subtle loading indicator for tab switches */}
+      {isTabLoading && getCurrentTabData().length > 0 && (
+        <View style={styles.subtleLoadingBar}>
+          <ActivityIndicator size="small" color="#2563eb" />
+          <Text style={styles.subtleLoadingText}>Updating...</Text>
+        </View>
+      )}
 
       {/* Search Bar */}
       <View style={styles.searchContainer}>
@@ -131,10 +221,7 @@ export default function DishListsScreen() {
         {tabs.map((tab, index) => (
           <TouchableOpacity
             key={tab}
-            onPress={() => {
-              setActiveTab(index);
-              pagerRef.current?.setPage(index);
-            }}
+            onPress={() => handleTabChange(index)}
             style={[styles.tab, activeTab === index && styles.activeTab]}
           >
             <Text
@@ -158,13 +245,7 @@ export default function DishListsScreen() {
       >
         {tabs.map((tab) => (
           <View key={tab} style={styles.page}>
-            <ScrollView showsVerticalScrollIndicator={false}>
-              <View style={styles.grid}>
-                {filterDishLists(tab).map((dishList) => (
-                  <DishListTile key={dishList.id} dishList={dishList} />
-                ))}
-              </View>
-            </ScrollView>
+            {renderDishLists(tab)}
           </View>
         ))}
       </PagerView>
@@ -190,6 +271,21 @@ const styles = StyleSheet.create({
   },
   addButton: {
     padding: 8,
+  },
+  subtleLoadingBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 8,
+    backgroundColor: "rgba(37, 99, 235, 0.1)",
+    marginHorizontal: 20,
+    borderRadius: 8,
+    marginBottom: 8,
+  },
+  subtleLoadingText: {
+    marginLeft: 8,
+    ...typography.caption,
+    color: "#2563eb",
   },
   searchContainer: {
     flexDirection: "row",
@@ -246,5 +342,53 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     justifyContent: "space-between",
     paddingBottom: 100,
+  },
+  centerContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 50,
+  },
+  emptyText: {
+    ...typography.body,
+    color: "#666",
+    textAlign: "center",
+  },
+  // Skeleton styles
+  skeletonContainer: {
+    marginBottom: 16,
+    backgroundColor: 'white',
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  skeletonContent: {
+    padding: 16,
+  },
+  skeletonTitle: {
+    height: 20,
+    backgroundColor: '#E5E5E5',
+    borderRadius: 4,
+    marginBottom: 8,
+  },
+  skeletonText: {
+    height: 16,
+    backgroundColor: '#E5E5E5',
+    borderRadius: 4,
+    marginBottom: 12,
+    width: '70%',
+  },
+  skeletonBadges: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  skeletonBadge: {
+    width: 20,
+    height: 20,
+    backgroundColor: '#E5E5E5',
+    borderRadius: 6,
   },
 });

@@ -6,7 +6,7 @@ import {
   StyleSheet,
   Dimensions,
 } from 'react-native';
-import { Eye, Lock, Crown, Users, Heart } from 'lucide-react-native';
+import { Eye, Lock, Crown, Users, Heart, Pin } from 'lucide-react-native';
 import { typography } from '../../styles/typography';
 
 interface DishListTileProps {
@@ -15,6 +15,7 @@ interface DishListTileProps {
     title: string;
     recipeCount: number;
     isDefault: boolean;
+    isPinned: boolean;
     isOwner: boolean;
     isCollaborator: boolean;
     isFollowing: boolean;
@@ -28,6 +29,11 @@ const tileWidth = (width - 60) / 2;
 export default function DishListTile({ dishList }: DishListTileProps) {
   const getBadges = () => {
     const badges = [];
+
+    // Pin badge (show first if pinned)
+    if (dishList.isPinned) {
+      badges.push({ type: 'pinned', icon: Pin, color: '#274B75' });
+    }
 
     // Ownership badges
     if (dishList.isOwner) {

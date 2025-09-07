@@ -3,12 +3,14 @@ import { onAuthStateChanged, User as FirebaseUser } from "firebase/auth";
 import { auth } from "../config/firebase";
 import { User } from "../types";
 import * as authService from "../services/auth";
-import api from "../services/api";
+import api, { getDishLists, DishList } from "../services/api";
 
 interface AuthContextType {
   user: FirebaseUser | null;
   userProfile: User | null;
   loading: boolean;
+  dishListsCache: {[key: string]: DishList[]};
+  isDishListsPreloaded: boolean;
   signIn: (
     email: string,
     password: string
@@ -19,6 +21,7 @@ interface AuthContextType {
     userData: Partial<User>
   ) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
+  preloadDishLists: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -37,18 +40,46 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [userProfile, setUserProfile] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [dishListsCache, setDishListsCache] = useState<{[key: string]: DishList[]}>({});
+  const [isDishListsPreloaded, setIsDishListsPreloaded] = useState(false);
+
+  const preloadDishLists = async () => {
+    try {
+      console.log('Preloading DishLists data...');
+      
+      // Load the main tabs that users visit most
+      const [allData, myData] = await Promise.all([
+        getDishLists('all'),
+        getDishLists('my')
+      ]);
+      
+      setDishListsCache({
+        all: allData,
+        my: myData,
+      });
+      
+      setIsDishListsPreloaded(true);
+      console.log('DishLists preloaded successfully');
+    } catch (error) {
+      console.log('Failed to preload DishLists:', error);
+      // Don't set preloaded to true on error - let screen handle loading
+    }
+  };
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       setUser(firebaseUser);
       setLoading(false);
 
-      // TODO: Fetch user profile from your backend API when user is authenticated
       if (firebaseUser) {
         console.log("User authenticated:", firebaseUser.email);
-        // Call your /users/me endpoint here with the Firebase ID token
+        // Reset cache when user changes
+        setDishListsCache({});
+        setIsDishListsPreloaded(false);
       } else {
         setUserProfile(null);
+        setDishListsCache({});
+        setIsDishListsPreloaded(false);
       }
     });
 
@@ -69,6 +100,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             email: result.user.email,
           });
           setUserProfile(response.data.user);
+          
+          // Preload DishLists data after successful login
+          setTimeout(() => {
+            preloadDishLists();
+          }, 500); 
+          
         } catch (apiError: any) {
           console.log(
             "Backend registration error:",
@@ -105,6 +142,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             ...userData,
           });
           setUserProfile(response.data.user);
+          
+          // Preload DishLists data after successful signup
+          setTimeout(() => {
+            preloadDishLists();
+          }, 1000); 
+          
         } catch (apiError: any) {
           console.log(
             "Backend registration error:",
@@ -126,11 +169,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const signOut = async () => {
     await authService.signOut();
+    setDishListsCache({});
+    setIsDishListsPreloaded(false);
   };
 
   return (
     <AuthContext.Provider
-      value={{ user, userProfile, loading, signIn, signUp, signOut }}
+      value={{ 
+        user, 
+        userProfile, 
+        loading, 
+        dishListsCache,
+        isDishListsPreloaded,
+        signIn, 
+        signUp, 
+        signOut,
+        preloadDishLists
+      }}
     >
       {children}
     </AuthContext.Provider>
