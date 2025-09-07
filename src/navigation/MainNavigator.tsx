@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { useAuth } from '../contexts/AuthContext';
-import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
-import LoginScreen from '../screens/auth/LoginScreen';
-import SignUpScreen from '../screens/auth/SignUpScreen';
-import DishListsScreen from '../screens/main/DishListsScreen';
-import BottomNavigation from '../components/navigation/BottomNavigation';
+import React, { useState } from "react";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { useAuth } from "../contexts/AuthContext";
+import { View, Text, ActivityIndicator, StyleSheet } from "react-native";
+import LoginScreen from "../screens/auth/LoginScreen";
+import SignUpScreen from "../screens/auth/SignUpScreen";
+import DishListsScreen from "../screens/main/DishListsScreen";
+import CreateDishListScreen from "../screens/main/CreateDishListScreen";
+import BottomNavigation from "../components/navigation/BottomNavigation";
 
 const Stack = createNativeStackNavigator();
 
@@ -22,33 +23,30 @@ const LoadingScreen = () => (
   </View>
 );
 
-const AuthenticatedApp = () => {
-  const [activeTab, setActiveTab] = useState('dishlist');
+const AuthenticatedApp = ({ navigation }: any) => {
+  const [activeTab, setActiveTab] = useState("dishlist");
 
   const renderActiveScreen = () => {
     switch (activeTab) {
-      case 'dishlist':
-        return <DishListsScreen />;
-      case 'grocery':
+      case "dishlist":
+        return <DishListsScreen navigation={navigation} />;
+      case "grocery":
         return <PlaceholderScreen title="Grocery List" />;
-      case 'search':
+      case "search":
         return <PlaceholderScreen title="Search" />;
-      case 'builder':
+      case "builder":
         return <PlaceholderScreen title="Recipe Builder" />;
-      case 'profile':
+      case "profile":
         return <PlaceholderScreen title="Profile" />;
       default:
-        return <DishListsScreen />;
+        return <DishListsScreen navigation={navigation} />;
     }
   };
 
   return (
     <View style={{ flex: 1 }}>
       {renderActiveScreen()}
-      <BottomNavigation
-        activeTab={activeTab}
-        onTabPress={setActiveTab}
-      />
+      <BottomNavigation activeTab={activeTab} onTabPress={setActiveTab} />
     </View>
   );
 };
@@ -56,13 +54,13 @@ const AuthenticatedApp = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#f5f5f5',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#f5f5f5",
   },
   text: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });
 
@@ -76,7 +74,18 @@ export default function MainNavigator() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       {user ? (
-        <Stack.Screen name="Home" component={AuthenticatedApp} />
+        <Stack.Group>
+          <Stack.Screen name="Home" component={AuthenticatedApp} />
+          <Stack.Screen
+            name="CreateDishList"
+            component={CreateDishListScreen}
+            options={{
+              presentation: "modal",
+              gestureEnabled: true,
+              gestureDirection: "vertical",
+            }}
+          />
+        </Stack.Group>
       ) : (
         <>
           <Stack.Screen name="Login" component={LoginScreen} />

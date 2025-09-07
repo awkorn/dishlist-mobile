@@ -222,7 +222,7 @@ const usePrefetchDishLists = () => {
   return { prefetchTab, prefetchAdjacentTabs };
 };
 
-export default function DishListsScreen() {
+export default function DishListsScreen({ navigation }: { navigation?: any }) {
   const [activeTab, setActiveTab] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
   const [isOnline, setIsOnline] = useState(true);
@@ -315,13 +315,9 @@ export default function DishListsScreen() {
   }, [refetch]);
 
   const handleCreateDishList = useCallback(() => {
-    // Navigate to create screen or show modal
-    Alert.alert(
-      "Create DishList",
-      "This will open the create DishList screen",
-      [{ text: "OK" }]
-    );
-  }, []);
+    // Navigate to create screen modal
+    navigation.navigate("CreateDishList");
+  }, [navigation]);
 
   const handleSearchChange = useCallback((text: string) => {
     setSearchQuery(text);
@@ -634,7 +630,7 @@ const styles = StyleSheet.create({
     color: "#666",
     fontWeight: "300",
   },
-   tabRow: {
+  tabRow: {
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
