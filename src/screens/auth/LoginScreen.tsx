@@ -6,12 +6,11 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
-  KeyboardAvoidingView,
-  Platform,
   Image,
 } from "react-native";
 import { useAuth } from "../../contexts/AuthContext";
 import { typography } from "../../styles/typography";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
 export default function LoginScreen({ navigation }: any) {
   const [email, setEmail] = useState("");
@@ -33,9 +32,10 @@ export default function LoginScreen({ navigation }: any) {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    <KeyboardAwareScrollView
+      contentContainerStyle={styles.container}
+      enableOnAndroid={true}
+      extraScrollHeight={10}
     >
       <View style={styles.content}>
         <View style={styles.header}>
@@ -86,32 +86,31 @@ export default function LoginScreen({ navigation }: any) {
           </TouchableOpacity>
         </View>
       </View>
-    </KeyboardAvoidingView>
+    </KeyboardAwareScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
     backgroundColor: "#F4F2EE",
+    justifyContent: "center",
+    paddingHorizontal: 40,
   },
   content: {
     flex: 1,
     justifyContent: "center",
-    paddingHorizontal: 40,
+    marginTop: -150,
   },
   header: {
     alignItems: "center",
-    marginBottom: 50,
+    marginBottom: 40,
   },
   logoContainer: {
-    marginBottom: 20,
+    marginBottom: 15,
   },
-  logo: { 
+  logo: {
     height: 80,
-  },
-  logoText: {
-    fontSize: 32,
   },
   title: {
     ...typography.heading1,
