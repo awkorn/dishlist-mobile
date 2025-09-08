@@ -6,11 +6,10 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
-  KeyboardAvoidingView,
-  Platform,
 } from "react-native";
 import { useAuth } from "../../contexts/AuthContext";
 import { typography } from "../../styles/typography";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
 export default function SignUpScreen({ navigation }: any) {
   const [email, setEmail] = useState("");
@@ -22,17 +21,17 @@ export default function SignUpScreen({ navigation }: any) {
   const { signUp } = useAuth();
 
   const handleSignUp = async () => {
-    if(!firstName.trim()) {
+    if (!firstName.trim()) {
       Alert.alert("Error", "Please enter your first name.");
       return;
     }
 
-    if(!lastName.trim()) {
+    if (!lastName.trim()) {
       Alert.alert("Error", "Please enter your last name.");
       return;
     }
 
-    if(!username.trim()) {
+    if (!username.trim()) {
       Alert.alert("Error", "Please enter a username.");
       return;
     }
@@ -54,24 +53,22 @@ export default function SignUpScreen({ navigation }: any) {
 
     setLoading(true);
 
-    const userData = {
+    const { error } = await signUp(email, password, {
       username: username.trim(),
       firstName: firstName.trim(),
       lastName: lastName.trim(),
-    };
+    });
 
-    console.log('SignUp screen sending userData:', userData);
-
-    const { error } = await signUp(email, password, { username, firstName, lastName });
     setLoading(false);
 
     if (error) Alert.alert("Sign Up Failed", error);
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    <KeyboardAwareScrollView
+      contentContainerStyle={styles.container}
+      enableOnAndroid={true}
+      extraScrollHeight={20}
     >
       <View style={styles.content}>
         <Text style={styles.title}>Create Account</Text>
@@ -138,19 +135,21 @@ export default function SignUpScreen({ navigation }: any) {
           </TouchableOpacity>
         </View>
       </View>
-    </KeyboardAvoidingView>
+    </KeyboardAwareScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
     backgroundColor: "#F4F2EE",
+    justifyContent: "center",
+    paddingHorizontal: 40,
+    marginTop: -40,
   },
   content: {
     flex: 1,
     justifyContent: "center",
-    paddingHorizontal: 40,
   },
   title: {
     ...typography.heading2,
