@@ -10,6 +10,8 @@ import {
 import { useAuth } from "../../contexts/AuthContext";
 import { typography } from "../../styles/typography";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import { theme } from "../../styles/theme";
+import Button from "../../components/ui/Button";
 
 export default function SignUpScreen({ navigation }: any) {
   const [email, setEmail] = useState("");
@@ -117,15 +119,13 @@ export default function SignUpScreen({ navigation }: any) {
             secureTextEntry
           />
 
-          <TouchableOpacity
-            style={[styles.button, loading && styles.buttonDisabled]}
+          <Button
+            title="Sign Up"
             onPress={handleSignUp}
+            loading={loading}
             disabled={loading}
-          >
-            <Text style={styles.buttonText}>
-              {loading ? "Creating Account..." : "Sign Up"}
-            </Text>
-          </TouchableOpacity>
+            style={styles.signUpButton}
+          />
         </View>
 
         <View style={styles.footer}>
@@ -142,9 +142,9 @@ export default function SignUpScreen({ navigation }: any) {
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    backgroundColor: "#F4F2EE",
+    backgroundColor: theme.colors.background,
     justifyContent: "center",
-    paddingHorizontal: 40,
+    paddingHorizontal: theme.spacing['4xl'],
     marginTop: -40,
   },
   content: {
@@ -153,46 +153,35 @@ const styles = StyleSheet.create({
   },
   title: {
     ...typography.heading2,
-    color: "#00295B",
+    color: theme.colors.textPrimary,
     textAlign: "center",
-    marginBottom: 40,
+    marginBottom: theme.spacing['4xl'],
   },
   form: {
-    marginBottom: 30,
+    marginBottom: theme.spacing['3xl'],
   },
   input: {
     borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 16,
+    borderColor: theme.colors.neutral[300],
+    borderRadius: theme.borderRadius.sm,
+    padding: theme.spacing.lg,
+    marginBottom: theme.spacing.lg,
     fontSize: 16,
-    backgroundColor: "white",
+    backgroundColor: theme.colors.surface,
+    color: theme.colors.neutral[800],
   },
-  button: {
-    backgroundColor: "#2563eb",
-    borderRadius: 8,
-    padding: 16,
-    alignItems: "center",
-    marginTop: 8,
-  },
-  buttonDisabled: {
-    opacity: 0.6,
-  },
-  buttonText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "600",
+  signUpButton: {
+    marginTop: theme.spacing.sm,
   },
   footer: {
     flexDirection: "row",
     justifyContent: "center",
   },
   footerText: {
-    color: "#666",
+    color: theme.colors.neutral[500],
   },
   linkText: {
-    color: "#2563eb",
+    color: theme.colors.primary[500],
     fontWeight: "600",
   },
 });

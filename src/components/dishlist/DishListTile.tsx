@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import { Eye, Lock, Crown, Users, Heart, Pin } from 'lucide-react-native';
 import { typography } from '../../styles/typography';
+import { theme } from '../../styles/theme';
 
 interface DishListTileProps {
   dishList: {
@@ -24,7 +25,7 @@ interface DishListTileProps {
 }
 
 const { width } = Dimensions.get('window');
-const tileWidth = (width - 60) / 2; 
+const tileWidth = (width - (theme.spacing.xl * 2) - theme.spacing.lg) / 2; 
 
 export default function DishListTile({ dishList }: DishListTileProps) {
   const getBadges = () => {
@@ -32,23 +33,23 @@ export default function DishListTile({ dishList }: DishListTileProps) {
 
     // Pin badge (show first if pinned)
     if (dishList.isPinned) {
-      badges.push({ type: 'pinned', icon: Pin, color: '#274B75' });
+      badges.push({ type: 'pinned', icon: Pin, color: theme.colors.secondary[50] });
     }
 
     // Ownership badges
     if (dishList.isOwner) {
-      badges.push({ type: 'owner', icon: Crown, color: '#F59E0B' });
+      badges.push({ type: 'owner', icon: Crown, color: theme.colors.warning });
     } else if (dishList.isCollaborator) {
-      badges.push({ type: 'collaborator', icon: Users, color: '#10B981' });
+      badges.push({ type: 'collaborator', icon: Users, color: theme.colors.success });
     } else if (dishList.isFollowing) {
-      badges.push({ type: 'following', icon: Heart, color: '#EF4444' });
+      badges.push({ type: 'following', icon: Heart, color: theme.colors.error });
     }
 
     // Visibility badges
     if (dishList.visibility === 'PUBLIC') {
-      badges.push({ type: 'public', icon: Eye, color: '#6B7280' });
+      badges.push({ type: 'public', icon: Eye, color: theme.colors.neutral[500] });
     } else {
-      badges.push({ type: 'private', icon: Lock, color: '#6B7280' });
+      badges.push({ type: 'private', icon: Lock, color: theme.colors.neutral[500] });
     }
 
     return badges;
@@ -83,36 +84,32 @@ export default function DishListTile({ dishList }: DishListTileProps) {
 const styles = StyleSheet.create({
   container: {
     width: tileWidth,
-    marginBottom: 16,
-    backgroundColor: 'white',
-    borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    marginBottom: theme.spacing.lg,
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.borderRadius.md,
+    ...theme.shadows.md,
   },
   content: {
-    padding: 16,
+    padding: theme.spacing.lg,
   },
   title: {
     ...typography.subtitle,
-    color: '#00295B',
-    marginBottom: 4,
+    color: theme.colors.textPrimary,
+    marginBottom: theme.spacing.xs,
     minHeight: 48,
   },
   recipeCount: {
     ...typography.body,
-    color: '#666',
-    marginBottom: 12,
+    color: theme.colors.neutral[500],
+    marginBottom: theme.spacing.md,
   },
   badges: {
     flexDirection: 'row',
-    gap: 8,
+    gap: theme.spacing.sm,
   },
   badge: {
-    padding: 4,
+    padding: theme.spacing.xs,
     borderRadius: 6,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: theme.colors.neutral[100],
   },
 });

@@ -12,6 +12,7 @@ import {
   PlusSquare,
   User,
 } from 'lucide-react-native';
+import { theme } from '../../styles/theme';
 
 interface BottomNavigationProps {
   activeTab: string;
@@ -42,7 +43,7 @@ export default function BottomNavigation({ activeTab, onTabPress }: BottomNaviga
             >
               <IconComponent
                 size={24}
-                color={isActive ? '#274B75' : '#6B7280'}
+                color={isActive ? theme.colors.secondary[50] : theme.colors.neutral[500]}
               />
             </TouchableOpacity>
           );
@@ -58,16 +59,16 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: 'white',
+    backgroundColor: theme.colors.surface,
     borderTopWidth: 1,
-    borderTopColor: '#E5E5E5',
+    borderTopColor: theme.colors.neutral[200],
   },
   navigation: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    paddingVertical: 12,
+    paddingVertical: theme.spacing.md,
   },
   tab: {
-    padding: 12,
+    padding: theme.spacing.md,
   },
 });

@@ -10,6 +10,8 @@ import {
 } from "react-native";
 import { useAuth } from "../../contexts/AuthContext";
 import { typography } from "../../styles/typography";
+import { theme } from "../../styles/theme";
+import Button from "../../components/ui/Button";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
 export default function LoginScreen({ navigation }: any) {
@@ -53,6 +55,7 @@ export default function LoginScreen({ navigation }: any) {
           <TextInput
             style={styles.input}
             placeholder="Email"
+            placeholderTextColor={theme.colors.neutral[400]}
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
@@ -63,20 +66,19 @@ export default function LoginScreen({ navigation }: any) {
           <TextInput
             style={styles.input}
             placeholder="Password"
+            placeholderTextColor={theme.colors.neutral[400]}
             value={password}
             onChangeText={setPassword}
             secureTextEntry
           />
 
-          <TouchableOpacity
-            style={[styles.button, loading && styles.buttonDisabled]}
+          <Button
+            title="Login"
             onPress={handleLogin}
+            loading={loading}
             disabled={loading}
-          >
-            <Text style={styles.buttonText}>
-              {loading ? "Logging in..." : "Login"}
-            </Text>
-          </TouchableOpacity>
+            style={styles.loginButton}
+          />
         </View>
 
         <View style={styles.footer}>
@@ -93,9 +95,9 @@ export default function LoginScreen({ navigation }: any) {
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    backgroundColor: "#F4F2EE",
+    backgroundColor: theme.colors.background,
     justifyContent: "center",
-    paddingHorizontal: 40,
+    paddingHorizontal: theme.spacing['4xl'],
   },
   content: {
     flex: 1,
@@ -104,7 +106,7 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: "center",
-    marginBottom: 40,
+    marginBottom: theme.spacing['4xl'],
   },
   logoContainer: {
     marginBottom: 15,
@@ -114,44 +116,33 @@ const styles = StyleSheet.create({
   },
   title: {
     ...typography.heading1,
-    color: "#00295B",
+    color: theme.colors.textPrimary,
   },
   form: {
-    marginBottom: 30,
+    marginBottom: theme.spacing['3xl'],
   },
   input: {
     borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 16,
+    borderColor: theme.colors.neutral[300],
+    borderRadius: theme.borderRadius.sm,
+    padding: theme.spacing.lg,
+    marginBottom: theme.spacing.lg,
     fontSize: 16,
-    backgroundColor: "white",
+    backgroundColor: theme.colors.surface,
+    color: theme.colors.neutral[800],
   },
-  button: {
-    backgroundColor: "#2563eb",
-    borderRadius: 8,
-    padding: 16,
-    alignItems: "center",
-    marginTop: 8,
-  },
-  buttonDisabled: {
-    opacity: 0.6,
-  },
-  buttonText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "600",
+  loginButton: {
+    marginTop: theme.spacing.sm,
   },
   footer: {
     flexDirection: "row",
     justifyContent: "center",
   },
   footerText: {
-    color: "#666",
+    color: theme.colors.neutral[500],
   },
   linkText: {
-    color: "#2563eb",
+    color: theme.colors.primary[500],
     fontWeight: "600",
   },
 });

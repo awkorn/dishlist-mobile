@@ -15,7 +15,6 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   RefreshControl,
-  Alert,
   Dimensions,
   Animated,
   LayoutAnimation,
@@ -32,6 +31,8 @@ import NetInfo from "@react-native-community/netinfo";
 import { typography } from "../../styles/typography";
 import DishListTile from "../../components/dishlist/DishListTile";
 import { getDishLists, DishList } from "../../services/api";
+import { queryKeys } from '../../lib/queryKeys';
+import { theme } from '../../styles/theme';
 
 type TabType = "All" | "My DishLists" | "Collaborations" | "Following";
 
@@ -141,7 +142,7 @@ const useDishListsQuery = (tab: string, searchQuery: string) => {
   const queryClient = useQueryClient();
 
   const query = useQuery<DishList[], Error>({
-    queryKey: ["dishLists", tab],
+    queryKey: queryKeys.dishLists.list(tab),
     queryFn: async (_ctx: QueryFunctionContext) => {
       const netInfo = await NetInfo.fetch();
 
@@ -562,95 +563,91 @@ export default function DishListsScreen({ navigation }: { navigation?: any }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F4F2EE",
+    backgroundColor: theme.colors.background,
   },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingHorizontal: theme.spacing.xl,
+    paddingVertical: theme.spacing.lg,
   },
   headerActions: {
     flexDirection: "row",
     alignItems: "center",
   },
   headerLoader: {
-    marginRight: 12,
+    marginRight: theme.spacing.md,
   },
   title: {
     ...typography.heading2,
-    color: "#00295B",
+    color: theme.colors.textPrimary,
   },
   addButton: {
-    padding: 8,
+    padding: theme.spacing.sm,
   },
   subtleLoadingBar: {
     height: 2,
-    backgroundColor: "#E5E5E5",
-    marginHorizontal: 20,
+    backgroundColor: theme.colors.neutral[200],
+    marginHorizontal: theme.spacing.xl,
     borderRadius: 1,
     overflow: "hidden",
   },
   loadingBarProgress: {
     height: "100%",
     width: "30%",
-    backgroundColor: "#2563eb",
+    backgroundColor: theme.colors.primary[500],
     borderRadius: 1,
   },
   searchContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "white",
-    marginHorizontal: 20,
-    marginBottom: 12, // Reduced from 16
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 3,
+    backgroundColor: theme.colors.surface,
+    marginHorizontal: theme.spacing.xl,
+    marginBottom: theme.spacing.md,
+    borderRadius: theme.borderRadius.md,
+    paddingHorizontal: theme.spacing.lg,
+    paddingVertical: theme.spacing.md,
+    ...theme.shadows.sm,
   },
   searchIcon: {
-    marginRight: 12,
+    marginRight: theme.spacing.md,
   },
   searchInput: {
     flex: 1,
     ...typography.body,
-    color: "#333",
+    color: theme.colors.neutral[800],
     padding: 0,
   },
   clearButton: {
-    padding: 4,
+    padding: theme.spacing.xs,
   },
   clearButtonText: {
     fontSize: 20,
-    color: "#666",
+    color: theme.colors.neutral[500],
     fontWeight: "300",
   },
   tabRow: {
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 20,
+    marginBottom: theme.spacing.xl,
     flexWrap: "wrap",
   },
   tab: {
     paddingHorizontal: 14,
-    paddingVertical: 8,
+    paddingVertical: theme.spacing.sm,
   },
   activeTab: {
     borderBottomWidth: 2,
-    borderBottomColor: "#274B75",
+    borderBottomColor: theme.colors.secondary[50],
   },
   tabText: {
     ...typography.body,
-    color: "#666",
+    color: theme.colors.neutral[500],
   },
   activeTabText: {
-    color: "#274B75",
+    color: theme.colors.secondary[50],
     fontWeight: "600",
   },
   pager: {
@@ -666,44 +663,44 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "space-between",
-    paddingHorizontal: 20,
+    paddingHorizontal: theme.spacing.xl,
   },
   centerContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    paddingHorizontal: 40,
+    paddingHorizontal: theme.spacing['4xl'],
     paddingVertical: 50,
   },
   emptyTitle: {
     ...typography.heading3,
-    color: "#333",
-    marginBottom: 8,
+    color: theme.colors.neutral[800],
+    marginBottom: theme.spacing.sm,
     textAlign: "center",
   },
   emptyText: {
     ...typography.body,
-    color: "#666",
+    color: theme.colors.neutral[500],
     textAlign: "center",
-    marginBottom: 24,
+    marginBottom: theme.spacing['2xl'],
   },
   errorTitle: {
     ...typography.heading3,
-    color: "#EF4444",
-    marginBottom: 8,
+    color: theme.colors.error,
+    marginBottom: theme.spacing.sm,
     textAlign: "center",
   },
   errorText: {
     ...typography.body,
-    color: "#666",
+    color: theme.colors.neutral[500],
     textAlign: "center",
-    marginBottom: 24,
+    marginBottom: theme.spacing['2xl'],
   },
   retryButton: {
-    backgroundColor: "#2563eb",
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
+    backgroundColor: theme.colors.primary[500],
+    paddingHorizontal: theme.spacing['2xl'],
+    paddingVertical: theme.spacing.md,
+    borderRadius: theme.borderRadius.sm,
   },
   retryButtonText: {
     ...typography.button,
@@ -712,11 +709,11 @@ const styles = StyleSheet.create({
   createButton: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#2563eb",
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 8,
-    gap: 8,
+    backgroundColor: theme.colors.primary[500],
+    paddingHorizontal: theme.spacing.xl,
+    paddingVertical: theme.spacing.md,
+    borderRadius: theme.borderRadius.sm,
+    gap: theme.spacing.sm,
   },
   createButtonText: {
     ...typography.button,
@@ -726,13 +723,13 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    gap: 8,
+    paddingVertical: theme.spacing.lg,
+    paddingHorizontal: theme.spacing.xl,
+    gap: theme.spacing.sm,
   },
   offlineText: {
     ...typography.caption,
-    color: "#666",
+    color: theme.colors.neutral[500],
   },
   networkIndicator: {
     position: "absolute",
@@ -742,9 +739,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 8,
+    paddingVertical: theme.spacing.sm,
     zIndex: 1000,
-    gap: 8,
+    gap: theme.spacing.sm,
   },
   networkText: {
     color: "white",
@@ -753,39 +750,35 @@ const styles = StyleSheet.create({
   },
   // Skeleton styles
   skeletonContainer: {
-    marginBottom: 16,
-    backgroundColor: "white",
-    borderRadius: 12,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    marginBottom: theme.spacing.lg,
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.borderRadius.md,
+    ...theme.shadows.sm,
   },
   skeletonContent: {
-    padding: 16,
+    padding: theme.spacing.lg,
   },
   skeletonTitle: {
     height: 20,
-    backgroundColor: "#E5E5E5",
+    backgroundColor: theme.colors.neutral[200],
     borderRadius: 4,
-    marginBottom: 8,
+    marginBottom: theme.spacing.sm,
   },
   skeletonText: {
     height: 16,
-    backgroundColor: "#E5E5E5",
+    backgroundColor: theme.colors.neutral[200],
     borderRadius: 4,
-    marginBottom: 12,
+    marginBottom: theme.spacing.md,
     width: "70%",
   },
   skeletonBadges: {
     flexDirection: "row",
-    gap: 8,
+    gap: theme.spacing.sm,
   },
   skeletonBadge: {
     width: 20,
     height: 20,
-    backgroundColor: "#E5E5E5",
+    backgroundColor: theme.colors.neutral[200],
     borderRadius: 6,
   },
 });

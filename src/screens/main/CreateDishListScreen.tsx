@@ -14,6 +14,8 @@ import {
 import { X, Globe, Lock } from "lucide-react-native";
 import { useCreateDishList } from "../../hooks/useDishLists";
 import { typography } from "../../styles/typography";
+import { theme } from "../../styles/theme";
+import Button from "../../components/ui/Button";
 
 interface CreateDishListScreenProps {
   navigation: any;
@@ -86,7 +88,6 @@ export default function CreateDishListScreen({
 
       navigation.goBack();
     } catch (error) {
-      // Error handling is done in the mutation hook
       console.error("Create DishList error:", error);
     }
   };
@@ -113,7 +114,7 @@ export default function CreateDishListScreen({
             style={styles.cancelButton}
             disabled={isLoading}
           >
-            <X size={24} color="#666" />
+            <X size={24} color={theme.colors.neutral[600]} />
           </TouchableOpacity>
 
           <Text style={styles.headerTitle}>Create new DishList</Text>
@@ -132,6 +133,7 @@ export default function CreateDishListScreen({
             <TextInput
               style={[styles.input, titleError ? styles.inputError : null]}
               placeholder="Enter DishList title"
+              placeholderTextColor={theme.colors.neutral[400]}
               value={title}
               onChangeText={handleTitleChange}
               onBlur={() => validateTitle(title)}
@@ -152,6 +154,7 @@ export default function CreateDishListScreen({
             <TextInput
               style={[styles.input, styles.textArea]}
               placeholder="Add a description (optional)"
+              placeholderTextColor={theme.colors.neutral[400]}
               value={description}
               onChangeText={setDescription}
               multiline
@@ -180,7 +183,7 @@ export default function CreateDishListScreen({
                 <View style={styles.visibilityHeader}>
                   <Globe
                     size={20}
-                    color={visibility === "PUBLIC" ? "#2563eb" : "#666"}
+                    color={visibility === "PUBLIC" ? theme.colors.primary[500] : theme.colors.neutral[600]}
                   />
                   <Text
                     style={[
@@ -204,7 +207,7 @@ export default function CreateDishListScreen({
                 <View style={styles.visibilityHeader}>
                   <Lock
                     size={20}
-                    color={visibility === "PRIVATE" ? "#2563eb" : "#666"}
+                    color={visibility === "PRIVATE" ? theme.colors.primary[500] : theme.colors.neutral[600]}
                   />
                   <Text
                     style={[
@@ -226,23 +229,13 @@ export default function CreateDishListScreen({
 
         {/* Footer Button */}
         <View style={styles.footer}>
-          <TouchableOpacity
-            style={[
-              styles.createButton,
-              !canCreate && styles.createButtonDisabled,
-            ]}
+          <Button
+            title="Create DishList"
             onPress={handleCreate}
             disabled={!canCreate}
-          >
-            <Text
-              style={[
-                styles.createButtonText,
-                !canCreate && styles.createButtonTextDisabled,
-              ]}
-            >
-              {isLoading ? "Creating..." : "Create DishList"}
-            </Text>
-          </TouchableOpacity>
+            loading={isLoading}
+            style={styles.createButton}
+          />
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -252,7 +245,7 @@ export default function CreateDishListScreen({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F4F2EE",
+    backgroundColor: theme.colors.background,
   },
   keyboardView: {
     flex: 1,
@@ -261,116 +254,102 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingHorizontal: theme.spacing.xl,
+    paddingVertical: theme.spacing.lg,
     borderBottomWidth: 1,
-    borderBottomColor: "#E5E5E5",
-    backgroundColor: "white",
+    borderBottomColor: theme.colors.neutral[200],
+    backgroundColor: theme.colors.surface,
   },
   cancelButton: {
-    padding: 4,
+    padding: theme.spacing.xs,
   },
   headerTitle: {
     ...typography.heading3,
-    color: "#00295B",
+    color: theme.colors.textPrimary,
   },
   headerSpacer: {
     width: 32,
   },
   content: {
     flex: 1,
-    padding: 30,
-    marginTop: 10,
+    padding: theme.spacing['3xl'],
+    marginTop: theme.spacing.md,
   },
   inputSection: {
-    marginBottom: 16,
+    marginBottom: theme.spacing.lg,
   },
   label: {
     ...typography.subtitle,
-    color: "#333",
-    marginBottom: 8,
+    color: theme.colors.neutral[700],
+    marginBottom: theme.spacing.sm,
   },
   input: {
     borderWidth: 1,
-    borderColor: "#E5E5E5",
-    borderRadius: 12,
-    padding: 16,
+    borderColor: theme.colors.neutral[200],
+    borderRadius: theme.borderRadius.md,
+    padding: theme.spacing.lg,
     fontSize: 16,
-    backgroundColor: "white",
-    color: "#333",
+    backgroundColor: theme.colors.surface,
+    color: theme.colors.neutral[800],
   },
   inputError: {
-    borderColor: "#EF4444",
+    borderColor: theme.colors.error,
   },
   textArea: {
     height: 80,
-    paddingTop: 16,
+    paddingTop: theme.spacing.lg,
   },
   errorText: {
     ...typography.caption,
-    color: "#EF4444",
-    marginTop: 4,
+    color: theme.colors.error,
+    marginTop: theme.spacing.xs,
   },
   characterCount: {
     ...typography.caption,
-    color: "#666",
+    color: theme.colors.neutral[500],
     textAlign: "right",
-    marginTop: 4,
+    marginTop: theme.spacing.xs,
   },
   visibilityOptions: {
-    gap: 12,
+    gap: theme.spacing.md,
   },
   visibilityOption: {
     borderWidth: 1,
-    borderColor: "#E5E5E5",
-    borderRadius: 12,
-    padding: 16,
-    backgroundColor: "white",
+    borderColor: theme.colors.neutral[200],
+    borderRadius: theme.borderRadius.md,
+    padding: theme.spacing.lg,
+    backgroundColor: theme.colors.surface,
   },
   visibilityOptionActive: {
-    borderColor: "#2563eb",
-    backgroundColor: "#F0F7FF",
+    borderColor: theme.colors.primary[500],
+    backgroundColor: theme.colors.primary[50],
   },
   visibilityHeader: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
+    gap: theme.spacing.md,
   },
   visibilityTitle: {
     ...typography.body,
-    color: "#333",
+    color: theme.colors.neutral[700],
     fontWeight: "600",
   },
   visibilityTitleActive: {
-    color: "#2563eb",
+    color: theme.colors.primary[500],
   },
   visibilityMessage: {
     ...typography.caption,
-    color: "#666",
-    marginTop: 12,
+    color: theme.colors.neutral[500],
+    marginTop: theme.spacing.md,
     lineHeight: 18,
   },
   footer: {
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    paddingBottom: Platform.OS === "ios" ? 34 : 16,
-    alignItems: "center", 
-  },
-  createButton: {
-    width: "90%", 
-    paddingVertical: 16,
-    borderRadius: 12,
-    backgroundColor: "#2563eb",
+    paddingHorizontal: theme.spacing.xl,
+    paddingVertical: theme.spacing.lg,
+    paddingBottom: Platform.OS === "ios" ? 34 : theme.spacing.lg,
     alignItems: "center",
   },
-  createButtonDisabled: {
-    backgroundColor: "#E5E5E5",
-  },
-  createButtonText: {
-    ...typography.button,
-    color: "white",
-  },
-  createButtonTextDisabled: {
-    color: "#666",
+  createButton: {
+    width: "90%",
   },
 });
