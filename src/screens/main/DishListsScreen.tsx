@@ -31,8 +31,9 @@ import NetInfo from "@react-native-community/netinfo";
 import { typography } from "../../styles/typography";
 import DishListTile from "../../components/dishlist/DishListTile";
 import { getDishLists, DishList } from "../../services/api";
-import { queryKeys } from '../../lib/queryKeys';
-import { theme } from '../../styles/theme';
+import { queryKeys } from "../../lib/queryKeys";
+import { theme } from "../../styles/theme";
+import { QueryErrorBoundary } from "../../providers/ErrorBoundary";
 
 type TabType = "All" | "My DishLists" | "Collaborations" | "Following";
 
@@ -551,8 +552,13 @@ export default function DishListsScreen({ navigation }: { navigation?: any }) {
       >
         {tabs.map((tab, index) => (
           <View key={`page-${tab}`} style={styles.page}>
-            {/* Only render active tab content for performance */}
-            {Math.abs(activeTab - index) <= 1 ? renderContent() : null}
+            <QueryErrorBoundary
+              onRetry={handleRefresh}
+              title="Unable to load DishLists"
+              message="Check your connection and try again."
+            >
+              {Math.abs(activeTab - index) <= 1 ? renderContent() : null}
+            </QueryErrorBoundary>
           </View>
         ))}
       </PagerView>
@@ -669,7 +675,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    paddingHorizontal: theme.spacing['4xl'],
+    paddingHorizontal: theme.spacing["4xl"],
     paddingVertical: 50,
   },
   emptyTitle: {
@@ -682,7 +688,7 @@ const styles = StyleSheet.create({
     ...typography.body,
     color: theme.colors.neutral[500],
     textAlign: "center",
-    marginBottom: theme.spacing['2xl'],
+    marginBottom: theme.spacing["2xl"],
   },
   errorTitle: {
     ...typography.heading3,
@@ -694,11 +700,11 @@ const styles = StyleSheet.create({
     ...typography.body,
     color: theme.colors.neutral[500],
     textAlign: "center",
-    marginBottom: theme.spacing['2xl'],
+    marginBottom: theme.spacing["2xl"],
   },
   retryButton: {
     backgroundColor: theme.colors.primary[500],
-    paddingHorizontal: theme.spacing['2xl'],
+    paddingHorizontal: theme.spacing["2xl"],
     paddingVertical: theme.spacing.md,
     borderRadius: theme.borderRadius.sm,
   },
