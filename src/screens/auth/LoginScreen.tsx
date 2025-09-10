@@ -8,7 +8,7 @@ import {
   Alert,
   Image,
 } from "react-native";
-import { useAuth } from "../../contexts/AuthContext";
+import { useAuth } from "../../providers/AuthProvider/AuthContext";
 import { typography } from "../../styles/typography";
 import { theme } from "../../styles/theme";
 import Button from "../../components/ui/Button";

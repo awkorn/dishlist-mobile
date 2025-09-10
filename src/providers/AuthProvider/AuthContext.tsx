@@ -1,9 +1,9 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { onAuthStateChanged, User as FirebaseUser } from "firebase/auth";
-import { auth } from "../config/firebase";
-import { User } from "../types";
-import * as authService from "../services/auth";
-import api, { getDishLists, DishList } from "../services/api";
+import { auth } from "../../config/firebase";
+import { User } from "../../types";
+import * as authService from "../../services/auth";
+import api, { getDishLists, DishList } from "../../services/api";
 
 interface AuthContextType {
   user: FirebaseUser | null;
