@@ -7,9 +7,14 @@ import {
   Dimensions,
 } from "react-native";
 import { Eye, Lock, Crown, Users, Heart, Pin } from "lucide-react-native";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { typography } from "../../styles/typography";
 import { theme } from "../../styles/theme";
 import { ComponentErrorBoundary } from "../../providers/ErrorBoundary";
+import { RootStackParamList } from "../../types/navigation";
+
+type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 interface DishListTileProps {
   dishList: {
@@ -29,6 +34,15 @@ const { width } = Dimensions.get("window");
 const tileWidth = (width - theme.spacing.xl * 2 - theme.spacing.lg) / 2;
 
 export default function DishListTile({ dishList }: DishListTileProps) {
+  const navigation = useNavigation<NavigationProp>();
+
+  const handlePress = () => {
+    navigation.navigate("DishListDetail", {
+      dishListId: dishList.id,
+      dishListTitle: dishList.title,
+    });
+  };
+
   const getBadges = () => {
     const badges = [];
 
@@ -90,8 +104,7 @@ export default function DishListTile({ dishList }: DishListTileProps) {
         </View>
       }
     >
-      <TouchableOpacity style={styles.container}></TouchableOpacity>
-      <TouchableOpacity style={styles.container}>
+      <TouchableOpacity style={styles.container} onPress={handlePress}>
         <View style={styles.content}>
           <Text style={styles.title} numberOfLines={2}>
             {dishList.title}

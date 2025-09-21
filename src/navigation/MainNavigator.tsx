@@ -6,9 +6,11 @@ import LoginScreen from "../screens/auth/LoginScreen";
 import SignUpScreen from "../screens/auth/SignUpScreen";
 import DishListsScreen from "../screens/main/DishListsScreen";
 import CreateDishListScreen from "../screens/main/CreateDishListScreen";
+import DishListDetailScreen from "../screens/main/DishListDetailScreen";
 import BottomNavigation from "../components/navigation/BottomNavigation";
+import { RootStackParamList } from "../types/navigation";
 
-const Stack = createNativeStackNavigator();
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
 // Temporary placeholder screens for other tabs
 const PlaceholderScreen = ({ title }: { title: string }) => (
@@ -84,6 +86,11 @@ export default function MainNavigator() {
               gestureEnabled: true,
               gestureDirection: "vertical",
             }}
+          />
+          <Stack.Screen
+            name="DishListDetail"
+            component={DishListDetailScreen}
+            options={{ headerShown: false }}
           />
         </Stack.Group>
       ) : (

@@ -27,6 +27,33 @@ export interface DishList {
   updatedAt: string;
 }
 
+export interface Recipe {
+  id: string;
+  title: string;
+  description?: string;
+  instructions?: string;
+  ingredients?: string;
+  prepTime?: number;
+  cookTime?: number;
+  servings?: number;
+  imageUrl?: string;
+  creatorId: string;
+  creator: {
+    uid: string;
+    username?: string;
+    firstName?: string;
+    lastName?: string;
+  };
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface DishListDetail extends DishList {
+  description?: string;
+  followerCount: number;
+  recipes: Recipe[];
+}
+
 const api = axios.create({
   baseURL: API_BASE_URL,
   timeout: 10000,
@@ -56,5 +83,27 @@ export const createDishList = async (data: {
   const response = await api.post("/dishlists", data);
   return response.data.dishList;
 };
+
+export const getDishListDetail = async (id: string): Promise<DishListDetail> => {
+  const response = await api.get(`/dishlists/${id}`);
+  return response.data.dishList;
+};
+
+export const followDishList = async (id: string): Promise<void> => {
+  await api.post(`/dishlists/${id}/follow`);
+};
+
+export const unfollowDishList = async (id: string): Promise<void> => {
+  await api.delete(`/dishlists/${id}/follow`);
+};
+
+export const pinDishList = async (id: string): Promise<void> => {
+  await api.post(`/dishlists/${id}/pin`);
+};
+
+export const unpinDishList = async (id: string): Promise<void> => {
+  await api.delete(`/dishlists/${id}/pin`);
+};
+
 
 export default api;
