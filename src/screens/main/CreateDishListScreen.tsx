@@ -5,12 +5,12 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  SafeAreaView,
   Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { X, Globe, Lock } from "lucide-react-native";
 import { useCreateDishList } from "../../hooks/useDishLists";
 import { typography } from "../../styles/typography";

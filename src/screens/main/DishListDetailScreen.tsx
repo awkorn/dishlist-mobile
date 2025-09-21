@@ -3,7 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   TextInput,
   ScrollView,
   TouchableOpacity,
@@ -11,6 +10,7 @@ import {
   RefreshControl,
   Alert,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import {
   MoveLeft,
   Search,

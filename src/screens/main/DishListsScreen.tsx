@@ -9,7 +9,6 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   TextInput,
   ScrollView,
   TouchableOpacity,
@@ -19,6 +18,7 @@ import {
   Animated,
   LayoutAnimation,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import PagerView from "react-native-pager-view";
 import { Search, Plus, Wifi, WifiOff } from "lucide-react-native";
 import {

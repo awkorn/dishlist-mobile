@@ -4,8 +4,8 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  SafeAreaView,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { AlertTriangle, RefreshCw } from "lucide-react-native";
 import { theme } from "../../styles/theme";
 import { typography } from "../../styles/typography";
