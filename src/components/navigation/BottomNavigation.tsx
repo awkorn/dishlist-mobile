@@ -1,40 +1,39 @@
-import React from 'react';
-import {
-  View,
-  TouchableOpacity,
-  StyleSheet,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import React from "react";
+import { View, TouchableOpacity, StyleSheet } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import {
   BookOpen,
   ShoppingCart,
   Search,
   PlusSquare,
   User,
-} from 'lucide-react-native';
-import { theme } from '../../styles/theme';
+} from "lucide-react-native";
+import { theme } from "../../styles/theme";
 
 interface BottomNavigationProps {
   activeTab: string;
   onTabPress: (tab: string) => void;
 }
 
-export default function BottomNavigation({ activeTab, onTabPress }: BottomNavigationProps) {
+export default function BottomNavigation({
+  activeTab,
+  onTabPress,
+}: BottomNavigationProps) {
   const tabs = [
-    { id: 'dishlist', icon: BookOpen, label: 'DishList' },
-    { id: 'grocery', icon: ShoppingCart, label: 'Grocery' },
-    { id: 'search', icon: Search, label: 'Search' },
-    { id: 'builder', icon: PlusSquare, label: 'Builder' },
-    { id: 'profile', icon: User, label: 'Profile' },
+    { id: "dishlist", icon: BookOpen, label: "DishList" },
+    { id: "grocery", icon: ShoppingCart, label: "Grocery" },
+    { id: "search", icon: Search, label: "Search" },
+    { id: "builder", icon: PlusSquare, label: "Builder" },
+    { id: "profile", icon: User, label: "Profile" },
   ];
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={["bottom"]}>
       <View style={styles.navigation}>
         {tabs.map((tab) => {
           const IconComponent = tab.icon;
           const isActive = activeTab === tab.id;
-          
+
           return (
             <TouchableOpacity
               key={tab.id}
@@ -43,7 +42,11 @@ export default function BottomNavigation({ activeTab, onTabPress }: BottomNaviga
             >
               <IconComponent
                 size={24}
-                color={isActive ? theme.colors.secondary[50] : theme.colors.neutral[500]}
+                color={
+                  isActive
+                    ? theme.colors.secondary[50]
+                    : theme.colors.neutral[500]
+                }
               />
             </TouchableOpacity>
           );
@@ -55,7 +58,7 @@ export default function BottomNavigation({ activeTab, onTabPress }: BottomNaviga
 
 const styles = StyleSheet.create({
   container: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
@@ -64,11 +67,11 @@ const styles = StyleSheet.create({
     borderTopColor: theme.colors.neutral[200],
   },
   navigation: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
+    flexDirection: "row",
+    justifyContent: "space-around",
     paddingVertical: theme.spacing.md,
   },
   tab: {
-    padding: theme.spacing.md,
+    padding: theme.spacing.sm,
   },
 });

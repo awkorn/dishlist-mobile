@@ -43,8 +43,8 @@ export default function ActionSheet({
       Animated.spring(slideAnim, {
         toValue: 0,
         useNativeDriver: true,
-        tension: 100,
-        friction: 8,
+        tension: 75,
+        friction: 10,
       }).start();
     } else {
       Animated.timing(slideAnim, {

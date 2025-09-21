@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
-  MoveLeft,
+  ChevronLeft,
   Search,
   MoreHorizontal,
   Pin,
@@ -198,15 +198,31 @@ export default function DishListDetailScreen({
       <SafeAreaView style={styles.container}>
         {/* Header */}
         <View style={styles.header}>
-          {/* Row 1: Back button with text */}
-          <View style={styles.backRow}>
+          {/* Row 1: Back button and search bar */}
+          <View style={styles.topRow}>
             <TouchableOpacity
               onPress={() => navigation.goBack()}
               style={styles.backButton}
             >
-              <MoveLeft size={24} color={theme.colors.neutral[700]} />
-              <Text style={styles.backText}>Back</Text>
+              <ChevronLeft size={24} color={theme.colors.neutral[700]} />
             </TouchableOpacity>
+
+            {/* Search Bar */}
+            <View style={styles.searchContainer}>
+              <Search
+                size={20}
+                color={theme.colors.neutral[500]}
+                style={styles.searchIcon}
+              />
+              <TextInput
+                style={styles.searchInput}
+                placeholder="Find Recipe"
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                returnKeyType="search"
+                clearButtonMode="while-editing"
+              />
+            </View>
           </View>
 
           {/* Row 2: Title + info left, menu right */}
@@ -238,23 +254,6 @@ export default function DishListDetailScreen({
               <MoreHorizontal size={24} color={theme.colors.neutral[700]} />
             </TouchableOpacity>
           </View>
-        </View>
-
-        {/* Search Bar */}
-        <View style={styles.searchContainer}>
-          <Search
-            size={20}
-            color={theme.colors.neutral[500]}
-            style={styles.searchIcon}
-          />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Find Recipe"
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            returnKeyType="search"
-            clearButtonMode="while-editing"
-          />
         </View>
 
         {/* Recipes Grid */}
@@ -330,20 +329,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.spacing.lg,
     paddingVertical: theme.spacing.lg,
   },
-
-  backRow: {
-    marginBottom: theme.spacing.md,
-  },
-  backButton: {
+  topRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: theme.spacing.xs,
-    padding: theme.spacing.xs,
+    marginBottom: theme.spacing["3xl"],
   },
-  backText: {
-    ...typography.body,
-    color: theme.colors.neutral[700],
-    fontSize: 18,
+  backButton: {
+    padding: theme.spacing.xs,
+    marginRight: theme.spacing.sm,
   },
   titleRow: {
     flexDirection: "row",
@@ -369,11 +362,10 @@ const styles = StyleSheet.create({
     marginLeft: theme.spacing.md,
   },
   searchContainer: {
+    flex: 1,
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: theme.colors.surface,
-    marginHorizontal: theme.spacing.lg,
-    marginBottom: theme.spacing.md,
     borderRadius: theme.borderRadius.lg,
     paddingHorizontal: theme.spacing.md,
     paddingVertical: theme.spacing.sm,
