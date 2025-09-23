@@ -23,11 +23,26 @@ export interface Recipe {
   id: string;
   title: string;
   description?: string;
-  instructions?: string;
-  ingredients?: string;
+  instructions: string[];
+  ingredients: string[]; 
   prepTime?: number;
   cookTime?: number;
   servings?: number;
   imageUrl?: string;
+  nutrition?: { 
+    calories?: number;
+    protein?: number;
+    carbs?: number;
+    sugar?: number;
+    fat?: number;
+  };
   creatorId: string;
+  creator: {
+    uid: string;
+    username?: string;
+    firstName?: string;
+    lastName?: string;
+  };
+  createdAt: string;
+  updatedAt: string;
 }

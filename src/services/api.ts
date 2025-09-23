@@ -106,4 +106,25 @@ export const unpinDishList = async (id: string): Promise<void> => {
 };
 
 
+export const createRecipe = async (data: {
+  title: string;
+  description?: string;
+  instructions: string[];
+  ingredients: string[];
+  prepTime?: number;
+  cookTime?: number;
+  servings?: number;
+  imageUrl?: string;
+  nutrition?: any;
+  dishListId?: string;
+}): Promise<Recipe> => {
+  const response = await api.post("/recipes", data);
+  return response.data.recipe;
+};
+
+export const getRecipe = async (id: string): Promise<Recipe> => {
+  const response = await api.get(`/recipes/${id}`);
+  return response.data.recipe;
+};
+
 export default api;
