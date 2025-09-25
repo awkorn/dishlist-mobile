@@ -225,13 +225,14 @@ export default function DishListDetailScreen({
             </View>
           </View>
 
-          {/* Row 2: Title + info left, menu right */}
+          {/* Row 2: Title + menu */}
           <View style={styles.titleRow}>
             <View style={{ flex: 1 }}>
               <Text style={styles.headerTitle} numberOfLines={1}>
                 {dishList.title}
               </Text>
-
+              
+              {/* Row 3: Info */}
               <View style={styles.infoRow}>
                 <View style={{ flexDirection: "row", alignItems: "center" }}>
                   <Text
@@ -368,6 +369,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: theme.spacing.md,
     marginBottom: theme.spacing.sm,
+    marginTop: theme.spacing.sm,
   },
   infoText: {
     ...typography.body,

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   View,
   Text,
@@ -60,28 +60,50 @@ const TimeInput: React.FC<TimeInputProps> = ({
   value,
   onChange,
   unit,
-}) => (
-  <View style={styles.timeInputContainer}>
-    <Text style={styles.timeLabel}>{label}</Text>
-    <View style={styles.timeControls}>
-      <TouchableOpacity
-        style={styles.timeButton}
-        onPress={() => onChange(Math.max(0, value - 1))}
-      >
-        <Minus size={16} color={theme.colors.neutral[600]} />
-      </TouchableOpacity>
-      <Text style={styles.timeValue}>{value}</Text>
-      <TouchableOpacity
-        style={styles.timeButton}
-        onPress={() => onChange(value + 1)}
-      >
-        <Plus size={16} color={theme.colors.neutral[600]} />
-      </TouchableOpacity>
-    </View>
-    <Text style={styles.timeUnit}>{unit}</Text>
-  </View>
-);
+}) => {
+  const [inputValue, setInputValue] = useState(value.toString());
 
+  // Update local state when prop changes
+  useEffect(() => {
+    setInputValue(value.toString());
+  }, [value]);
+
+  const handleTextChange = (text: string) => {
+    // Only allow numbers
+    const numericText = text.replace(/[^0-9]/g, "");
+    setInputValue(numericText);
+
+    // Convert to number and update parent
+    const numValue = parseInt(numericText) || 0;
+    onChange(Math.max(0, numValue));
+  };
+
+  const handleEndEditing = () => {
+    // Ensure we have a valid number when editing ends
+    const numValue = parseInt(inputValue) || 0;
+    const validValue = Math.max(0, numValue);
+    setInputValue(validValue.toString());
+    onChange(validValue);
+  };
+
+  return (
+    <View style={styles.timeInputContainer}>
+      <Text style={styles.timeLabel}>{label}</Text>
+      <TextInput
+        style={styles.timeInput}
+        value={inputValue}
+        onChangeText={handleTextChange}
+        onEndEditing={handleEndEditing}
+        keyboardType="number-pad"
+        returnKeyType="done"
+        maxLength={3}
+        selectTextOnFocus
+        placeholder="0"
+      />
+      <Text style={styles.timeUnit}>{unit}</Text>
+    </View>
+  );
+};
 export default function AddRecipeScreen({
   route,
   navigation,
@@ -639,26 +661,19 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.sm,
     textAlign: "center",
   },
-  timeControls: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
+  timeInput: {
+    ...typography.body,
+    textAlign: "center",
     backgroundColor: theme.colors.surface,
     borderRadius: theme.borderRadius.md,
     borderWidth: 1,
     borderColor: theme.colors.neutral[200],
-    paddingVertical: theme.spacing.sm,
-  },
-  timeButton: {
-    padding: theme.spacing.sm,
-  },
-  timeValue: {
-    ...typography.body,
-    color: theme.colors.neutral[800],
-    minWidth: 40,
-    textAlign: "center",
+    paddingVertical: theme.spacing.md,
+    paddingHorizontal: theme.spacing.sm,
     fontSize: 16,
     fontWeight: "600",
+    color: theme.colors.neutral[800],
+    minHeight: 44, 
   },
   timeUnit: {
     ...typography.caption,
@@ -711,16 +726,16 @@ const styles = StyleSheet.create({
   },
   addButton: {
     backgroundColor: theme.colors.neutral[100],
-    padding: theme.spacing.lg,
+    padding: theme.spacing.md,
     borderRadius: theme.borderRadius.md,
     alignItems: "center",
     borderWidth: 1,
-    borderColor: theme.colors.neutral[200],
+    borderColor: theme.colors.neutral[800],
     borderStyle: "dashed",
   },
   addButtonText: {
-    ...typography.body,
-    color: theme.colors.neutral[600],
+    ...typography.button,
+    color: theme.colors.primary[600],
   },
   nutritionButton: {
     flexDirection: "row",
