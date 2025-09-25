@@ -233,13 +233,28 @@ export default function DishListDetailScreen({
               </Text>
 
               <View style={styles.infoRow}>
-                <Text style={styles.infoText}>
-                  {dishList.visibility === "PUBLIC" ? "● Public" : "● Private"}
-                </Text>
+                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                  <Text
+                    style={[
+                      styles.infoText,
+                      {
+                        color:
+                          dishList.visibility === "PRIVATE" ? "red" : "green",
+                      },
+                    ]}
+                  >
+                    ●
+                  </Text>
+                  <Text style={[styles.infoText, { marginLeft: 4 }]}>
+                    {dishList.visibility === "PUBLIC" ? "Public" : "Private"}
+                  </Text>
+                </View>
+
                 <Text style={styles.infoText}>
                   {dishList.recipeCount}{" "}
                   {dishList.recipeCount === 1 ? "Recipe" : "Recipes"}
                 </Text>
+
                 <Text style={styles.infoText}>
                   {dishList.followerCount}{" "}
                   {dishList.followerCount === 1 ? "Follower" : "Followers"}
