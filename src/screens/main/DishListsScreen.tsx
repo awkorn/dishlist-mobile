@@ -12,11 +12,11 @@ import {
   TextInput,
   ScrollView,
   TouchableOpacity,
-  ActivityIndicator,
   RefreshControl,
   Dimensions,
   Animated,
   LayoutAnimation,
+  ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import PagerView from "react-native-pager-view";
@@ -24,7 +24,6 @@ import { Search, Plus, Wifi, WifiOff } from "lucide-react-native";
 import {
   useQuery,
   useQueryClient,
-  useIsFetching,
   QueryFunctionContext,
 } from "@tanstack/react-query";
 import NetInfo from "@react-native-community/netinfo";
@@ -40,7 +39,6 @@ type TabType = "All" | "My DishLists" | "Collaborations" | "Following";
 const { width } = Dimensions.get("window");
 const tileWidth = (width - 60) / 2;
 
-// Animation config for smooth transitions
 const layoutAnimConfig = {
   duration: 200,
   create: {
@@ -52,7 +50,7 @@ const layoutAnimConfig = {
   },
 };
 
-// Skeleton component for loading states
+// Skeleton Tile
 const SkeletonTile = ({ index }: { index: number }) => {
   const animatedValue = useRef(new Animated.Value(0)).current;
 
@@ -94,7 +92,7 @@ const SkeletonTile = ({ index }: { index: number }) => {
   );
 };
 
-// Network status indicator component
+// Network Indicator
 const NetworkIndicator = ({ isOnline }: { isOnline: boolean }) => {
   const animatedValue = useRef(new Animated.Value(0)).current;
 
@@ -138,7 +136,7 @@ const NetworkIndicator = ({ isOnline }: { isOnline: boolean }) => {
   );
 };
 
-// Custom hook for DishLists
+// Hook for DishLists
 const useDishListsQuery = (tab: string, searchQuery: string) => {
   const queryClient = useQueryClient();
 
@@ -146,41 +144,31 @@ const useDishListsQuery = (tab: string, searchQuery: string) => {
     queryKey: queryKeys.dishLists.list(tab),
     queryFn: async (_ctx: QueryFunctionContext) => {
       const netInfo = await NetInfo.fetch();
-
       if (!netInfo.isConnected) {
         const cachedData = queryClient.getQueryData<DishList[]>([
           "dishLists",
           tab,
         ]);
-        if (cachedData) {
-          console.log(`Returning cached data for ${tab} (offline)`);
-          return cachedData;
-        }
+        if (cachedData) return cachedData;
         throw new Error("No internet connection and no cached data");
       }
-
-      console.log(`Fetching fresh data for ${tab}`);
       return getDishLists(tab);
     },
-
     staleTime: tab === "my" ? 3 * 60 * 1000 : 5 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
-
     retry: (failureCount, error) => {
       if (error.message.includes("No internet connection")) return false;
       return failureCount < 2;
     },
-
     refetchOnReconnect: true,
-    refetchOnWindowFocus: true,
+    refetchOnWindowFocus: false, // prevent refetch flicker
     refetchInterval: false,
-    placeholderData: (prev) => prev, // keeps previous data
+    placeholderData: (prev) => prev,
   });
 
   const filteredData = useMemo(() => {
     if (!query.data) return [];
     if (!searchQuery.trim()) return query.data;
-
     return query.data.filter((list) =>
       list.title.toLowerCase().includes(searchQuery.toLowerCase())
     );
@@ -192,46 +180,14 @@ const useDishListsQuery = (tab: string, searchQuery: string) => {
   };
 };
 
-// Prefetch hook
-const usePrefetchDishLists = () => {
-  const queryClient = useQueryClient();
-
-  const prefetchTab = useCallback(
-    (tab: string) => {
-      return queryClient.prefetchQuery({
-        queryKey: ["dishLists", tab],
-        queryFn: () => getDishLists(tab),
-        staleTime: 10 * 60 * 1000,
-      });
-    },
-    [queryClient]
-  );
-
-  const prefetchAdjacentTabs = useCallback(
-    (currentIndex: number) => {
-      const tabs = ["all", "my", "collaborations", "following"];
-      const nextIndex = (currentIndex + 1) % tabs.length;
-      const prevIndex = (currentIndex - 1 + tabs.length) % tabs.length;
-
-      setTimeout(() => {
-        prefetchTab(tabs[nextIndex]);
-        prefetchTab(tabs[prevIndex]);
-      }, 1000);
-    },
-    [prefetchTab]
-  );
-
-  return { prefetchTab, prefetchAdjacentTabs };
-};
-
 export default function DishListsScreen({ navigation }: { navigation?: any }) {
   const [activeTab, setActiveTab] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
   const [isOnline, setIsOnline] = useState(true);
   const [showNetworkIndicator, setShowNetworkIndicator] = useState(false);
+  const [refreshing, setRefreshing] = useState(false); // manual refresh only
 
   const pagerRef = useRef<PagerView>(null);
-  const isFetchingGlobal = useIsFetching();
 
   const tabs: TabType[] = [
     "All",
@@ -248,21 +204,16 @@ export default function DishListsScreen({ navigation }: { navigation?: any }) {
 
   const currentTabKey = tabToApiParam[tabs[activeTab]];
 
-  // Main data query
   const {
     data: dishLists = [],
     isLoading,
     isError,
     refetch,
     isFetching,
-    isRefetching,
     dataUpdatedAt,
   } = useDishListsQuery(currentTabKey, searchQuery);
 
-  // Prefetching
-  const { prefetchAdjacentTabs } = usePrefetchDishLists();
-
-  // Monitor network status
+  // Network listener
   useEffect(() => {
     const unsubscribe = NetInfo.addEventListener((state) => {
       const wasOffline = !isOnline;
@@ -270,83 +221,60 @@ export default function DishListsScreen({ navigation }: { navigation?: any }) {
 
       setIsOnline(isNowOnline);
 
-      // Show network indicator briefly when status changes
       if (wasOffline !== !isNowOnline) {
         setShowNetworkIndicator(true);
         setTimeout(() => setShowNetworkIndicator(false), 3000);
-
-        // Refetch when coming back online
-        if (isNowOnline && wasOffline) {
-          refetch();
-        }
+        if (isNowOnline && wasOffline) refetch();
       }
     });
-
     return () => unsubscribe();
   }, [isOnline, refetch]);
 
-  // Prefetch adjacent tabs when idle
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      prefetchAdjacentTabs(activeTab);
-    }, 2000);
-
-    return () => clearTimeout(timer);
-  }, [activeTab, prefetchAdjacentTabs]);
-
-  // Animate layout changes
   useEffect(() => {
     LayoutAnimation.configureNext(layoutAnimConfig);
   }, [dishLists.length]);
 
   const handleTabChange = useCallback(
     (index: number) => {
-      // Clear search when changing tabs
-      if (searchQuery) {
-        setSearchQuery("");
-      }
-
+      if (searchQuery) setSearchQuery("");
       setActiveTab(index);
       pagerRef.current?.setPage(index);
     },
     [searchQuery]
   );
 
-  const handleRefresh = useCallback(() => {
-    refetch();
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await refetch();
+    } finally {
+      setRefreshing(false);
+    }
   }, [refetch]);
 
   const handleCreateDishList = useCallback(() => {
-    // Navigate to create screen modal
     navigation.navigate("CreateDishList");
   }, [navigation]);
 
   const handleSearchChange = useCallback((text: string) => {
     setSearchQuery(text);
-
-    // Animate layout when search results change
     LayoutAnimation.configureNext(layoutAnimConfig);
   }, []);
 
-  // Calculate data freshness
   const getDataFreshness = useCallback(() => {
     if (!dataUpdatedAt) return null;
-
     const now = Date.now();
     const age = now - dataUpdatedAt;
     const minutes = Math.floor(age / 60000);
-
     if (minutes < 1) return "Just now";
     if (minutes === 1) return "1 minute ago";
     if (minutes < 60) return `${minutes} minutes ago`;
-
     const hours = Math.floor(minutes / 60);
     if (hours === 1) return "1 hour ago";
     return `${hours} hours ago`;
   }, [dataUpdatedAt]);
 
   const renderContent = useCallback(() => {
-    // Initial loading state
     if (isLoading && dishLists.length === 0) {
       return (
         <ScrollView showsVerticalScrollIndicator={false}>
@@ -361,7 +289,6 @@ export default function DishListsScreen({ navigation }: { navigation?: any }) {
       );
     }
 
-    // Error state
     if (isError && dishLists.length === 0) {
       return (
         <View style={styles.centerContainer}>
@@ -378,7 +305,6 @@ export default function DishListsScreen({ navigation }: { navigation?: any }) {
       );
     }
 
-    // Empty state
     if (dishLists.length === 0 && !isLoading) {
       return (
         <View style={styles.centerContainer}>
@@ -405,18 +331,17 @@ export default function DishListsScreen({ navigation }: { navigation?: any }) {
       );
     }
 
-    // Data display
     return (
       <ScrollView
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
-            refreshing={isRefetching}
+            refreshing={refreshing}
             onRefresh={handleRefresh}
             colors={["#2563eb"]}
             tintColor="#2563eb"
             title={
-              isRefetching
+              refreshing
                 ? "Updating..."
                 : getDataFreshness() || "Pull to refresh"
             }
@@ -426,24 +351,16 @@ export default function DishListsScreen({ navigation }: { navigation?: any }) {
         contentContainerStyle={styles.scrollContent}
       >
         <View style={styles.grid}>
-          {dishLists.map((dishList, index) => (
+          {dishLists.map((dishList) => (
             <Animated.View
               key={dishList.id}
-              style={{
-                opacity: 1,
-                transform: [
-                  {
-                    translateY: 0,
-                  },
-                ],
-              }}
+              style={{ opacity: isFetching ? 0.7 : 1 }}
             >
               <DishListTile dishList={dishList} />
             </Animated.View>
           ))}
         </View>
 
-        {/* Offline indicator at bottom of list */}
         {!isOnline && dishLists.length > 0 && (
           <View style={styles.offlineMessage}>
             <WifiOff size={16} color="#666" />
@@ -457,7 +374,8 @@ export default function DishListsScreen({ navigation }: { navigation?: any }) {
   }, [
     isLoading,
     isError,
-    isRefetching,
+    refreshing,
+    isFetching,
     dishLists,
     searchQuery,
     isOnline,
@@ -470,15 +388,13 @@ export default function DishListsScreen({ navigation }: { navigation?: any }) {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Network Status Indicator */}
       {showNetworkIndicator && <NetworkIndicator isOnline={isOnline} />}
 
-      {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>DishLists</Text>
         <View style={styles.headerActions}>
-          {/* Global loading indicator */}
-          {isFetchingGlobal > 0 && (
+          {/* Show loader only during pull-to-refresh */}
+          {refreshing && (
             <ActivityIndicator
               size="small"
               color="#2563eb"
@@ -493,13 +409,6 @@ export default function DishListsScreen({ navigation }: { navigation?: any }) {
           </TouchableOpacity>
         </View>
       </View>
-
-      {/* Subtle loading bar for background updates */}
-      {isFetching && !isRefetching && dishLists.length > 0 && (
-        <View style={styles.subtleLoadingBar}>
-          <View style={styles.loadingBarProgress} />
-        </View>
-      )}
 
       {/* Search Bar */}
       <View style={styles.searchContainer}>
@@ -542,7 +451,7 @@ export default function DishListsScreen({ navigation }: { navigation?: any }) {
         ))}
       </View>
 
-      {/* Content Pager */}
+      {/* Content */}
       <PagerView
         ref={pagerRef}
         style={styles.pager}
@@ -567,10 +476,7 @@ export default function DishListsScreen({ navigation }: { navigation?: any }) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: theme.colors.background,
-  },
+  container: { flex: 1, backgroundColor: theme.colors.background },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -578,33 +484,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.spacing.xl,
     paddingVertical: theme.spacing.lg,
   },
-  headerActions: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  headerLoader: {
-    marginRight: theme.spacing.md,
-  },
-  title: {
-    ...typography.heading2,
-    color: theme.colors.textPrimary,
-  },
-  addButton: {
-    padding: theme.spacing.sm,
-  },
-  subtleLoadingBar: {
-    height: 2,
-    backgroundColor: theme.colors.neutral[200],
-    marginHorizontal: theme.spacing.xl,
-    borderRadius: 1,
-    overflow: "hidden",
-  },
-  loadingBarProgress: {
-    height: "100%",
-    width: "30%",
-    backgroundColor: theme.colors.primary[500],
-    borderRadius: 1,
-  },
+  headerActions: { flexDirection: "row", alignItems: "center" },
+  headerLoader: { marginRight: theme.spacing.md },
+  title: { ...typography.heading2, color: theme.colors.textPrimary },
+  addButton: { padding: theme.spacing.sm },
   searchContainer: {
     flexDirection: "row",
     alignItems: "center",
@@ -616,9 +499,7 @@ const styles = StyleSheet.create({
     paddingVertical: theme.spacing.md,
     ...theme.shadows.sm,
   },
-  searchIcon: {
-    marginRight: theme.spacing.md,
-  },
+  searchIcon: { marginRight: theme.spacing.md },
   searchInput: {
     flex: 1,
     ...typography.body,
@@ -640,31 +521,16 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.xl,
     flexWrap: "wrap",
   },
-  tab: {
-    paddingHorizontal: 14,
-    paddingVertical: theme.spacing.sm,
-  },
+  tab: { paddingHorizontal: 14, paddingVertical: theme.spacing.sm },
   activeTab: {
     borderBottomWidth: 2,
     borderBottomColor: theme.colors.secondary[50],
   },
-  tabText: {
-    ...typography.body,
-    color: theme.colors.neutral[500],
-  },
-  activeTabText: {
-    color: theme.colors.secondary[50],
-    fontWeight: "600",
-  },
-  pager: {
-    flex: 1,
-  },
-  page: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingBottom: 100,
-  },
+  tabText: { ...typography.body, color: theme.colors.neutral[500] },
+  activeTabText: { color: theme.colors.secondary[50], fontWeight: "600" },
+  pager: { flex: 1 },
+  page: { flex: 1 },
+  scrollContent: { paddingBottom: 100 },
   grid: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -708,10 +574,7 @@ const styles = StyleSheet.create({
     paddingVertical: theme.spacing.md,
     borderRadius: theme.borderRadius.sm,
   },
-  retryButtonText: {
-    ...typography.button,
-    color: "white",
-  },
+  retryButtonText: { ...typography.button, color: "white" },
   createButton: {
     flexDirection: "row",
     alignItems: "center",
@@ -721,10 +584,7 @@ const styles = StyleSheet.create({
     borderRadius: theme.borderRadius.sm,
     gap: theme.spacing.sm,
   },
-  createButtonText: {
-    ...typography.button,
-    color: "white",
-  },
+  createButtonText: { ...typography.button, color: "white" },
   offlineMessage: {
     flexDirection: "row",
     alignItems: "center",
@@ -733,10 +593,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.spacing.xl,
     gap: theme.spacing.sm,
   },
-  offlineText: {
-    ...typography.caption,
-    color: theme.colors.neutral[500],
-  },
+  offlineText: { ...typography.caption, color: theme.colors.neutral[500] },
   networkIndicator: {
     position: "absolute",
     top: 0,
@@ -749,21 +606,14 @@ const styles = StyleSheet.create({
     zIndex: 1000,
     gap: theme.spacing.sm,
   },
-  networkText: {
-    color: "white",
-    fontSize: 14,
-    fontWeight: "500",
-  },
-  // Skeleton styles
+  networkText: { color: "white", fontSize: 14, fontWeight: "500" },
   skeletonContainer: {
     marginBottom: theme.spacing.lg,
     backgroundColor: theme.colors.surface,
     borderRadius: theme.borderRadius.md,
     ...theme.shadows.sm,
   },
-  skeletonContent: {
-    padding: theme.spacing.lg,
-  },
+  skeletonContent: { padding: theme.spacing.lg },
   skeletonTitle: {
     height: 20,
     backgroundColor: theme.colors.neutral[200],
@@ -777,10 +627,7 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.md,
     width: "70%",
   },
-  skeletonBadges: {
-    flexDirection: "row",
-    gap: theme.spacing.sm,
-  },
+  skeletonBadges: { flexDirection: "row", gap: theme.spacing.sm },
   skeletonBadge: {
     width: 20,
     height: 20,
