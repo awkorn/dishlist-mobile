@@ -114,9 +114,9 @@ export const createRecipe = async (data: {
   prepTime?: number;
   cookTime?: number;
   servings?: number;
-  imageUrl?: string;
+  imageUrl?: string | null;
   nutrition?: any;
-  dishListId?: string;
+  dishListId: string;
 }): Promise<Recipe> => {
   const response = await api.post("/recipes", data);
   return response.data.recipe;

@@ -9,6 +9,7 @@ import CreateDishListScreen from "../screens/main/CreateDishListScreen";
 import DishListDetailScreen from "../screens/main/DishListDetailScreen";
 import BottomNavigation from "../components/navigation/BottomNavigation";
 import { RootStackParamList } from "../types/navigation";
+import AddRecipeScreen from "../screens/main/AddRecipeScreen";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -91,6 +92,15 @@ export default function MainNavigator() {
             name="DishListDetail"
             component={DishListDetailScreen}
             options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="AddRecipe"
+            component={AddRecipeScreen}
+            options={{
+              presentation: "modal",
+              gestureEnabled: true,
+              gestureDirection: "vertical",
+            }}
           />
         </Stack.Group>
       ) : (

@@ -344,6 +344,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     ...typography.heading2,
+    fontSize: 32,
     color: theme.colors.textPrimary,
     marginBottom: theme.spacing.sm,
   },
