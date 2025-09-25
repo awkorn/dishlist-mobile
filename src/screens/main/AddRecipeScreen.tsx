@@ -13,14 +13,7 @@ import {
   Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import {
-  ChevronLeft,
-  Plus,
-  X,
-  Camera,
-  Calculator,
-  Minus,
-} from "lucide-react-native";
+import { ChevronLeft, X, Camera, Calculator } from "lucide-react-native";
 import * as ImagePicker from "expo-image-picker";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { theme } from "../../styles/theme";
@@ -30,6 +23,7 @@ import { createRecipe } from "../../services/api";
 import { uploadImage } from "../../services/firebase";
 import { calculateNutrition } from "../../services/nutrition";
 import { queryKeys } from "../../lib/queryKeys";
+import NutritionFacts from "../../components/recipe/NutritionFacts";
 
 interface AddRecipeScreenProps {
   route: {
@@ -480,62 +474,42 @@ export default function AddRecipeScreen({
             {/* Nutrition */}
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Nutrition Information</Text>
-              <TouchableOpacity
-                style={[
-                  styles.nutritionButton,
-                  nutritionLoading && styles.buttonDisabled,
-                ]}
-                onPress={handleCalculateNutrition}
-                disabled={nutritionLoading}
-              >
-                {nutritionLoading ? (
-                  <ActivityIndicator size="small" color="white" />
-                ) : (
-                  <>
-                    <Calculator size={20} color="white" />
-                    <Text style={styles.nutritionButtonText}>
-                      Calculate Nutrition
-                    </Text>
-                  </>
-                )}
-              </TouchableOpacity>
 
-              {nutrition && (
-                <View style={styles.nutritionDisplay}>
-                  <View style={styles.nutritionGrid}>
-                    <View style={styles.nutritionItem}>
-                      <Text style={styles.nutritionValue}>
-                        {nutrition.calories || 0}
+              <View style={styles.nutritionContainer}>
+                <Text style={styles.nutritionDescription}>
+                  Get detailed nutrition facts for your recipe
+                </Text>
+
+                <TouchableOpacity
+                  style={[
+                    styles.nutritionButton,
+                    nutritionLoading && styles.buttonDisabled,
+                  ]}
+                  onPress={handleCalculateNutrition}
+                  disabled={nutritionLoading}
+                >
+                  {nutritionLoading ? (
+                    <ActivityIndicator size="small" color="white" />
+                  ) : (
+                    <>
+                      <Calculator size={20} color="white" />
+                      <Text style={styles.nutritionButtonText}>
+                        Calculate Nutrition
                       </Text>
-                      <Text style={styles.nutritionLabel}>Calories</Text>
-                    </View>
-                    <View style={styles.nutritionItem}>
-                      <Text style={styles.nutritionValue}>
-                        {nutrition.protein || 0}g
-                      </Text>
-                      <Text style={styles.nutritionLabel}>Protein</Text>
-                    </View>
-                    <View style={styles.nutritionItem}>
-                      <Text style={styles.nutritionValue}>
-                        {nutrition.carbs || 0}g
-                      </Text>
-                      <Text style={styles.nutritionLabel}>Carbs</Text>
-                    </View>
-                    <View style={styles.nutritionItem}>
-                      <Text style={styles.nutritionValue}>
-                        {nutrition.sugar || 0}g
-                      </Text>
-                      <Text style={styles.nutritionLabel}>Sugar</Text>
-                    </View>
-                    <View style={styles.nutritionItem}>
-                      <Text style={styles.nutritionValue}>
-                        {nutrition.fat || 0}g
-                      </Text>
-                      <Text style={styles.nutritionLabel}>Fat</Text>
-                    </View>
+                    </>
+                  )}
+                </TouchableOpacity>
+
+                {nutrition && (
+                  <View style={styles.nutritionFactsContainer}>
+                    <NutritionFacts
+                      nutrition={nutrition}
+                      servings={servings}
+                      expanded={true}
+                    />
                   </View>
-                </View>
-              )}
+                )}
+              </View>
             </View>
 
             {/* Recipe Image */}
@@ -673,7 +647,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
     color: theme.colors.neutral[800],
-    minHeight: 44, 
+    minHeight: 44,
   },
   timeUnit: {
     ...typography.caption,
@@ -737,6 +711,18 @@ const styles = StyleSheet.create({
     ...typography.button,
     color: theme.colors.primary[600],
   },
+  nutritionContainer: {
+    gap: theme.spacing.md,
+  },
+  nutritionDescription: {
+    ...typography.caption,
+    color: theme.colors.neutral[600],
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  nutritionFactsContainer: {
+    marginTop: theme.spacing.md,
+  },
   nutritionButton: {
     flexDirection: "row",
     alignItems: "center",
@@ -753,33 +739,6 @@ const styles = StyleSheet.create({
   nutritionButtonText: {
     ...typography.button,
     color: "white",
-  },
-  nutritionDisplay: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.borderRadius.md,
-    padding: theme.spacing.lg,
-    borderWidth: 1,
-    borderColor: theme.colors.neutral[200],
-  },
-  nutritionGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
-  },
-  nutritionItem: {
-    alignItems: "center",
-    width: "30%",
-    marginBottom: theme.spacing.md,
-  },
-  nutritionValue: {
-    ...typography.heading3,
-    color: theme.colors.primary[500],
-    fontSize: 20,
-  },
-  nutritionLabel: {
-    ...typography.caption,
-    color: theme.colors.neutral[600],
-    marginTop: theme.spacing.xs,
   },
   imagePickerButton: {
     borderRadius: theme.borderRadius.md,
