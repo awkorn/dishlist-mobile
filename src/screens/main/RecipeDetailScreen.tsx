@@ -21,14 +21,16 @@ import {
   Edit3,
   ShoppingCart,
 } from "lucide-react-native";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { typography } from "../../styles/typography";
 import { theme } from "../../styles/theme";
 import { getRecipe } from "../../services/api";
-import NutritionFacts from "../../components/recipe/NutritionFacts";
-import ActionSheet, { ActionSheetOption } from "../../components/ui/ActionSheet";
+import ActionSheet, {
+  ActionSheetOption,
+} from "../../components/ui/ActionSheet";
 import { QueryErrorBoundary } from "../../providers/ErrorBoundary";
+import NutritionSection from "../../components/recipe/NutritionSection";
 
 interface RecipeDetailScreenProps {
   route: {
@@ -66,11 +68,15 @@ export default function RecipeDetailScreen({
     staleTime: 5 * 60 * 1000,
   });
 
+  const queryClient = useQueryClient();
+
   // Load saved progress
   useEffect(() => {
     const loadProgress = async () => {
       try {
-        const savedProgress = await AsyncStorage.getItem(`recipe_progress_${recipeId}`);
+        const savedProgress = await AsyncStorage.getItem(
+          `recipe_progress_${recipeId}`
+        );
         if (savedProgress) {
           const parsed = JSON.parse(savedProgress);
           setProgress({
@@ -86,54 +92,63 @@ export default function RecipeDetailScreen({
   }, [recipeId]);
 
   // Save progress whenever it changes
-  const saveProgress = useCallback(async (newProgress: RecipeProgress) => {
-    try {
-      await AsyncStorage.setItem(
-        `recipe_progress_${recipeId}`,
-        JSON.stringify({
-          checkedIngredients: Array.from(newProgress.checkedIngredients),
-          completedSteps: Array.from(newProgress.completedSteps),
-        })
-      );
-    } catch (error) {
-      console.warn("Failed to save recipe progress:", error);
-    }
-  }, [recipeId]);
-
-  const toggleIngredient = useCallback((index: number) => {
-    setProgress(prev => {
-      const newChecked = new Set(prev.checkedIngredients);
-      if (newChecked.has(index)) {
-        newChecked.delete(index);
-      } else {
-        newChecked.add(index);
+  const saveProgress = useCallback(
+    async (newProgress: RecipeProgress) => {
+      try {
+        await AsyncStorage.setItem(
+          `recipe_progress_${recipeId}`,
+          JSON.stringify({
+            checkedIngredients: Array.from(newProgress.checkedIngredients),
+            completedSteps: Array.from(newProgress.completedSteps),
+          })
+        );
+      } catch (error) {
+        console.warn("Failed to save recipe progress:", error);
       }
-      const newProgress = { ...prev, checkedIngredients: newChecked };
-      saveProgress(newProgress);
-      return newProgress;
-    });
-  }, [saveProgress]);
+    },
+    [recipeId]
+  );
 
-  const toggleStep = useCallback((index: number) => {
-    setProgress(prev => {
-      const newCompleted = new Set(prev.completedSteps);
-      if (newCompleted.has(index)) {
-        newCompleted.delete(index);
-      } else {
-        newCompleted.add(index);
-      }
-      const newProgress = { ...prev, completedSteps: newCompleted };
-      saveProgress(newProgress);
-      return newProgress;
-    });
-  }, [saveProgress]);
+  const toggleIngredient = useCallback(
+    (index: number) => {
+      setProgress((prev) => {
+        const newChecked = new Set(prev.checkedIngredients);
+        if (newChecked.has(index)) {
+          newChecked.delete(index);
+        } else {
+          newChecked.add(index);
+        }
+        const newProgress = { ...prev, checkedIngredients: newChecked };
+        saveProgress(newProgress);
+        return newProgress;
+      });
+    },
+    [saveProgress]
+  );
+
+  const toggleStep = useCallback(
+    (index: number) => {
+      setProgress((prev) => {
+        const newCompleted = new Set(prev.completedSteps);
+        if (newCompleted.has(index)) {
+          newCompleted.delete(index);
+        } else {
+          newCompleted.add(index);
+        }
+        const newProgress = { ...prev, completedSteps: newCompleted };
+        saveProgress(newProgress);
+        return newProgress;
+      });
+    },
+    [saveProgress]
+  );
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
   };
 
@@ -151,7 +166,10 @@ export default function RecipeDetailScreen({
         icon: Plus,
         onPress: () => {
           // TODO: Implement add to dishlist modal
-          Alert.alert("Coming Soon", "Add to DishList functionality will be implemented next.");
+          Alert.alert(
+            "Coming Soon",
+            "Add to DishList functionality will be implemented next."
+          );
         },
       },
       {
@@ -159,18 +177,19 @@ export default function RecipeDetailScreen({
         icon: ShoppingCart,
         onPress: () => {
           // Add unchecked ingredients to grocery list
-          const uncheckedIngredients = recipe.ingredients?.filter((_, index) => 
-            !progress.checkedIngredients.has(index)
-          ) || [];
-          
+          const uncheckedIngredients =
+            recipe.ingredients?.filter(
+              (_, index) => !progress.checkedIngredients.has(index)
+            ) || [];
+
           if (uncheckedIngredients.length === 0) {
             Alert.alert("No Items", "All ingredients are already checked off.");
             return;
           }
-          
+
           // TODO: Implement grocery list integration
           Alert.alert(
-            "Added to Grocery List", 
+            "Added to Grocery List",
             `${uncheckedIngredients.length} ingredients added to your grocery list.`
           );
         },
@@ -185,7 +204,10 @@ export default function RecipeDetailScreen({
         icon: Edit3,
         onPress: () => {
           // TODO: Navigate to edit recipe screen
-          Alert.alert("Coming Soon", "Edit recipe functionality will be implemented next.");
+          Alert.alert(
+            "Coming Soon",
+            "Edit recipe functionality will be implemented next."
+          );
         },
       });
     }
@@ -214,7 +236,10 @@ export default function RecipeDetailScreen({
       <SafeAreaView style={styles.container}>
         <View style={styles.errorContainer}>
           <Text style={styles.errorTitle}>Unable to load recipe</Text>
-          <TouchableOpacity style={styles.retryButton} onPress={() => refetch()}>
+          <TouchableOpacity
+            style={styles.retryButton}
+            onPress={() => refetch()}
+          >
             <Text style={styles.retryButtonText}>Try Again</Text>
           </TouchableOpacity>
         </View>
@@ -237,7 +262,7 @@ export default function RecipeDetailScreen({
           >
             <ChevronLeft size={24} color={theme.colors.neutral[700]} />
           </TouchableOpacity>
-          
+
           <TouchableOpacity
             onPress={() => setShowActionSheet(true)}
             style={styles.menuButton}
@@ -246,7 +271,7 @@ export default function RecipeDetailScreen({
           </TouchableOpacity>
         </View>
 
-        <ScrollView 
+        <ScrollView
           style={styles.scrollContainer}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
@@ -263,7 +288,7 @@ export default function RecipeDetailScreen({
                 <Text style={styles.metadataValue}>{recipe.prepTime} min</Text>
               </View>
             )}
-            
+
             {recipe.cookTime && (
               <View style={styles.metadataItem}>
                 <ChefHat size={16} color={theme.colors.neutral[600]} />
@@ -271,15 +296,17 @@ export default function RecipeDetailScreen({
                 <Text style={styles.metadataValue}>{recipe.cookTime} min</Text>
               </View>
             )}
-            
+
             {totalTime > 0 && (
               <View style={styles.metadataItem}>
                 <Clock size={16} color={theme.colors.primary[600]} />
                 <Text style={styles.metadataLabel}>Total Time</Text>
-                <Text style={[styles.metadataValue, styles.totalTimeValue]}>{totalTime} min</Text>
+                <Text style={[styles.metadataValue, styles.totalTimeValue]}>
+                  {totalTime} min
+                </Text>
               </View>
             )}
-            
+
             {recipe.servings && (
               <View style={styles.metadataItem}>
                 <Users size={16} color={theme.colors.neutral[600]} />
@@ -298,7 +325,10 @@ export default function RecipeDetailScreen({
           </View>
 
           {/* Cook Mode Button */}
-          <TouchableOpacity style={styles.cookModeButton} onPress={handleCookMode}>
+          <TouchableOpacity
+            style={styles.cookModeButton}
+            onPress={handleCookMode}
+          >
             <PlayCircle size={20} color="#00295B" />
             <Text style={styles.cookModeText}>Cook Mode</Text>
           </TouchableOpacity>
@@ -317,10 +347,10 @@ export default function RecipeDetailScreen({
                     <View style={styles.checkboxFilled} />
                   )}
                 </View>
-                <Text 
+                <Text
                   style={[
                     styles.ingredientText,
-                    progress.checkedIngredients.has(index) && styles.crossedOut
+                    progress.checkedIngredients.has(index) && styles.crossedOut,
                   ]}
                 >
                   {ingredient}
@@ -339,17 +369,20 @@ export default function RecipeDetailScreen({
                 onPress={() => toggleStep(index)}
               >
                 <View style={styles.stepNumber}>
-                  <Text style={[
-                    styles.stepNumberText,
-                    progress.completedSteps.has(index) && styles.completedStepNumber
-                  ]}>
+                  <Text
+                    style={[
+                      styles.stepNumberText,
+                      progress.completedSteps.has(index) &&
+                        styles.completedStepNumber,
+                    ]}
+                  >
                     {index + 1}
                   </Text>
                 </View>
-                <Text 
+                <Text
                   style={[
                     styles.instructionText,
-                    progress.completedSteps.has(index) && styles.crossedOut
+                    progress.completedSteps.has(index) && styles.crossedOut,
                   ]}
                 >
                   {instruction}
@@ -359,20 +392,50 @@ export default function RecipeDetailScreen({
           </View>
 
           {/* Nutrition Information */}
-          {recipe.nutrition && (
-            <View style={styles.section}>
-              <NutritionFacts 
-                nutrition={recipe.nutrition}
-                servings={recipe.servings || 1}
-              />
-            </View>
-          )}
+          <NutritionSection
+            nutrition={recipe.nutrition}
+            ingredients={recipe.ingredients}
+            servings={recipe.servings || 1}
+            recipeId={recipe.id}
+            onNutritionCalculated={(nutritionData) => {
+              // Update the specific recipe cache
+              queryClient.setQueryData(["recipe", recipeId], (oldData: any) => {
+                if (!oldData) return oldData;
+                return {
+                  ...oldData,
+                  nutrition: nutritionData,
+                };
+              });
+
+              // Update DishList caches that contain this recipe
+              const queryCache = queryClient.getQueryCache();
+              const dishListQueries = queryCache.findAll({
+                queryKey: ["dishList"],
+                type: "active",
+              });
+
+              dishListQueries.forEach((query) => {
+                const dishListData = query.state.data as any;
+                if (dishListData?.recipes) {
+                  const updatedData = {
+                    ...dishListData,
+                    recipes: dishListData.recipes.map((r: any) =>
+                      r.id === recipeId ? { ...r, nutrition: nutritionData } : r
+                    ),
+                  };
+                  queryClient.setQueryData(query.queryKey, updatedData);
+                }
+              });
+            }}
+          />
 
           {/* Photos Section - Placeholder for now */}
           {recipe.imageUrl && (
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Photos</Text>
-              <Text style={styles.placeholderText}>Photo display coming soon</Text>
+              <Text style={styles.placeholderText}>
+                Photo display coming soon
+              </Text>
             </View>
           )}
         </ScrollView>
@@ -491,7 +554,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: '#E8F4F8',
+    backgroundColor: "#E8F4F8",
     paddingVertical: theme.spacing.lg,
     borderRadius: theme.borderRadius.md,
     marginBottom: theme.spacing["3xl"],

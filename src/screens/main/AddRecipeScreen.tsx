@@ -13,7 +13,7 @@ import {
   Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { ChevronLeft, X, Camera, Calculator } from "lucide-react-native";
+import { ChevronLeft, X, Camera } from "lucide-react-native";
 import * as ImagePicker from "expo-image-picker";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { theme } from "../../styles/theme";
@@ -21,9 +21,9 @@ import { typography } from "../../styles/typography";
 import Button from "../../components/ui/Button";
 import { createRecipe } from "../../services/api";
 import { uploadImage } from "../../services/firebase";
-import { calculateNutrition } from "../../services/nutrition";
 import { queryKeys } from "../../lib/queryKeys";
 import NutritionFacts from "../../components/recipe/NutritionFacts";
+import NutritionSection from "../../components/recipe/NutritionSection";
 
 interface AddRecipeScreenProps {
   route: {
@@ -112,10 +112,10 @@ export default function AddRecipeScreen({
   const [servings, setServings] = useState(1);
   const [ingredients, setIngredients] = useState([""]);
   const [instructions, setInstructions] = useState([""]);
-  const [nutrition, setNutrition] = useState<NutritionInfo | null>(null);
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [imageUploading, setImageUploading] = useState(false);
-  const [nutritionLoading, setNutritionLoading] = useState(false);
+  const [calculatedNutrition, setCalculatedNutrition] =
+    useState<NutritionInfo | null>(null);
 
   // Validation errors
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -225,32 +225,6 @@ export default function AddRecipeScreen({
     }
   };
 
-  // Nutrition calculation
-  const handleCalculateNutrition = async () => {
-    const validIngredients = ingredients.filter((ing) => ing.trim());
-
-    if (validIngredients.length === 0) {
-      Alert.alert(
-        "No Ingredients",
-        "Add some ingredients first to calculate nutrition."
-      );
-      return;
-    }
-
-    setNutritionLoading(true);
-    try {
-      const nutritionData = await calculateNutrition(
-        validIngredients,
-        servings
-      );
-      setNutrition(nutritionData);
-    } catch (error) {
-      Alert.alert("Error", "Failed to calculate nutrition. Please try again.");
-    } finally {
-      setNutritionLoading(false);
-    }
-  };
-
   // Form validation
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -300,7 +274,7 @@ export default function AddRecipeScreen({
         cookTime: cookTime > 0 ? cookTime : undefined,
         servings: servings > 0 ? servings : undefined,
         imageUrl,
-        nutrition,
+        nutrition: calculatedNutrition,
         dishListId,
       });
     } catch (error) {
@@ -472,45 +446,14 @@ export default function AddRecipeScreen({
             </View>
 
             {/* Nutrition */}
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Nutrition Information</Text>
-
-              <View style={styles.nutritionContainer}>
-                <Text style={styles.nutritionDescription}>
-                  Get detailed nutrition facts for your recipe
-                </Text>
-
-                <TouchableOpacity
-                  style={[
-                    styles.nutritionButton,
-                    nutritionLoading && styles.buttonDisabled,
-                  ]}
-                  onPress={handleCalculateNutrition}
-                  disabled={nutritionLoading}
-                >
-                  {nutritionLoading ? (
-                    <ActivityIndicator size="small" color="white" />
-                  ) : (
-                    <>
-                      <Calculator size={20} color="white" />
-                      <Text style={styles.nutritionButtonText}>
-                        Calculate Nutrition
-                      </Text>
-                    </>
-                  )}
-                </TouchableOpacity>
-
-                {nutrition && (
-                  <View style={styles.nutritionFactsContainer}>
-                    <NutritionFacts
-                      nutrition={nutrition}
-                      servings={servings}
-                      expanded={true}
-                    />
-                  </View>
-                )}
-              </View>
-            </View>
+            <NutritionSection
+              nutrition={null} // Always start with no nutrition in creation flow
+              ingredients={ingredients.filter((ing) => ing.trim())}
+              servings={servings}
+              onNutritionCalculated={(nutritionData) => {
+                setCalculatedNutrition(nutritionData);
+              }}
+            />
 
             {/* Recipe Image */}
             <View style={styles.section}>
@@ -711,34 +654,8 @@ const styles = StyleSheet.create({
     ...typography.button,
     color: theme.colors.primary[600],
   },
-  nutritionContainer: {
-    gap: theme.spacing.md,
-  },
-  nutritionDescription: {
-    ...typography.caption,
-    color: theme.colors.neutral[600],
-    fontSize: 13,
-    lineHeight: 18,
-  },
-  nutritionFactsContainer: {
-    marginTop: theme.spacing.md,
-  },
-  nutritionButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: theme.colors.primary[500],
-    padding: theme.spacing.lg,
-    borderRadius: theme.borderRadius.md,
-    gap: theme.spacing.sm,
-    marginBottom: theme.spacing.lg,
-  },
   buttonDisabled: {
     opacity: 0.6,
-  },
-  nutritionButtonText: {
-    ...typography.button,
-    color: "white",
   },
   imagePickerButton: {
     borderRadius: theme.borderRadius.md,
