@@ -31,12 +31,19 @@ export interface Recipe {
   id: string;
   title: string;
   description?: string;
-  instructions?: string;
-  ingredients?: string;
+  instructions?: string[];
+  ingredients?: string[]; 
   prepTime?: number;
   cookTime?: number;
   servings?: number;
   imageUrl?: string;
+  nutrition?: {
+    calories?: number;
+    protein?: number;
+    carbs?: number;
+    sugar?: number;
+    fat?: number;
+  };
   creatorId: string;
   creator: {
     uid: string;
@@ -84,7 +91,9 @@ export const createDishList = async (data: {
   return response.data.dishList;
 };
 
-export const getDishListDetail = async (id: string): Promise<DishListDetail> => {
+export const getDishListDetail = async (
+  id: string
+): Promise<DishListDetail> => {
   const response = await api.get(`/dishlists/${id}`);
   return response.data.dishList;
 };
@@ -104,7 +113,6 @@ export const pinDishList = async (id: string): Promise<void> => {
 export const unpinDishList = async (id: string): Promise<void> => {
   await api.delete(`/dishlists/${id}/pin`);
 };
-
 
 export const createRecipe = async (data: {
   title: string;
