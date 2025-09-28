@@ -70,7 +70,6 @@ export default function RecipeDetailScreen({
 
   const queryClient = useQueryClient();
 
-  // Load saved progress
   useEffect(() => {
     const loadProgress = async () => {
       try {
@@ -91,7 +90,6 @@ export default function RecipeDetailScreen({
     loadProgress();
   }, [recipeId]);
 
-  // Save progress whenever it changes
   const saveProgress = useCallback(
     async (newProgress: RecipeProgress) => {
       try {
@@ -165,7 +163,6 @@ export default function RecipeDetailScreen({
         title: "Add to DishList",
         icon: Plus,
         onPress: () => {
-          // TODO: Implement add to dishlist modal
           Alert.alert(
             "Coming Soon",
             "Add to DishList functionality will be implemented next."
@@ -176,7 +173,6 @@ export default function RecipeDetailScreen({
         title: "Add to Grocery List",
         icon: ShoppingCart,
         onPress: () => {
-          // Add unchecked ingredients to grocery list
           const uncheckedIngredients =
             recipe.ingredients?.filter(
               (_, index) => !progress.checkedIngredients.has(index)
@@ -187,7 +183,6 @@ export default function RecipeDetailScreen({
             return;
           }
 
-          // TODO: Implement grocery list integration
           Alert.alert(
             "Added to Grocery List",
             `${uncheckedIngredients.length} ingredients added to your grocery list.`
@@ -196,14 +191,12 @@ export default function RecipeDetailScreen({
       },
     ];
 
-    // Add edit option if user has permission (placeholder logic)
-    const canEdit = true; // TODO: Replace with actual permission check
+    const canEdit = true;
     if (canEdit) {
       options.splice(1, 0, {
         title: "Edit Recipe",
         icon: Edit3,
         onPress: () => {
-          // TODO: Navigate to edit recipe screen
           Alert.alert(
             "Coming Soon",
             "Edit recipe functionality will be implemented next."
@@ -216,7 +209,6 @@ export default function RecipeDetailScreen({
   }, [recipe, progress.checkedIngredients]);
 
   const handleCookMode = () => {
-    // TODO: Implement cook mode modal
     Alert.alert("Coming Soon", "Cook mode will be implemented next.");
   };
 
@@ -254,7 +246,6 @@ export default function RecipeDetailScreen({
       message="Unable to display recipe content."
     >
       <SafeAreaView style={styles.container}>
-        {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity
             onPress={() => navigation.goBack()}
@@ -276,7 +267,6 @@ export default function RecipeDetailScreen({
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          {/* Recipe Title */}
           <Text style={styles.title}>{recipe.title}</Text>
 
           {/* Time & Servings Row */}
@@ -284,39 +274,51 @@ export default function RecipeDetailScreen({
             {recipe.prepTime && (
               <View style={styles.metadataItem}>
                 <Clock size={16} color={theme.colors.neutral[600]} />
-                <Text style={styles.metadataLabel}>Prep Time</Text>
-                <Text style={styles.metadataValue}>{recipe.prepTime} min</Text>
+                <View style={styles.metadataTextGroup}>
+                  <Text style={styles.metadataLabel}>Prep Time</Text>
+                  <Text style={styles.metadataValue}>
+                    {recipe.prepTime} min
+                  </Text>
+                </View>
               </View>
             )}
 
             {recipe.cookTime && (
               <View style={styles.metadataItem}>
                 <ChefHat size={16} color={theme.colors.neutral[600]} />
-                <Text style={styles.metadataLabel}>Cook Time</Text>
-                <Text style={styles.metadataValue}>{recipe.cookTime} min</Text>
+                <View style={styles.metadataTextGroup}>
+                  <Text style={styles.metadataLabel}>Cook Time</Text>
+                  <Text style={styles.metadataValue}>
+                    {recipe.cookTime} min
+                  </Text>
+                </View>
               </View>
             )}
 
             {totalTime > 0 && (
               <View style={styles.metadataItem}>
                 <Clock size={16} color={theme.colors.primary[600]} />
-                <Text style={styles.metadataLabel}>Total Time</Text>
-                <Text style={[styles.metadataValue, styles.totalTimeValue]}>
-                  {totalTime} min
-                </Text>
+                <View style={styles.metadataTextGroup}>
+                  <Text style={styles.metadataLabel}>Total Time</Text>
+                  <Text style={[styles.metadataValue, styles.totalTimeValue]}>
+                    {totalTime} min
+                  </Text>
+                </View>
               </View>
             )}
 
             {recipe.servings && (
               <View style={styles.metadataItem}>
                 <Users size={16} color={theme.colors.neutral[600]} />
-                <Text style={styles.metadataLabel}>Servings</Text>
-                <Text style={styles.metadataValue}>{recipe.servings}</Text>
+                <View style={styles.metadataTextGroup}>
+                  <Text style={styles.metadataLabel}>Servings</Text>
+                  <Text style={styles.metadataValue}>{recipe.servings}</Text>
+                </View>
               </View>
             )}
           </View>
 
-          {/* Created Date */}
+          {/* Created Date Row */}
           <View style={styles.createdDateRow}>
             <Calendar size={14} color={theme.colors.neutral[500]} />
             <Text style={styles.createdDate}>
@@ -324,7 +326,6 @@ export default function RecipeDetailScreen({
             </Text>
           </View>
 
-          {/* Cook Mode Button */}
           <TouchableOpacity
             style={styles.cookModeButton}
             onPress={handleCookMode}
@@ -333,7 +334,6 @@ export default function RecipeDetailScreen({
             <Text style={styles.cookModeText}>Cook Mode</Text>
           </TouchableOpacity>
 
-          {/* Ingredients Section */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Ingredients</Text>
             {recipe.ingredients?.map((ingredient, index) => (
@@ -359,7 +359,6 @@ export default function RecipeDetailScreen({
             ))}
           </View>
 
-          {/* Instructions Section */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Instructions</Text>
             {recipe.instructions?.map((instruction, index) => (
@@ -391,45 +390,48 @@ export default function RecipeDetailScreen({
             ))}
           </View>
 
-          {/* Nutrition Information */}
-          <NutritionSection
-            nutrition={recipe.nutrition}
-            ingredients={recipe.ingredients}
-            servings={recipe.servings || 1}
-            recipeId={recipe.id}
-            onNutritionCalculated={(nutritionData) => {
-              // Update the specific recipe cache
-              queryClient.setQueryData(["recipe", recipeId], (oldData: any) => {
-                if (!oldData) return oldData;
-                return {
-                  ...oldData,
-                  nutrition: nutritionData,
-                };
-              });
+          <View style={styles.section}>
+            <NutritionSection
+              nutrition={recipe.nutrition}
+              ingredients={recipe.ingredients}
+              servings={recipe.servings || 1}
+              recipeId={recipe.id}
+              onNutritionCalculated={(nutritionData) => {
+                queryClient.setQueryData(
+                  ["recipe", recipeId],
+                  (oldData: any) => {
+                    if (!oldData) return oldData;
+                    return {
+                      ...oldData,
+                      nutrition: nutritionData,
+                    };
+                  }
+                );
 
-              // Update DishList caches that contain this recipe
-              const queryCache = queryClient.getQueryCache();
-              const dishListQueries = queryCache.findAll({
-                queryKey: ["dishList"],
-                type: "active",
-              });
+                const queryCache = queryClient.getQueryCache();
+                const dishListQueries = queryCache.findAll({
+                  queryKey: ["dishList"],
+                  type: "active",
+                });
 
-              dishListQueries.forEach((query) => {
-                const dishListData = query.state.data as any;
-                if (dishListData?.recipes) {
-                  const updatedData = {
-                    ...dishListData,
-                    recipes: dishListData.recipes.map((r: any) =>
-                      r.id === recipeId ? { ...r, nutrition: nutritionData } : r
-                    ),
-                  };
-                  queryClient.setQueryData(query.queryKey, updatedData);
-                }
-              });
-            }}
-          />
+                dishListQueries.forEach((query) => {
+                  const dishListData = query.state.data as any;
+                  if (dishListData?.recipes) {
+                    const updatedData = {
+                      ...dishListData,
+                      recipes: dishListData.recipes.map((r: any) =>
+                        r.id === recipeId
+                          ? { ...r, nutrition: nutritionData }
+                          : r
+                      ),
+                    };
+                    queryClient.setQueryData(query.queryKey, updatedData);
+                  }
+                });
+              }}
+            />
+          </View>
 
-          {/* Photos Section - Placeholder for now */}
           {recipe.imageUrl && (
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Photos</Text>
@@ -440,7 +442,6 @@ export default function RecipeDetailScreen({
           )}
         </ScrollView>
 
-        {/* Action Sheet */}
         <ActionSheet
           visible={showActionSheet}
           onClose={() => setShowActionSheet(false)}
@@ -516,29 +517,28 @@ const styles = StyleSheet.create({
   },
   metadataRow: {
     flexDirection: "row",
-    flexWrap: "wrap",
-    gap: theme.spacing.lg,
     marginBottom: theme.spacing.lg,
   },
   metadataItem: {
+    flexDirection: "row",
     alignItems: "center",
-    minWidth: 70,
+    gap: theme.spacing.sm,
+    minWidth: 95,
+  },
+  metadataTextGroup: {
+    flexDirection: "column",
   },
   metadataLabel: {
     ...typography.caption,
     color: theme.colors.neutral[600],
-    marginTop: theme.spacing.xs,
-    textAlign: "center",
   },
   metadataValue: {
     ...typography.body,
     fontWeight: "600",
     color: theme.colors.neutral[800],
-    marginTop: theme.spacing.xs,
-    textAlign: "center",
   },
   totalTimeValue: {
-    color: theme.colors.primary[600],
+    color: theme.colors.neutral[600],
   },
   createdDateRow: {
     flexDirection: "row",
@@ -569,6 +569,13 @@ const styles = StyleSheet.create({
   },
   section: {
     marginBottom: theme.spacing["3xl"],
+    backgroundColor: theme.colors.surface,
+    padding: theme.spacing.xl,
+    borderRadius: theme.borderRadius.lg,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
   },
   sectionTitle: {
     ...typography.subtitle,
