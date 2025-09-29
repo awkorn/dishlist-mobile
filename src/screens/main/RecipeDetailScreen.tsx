@@ -15,7 +15,6 @@ import {
   Clock,
   ChefHat,
   Users,
-  Calendar,
   PlayCircle,
   Plus,
   Edit3,
@@ -31,6 +30,7 @@ import ActionSheet, {
 } from "../../components/ui/ActionSheet";
 import { QueryErrorBoundary } from "../../providers/ErrorBoundary";
 import NutritionSection from "../../components/recipe/NutritionSection";
+import CookModeModal from "../../components/recipe/CookModeModal";
 
 interface RecipeDetailScreenProps {
   route: {
@@ -56,6 +56,7 @@ export default function RecipeDetailScreen({
     checkedIngredients: new Set(),
     completedSteps: new Set(),
   });
+  const [showCookMode, setShowCookMode] = useState(false);
 
   const {
     data: recipe,
@@ -209,7 +210,7 @@ export default function RecipeDetailScreen({
   }, [recipe, progress.checkedIngredients]);
 
   const handleCookMode = () => {
-    Alert.alert("Coming Soon", "Cook mode will be implemented next.");
+    setShowCookMode(true);
   };
 
   if (isLoading) {
@@ -447,6 +448,18 @@ export default function RecipeDetailScreen({
           title="Recipe Options"
           options={actionSheetOptions}
         />
+
+        <CookModeModal
+          visible={showCookMode}
+          onClose={() => setShowCookMode(false)}
+          recipe={{
+            title: recipe.title,
+            instructions: recipe.instructions || [],
+            ingredients: recipe.ingredients || [],
+            prepTime: recipe.prepTime,
+            cookTime: recipe.cookTime,
+          }}
+        />
       </SafeAreaView>
     </QueryErrorBoundary>
   );
@@ -576,7 +589,7 @@ const styles = StyleSheet.create({
     borderRadius: theme.borderRadius.lg,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: .25,
+    shadowOpacity: 0.25,
     shadowRadius: 1,
   },
   sectionTitle: {
