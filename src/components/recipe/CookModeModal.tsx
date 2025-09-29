@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef } from "react";
 import {
   Modal,
   View,
@@ -8,17 +8,17 @@ import {
   Dimensions,
   Animated,
   PanResponder,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { 
-  X, 
-  ChevronLeft, 
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  X,
+  ChevronLeft,
   ChevronRight,
   Clock,
-  ChefHat
-} from 'lucide-react-native';
-import { theme } from '../../styles/theme';
-import { typography } from '../../styles/typography';
+  ChefHat,
+} from "lucide-react-native";
+import { theme } from "../../styles/theme";
+import { typography } from "../../styles/typography";
 
 interface CookModeModalProps {
   visible: boolean;
@@ -32,32 +32,32 @@ interface CookModeModalProps {
   };
 }
 
-const { width } = Dimensions.get('window');
+const { width } = Dimensions.get("window");
 
-export default function CookModeModal({ 
-  visible, 
-  onClose, 
-  recipe 
+export default function CookModeModal({
+  visible,
+  onClose,
+  recipe,
 }: CookModeModalProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const slideAnim = useRef(new Animated.Value(0)).current;
 
   const getStepIngredients = (instruction: string): string[] => {
     if (!recipe.ingredients) return [];
-    
-    return recipe.ingredients.filter(ingredient => {
+
+    return recipe.ingredients.filter((ingredient) => {
       // Extract key words from ingredient (remove measurements, prep methods)
       const ingredientWords = ingredient
         .toLowerCase()
-        .replace(/\d+/g, '') 
-        .replace(/(cup|tbsp|tsp|oz|lb|g|kg|ml|l)\b/g, '') 
-        .replace(/(chopped|diced|sliced|minced|grated)\b/g, '') 
+        .replace(/\d+/g, "")
+        .replace(/(cup|tbsp|tsp|oz|lb|g|kg|ml|l)\b/g, "")
+        .replace(/(chopped|diced|sliced|minced|grated)\b/g, "")
         .trim()
         .split(/\s+/)
-        .filter(word => word.length > 2); // only meaningful words
+        .filter((word) => word.length > 2); // only meaningful words
 
       // Check if any ingredient words appear in the instruction
-      return ingredientWords.some(word => 
+      return ingredientWords.some((word) =>
         instruction.toLowerCase().includes(word)
       );
     });
@@ -67,14 +67,16 @@ export default function CookModeModal({
   const panResponder = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: (evt, gestureState) => {
-        return Math.abs(gestureState.dx) > 20 && Math.abs(gestureState.dy) < 100;
+        return (
+          Math.abs(gestureState.dx) > 20 && Math.abs(gestureState.dy) < 100
+        );
       },
       onPanResponderMove: (evt, gestureState) => {
         slideAnim.setValue(gestureState.dx);
       },
       onPanResponderRelease: (evt, gestureState) => {
         const { dx } = gestureState;
-        
+
         if (dx > 50 && currentStep > 0) {
           // Swipe right - go to previous step
           goToStep(currentStep - 1);
@@ -94,9 +96,9 @@ export default function CookModeModal({
 
   const goToStep = (stepIndex: number) => {
     if (stepIndex < 0 || stepIndex >= recipe.instructions.length) return;
-    
+
     const direction = stepIndex > currentStep ? -1 : 1;
-    
+
     Animated.timing(slideAnim, {
       toValue: direction * width,
       duration: 250,
@@ -112,7 +114,9 @@ export default function CookModeModal({
     });
   };
 
-  const currentStepIngredients = getStepIngredients(recipe.instructions[currentStep]);
+  const currentStepIngredients = getStepIngredients(
+    recipe.instructions[currentStep]
+  );
   const totalSteps = recipe.instructions.length;
   const isFirstStep = currentStep === 0;
   const isLastStep = currentStep === totalSteps - 1;
@@ -129,7 +133,7 @@ export default function CookModeModal({
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
             <X size={28} color={theme.colors.neutral[700]} />
           </TouchableOpacity>
-          
+
           <View style={styles.headerCenter}>
             <Text style={styles.recipeTitle} numberOfLines={1}>
               {recipe.title}
@@ -139,11 +143,11 @@ export default function CookModeModal({
                 Step {currentStep + 1} of {totalSteps}
               </Text>
               <View style={styles.progressBar}>
-                <View 
+                <View
                   style={[
-                    styles.progressFill, 
-                    { width: `${((currentStep + 1) / totalSteps) * 100}%` }
-                  ]} 
+                    styles.progressFill,
+                    { width: `${((currentStep + 1) / totalSteps) * 100}%` },
+                  ]}
                 />
               </View>
             </View>
@@ -152,10 +156,10 @@ export default function CookModeModal({
 
         {/* Main Content */}
         <View style={styles.content}>
-          <Animated.View 
+          <Animated.View
             style={[
               styles.stepContainer,
-              { transform: [{ translateX: slideAnim }] }
+              { transform: [{ translateX: slideAnim }] },
             ]}
             {...panResponder.panHandlers}
           >
@@ -175,7 +179,9 @@ export default function CookModeModal({
             {/* Step Ingredients */}
             {currentStepIngredients.length > 0 && (
               <View style={styles.ingredientsSection}>
-                <Text style={styles.sectionLabel}>Ingredients for this step</Text>
+                <Text style={styles.sectionLabel}>
+                  Ingredients for this step
+                </Text>
                 {currentStepIngredients.map((ingredient, index) => (
                   <View key={index} style={styles.ingredientItem}>
                     <View style={styles.ingredientBullet} />
@@ -193,13 +199,17 @@ export default function CookModeModal({
                   {recipe.prepTime && (
                     <View style={styles.timeItem}>
                       <Clock size={16} color={theme.colors.neutral[600]} />
-                      <Text style={styles.timeText}>Prep: {recipe.prepTime}m</Text>
+                      <Text style={styles.timeText}>
+                        Prep: {recipe.prepTime}m
+                      </Text>
                     </View>
                   )}
                   {recipe.cookTime && (
                     <View style={styles.timeItem}>
                       <ChefHat size={16} color={theme.colors.neutral[600]} />
-                      <Text style={styles.timeText}>Cook: {recipe.cookTime}m</Text>
+                      <Text style={styles.timeText}>
+                        Cook: {recipe.cookTime}m
+                      </Text>
                     </View>
                   )}
                 </View>
@@ -215,14 +225,18 @@ export default function CookModeModal({
             onPress={() => goToStep(currentStep - 1)}
             disabled={isFirstStep}
           >
-            <ChevronLeft 
-              size={24} 
-              color={isFirstStep ? theme.colors.neutral[400] : theme.colors.primary[500]} 
+            <ChevronLeft
+              size={24}
+              color={
+                isFirstStep
+                  ? theme.colors.neutral[400]
+                  : theme.colors.primary[500]
+              }
             />
-            <Text 
+            <Text
               style={[
                 styles.navButtonText,
-                isFirstStep && styles.navButtonTextDisabled
+                isFirstStep && styles.navButtonTextDisabled,
               ]}
             >
               Back
@@ -234,29 +248,24 @@ export default function CookModeModal({
             onPress={() => goToStep(currentStep + 1)}
             disabled={isLastStep}
           >
-            <Text 
+            <Text
               style={[
                 styles.navButtonText,
-                isLastStep && styles.navButtonTextDisabled
+                isLastStep && styles.navButtonTextDisabled,
               ]}
             >
-              {isLastStep ? 'Done' : 'Next'}
+              {isLastStep ? "Done" : "Next"}
             </Text>
-            <ChevronRight 
-              size={24} 
-              color={isLastStep ? theme.colors.neutral[400] : theme.colors.primary[500]} 
+            <ChevronRight
+              size={24}
+              color={
+                isLastStep
+                  ? theme.colors.neutral[400]
+                  : theme.colors.primary[500]
+              }
             />
           </TouchableOpacity>
         </View>
-
-        {/* Swipe Hint (show only on first step) */}
-        {isFirstStep && (
-          <View style={styles.swipeHint}>
-            <Text style={styles.swipeHintText}>
-              💡 Swipe left/right to navigate steps
-            </Text>
-          </View>
-        )}
       </SafeAreaView>
     </Modal>
   );
@@ -268,8 +277,8 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.background,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingHorizontal: theme.spacing.xl,
     paddingVertical: theme.spacing.lg,
     borderBottomWidth: 1,
@@ -289,8 +298,8 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.xs,
   },
   progressContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: theme.spacing.md,
   },
   stepCounter: {
@@ -305,7 +314,7 @@ const styles = StyleSheet.create({
     borderRadius: 2,
   },
   progressFill: {
-    height: '100%',
+    height: "100%",
     backgroundColor: theme.colors.primary[500],
     borderRadius: 2,
   },
@@ -321,8 +330,8 @@ const styles = StyleSheet.create({
   },
   stepTitle: {
     ...typography.heading3,
-    color: theme.colors.primary[500],
-    textAlign: 'center',
+    color: theme.colors.primary[600],
+    textAlign: "center",
   },
   instructionSection: {
     marginBottom: theme.spacing.xl,
@@ -350,8 +359,8 @@ const styles = StyleSheet.create({
     borderRadius: theme.borderRadius.lg,
   },
   ingredientItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: theme.spacing.md,
     gap: theme.spacing.md,
   },
@@ -372,12 +381,12 @@ const styles = StyleSheet.create({
     borderRadius: theme.borderRadius.lg,
   },
   timeRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: theme.spacing.lg,
   },
   timeItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: theme.spacing.sm,
   },
   timeText: {
@@ -385,8 +394,8 @@ const styles = StyleSheet.create({
     color: theme.colors.neutral[700],
   },
   footer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     paddingHorizontal: theme.spacing.xl,
     paddingVertical: theme.spacing.lg,
     borderTopWidth: 1,
@@ -394,8 +403,8 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surface,
   },
   navButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: theme.spacing.sm,
     paddingHorizontal: theme.spacing.lg,
     paddingVertical: theme.spacing.md,
@@ -412,20 +421,5 @@ const styles = StyleSheet.create({
   },
   navButtonTextDisabled: {
     color: theme.colors.neutral[400],
-  },
-  swipeHint: {
-    position: 'absolute',
-    bottom: 120,
-    left: theme.spacing.xl,
-    right: theme.spacing.xl,
-    backgroundColor: theme.colors.warning,
-    paddingVertical: theme.spacing.sm,
-    paddingHorizontal: theme.spacing.lg,
-    borderRadius: theme.borderRadius.md,
-  },
-  swipeHintText: {
-    ...typography.caption,
-    color: theme.colors.neutral[800],
-    textAlign: 'center',
   },
 });
