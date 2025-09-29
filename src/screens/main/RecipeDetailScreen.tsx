@@ -320,7 +320,6 @@ export default function RecipeDetailScreen({
 
           {/* Created Date Row */}
           <View style={styles.createdDateRow}>
-            <Calendar size={14} color={theme.colors.neutral[500]} />
             <Text style={styles.createdDate}>
               Created {formatDate(recipe.createdAt)}
             </Text>
@@ -545,10 +544,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: theme.spacing.sm,
     marginBottom: theme.spacing.xl,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.neutral[500],
   },
   createdDate: {
     ...typography.caption,
     color: theme.colors.neutral[500],
+    marginBottom: theme.spacing.md,
   },
   cookModeButton: {
     flexDirection: "row",
@@ -573,9 +575,9 @@ const styles = StyleSheet.create({
     padding: theme.spacing.xl,
     borderRadius: theme.borderRadius.lg,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: .25,
+    shadowRadius: 1,
   },
   sectionTitle: {
     ...typography.subtitle,
