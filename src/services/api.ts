@@ -2,9 +2,7 @@ import axios from "axios";
 import { auth } from "../config/firebase";
 
 // TODO : Update the API base URL
-const API_BASE_URL = __DEV__
-  ? "http://192.168.1.40:3000"
-  : "https://api.example.com";
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:3000";
 
 export interface DishList {
   id: string;
@@ -32,7 +30,7 @@ export interface Recipe {
   title: string;
   description?: string;
   instructions?: string[];
-  ingredients?: string[]; 
+  ingredients?: string[];
   prepTime?: number;
   cookTime?: number;
   servings?: number;
