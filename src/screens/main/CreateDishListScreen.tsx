@@ -11,8 +11,8 @@ import {
   ScrollView,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useCreateDishList } from "../../hooks/mutations/useDishListMutations";
 import { X, Globe, Lock } from "lucide-react-native";
-import { useCreateDishList } from "../../hooks/useDishLists";
 import { typography } from "../../styles/typography";
 import { theme } from "../../styles/theme";
 import Button from "../../components/ui/Button";

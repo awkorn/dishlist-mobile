@@ -23,8 +23,6 @@ import PagerView from "react-native-pager-view";
 import { Search, Plus, Wifi, WifiOff } from "lucide-react-native";
 import {
   useQuery,
-  useQueryClient,
-  QueryFunctionContext,
 } from "@tanstack/react-query";
 import NetInfo from "@react-native-community/netinfo";
 import { typography } from "../../styles/typography";
@@ -138,22 +136,9 @@ const NetworkIndicator = ({ isOnline }: { isOnline: boolean }) => {
 
 // Hook for DishLists
 const useDishListsQuery = (tab: string, searchQuery: string) => {
-  const queryClient = useQueryClient();
-
   const query = useQuery<DishList[], Error>({
     queryKey: queryKeys.dishLists.list(tab),
-    queryFn: async (_ctx: QueryFunctionContext) => {
-      const netInfo = await NetInfo.fetch();
-      if (!netInfo.isConnected) {
-        const cachedData = queryClient.getQueryData<DishList[]>([
-          "dishLists",
-          tab,
-        ]);
-        if (cachedData) return cachedData;
-        throw new Error("No internet connection and no cached data");
-      }
-      return getDishLists(tab);
-    },
+    queryFn: () => getDishLists(tab),
     staleTime: tab === "my" ? 3 * 60 * 1000 : 5 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
     retry: (failureCount, error) => {
@@ -180,7 +165,13 @@ const useDishListsQuery = (tab: string, searchQuery: string) => {
   };
 };
 
-export default function DishListsScreen({ navigation }: { navigation?: any }) {
+export default function DishListsScreen({
+  navigation,
+  isPrefetching = false,
+}: {
+  navigation?: any;
+  isPrefetching?: boolean;
+}) {
   const [activeTab, setActiveTab] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
   const [isOnline, setIsOnline] = useState(true);
@@ -275,7 +266,8 @@ export default function DishListsScreen({ navigation }: { navigation?: any }) {
   }, [dataUpdatedAt]);
 
   const renderContent = useCallback(() => {
-    if (isLoading && dishLists.length === 0) {
+    // Show skeletons during initial prefetch OR when loading with no data
+    if ((isPrefetching || isLoading) && dishLists.length === 0) {
       return (
         <ScrollView showsVerticalScrollIndicator={false}>
           <View style={styles.grid}>

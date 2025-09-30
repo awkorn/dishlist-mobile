@@ -13,8 +13,8 @@ import { GlobalErrorBoundary } from "./src/providers/ErrorBoundary";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000,
-      gcTime: 30 * 60 * 1000,
+      staleTime: 5 * 60 * 1000, // Data fresh for 5 minutes
+      gcTime: 30 * 60 * 1000, // Cache kept for 30 minutes
       retry: (failureCount, error: any) => {
         if (error?.response?.status >= 400 && error?.response?.status < 500) {
           return false;
@@ -22,13 +22,15 @@ const queryClient = new QueryClient({
         return failureCount < 2;
       },
       retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
-      refetchOnWindowFocus: true,
-      refetchOnReconnect: true,
-      placeholderData: (prev: unknown) => prev,
+      refetchOnWindowFocus: false, // Don't refetch when app comes to foreground (battery)
+      refetchOnReconnect: true, // Refetch when connection restored
+      refetchOnMount: true, // Refetch when component mounts if stale
+      networkMode: "offlineFirst", // Use cache first, then network
     },
     mutations: {
       retry: 1,
       retryDelay: 1000,
+      networkMode: "online", 
     },
   },
 });

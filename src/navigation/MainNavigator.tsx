@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useAuth } from "../providers/AuthProvider/AuthContext";
 import { View, Text, ActivityIndicator, StyleSheet } from "react-native";
@@ -11,6 +11,7 @@ import BottomNavigation from "../components/navigation/BottomNavigation";
 import { RootStackParamList } from "../types/navigation";
 import AddRecipeScreen from "../screens/main/AddRecipeScreen";
 import RecipeDetailScreen from "../screens/main/RecipeDetailScreen";
+import { usePrefetchDishLists } from "../hooks/usePrefetchDishLists";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -29,11 +30,26 @@ const LoadingScreen = () => (
 
 const AuthenticatedApp = ({ navigation }: any) => {
   const [activeTab, setActiveTab] = useState("dishlist");
+  const { prefetchDishLists } = usePrefetchDishLists();
+  const [isPrefetching, setIsPrefetching] = useState(true);
+
+  // Prefetch data when user logs in
+  useEffect(() => {
+    const prefetch = async () => {
+      setIsPrefetching(true);
+      await prefetchDishLists();
+      setIsPrefetching(false);
+    };
+
+    // Small delay to let auth settle
+    const timer = setTimeout(prefetch, 500);
+    return () => clearTimeout(timer);
+  }, []);
 
   const renderActiveScreen = () => {
     switch (activeTab) {
       case "dishlist":
-        return <DishListsScreen navigation={navigation} />;
+        return <DishListsScreen navigation={navigation} isPrefetching={isPrefetching} />;
       case "grocery":
         return <PlaceholderScreen title="Grocery List" />;
       case "search":
@@ -43,7 +59,7 @@ const AuthenticatedApp = ({ navigation }: any) => {
       case "profile":
         return <PlaceholderScreen title="Profile" />;
       default:
-        return <DishListsScreen navigation={navigation} />;
+        return <DishListsScreen navigation={navigation} isPrefetching={isPrefetching} />;
     }
   };
 

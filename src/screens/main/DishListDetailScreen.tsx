@@ -25,13 +25,11 @@ import {
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { typography } from "../../styles/typography";
 import { theme } from "../../styles/theme";
+import { getDishListDetail } from "../../services/api";
 import {
-  getDishListDetail,
-  followDishList,
-  unfollowDishList,
-  pinDishList,
-  unpinDishList,
-} from "../../services/api";
+  useTogglePinDishList,
+  useToggleFollowDishList,
+} from "../../hooks/mutations/useDishListMutations";
 import RecipeTile from "../../components/recipe/RecipeTile";
 import ActionSheet, {
   ActionSheetOption,
@@ -47,8 +45,6 @@ export default function DishListDetailScreen({
   const { dishListId, dishListTitle } = route.params;
   const [searchQuery, setSearchQuery] = useState("");
   const [showActionSheet, setShowActionSheet] = useState(false);
-
-  const queryClient = useQueryClient();
 
   const {
     data: dishList,
@@ -67,25 +63,8 @@ export default function DishListDetailScreen({
   });
 
   // Mutations
-  const followMutation = useMutation({
-    mutationFn: () =>
-      dishList?.isFollowing
-        ? unfollowDishList(dishListId)
-        : followDishList(dishListId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["dishList", dishListId] });
-      queryClient.invalidateQueries({ queryKey: queryKeys.dishLists.all });
-    },
-  });
-
-  const pinMutation = useMutation({
-    mutationFn: () =>
-      dishList?.isPinned ? unpinDishList(dishListId) : pinDishList(dishListId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["dishList", dishListId] });
-      queryClient.invalidateQueries({ queryKey: queryKeys.dishLists.all });
-    },
-  });
+  const followMutation = useToggleFollowDishList();
+  const pinMutation = useTogglePinDishList();
 
   const filteredRecipes = useMemo(() => {
     if (!dishList?.recipes) return [];
@@ -126,7 +105,11 @@ export default function DishListDetailScreen({
     options.push({
       title: dishList.isPinned ? "Unpin DishList" : "Pin DishList",
       icon: dishList.isPinned ? PinOff : Pin,
-      onPress: () => pinMutation.mutate(),
+      onPress: () =>
+        pinMutation.mutate({
+          dishListId,
+          isPinned: dishList.isPinned,
+        }),
     });
 
     if (dishList.isOwner) {
@@ -231,7 +214,7 @@ export default function DishListDetailScreen({
               <Text style={styles.headerTitle} numberOfLines={1}>
                 {dishList.title}
               </Text>
-              
+
               {/* Row 3: Info */}
               <View style={styles.infoRow}>
                 <View style={{ flexDirection: "row", alignItems: "center" }}>
