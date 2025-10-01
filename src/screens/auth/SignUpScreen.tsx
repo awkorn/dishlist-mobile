@@ -5,13 +5,14 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  Alert,
 } from "react-native";
 import { useAuth } from "../../providers/AuthProvider/AuthContext";
 import { typography } from "../../styles/typography";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { theme } from "../../styles/theme";
 import Button from "../../components/ui/Button";
+import InlineError from "../../components/ui/InlineError";
+import { getAuthErrorMessage } from "../../utils/errors";
 
 export default function SignUpScreen({ navigation }: any) {
   const [email, setEmail] = useState("");
@@ -20,50 +21,93 @@ export default function SignUpScreen({ navigation }: any) {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<{ message: string; action?: string } | null>(null);
   const { signUp } = useAuth();
 
   const handleSignUp = async () => {
+    // Clear previous errors
+    setError(null);
+
+    // Field validation
     if (!firstName.trim()) {
-      Alert.alert("Error", "Please enter your first name.");
+      setError({ 
+        message: 'First name is required',
+        action: 'Please enter your first name',
+      });
       return;
     }
 
     if (!lastName.trim()) {
-      Alert.alert("Error", "Please enter your last name.");
+      setError({ 
+        message: 'Last name is required',
+        action: 'Please enter your last name',
+      });
       return;
     }
 
     if (!username.trim()) {
-      Alert.alert("Error", "Please enter a username.");
+      setError({ 
+        message: 'Username is required',
+        action: 'Please choose a username',
+      });
       return;
     }
 
     if (!email.trim()) {
-      Alert.alert("Error", "Please enter email.");
+      setError({ 
+        message: 'Email is required',
+        action: 'Please enter your email address',
+      });
+      return;
+    }
+
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError({ 
+        message: 'Invalid email address',
+        action: 'Please enter a valid email',
+      });
       return;
     }
 
     if (!password.trim()) {
-      Alert.alert("Error", "Please enter password.");
+      setError({ 
+        message: 'Password is required',
+        action: 'Please create a password',
+      });
       return;
     }
 
     if (password.length < 6) {
-      Alert.alert("Error", "Password must be at least 6 characters long.");
+      setError({ 
+        message: 'Password is too short',
+        action: 'Use at least 6 characters',
+      });
       return;
     }
 
     setLoading(true);
 
-    const { error } = await signUp(email, password, {
-      username: username.trim(),
-      firstName: firstName.trim(),
-      lastName: lastName.trim(),
-    });
+    try {
+      const result = await signUp(email, password, {
+        username: username.trim(),
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+      });
 
-    setLoading(false);
-
-    if (error) Alert.alert("Sign Up Failed", error);
+      if (result.error) {
+        const errorInfo = getAuthErrorMessage({ code: result.error });
+        setError(errorInfo);
+      }
+    } catch (err) {
+      setError({
+        message: 'Something went wrong',
+        action: 'Please try again',
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -75,48 +119,102 @@ export default function SignUpScreen({ navigation }: any) {
       <View style={styles.content}>
         <Text style={styles.title}>Create Account</Text>
 
+        {/* Error Message */}
+        {error && (
+          <InlineError
+            message={error.message}
+            action={
+              error.message.includes('account with this email')
+                ? 'Go to Login'
+                : undefined
+            }
+            onActionPress={
+              error.message.includes('account with this email')
+                ? () => navigation.navigate('Login')
+                : undefined
+            }
+          />
+        )}
+
         <View style={styles.form}>
           <TextInput
-            style={styles.input}
+            style={[
+              styles.input,
+              error?.message.toLowerCase().includes('first name') && styles.inputError,
+            ]}
             placeholder="First Name"
             value={firstName}
-            onChangeText={setFirstName}
+            onChangeText={(text) => {
+              setFirstName(text);
+              setError(null);
+            }}
             autoCapitalize="words"
+            editable={!loading}
           />
 
           <TextInput
-            style={styles.input}
+            style={[
+              styles.input,
+              error?.message.toLowerCase().includes('last name') && styles.inputError,
+            ]}
             placeholder="Last Name"
             value={lastName}
-            onChangeText={setLastName}
+            onChangeText={(text) => {
+              setLastName(text);
+              setError(null);
+            }}
             autoCapitalize="words"
+            editable={!loading}
           />
 
           <TextInput
-            style={styles.input}
+            style={[
+              styles.input,
+              error?.message.toLowerCase().includes('username') && styles.inputError,
+            ]}
             placeholder="Username"
             value={username}
-            onChangeText={setUsername}
+            onChangeText={(text) => {
+              setUsername(text);
+              setError(null);
+            }}
             autoCapitalize="none"
             autoCorrect={false}
+            editable={!loading}
           />
 
           <TextInput
-            style={styles.input}
+            style={[
+              styles.input,
+              error?.message.toLowerCase().includes('email') && styles.inputError,
+            ]}
             placeholder="Email"
             value={email}
-            onChangeText={setEmail}
+            onChangeText={(text) => {
+              setEmail(text);
+              setError(null);
+            }}
             keyboardType="email-address"
             autoCapitalize="none"
             autoCorrect={false}
+            autoComplete="email"
+            editable={!loading}
           />
 
           <TextInput
-            style={styles.input}
-            placeholder="Password"
+            style={[
+              styles.input,
+              error?.message.toLowerCase().includes('password') && styles.inputError,
+            ]}
+            placeholder="Password (min 6 characters)"
             value={password}
-            onChangeText={setPassword}
+            onChangeText={(text) => {
+              setPassword(text);
+              setError(null);
+            }}
             secureTextEntry
+            autoComplete="password-new"
+            editable={!loading}
           />
 
           <Button
@@ -130,7 +228,10 @@ export default function SignUpScreen({ navigation }: any) {
 
         <View style={styles.footer}>
           <Text style={styles.footerText}>Already have an account? </Text>
-          <TouchableOpacity onPress={() => navigation.navigate("Login")}>
+          <TouchableOpacity 
+            onPress={() => navigation.navigate("Login")}
+            disabled={loading}
+          >
             <Text style={styles.linkText}>Login</Text>
           </TouchableOpacity>
         </View>
@@ -169,6 +270,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     backgroundColor: theme.colors.surface,
     color: theme.colors.neutral[800],
+  },
+  inputError: {
+    borderColor: theme.colors.error,
+    borderWidth: 2,
   },
   signUpButton: {
     marginTop: theme.spacing.sm,

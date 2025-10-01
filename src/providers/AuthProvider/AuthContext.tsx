@@ -60,7 +60,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         return { error: result.error };
       }
 
-      // Call backend to create/update user profile
       if (result.user) {
         try {
           const response = await api.post("/users/register", {
@@ -77,10 +76,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
       return { error: null };
     } catch (error: any) {
-      return { error: error.message };
+      return { error: error.code || error.message };
     }
   };
-
+  
   const signUp = async (
     email: string,
     password: string,
@@ -89,11 +88,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       const result = await authService.signUpWithEmail(email, password);
       if (result.error) {
-        console.log('Firebase signup failed:', result.error);
         return { error: result.error };
       }
 
-      console.log('Firebase signup success, calling backend...');
+      console.log("Firebase signup success, calling backend...");
 
       // Call backend to register user
       if (result.user) {
@@ -117,8 +115,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
       return { error: null };
     } catch (error: any) {
-      console.log('Signup error:', error.message);
-      return { error: error.message };
+      return { error: error.code || error.message };
     }
   };
 
@@ -128,12 +125,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   return (
     <AuthContext.Provider
-      value={{ 
-        user, 
-        userProfile, 
-        loading, 
-        signIn, 
-        signUp, 
+      value={{
+        user,
+        userProfile,
+        loading,
+        signIn,
+        signUp,
         signOut,
       }}
     >

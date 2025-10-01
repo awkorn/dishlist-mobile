@@ -5,32 +5,68 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  Alert,
   Image,
 } from "react-native";
 import { useAuth } from "../../providers/AuthProvider/AuthContext";
 import { typography } from "../../styles/typography";
 import { theme } from "../../styles/theme";
 import Button from "../../components/ui/Button";
+import InlineError from "../../components/ui/InlineError";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import { getAuthErrorMessage } from "../../utils/errors";
 
 export default function LoginScreen({ navigation }: any) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<{ message: string; action?: string } | null>(null);
   const { signIn } = useAuth();
 
   const handleLogin = async () => {
-    if (!email || !password) {
-      Alert.alert("Error", "Please enter both email and password.");
+    // Clear previous errors
+    setError(null);
+
+    // Basic validation
+    if (!email.trim()) {
+      setError({ 
+        message: 'Email is required',
+        action: 'Please enter your email address',
+      });
+      return;
+    }
+
+    if (!password.trim()) {
+      setError({ 
+        message: 'Password is required',
+        action: 'Please enter your password',
+      });
       return;
     }
 
     setLoading(true);
-    const { error } = await signIn(email, password);
-    setLoading(false);
 
-    if (error) Alert.alert("Login Failed", error);
+    try {
+      const result = await signIn(email, password);
+      
+      if (result.error) {
+        // Convert Firebase error to user-friendly message
+        const errorInfo = getAuthErrorMessage({ code: result.error });
+        setError(errorInfo);
+      }
+    } catch (err) {
+      // Fallback for unexpected errors
+      setError({
+        message: 'Something went wrong',
+        action: 'Please try again',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleForgotPassword = () => {
+    // TODO: Implement forgot password flow
+    console.log('Forgot password for:', email);
   };
 
   return (
@@ -51,25 +87,58 @@ export default function LoginScreen({ navigation }: any) {
           <Text style={styles.title}>DishList</Text>
         </View>
 
+        {/* Error Message */}
+        {error && (
+          <InlineError
+            message={error.message}
+            action={
+              error.message.includes('password') 
+                ? 'Reset Password' 
+                : undefined
+            }
+            onActionPress={
+              error.message.includes('password')
+                ? handleForgotPassword
+                : undefined
+            }
+          />
+        )}
+
         <View style={styles.form}>
           <TextInput
-            style={styles.input}
+            style={[
+              styles.input,
+              error?.message.toLowerCase().includes('email') && styles.inputError,
+            ]}
             placeholder="Email"
             placeholderTextColor={theme.colors.neutral[400]}
             value={email}
-            onChangeText={setEmail}
+            onChangeText={(text) => {
+              setEmail(text);
+              setError(null); 
+            }}
             keyboardType="email-address"
             autoCapitalize="none"
             autoCorrect={false}
+            autoComplete="email"
+            editable={!loading}
           />
 
           <TextInput
-            style={styles.input}
+            style={[
+              styles.input,
+              error?.message.toLowerCase().includes('password') && styles.inputError,
+            ]}
             placeholder="Password"
             placeholderTextColor={theme.colors.neutral[400]}
             value={password}
-            onChangeText={setPassword}
+            onChangeText={(text) => {
+              setPassword(text);
+              setError(null); 
+            }}
             secureTextEntry
+            autoComplete="password"
+            editable={!loading}
           />
 
           <Button
@@ -79,11 +148,22 @@ export default function LoginScreen({ navigation }: any) {
             disabled={loading}
             style={styles.loginButton}
           />
+
+          <TouchableOpacity 
+            onPress={handleForgotPassword}
+            style={styles.forgotPassword}
+            disabled={loading}
+          >
+            <Text style={styles.forgotPasswordText}>Forgot password?</Text>
+          </TouchableOpacity>
         </View>
 
         <View style={styles.footer}>
           <Text style={styles.footerText}>New user? </Text>
-          <TouchableOpacity onPress={() => navigation.navigate("SignUp")}>
+          <TouchableOpacity 
+            onPress={() => navigation.navigate("SignUp")}
+            disabled={loading}
+          >
             <Text style={styles.linkText}>Sign up</Text>
           </TouchableOpacity>
         </View>
@@ -131,8 +211,21 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surface,
     color: theme.colors.neutral[800],
   },
+  inputError: {
+    borderColor: theme.colors.error,
+    borderWidth: 2,
+  },
   loginButton: {
     marginTop: theme.spacing.sm,
+  },
+  forgotPassword: {
+    alignItems: 'center',
+    marginTop: theme.spacing.lg,
+  },
+  forgotPasswordText: {
+    ...typography.body,
+    color: theme.colors.primary[500],
+    fontSize: 14,
   },
   footer: {
     flexDirection: "row",
