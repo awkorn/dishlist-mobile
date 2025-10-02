@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useMemo } from "react";
 import {
   Modal,
   View,
@@ -8,17 +8,22 @@ import {
   Dimensions,
   Animated,
   PanResponder,
+  Platform,
+  ScrollView,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import * as Haptics from "expo-haptics";
 import {
   X,
   ChevronLeft,
   ChevronRight,
   Clock,
   ChefHat,
+  CheckCircle2,
 } from "lucide-react-native";
 import { theme } from "../../styles/theme";
 import { typography } from "../../styles/typography";
+import { isIngredientInInstruction } from "../../utils/ingredientParser";
 
 interface CookModeModalProps {
   visible: boolean;
@@ -42,70 +47,31 @@ export default function CookModeModal({
   const [currentStep, setCurrentStep] = useState(0);
   const slideAnim = useRef(new Animated.Value(0)).current;
 
-  const getStepIngredients = (instruction: string): string[] => {
+  const currentStepIngredients = useMemo(() => {
     if (!recipe.ingredients) return [];
-
-    return recipe.ingredients.filter((ingredient) => {
-      // Extract key words from ingredient (remove measurements, prep methods)
-      const ingredientWords = ingredient
-        .toLowerCase()
-        .replace(/\d+/g, "")
-        .replace(/(cup|tbsp|tsp|oz|lb|g|kg|ml|l)\b/g, "")
-        .replace(/(chopped|diced|sliced|minced|grated)\b/g, "")
-        .trim()
-        .split(/\s+/)
-        .filter((word) => word.length > 2); // only meaningful words
-
-      // Check if any ingredient words appear in the instruction
-      return ingredientWords.some((word) =>
-        instruction.toLowerCase().includes(word)
-      );
-    });
-  };
-
-  // Pan responder for swipe gestures
-  const panResponder = useRef(
-    PanResponder.create({
-      onMoveShouldSetPanResponder: (evt, gestureState) => {
-        return (
-          Math.abs(gestureState.dx) > 20 && Math.abs(gestureState.dy) < 100
-        );
-      },
-      onPanResponderMove: (evt, gestureState) => {
-        slideAnim.setValue(gestureState.dx);
-      },
-      onPanResponderRelease: (evt, gestureState) => {
-        const { dx } = gestureState;
-
-        if (dx > 50 && currentStep > 0) {
-          // Swipe right - go to previous step
-          goToStep(currentStep - 1);
-        } else if (dx < -50 && currentStep < recipe.instructions.length - 1) {
-          // Swipe left - go to next step
-          goToStep(currentStep + 1);
-        } else {
-          // Snap back to center
-          Animated.spring(slideAnim, {
-            toValue: 0,
-            useNativeDriver: true,
-          }).start();
-        }
-      },
-    })
-  ).current;
+    const instruction = recipe.instructions[currentStep];
+    return recipe.ingredients.filter((ingredient) =>
+      isIngredientInInstruction(ingredient, instruction)
+    );
+  }, [currentStep, recipe.ingredients, recipe.instructions]);
 
   const goToStep = (stepIndex: number) => {
     if (stepIndex < 0 || stepIndex >= recipe.instructions.length) return;
-
     const direction = stepIndex > currentStep ? -1 : 1;
 
+    // animate out
     Animated.timing(slideAnim, {
       toValue: direction * width,
       duration: 250,
       useNativeDriver: true,
     }).start(() => {
+      // update state after slide out
       setCurrentStep(stepIndex);
+
+      // jump instantly to opposite side
       slideAnim.setValue(-direction * width);
+
+      // animate in
       Animated.timing(slideAnim, {
         toValue: 0,
         duration: 250,
@@ -114,21 +80,68 @@ export default function CookModeModal({
     });
   };
 
-  const currentStepIngredients = getStepIngredients(
-    recipe.instructions[currentStep]
-  );
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: (_, gestureState) =>
+        Math.abs(gestureState.dx) > 10 && Math.abs(gestureState.dy) < 80,
+      onPanResponderGrant: () => slideAnim.stopAnimation(),
+      onPanResponderMove: (_, gestureState) => {
+        const { dx } = gestureState;
+        if ((currentStep === 0 && dx > 0) ||
+            (currentStep === recipe.instructions.length - 1 && dx < 0)) {
+          slideAnim.setValue(dx * 0.3);
+        } else {
+          slideAnim.setValue(dx);
+        }
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        const { dx, vx } = gestureState;
+        const swipeThreshold = width * 0.3;
+        const velocityThreshold = 0.5;
+        const shouldSwipe =
+          Math.abs(dx) > swipeThreshold || Math.abs(vx) > velocityThreshold;
+
+        if (shouldSwipe) {
+          if (dx > 0 && currentStep > 0) {
+            if (Platform.OS === "ios") {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            }
+            goToStep(currentStep - 1);
+            return;
+          } else if (dx < 0 && currentStep < recipe.instructions.length - 1) {
+            if (Platform.OS === "ios") {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            }
+            goToStep(currentStep + 1);
+            return;
+          }
+        }
+
+        Animated.spring(slideAnim, {
+          toValue: 0,
+          tension: 50,
+          friction: 8,
+          useNativeDriver: true,
+        }).start();
+      },
+    })
+  ).current;
+
   const totalSteps = recipe.instructions.length;
   const isFirstStep = currentStep === 0;
   const isLastStep = currentStep === totalSteps - 1;
+  const progressPercentage = ((currentStep + 1) / totalSteps) * 100;
 
   return (
     <Modal
       visible={visible}
       animationType="slide"
       presentationStyle="fullScreen"
+      onRequestClose={onClose}
     >
-      <SafeAreaView style={styles.container}>
-        {/* Header */}
+      <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
+        {/* Header - fixed */}
         <View style={styles.header}>
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
             <X size={28} color={theme.colors.neutral[700]} />
@@ -143,10 +156,10 @@ export default function CookModeModal({
                 Step {currentStep + 1} of {totalSteps}
               </Text>
               <View style={styles.progressBar}>
-                <View
+                <Animated.View
                   style={[
                     styles.progressFill,
-                    { width: `${((currentStep + 1) / totalSteps) * 100}%` },
+                    { width: `${progressPercentage}%` },
                   ]}
                 />
               </View>
@@ -154,18 +167,29 @@ export default function CookModeModal({
           </View>
         </View>
 
-        {/* Main Content */}
-        <View style={styles.content}>
-          <Animated.View
-            style={[
-              styles.stepContainer,
-              { transform: [{ translateX: slideAnim }] },
-            ]}
-            {...panResponder.panHandlers}
+        {/* Content - sliding */}
+        <Animated.View
+          style={[styles.content, { transform: [{ translateX: slideAnim }] }]}
+          {...panResponder.panHandlers}
+        >
+          <ScrollView
+            style={styles.scrollView}
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
           >
-            {/* Step Header */}
+            {/* Step header */}
             <View style={styles.stepHeader}>
               <Text style={styles.stepTitle}>Step {currentStep + 1}</Text>
+              {isLastStep && (
+                <View style={styles.finalStepBadge}>
+                  <CheckCircle2
+                    size={16}
+                    color={theme.colors.success}
+                    style={{ marginRight: 4 }}
+                  />
+                  <Text style={styles.finalStepText}>Final Step</Text>
+                </View>
+              )}
             </View>
 
             {/* Instruction */}
@@ -176,8 +200,8 @@ export default function CookModeModal({
               </Text>
             </View>
 
-            {/* Step Ingredients */}
-            {currentStepIngredients.length > 0 && (
+            {/* Ingredients */}
+            {currentStepIngredients.length > 0 ? (
               <View style={styles.ingredientsSection}>
                 <Text style={styles.sectionLabel}>
                   Ingredients for this step
@@ -189,9 +213,9 @@ export default function CookModeModal({
                   </View>
                 ))}
               </View>
-            )}
+            ) : null}
 
-            {/* Time Info (show on first step) */}
+            {/* Time Info */}
             {isFirstStep && (recipe.prepTime || recipe.cookTime) && (
               <View style={styles.timeSection}>
                 <Text style={styles.sectionLabel}>Time Information</Text>
@@ -215,10 +239,10 @@ export default function CookModeModal({
                 </View>
               </View>
             )}
-          </Animated.View>
-        </View>
+          </ScrollView>
+        </Animated.View>
 
-        {/* Navigation Footer */}
+        {/* Footer - fixed */}
         <View style={styles.footer}>
           <TouchableOpacity
             style={[styles.navButton, isFirstStep && styles.navButtonDisabled]}
@@ -239,31 +263,31 @@ export default function CookModeModal({
                 isFirstStep && styles.navButtonTextDisabled,
               ]}
             >
-              Back
+              Previous
             </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.navButton, isLastStep && styles.navButtonDisabled]}
-            onPress={() => goToStep(currentStep + 1)}
-            disabled={isLastStep}
+            style={[
+              styles.navButton,
+              isLastStep ? styles.doneButton : styles.nextButton,
+            ]}
+            onPress={() =>
+              isLastStep ? onClose() : goToStep(currentStep + 1)
+            }
           >
             <Text
               style={[
                 styles.navButtonText,
-                isLastStep && styles.navButtonTextDisabled,
+                isLastStep && styles.doneButtonText,
               ]}
             >
               {isLastStep ? "Done" : "Next"}
             </Text>
-            <ChevronRight
-              size={24}
-              color={
-                isLastStep
-                  ? theme.colors.neutral[400]
-                  : theme.colors.primary[500]
-              }
-            />
+            {!isLastStep && (
+              <ChevronRight size={24} color={theme.colors.primary[500]} />
+            )}
+            {isLastStep && <CheckCircle2 size={24} color="white" />}
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -272,9 +296,9 @@ export default function CookModeModal({
 }
 
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.surface,
   },
   header: {
     flexDirection: "row",
@@ -309,54 +333,78 @@ const styles = StyleSheet.create({
   },
   progressBar: {
     flex: 1,
-    height: 4,
+    height: 6,
     backgroundColor: theme.colors.neutral[200],
-    borderRadius: 2,
+    borderRadius: 3,
+    overflow: "hidden",
   },
   progressFill: {
     height: "100%",
     backgroundColor: theme.colors.primary[500],
-    borderRadius: 2,
+    borderRadius: 3,
   },
   content: {
     flex: 1,
-    padding: theme.spacing.xl,
+    backgroundColor: theme.colors.background,
   },
-  stepContainer: {
+  scrollView: {
     flex: 1,
   },
+  scrollContent: {
+    padding: theme.spacing.xl,
+    paddingBottom: theme.spacing["4xl"],
+  },
   stepHeader: {
-    marginBottom: theme.spacing.xl,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: theme.spacing["2xl"],
   },
   stepTitle: {
     ...typography.heading3,
     color: theme.colors.primary[600],
-    textAlign: "center",
+  },
+  finalStepBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: theme.colors.neutral[100],
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.xs,
+    borderRadius: theme.borderRadius.sm,
+  },
+  finalStepText: {
+    ...typography.caption,
+    color: theme.colors.success,
+    fontWeight: "600",
   },
   instructionSection: {
     marginBottom: theme.spacing.xl,
     backgroundColor: theme.colors.surface,
     padding: theme.spacing.xl,
     borderRadius: theme.borderRadius.lg,
-    borderLeftWidth: 4,
-    borderLeftColor: theme.colors.primary[500],
+    ...theme.shadows.sm,
   },
   sectionLabel: {
     ...typography.subtitle,
-    color: theme.colors.textPrimary,
+    fontSize: 14,
+    color: theme.colors.neutral[600],
     marginBottom: theme.spacing.md,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
   },
   instructionText: {
     ...typography.body,
     fontSize: 18,
-    lineHeight: 26,
+    lineHeight: 28,
     color: theme.colors.neutral[800],
   },
   ingredientsSection: {
     marginBottom: theme.spacing.xl,
-    backgroundColor: theme.colors.neutral[50],
+    backgroundColor: theme.colors.success + "10",
     padding: theme.spacing.xl,
     borderRadius: theme.borderRadius.lg,
+    borderWidth: 1,
+    borderColor: theme.colors.success + "30",
   },
   ingredientItem: {
     flexDirection: "row",
@@ -374,15 +422,18 @@ const styles = StyleSheet.create({
     ...typography.body,
     color: theme.colors.neutral[700],
     fontSize: 16,
+    flex: 1,
   },
   timeSection: {
     backgroundColor: theme.colors.primary[50],
     padding: theme.spacing.lg,
     borderRadius: theme.borderRadius.lg,
+    borderWidth: 1,
+    borderColor: theme.colors.primary[500],
   },
   timeRow: {
     flexDirection: "row",
-    gap: theme.spacing.lg,
+    gap: theme.spacing.xl,
   },
   timeItem: {
     flexDirection: "row",
@@ -392,6 +443,7 @@ const styles = StyleSheet.create({
   timeText: {
     ...typography.body,
     color: theme.colors.neutral[700],
+    fontSize: 15,
   },
   footer: {
     flexDirection: "row",
@@ -406,13 +458,23 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: theme.spacing.sm,
-    paddingHorizontal: theme.spacing.lg,
+    paddingHorizontal: theme.spacing.xl,
     paddingVertical: theme.spacing.md,
     borderRadius: theme.borderRadius.md,
-    minWidth: 100,
+    minWidth: 120,
+    borderWidth: 1,
+    borderColor: theme.colors.primary[500],
   },
   navButtonDisabled: {
     opacity: 0.4,
+    borderColor: theme.colors.neutral[300],
+  },
+  nextButton: {
+    backgroundColor: theme.colors.surface,
+  },
+  doneButton: {
+    backgroundColor: theme.colors.success,
+    borderColor: theme.colors.success,
   },
   navButtonText: {
     ...typography.button,
@@ -421,5 +483,8 @@ const styles = StyleSheet.create({
   },
   navButtonTextDisabled: {
     color: theme.colors.neutral[400],
+  },
+  doneButtonText: {
+    color: "white",
   },
 });

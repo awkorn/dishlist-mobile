@@ -587,10 +587,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surface,
     padding: theme.spacing.xl,
     borderRadius: theme.borderRadius.lg,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.25,
-    shadowRadius: 1,
+    ...theme.shadows.sm,
   },
   sectionTitle: {
     ...typography.subtitle,

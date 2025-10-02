@@ -40,8 +40,6 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     backgroundColor: '#FEF2F2', 
-    borderLeftWidth: 3,
-    borderLeftColor: theme.colors.error,
     borderRadius: theme.borderRadius.sm,
     padding: theme.spacing.md,
     marginBottom: theme.spacing.lg,
