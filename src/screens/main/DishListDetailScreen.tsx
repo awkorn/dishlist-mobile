@@ -22,13 +22,14 @@ import {
   Trash2,
   UserPlus,
 } from "lucide-react-native";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { typography } from "../../styles/typography";
 import { theme } from "../../styles/theme";
 import { getDishListDetail } from "../../services/api";
 import {
   useTogglePinDishList,
   useToggleFollowDishList,
+  useDeleteDishList,
 } from "../../hooks/mutations/useDishListMutations";
 import RecipeTile from "../../components/recipe/RecipeTile";
 import ActionSheet, {
@@ -65,6 +66,7 @@ export default function DishListDetailScreen({
   // Mutations
   const followMutation = useToggleFollowDishList();
   const pinMutation = useTogglePinDishList();
+  const deleteMutation = useDeleteDishList();
 
   const filteredRecipes = useMemo(() => {
     if (!dishList?.recipes) return [];
@@ -112,7 +114,8 @@ export default function DishListDetailScreen({
         }),
     });
 
-    if (dishList.isOwner) {
+    // Only show delete option for owners AND non-default DishLists
+    if (dishList.isOwner && !dishList.isDefault) {
       options.push({
         title: "Delete DishList",
         icon: Trash2,
@@ -120,14 +123,18 @@ export default function DishListDetailScreen({
         onPress: () => {
           Alert.alert(
             "Delete DishList",
-            "Are you sure you want to delete this DishList? This action cannot be undone.",
+            `Are you sure you want to delete "${dishList.title}"? This will also delete all recipes that are only in this DishList.`,
             [
               { text: "Cancel", style: "cancel" },
               {
                 text: "Delete",
                 style: "destructive",
                 onPress: () => {
-                  navigation.goBack();
+                  deleteMutation.mutate(dishListId, {
+                    onSuccess: () => {
+                      navigation.goBack();
+                    },
+                  });
                 },
               },
             ]
@@ -137,7 +144,7 @@ export default function DishListDetailScreen({
     }
 
     return options;
-  }, [dishList, navigation, pinMutation]);
+  }, [dishList, navigation, pinMutation, deleteMutation, dishListId]);
 
   const handleRefresh = useCallback(() => {
     refetch();

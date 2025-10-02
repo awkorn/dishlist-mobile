@@ -112,6 +112,10 @@ export const unpinDishList = async (id: string): Promise<void> => {
   await api.delete(`/dishlists/${id}/pin`);
 };
 
+export const deleteDishList = async (id: string): Promise<void> => {
+  await api.delete(`/dishlists/${id}`);
+};
+
 export const createRecipe = async (data: {
   title: string;
   description?: string;
