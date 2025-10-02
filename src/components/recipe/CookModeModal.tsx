@@ -44,6 +44,11 @@ export default function CookModeModal({
 }: CookModeModalProps) {
   const [currentStep, setCurrentStep] = useState(0);
 
+  const handleClose = () => {
+    setCurrentStep(0);
+    onClose();
+  };
+
   const currentStepIngredients = React.useMemo(() => {
     if (!recipe.ingredients) return [];
     const instruction = recipe.instructions[currentStep];
@@ -72,12 +77,12 @@ export default function CookModeModal({
       visible={visible}
       animationType="slide"
       presentationStyle="fullScreen"
-      onRequestClose={onClose}
+      onRequestClose={handleClose}
     >
       <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
         {/* Header - fixed */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+          <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
             <X size={28} color={theme.colors.neutral[700]} />
           </TouchableOpacity>
 
@@ -202,7 +207,7 @@ export default function CookModeModal({
               isLastStep ? styles.doneButton : styles.nextButton,
             ]}
             onPress={() =>
-              isLastStep ? onClose() : goToStep(currentStep + 1)
+              isLastStep ? handleClose() : goToStep(currentStep + 1)
             }
           >
             <Text
@@ -293,7 +298,6 @@ const styles = StyleSheet.create({
   finalStepBadge: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: theme.colors.neutral[100],
     paddingHorizontal: theme.spacing.md,
     paddingVertical: theme.spacing.xs,
     borderRadius: theme.borderRadius.sm,
