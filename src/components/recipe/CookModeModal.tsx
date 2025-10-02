@@ -1,4 +1,4 @@
-import React, { useState, useRef, useMemo } from "react";
+import React, { useState } from "react";
 import {
   Modal,
   View,
@@ -6,8 +6,6 @@ import {
   TouchableOpacity,
   StyleSheet,
   Dimensions,
-  Animated,
-  PanResponder,
   Platform,
   ScrollView,
 } from "react-native";
@@ -45,9 +43,8 @@ export default function CookModeModal({
   recipe,
 }: CookModeModalProps) {
   const [currentStep, setCurrentStep] = useState(0);
-  const slideAnim = useRef(new Animated.Value(0)).current;
 
-  const currentStepIngredients = useMemo(() => {
+  const currentStepIngredients = React.useMemo(() => {
     if (!recipe.ingredients) return [];
     const instruction = recipe.instructions[currentStep];
     return recipe.ingredients.filter((ingredient) =>
@@ -57,76 +54,13 @@ export default function CookModeModal({
 
   const goToStep = (stepIndex: number) => {
     if (stepIndex < 0 || stepIndex >= recipe.instructions.length) return;
-    const direction = stepIndex > currentStep ? -1 : 1;
-
-    // animate out
-    Animated.timing(slideAnim, {
-      toValue: direction * width,
-      duration: 250,
-      useNativeDriver: true,
-    }).start(() => {
-      // update state after slide out
-      setCurrentStep(stepIndex);
-
-      // jump instantly to opposite side
-      slideAnim.setValue(-direction * width);
-
-      // animate in
-      Animated.timing(slideAnim, {
-        toValue: 0,
-        duration: 250,
-        useNativeDriver: true,
-      }).start();
-    });
+    
+    if (Platform.OS === "ios") {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    
+    setCurrentStep(stepIndex);
   };
-
-  const panResponder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponder: (_, gestureState) =>
-        Math.abs(gestureState.dx) > 10 && Math.abs(gestureState.dy) < 80,
-      onPanResponderGrant: () => slideAnim.stopAnimation(),
-      onPanResponderMove: (_, gestureState) => {
-        const { dx } = gestureState;
-        if ((currentStep === 0 && dx > 0) ||
-            (currentStep === recipe.instructions.length - 1 && dx < 0)) {
-          slideAnim.setValue(dx * 0.3);
-        } else {
-          slideAnim.setValue(dx);
-        }
-      },
-      onPanResponderRelease: (_, gestureState) => {
-        const { dx, vx } = gestureState;
-        const swipeThreshold = width * 0.3;
-        const velocityThreshold = 0.5;
-        const shouldSwipe =
-          Math.abs(dx) > swipeThreshold || Math.abs(vx) > velocityThreshold;
-
-        if (shouldSwipe) {
-          if (dx > 0 && currentStep > 0) {
-            if (Platform.OS === "ios") {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-            }
-            goToStep(currentStep - 1);
-            return;
-          } else if (dx < 0 && currentStep < recipe.instructions.length - 1) {
-            if (Platform.OS === "ios") {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-            }
-            goToStep(currentStep + 1);
-            return;
-          }
-        }
-
-        Animated.spring(slideAnim, {
-          toValue: 0,
-          tension: 50,
-          friction: 8,
-          useNativeDriver: true,
-        }).start();
-      },
-    })
-  ).current;
 
   const totalSteps = recipe.instructions.length;
   const isFirstStep = currentStep === 0;
@@ -156,7 +90,7 @@ export default function CookModeModal({
                 Step {currentStep + 1} of {totalSteps}
               </Text>
               <View style={styles.progressBar}>
-                <Animated.View
+                <View
                   style={[
                     styles.progressFill,
                     { width: `${progressPercentage}%` },
@@ -167,80 +101,75 @@ export default function CookModeModal({
           </View>
         </View>
 
-        {/* Content - sliding */}
-        <Animated.View
-          style={[styles.content, { transform: [{ translateX: slideAnim }] }]}
-          {...panResponder.panHandlers}
+        {/* Content - scrollable */}
+        <ScrollView
+          style={styles.content}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
         >
-          <ScrollView
-            style={styles.scrollView}
-            contentContainerStyle={styles.scrollContent}
-            showsVerticalScrollIndicator={false}
-          >
-            {/* Step header */}
-            <View style={styles.stepHeader}>
-              <Text style={styles.stepTitle}>Step {currentStep + 1}</Text>
-              {isLastStep && (
-                <View style={styles.finalStepBadge}>
-                  <CheckCircle2
-                    size={16}
-                    color={theme.colors.success}
-                    style={{ marginRight: 4 }}
-                  />
-                  <Text style={styles.finalStepText}>Final Step</Text>
-                </View>
-              )}
-            </View>
-
-            {/* Instruction */}
-            <View style={styles.instructionSection}>
-              <Text style={styles.sectionLabel}>Instruction</Text>
-              <Text style={styles.instructionText}>
-                {recipe.instructions[currentStep]}
-              </Text>
-            </View>
-
-            {/* Ingredients */}
-            {currentStepIngredients.length > 0 ? (
-              <View style={styles.ingredientsSection}>
-                <Text style={styles.sectionLabel}>
-                  Ingredients for this step
-                </Text>
-                {currentStepIngredients.map((ingredient, index) => (
-                  <View key={index} style={styles.ingredientItem}>
-                    <View style={styles.ingredientBullet} />
-                    <Text style={styles.ingredientText}>{ingredient}</Text>
-                  </View>
-                ))}
-              </View>
-            ) : null}
-
-            {/* Time Info */}
-            {isFirstStep && (recipe.prepTime || recipe.cookTime) && (
-              <View style={styles.timeSection}>
-                <Text style={styles.sectionLabel}>Time Information</Text>
-                <View style={styles.timeRow}>
-                  {recipe.prepTime && (
-                    <View style={styles.timeItem}>
-                      <Clock size={16} color={theme.colors.neutral[600]} />
-                      <Text style={styles.timeText}>
-                        Prep: {recipe.prepTime}m
-                      </Text>
-                    </View>
-                  )}
-                  {recipe.cookTime && (
-                    <View style={styles.timeItem}>
-                      <ChefHat size={16} color={theme.colors.neutral[600]} />
-                      <Text style={styles.timeText}>
-                        Cook: {recipe.cookTime}m
-                      </Text>
-                    </View>
-                  )}
-                </View>
+          {/* Step header */}
+          <View style={styles.stepHeader}>
+            <Text style={styles.stepTitle}>Step {currentStep + 1}</Text>
+            {isLastStep && (
+              <View style={styles.finalStepBadge}>
+                <CheckCircle2
+                  size={16}
+                  color={theme.colors.success}
+                  style={{ marginRight: 4 }}
+                />
+                <Text style={styles.finalStepText}>Final Step</Text>
               </View>
             )}
-          </ScrollView>
-        </Animated.View>
+          </View>
+
+          {/* Instruction */}
+          <View style={styles.instructionSection}>
+            <Text style={styles.sectionLabel}>Instruction</Text>
+            <Text style={styles.instructionText}>
+              {recipe.instructions[currentStep]}
+            </Text>
+          </View>
+
+          {/* Ingredients */}
+          {currentStepIngredients.length > 0 ? (
+            <View style={styles.ingredientsSection}>
+              <Text style={styles.sectionLabel}>
+                Ingredients for this step
+              </Text>
+              {currentStepIngredients.map((ingredient, index) => (
+                <View key={index} style={styles.ingredientItem}>
+                  <View style={styles.ingredientBullet} />
+                  <Text style={styles.ingredientText}>{ingredient}</Text>
+                </View>
+              ))}
+            </View>
+          ) : null}
+
+          {/* Time Info */}
+          {isFirstStep && (recipe.prepTime || recipe.cookTime) && (
+            <View style={styles.timeSection}>
+              <Text style={styles.sectionLabel}>Time Information</Text>
+              <View style={styles.timeRow}>
+                {recipe.prepTime && (
+                  <View style={styles.timeItem}>
+                    <Clock size={16} color={theme.colors.neutral[600]} />
+                    <Text style={styles.timeText}>
+                      Prep: {recipe.prepTime}m
+                    </Text>
+                  </View>
+                )}
+                {recipe.cookTime && (
+                  <View style={styles.timeItem}>
+                    <ChefHat size={16} color={theme.colors.neutral[600]} />
+                    <Text style={styles.timeText}>
+                      Cook: {recipe.cookTime}m
+                    </Text>
+                  </View>
+                )}
+              </View>
+            </View>
+          )}
+        </ScrollView>
 
         {/* Footer - fixed */}
         <View style={styles.footer}>
@@ -346,9 +275,6 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     backgroundColor: theme.colors.background,
-  },
-  scrollView: {
-    flex: 1,
   },
   scrollContent: {
     padding: theme.spacing.xl,
