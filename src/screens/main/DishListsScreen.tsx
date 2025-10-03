@@ -489,7 +489,6 @@ const styles = StyleSheet.create({
     borderRadius: theme.borderRadius.md,
     paddingHorizontal: theme.spacing.lg,
     paddingVertical: theme.spacing.md,
-    ...theme.shadows.sm,
   },
   searchIcon: { marginRight: theme.spacing.md },
   searchInput: {

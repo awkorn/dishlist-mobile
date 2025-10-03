@@ -1,10 +1,10 @@
-import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 
 export type RootStackParamList = {
   // Auth screens
   Login: undefined;
   SignUp: undefined;
-  
+
   // Main app screens
   Home: undefined;
   CreateDishList: undefined;
@@ -17,6 +17,8 @@ export type RootStackParamList = {
   };
   AddRecipe: {
     dishListId: string;
+    recipeId?: string; 
+    recipe?: any;
   };
   InviteCollaborator: {
     dishListId: string;
@@ -28,15 +30,15 @@ export type RootStackParamList = {
 
 export type DishListDetailScreenProps = NativeStackScreenProps<
   RootStackParamList,
-  'DishListDetail'
+  "DishListDetail"
 >;
 
 export type LoginScreenProps = NativeStackScreenProps<
   RootStackParamList,
-  'Login'
+  "Login"
 >;
 
 export type SignUpScreenProps = NativeStackScreenProps<
   RootStackParamList,
-  'SignUp'
+  "SignUp"
 >;

@@ -31,6 +31,7 @@ import ActionSheet, {
 import { QueryErrorBoundary } from "../../providers/ErrorBoundary";
 import NutritionSection from "../../components/recipe/NutritionSection";
 import CookModeModal from "../../components/recipe/CookModeModal";
+import { useAuth } from "../../providers/AuthProvider/AuthContext";
 
 interface RecipeDetailScreenProps {
   route: {
@@ -51,6 +52,7 @@ export default function RecipeDetailScreen({
   navigation,
 }: RecipeDetailScreenProps) {
   const { recipeId } = route.params;
+  const { user } = useAuth();
   const [showActionSheet, setShowActionSheet] = useState(false);
   const [progress, setProgress] = useState<RecipeProgress>({
     checkedIngredients: new Set(),
@@ -192,22 +194,24 @@ export default function RecipeDetailScreen({
       },
     ];
 
-    const canEdit = true;
-    if (canEdit) {
+    // Only show edit option if user is the recipe owner
+    const isOwner = recipe.creator.uid === user?.uid;
+    if (isOwner) {
       options.splice(1, 0, {
         title: "Edit Recipe",
         icon: Edit3,
         onPress: () => {
-          Alert.alert(
-            "Coming Soon",
-            "Edit recipe functionality will be implemented next."
-          );
+          navigation.navigate("AddRecipe", {
+            dishListId: "", // Not needed for edit mode
+            recipeId: recipe.id,
+            recipe: recipe,
+          });
         },
       });
     }
 
     return options;
-  }, [recipe, progress.checkedIngredients]);
+  }, [recipe, progress.checkedIngredients, navigation]);
 
   const handleCookMode = () => {
     setShowCookMode(true);

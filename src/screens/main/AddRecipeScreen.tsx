@@ -20,6 +20,7 @@ import { theme } from "../../styles/theme";
 import { typography } from "../../styles/typography";
 import Button from "../../components/ui/Button";
 import { createRecipe } from "../../services/api";
+import { useUpdateRecipe } from "../../hooks/mutations/useRecipeMutations";
 import { uploadImage } from "../../services/firebase";
 import { queryKeys } from "../../lib/queryKeys";
 import NutritionFacts from "../../components/recipe/NutritionFacts";
@@ -29,6 +30,8 @@ interface AddRecipeScreenProps {
   route: {
     params: {
       dishListId: string;
+      recipeId?: string;
+      recipe?: any;
     };
   };
   navigation: any;
@@ -57,23 +60,18 @@ const TimeInput: React.FC<TimeInputProps> = ({
 }) => {
   const [inputValue, setInputValue] = useState(value.toString());
 
-  // Update local state when prop changes
   useEffect(() => {
     setInputValue(value.toString());
   }, [value]);
 
   const handleTextChange = (text: string) => {
-    // Only allow numbers
     const numericText = text.replace(/[^0-9]/g, "");
     setInputValue(numericText);
-
-    // Convert to number and update parent
     const numValue = parseInt(numericText) || 0;
     onChange(Math.max(0, numValue));
   };
 
   const handleEndEditing = () => {
-    // Ensure we have a valid number when editing ends
     const numValue = parseInt(inputValue) || 0;
     const validValue = Math.max(0, numValue);
     setInputValue(validValue.toString());
@@ -98,31 +96,42 @@ const TimeInput: React.FC<TimeInputProps> = ({
     </View>
   );
 };
+
 export default function AddRecipeScreen({
   route,
   navigation,
 }: AddRecipeScreenProps) {
-  const { dishListId } = route.params;
+  const { dishListId, recipeId, recipe: editRecipe } = route.params;
+  const isEditMode = !!recipeId && !!editRecipe;
   const queryClient = useQueryClient();
 
-  // Form state
-  const [title, setTitle] = useState("");
-  const [prepTime, setPrepTime] = useState(0);
-  const [cookTime, setCookTime] = useState(0);
-  const [servings, setServings] = useState(1);
-  const [ingredients, setIngredients] = useState([""]);
-  const [instructions, setInstructions] = useState([""]);
-  const [imageUri, setImageUri] = useState<string | null>(null);
+  // Form state - initialize with edit data if available
+  const [title, setTitle] = useState(editRecipe?.title || "");
+  const [prepTime, setPrepTime] = useState(editRecipe?.prepTime || 0);
+  const [cookTime, setCookTime] = useState(editRecipe?.cookTime || 0);
+  const [servings, setServings] = useState(editRecipe?.servings || 1);
+  const [ingredients, setIngredients] = useState<string[]>(
+    editRecipe?.ingredients?.length > 0 ? editRecipe.ingredients : [""]
+  );
+  const [instructions, setInstructions] = useState<string[]>(
+    editRecipe?.instructions?.length > 0 ? editRecipe.instructions : [""]
+  );
+  const [imageUri, setImageUri] = useState<string | null>(
+    editRecipe?.imageUrl || null
+  );
+  const [imageChanged, setImageChanged] = useState(false);
   const [imageUploading, setImageUploading] = useState(false);
   const [calculatedNutrition, setCalculatedNutrition] =
-    useState<NutritionInfo | null>(null);
+    useState<NutritionInfo | null>(editRecipe?.nutrition || null);
+  const [originalIngredients] = useState<string[]>(
+    editRecipe?.ingredients || []
+  );
 
-  // Validation errors
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const totalTime = useMemo(() => prepTime + cookTime, [prepTime, cookTime]);
 
-  // Create recipe mutation
+  // Mutations
   const createRecipeMutation = useMutation({
     mutationFn: createRecipe,
     onSuccess: () => {
@@ -137,6 +146,14 @@ export default function AddRecipeScreen({
       );
     },
   });
+
+  const updateRecipeMutation = useUpdateRecipe();
+
+  // Check if ingredients changed (for nutrition clearing)
+  const ingredientsChanged = useMemo(() => {
+    if (!isEditMode) return false;
+    return JSON.stringify(ingredients) !== JSON.stringify(originalIngredients);
+  }, [ingredients, originalIngredients, isEditMode]);
 
   // Ingredient management
   const addIngredient = () => {
@@ -201,6 +218,7 @@ export default function AddRecipeScreen({
 
     if (!result.canceled) {
       setImageUri(result.assets[0].uri);
+      setImageChanged(true);
     }
   };
 
@@ -222,6 +240,7 @@ export default function AddRecipeScreen({
 
     if (!result.canceled) {
       setImageUri(result.assets[0].uri);
+      setImageChanged(true);
     }
   };
 
@@ -247,36 +266,57 @@ export default function AddRecipeScreen({
     return Object.keys(newErrors).length === 0;
   };
 
-  // Save recipe
+  // Save recipe (create or update)
   const handleSave = async () => {
     if (!validateForm()) {
       return;
     }
 
     try {
-      let imageUrl = null;
+      let finalImageUrl = imageUri;
 
-      // Upload image if selected
-      if (imageUri) {
+      // Upload new image if changed
+      if (imageChanged && imageUri && !imageUri.startsWith("http")) {
         setImageUploading(true);
-        imageUrl = await uploadImage(imageUri, "recipes");
+        finalImageUrl = await uploadImage(imageUri, "recipes");
         setImageUploading(false);
       }
 
       const validIngredients = ingredients.filter((ing) => ing.trim());
       const validInstructions = instructions.filter((inst) => inst.trim());
 
-      await createRecipeMutation.mutateAsync({
+      // Determine nutrition data
+      let nutritionData = calculatedNutrition;
+      if (isEditMode && ingredientsChanged) {
+        // Clear nutrition if ingredients changed
+        nutritionData = null;
+      }
+
+      const recipeData = {
         title: title.trim(),
         ingredients: validIngredients,
         instructions: validInstructions,
         prepTime: prepTime > 0 ? prepTime : undefined,
         cookTime: cookTime > 0 ? cookTime : undefined,
         servings: servings > 0 ? servings : undefined,
-        imageUrl,
-        nutrition: calculatedNutrition,
-        dishListId,
-      });
+        imageUrl: finalImageUrl,
+        nutrition: nutritionData,
+      };
+
+      if (isEditMode) {
+        // Update existing recipe
+        await updateRecipeMutation.mutateAsync({
+          recipeId: recipeId!,
+          data: recipeData,
+        });
+        navigation.goBack();
+      } else {
+        // Create new recipe
+        await createRecipeMutation.mutateAsync({
+          ...recipeData,
+          dishListId,
+        });
+      }
     } catch (error) {
       setImageUploading(false);
       console.error("Save recipe error:", error);
@@ -284,13 +324,15 @@ export default function AddRecipeScreen({
   };
 
   const handleCancel = () => {
-    if (
-      title.trim() ||
+    const hasChanges =
+      title.trim() !== (editRecipe?.title || "") ||
       ingredients.some((ing) => ing.trim()) ||
-      instructions.some((inst) => inst.trim())
-    ) {
+      instructions.some((inst) => inst.trim()) ||
+      imageChanged;
+
+    if (hasChanges) {
       Alert.alert(
-        "Discard Recipe?",
+        isEditMode ? "Discard Changes?" : "Discard Recipe?",
         "You have unsaved changes. Are you sure you want to go back?",
         [
           { text: "Keep Editing", style: "cancel" },
@@ -306,7 +348,10 @@ export default function AddRecipeScreen({
     }
   };
 
-  const isLoading = createRecipeMutation.isPending || imageUploading;
+  const isLoading =
+    createRecipeMutation.isPending ||
+    updateRecipeMutation.isPending ||
+    imageUploading;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -314,14 +359,15 @@ export default function AddRecipeScreen({
         style={styles.keyboardView}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
-        {/* Main content */}
         <View style={styles.main}>
           {/* Header */}
           <View style={styles.header}>
             <TouchableOpacity onPress={handleCancel} style={styles.backButton}>
               <ChevronLeft size={24} color={theme.colors.neutral[700]} />
             </TouchableOpacity>
-            <Text style={styles.headerTitle}>Add Recipe</Text>
+            <Text style={styles.headerTitle}>
+              {isEditMode ? "Edit Recipe" : "Add Recipe"}
+            </Text>
             <View style={styles.headerSpacer} />
           </View>
 
@@ -446,8 +492,16 @@ export default function AddRecipeScreen({
             </View>
 
             {/* Nutrition */}
+            {ingredientsChanged && calculatedNutrition && (
+              <View style={styles.nutritionWarning}>
+                <Text style={styles.nutritionWarningText}>
+                  ⚠️ Ingredients changed - nutrition data will be cleared.
+                  Recalculate after saving.
+                </Text>
+              </View>
+            )}
             <NutritionSection
-              nutrition={null} // Always start with no nutrition in creation flow
+              nutrition={ingredientsChanged ? null : calculatedNutrition}
               ingredients={ingredients.filter((ing) => ing.trim())}
               servings={servings}
               onNutritionCalculated={(nutritionData) => {
@@ -481,7 +535,7 @@ export default function AddRecipeScreen({
         {/* Footer pinned to bottom */}
         <SafeAreaView edges={["bottom"]} style={styles.footer}>
           <Button
-            title="Add Recipe"
+            title={isEditMode ? "Update Recipe" : "Add Recipe"}
             onPress={handleSave}
             loading={isLoading}
             disabled={isLoading}
@@ -679,6 +733,19 @@ const styles = StyleSheet.create({
     width: "100%",
     height: 150,
     resizeMode: "cover",
+  },
+  nutritionWarning: {
+    backgroundColor: "#FEF2F2",
+    padding: theme.spacing.lg,
+    borderRadius: theme.borderRadius.md,
+    marginBottom: theme.spacing.lg,
+    borderWidth: 1,
+    borderColor: "#FCA5A5",
+  },
+  nutritionWarningText: {
+    ...typography.caption,
+    color: "#991B1B",
+    lineHeight: 18,
   },
   footer: {
     paddingHorizontal: theme.spacing.xl,
