@@ -7,17 +7,30 @@ export type RootStackParamList = {
 
   // Main app screens
   Home: undefined;
-  CreateDishList: undefined;
+  CreateDishList:
+    | {
+        dishListId?: string;
+        dishList?: {
+          title: string;
+          description?: string;
+          visibility: "PUBLIC" | "PRIVATE";
+        };
+      }
+    | undefined;
   DishListDetail: {
     dishListId: string;
-    dishListTitle?: string;
   };
   EditDishList: {
     dishListId: string;
+    dishList: {
+      title: string;
+      description?: string;
+      visibility: "PUBLIC" | "PRIVATE";
+    };
   };
   AddRecipe: {
     dishListId: string;
-    recipeId?: string; 
+    recipeId?: string;
     recipe?: any;
   };
   InviteCollaborator: {

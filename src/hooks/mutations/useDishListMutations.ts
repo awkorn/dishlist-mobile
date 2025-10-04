@@ -4,6 +4,7 @@ import {
   pinDishList,
   unpinDishList,
   DishList,
+  updateDishList,
 } from "../../services/api";
 import { queryKeys } from "../../lib/queryKeys";
 import { Alert } from "react-native";
@@ -105,6 +106,105 @@ export const useCreateDishList = () => {
 
     onSettled: () => {
       // Ensure cache is fresh after mutation completes
+      queryClient.invalidateQueries({ queryKey: queryKeys.dishLists.all });
+    },
+  });
+};
+
+export const useUpdateDishList = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ dishListId, ...data }: {
+      dishListId: string;
+      title: string;
+      description?: string;
+      visibility: "PUBLIC" | "PRIVATE";
+    }) => updateDishList(dishListId, data),
+
+    onMutate: async ({ dishListId, title, description, visibility }) => {
+      // Cancel outgoing queries
+      await queryClient.cancelQueries({ queryKey: queryKeys.dishLists.all });
+
+      // Snapshot previous state
+      const previousDetail = queryClient.getQueryData(
+        queryKeys.dishLists.detail(dishListId)
+      );
+      const previousAllLists = queryClient.getQueryData<DishList[]>(
+        queryKeys.dishLists.list("all")
+      );
+      const previousMyLists = queryClient.getQueryData<DishList[]>(
+        queryKeys.dishLists.list("my")
+      );
+
+      // Optimistically update detail view
+      queryClient.setQueryData(
+        queryKeys.dishLists.detail(dishListId),
+        (old: any) => ({
+          ...old,
+          title,
+          description,
+          visibility,
+          updatedAt: new Date().toISOString(),
+        })
+      );
+
+      // Optimistically update list views
+      const updateInList = (lists: DishList[] | undefined) => {
+        if (!lists) return lists;
+        return lists.map((list) =>
+          list.id === dishListId
+            ? { ...list, title, description, visibility, updatedAt: new Date().toISOString() }
+            : list
+        );
+      };
+
+      queryClient.setQueryData(
+        queryKeys.dishLists.list("all"),
+        updateInList(previousAllLists)
+      );
+      queryClient.setQueryData(
+        queryKeys.dishLists.list("my"),
+        updateInList(previousMyLists)
+      );
+
+      return { previousDetail, previousAllLists, previousMyLists };
+    },
+
+    onError: (error, variables, context) => {
+      // Rollback
+      if (context?.previousDetail) {
+        queryClient.setQueryData(
+          queryKeys.dishLists.detail(variables.dishListId),
+          context.previousDetail
+        );
+      }
+      if (context?.previousAllLists) {
+        queryClient.setQueryData(
+          queryKeys.dishLists.list("all"),
+          context.previousAllLists
+        );
+      }
+      if (context?.previousMyLists) {
+        queryClient.setQueryData(
+          queryKeys.dishLists.list("my"),
+          context.previousMyLists
+        );
+      }
+
+      Alert.alert("Error", "Failed to update DishList. Please try again.");
+    },
+
+    onSuccess: (data, variables) => {
+      // Replace optimistic data with real server response
+      queryClient.setQueryData(
+        queryKeys.dishLists.detail(variables.dishListId),
+        data
+      );
+    },
+
+    onSettled: () => {
+      // Refresh to ensure consistency
       queryClient.invalidateQueries({ queryKey: queryKeys.dishLists.all });
     },
   });

@@ -49,7 +49,12 @@ const AuthenticatedApp = ({ navigation }: any) => {
   const renderActiveScreen = () => {
     switch (activeTab) {
       case "dishlist":
-        return <DishListsScreen navigation={navigation} isPrefetching={isPrefetching} />;
+        return (
+          <DishListsScreen
+            navigation={navigation}
+            isPrefetching={isPrefetching}
+          />
+        );
       case "grocery":
         return <PlaceholderScreen title="Grocery List" />;
       case "search":
@@ -59,7 +64,12 @@ const AuthenticatedApp = ({ navigation }: any) => {
       case "profile":
         return <PlaceholderScreen title="Profile" />;
       default:
-        return <DishListsScreen navigation={navigation} isPrefetching={isPrefetching} />;
+        return (
+          <DishListsScreen
+            navigation={navigation}
+            isPrefetching={isPrefetching}
+          />
+        );
     }
   };
 
@@ -99,6 +109,15 @@ export default function MainNavigator() {
           <Stack.Screen
             name="CreateDishList"
             component={CreateDishListScreen}
+            options={{
+              presentation: "modal",
+              gestureEnabled: true,
+              gestureDirection: "vertical",
+            }}
+          />
+          <Stack.Screen
+            name="EditDishList"
+            component={CreateDishListScreen} // Reusing screen for edit
             options={{
               presentation: "modal",
               gestureEnabled: true,

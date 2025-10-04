@@ -39,7 +39,6 @@ export default function DishListTile({ dishList }: DishListTileProps) {
   const handlePress = () => {
     navigation.navigate("DishListDetail", {
       dishListId: dishList.id,
-      dishListTitle: dishList.title,
     });
   };
 

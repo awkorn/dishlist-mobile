@@ -89,6 +89,18 @@ export const createDishList = async (data: {
   return response.data.dishList;
 };
 
+export const updateDishList = async (
+  id: string,
+  data: {
+    title: string;
+    description?: string;
+    visibility: "PUBLIC" | "PRIVATE";
+  }
+): Promise<DishList> => {
+  const response = await api.put(`/dishlists/${id}`, data);
+  return response.data.dishList;
+};
+
 export const getDishListDetail = async (
   id: string
 ): Promise<DishListDetail> => {

@@ -11,25 +11,42 @@ import {
   ScrollView,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useCreateDishList } from "../../hooks/mutations/useDishListMutations";
+import { useCreateDishList, useUpdateDishList } from "../../hooks/mutations/useDishListMutations";
 import { X, Globe, Lock } from "lucide-react-native";
 import { typography } from "../../styles/typography";
 import { theme } from "../../styles/theme";
 import Button from "../../components/ui/Button";
 
 interface CreateDishListScreenProps {
+  route: {
+    params?: {
+      dishListId?: string;
+      dishList?: {
+        title: string;
+        description?: string;
+        visibility: "PUBLIC" | "PRIVATE";
+      };
+    };
+  };
   navigation: any;
 }
 
 export default function CreateDishListScreen({
+  route,
   navigation,
 }: CreateDishListScreenProps) {
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [visibility, setVisibility] = useState<"PUBLIC" | "PRIVATE">("PUBLIC");
+  const { dishListId, dishList } = route.params || {};
+  const isEditMode = !!dishListId;
+
+  const [title, setTitle] = useState(dishList?.title || "");
+  const [description, setDescription] = useState(dishList?.description || "");
+  const [visibility, setVisibility] = useState<"PUBLIC" | "PRIVATE">(
+    dishList?.visibility || "PUBLIC"
+  );
   const [titleError, setTitleError] = useState("");
 
   const createDishListMutation = useCreateDishList();
+  const updateDishListMutation = useUpdateDishList();
 
   const validateTitle = (value: string) => {
     if (!value.trim()) {
@@ -56,7 +73,13 @@ export default function CreateDishListScreen({
   };
 
   const handleCancel = () => {
-    if (title.trim() || description.trim()) {
+    const hasChanges = isEditMode
+      ? title.trim() !== dishList?.title ||
+        description.trim() !== (dishList?.description || "") ||
+        visibility !== dishList?.visibility
+      : title.trim() || description.trim();
+
+    if (hasChanges) {
       Alert.alert(
         "Discard Changes?",
         "You have unsaved changes. Are you sure you want to go back?",
@@ -75,20 +98,26 @@ export default function CreateDishListScreen({
   };
 
   const handleCreate = async () => {
-    if (!validateTitle(title)) {
-      return;
-    }
+    if (!validateTitle(title)) return;
 
     try {
-      await createDishListMutation.mutateAsync({
-        title: title.trim(),
-        description: description.trim() || undefined,
-        visibility,
-      });
-
+      if (isEditMode) {
+        await updateDishListMutation.mutateAsync({
+          dishListId: dishListId!,
+          title: title.trim(),
+          description: description.trim() || undefined,
+          visibility,
+        });
+      } else {
+        await createDishListMutation.mutateAsync({
+          title: title.trim(),
+          description: description.trim() || undefined,
+          visibility,
+        });
+      }
       navigation.goBack();
     } catch (error) {
-      console.error("Create DishList error:", error);
+      console.error("Save DishList error:", error);
     }
   };
 
@@ -117,7 +146,9 @@ export default function CreateDishListScreen({
             <X size={24} color={theme.colors.neutral[600]} />
           </TouchableOpacity>
 
-          <Text style={styles.headerTitle}>Create new DishList</Text>
+          <Text style={styles.headerTitle}>
+            {isEditMode ? "Edit DishList" : "Create new DishList"}
+          </Text>
 
           <View style={styles.headerSpacer} />
         </View>
@@ -183,7 +214,11 @@ export default function CreateDishListScreen({
                 <View style={styles.visibilityHeader}>
                   <Globe
                     size={20}
-                    color={visibility === "PUBLIC" ? theme.colors.primary[500] : theme.colors.neutral[600]}
+                    color={
+                      visibility === "PUBLIC"
+                        ? theme.colors.primary[500]
+                        : theme.colors.neutral[600]
+                    }
                   />
                   <Text
                     style={[
@@ -207,7 +242,11 @@ export default function CreateDishListScreen({
                 <View style={styles.visibilityHeader}>
                   <Lock
                     size={20}
-                    color={visibility === "PRIVATE" ? theme.colors.primary[500] : theme.colors.neutral[600]}
+                    color={
+                      visibility === "PRIVATE"
+                        ? theme.colors.primary[500]
+                        : theme.colors.neutral[600]
+                    }
                   />
                   <Text
                     style={[
@@ -230,7 +269,7 @@ export default function CreateDishListScreen({
         {/* Footer Button */}
         <View style={styles.footer}>
           <Button
-            title="Create DishList"
+            title={isEditMode ? "Update DishList" : "Create DishList"}
             onPress={handleCreate}
             disabled={!canCreate}
             loading={isLoading}
@@ -272,7 +311,7 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    padding: theme.spacing['3xl'],
+    padding: theme.spacing["3xl"],
     marginTop: theme.spacing.md,
   },
   inputSection: {

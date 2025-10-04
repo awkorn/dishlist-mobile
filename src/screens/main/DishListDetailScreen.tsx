@@ -43,7 +43,7 @@ export default function DishListDetailScreen({
   route,
   navigation,
 }: DishListDetailScreenProps) {
-  const { dishListId, dishListTitle } = route.params;
+  const { dishListId } = route.params;
   const [searchQuery, setSearchQuery] = useState("");
   const [showActionSheet, setShowActionSheet] = useState(false);
 
@@ -55,7 +55,7 @@ export default function DishListDetailScreen({
     refetch,
     isRefetching,
   } = useQuery({
-    queryKey: ["dishList", dishListId],
+    queryKey: queryKeys.dishLists.detail(dishListId),
     queryFn: async () => {
       const result = await getDishListDetail(dishListId);
       return result;
@@ -88,7 +88,11 @@ export default function DishListDetailScreen({
         {
           title: "Edit DishList",
           icon: Edit3,
-          onPress: () => navigation.navigate("EditDishList", { dishListId }),
+          onPress: () =>
+            navigation.navigate("EditDishList", {
+              dishListId,
+              dishList,
+            }),
         },
         {
           title: "Add Recipe",
@@ -155,9 +159,7 @@ export default function DishListDetailScreen({
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={theme.colors.primary[500]} />
-          <Text style={styles.loadingText}>
-            Loading {dishListTitle || "DishList"}...
-          </Text>
+          <Text style={styles.loadingText}>Loading DishList...</Text>
         </View>
       </SafeAreaView>
     );
