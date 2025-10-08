@@ -31,6 +31,7 @@ import ActionSheet, {
 import { QueryErrorBoundary } from "../../providers/ErrorBoundary";
 import NutritionSection from "../../components/recipe/NutritionSection";
 import CookModeModal from "../../components/recipe/CookModeModal";
+import AddToDishListModal from "../../components/recipe/AddToDishListModal";
 import { useAuth } from "../../providers/AuthProvider/AuthContext";
 
 interface RecipeDetailScreenProps {
@@ -59,6 +60,7 @@ export default function RecipeDetailScreen({
     completedSteps: new Set(),
   });
   const [showCookMode, setShowCookMode] = useState(false);
+  const [showAddToDishListModal, setShowAddToDishListModal] = useState(false);
 
   const {
     data: recipe,
@@ -166,10 +168,7 @@ export default function RecipeDetailScreen({
         title: "Add to DishList",
         icon: Plus,
         onPress: () => {
-          Alert.alert(
-            "Coming Soon",
-            "Add to DishList functionality will be implemented next."
-          );
+          setShowAddToDishListModal(true);
         },
       },
       {
@@ -463,6 +462,12 @@ export default function RecipeDetailScreen({
             prepTime: recipe.prepTime,
             cookTime: recipe.cookTime,
           }}
+        />
+        <AddToDishListModal
+          visible={showAddToDishListModal}
+          onClose={() => setShowAddToDishListModal(false)}
+          recipeId={recipeId}
+          recipeTitle={recipe.title}
         />
       </SafeAreaView>
     </QueryErrorBoundary>
