@@ -152,7 +152,7 @@ export default function AddToDishListModal({
     <Modal
       visible={visible}
       onClose={onClose}
-      title={`Add "${recipeTitle}" to DishList`}
+      title={`Add to DishList`}
     >
       <View style={styles.container}>
         {isLoading ? (

@@ -182,4 +182,11 @@ export const getRecipeDishLists = async (
   return response.data.dishListIds;
 };
 
+export const removeRecipeFromDishList = async (
+  dishListId: string,
+  recipeId: string
+): Promise<void> => {
+  await api.delete(`/dishlists/${dishListId}/recipes/${recipeId}`);
+};
+
 export default api;

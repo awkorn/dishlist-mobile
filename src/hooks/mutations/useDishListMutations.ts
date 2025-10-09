@@ -5,6 +5,7 @@ import {
   unpinDishList,
   DishList,
   updateDishList,
+  removeRecipeFromDishList
 } from "../../services/api";
 import { queryKeys } from "../../lib/queryKeys";
 import { Alert } from "react-native";
@@ -419,6 +420,68 @@ export const useDeleteDishList = () => {
       // Invalidate lists to ensure consistency
       queryClient.invalidateQueries({
         queryKey: queryKeys.dishLists.all,
+      });
+    },
+  });
+};
+
+/**
+ * Hook for removing a recipe from a DishList
+ */
+export const useRemoveRecipeFromDishList = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ dishListId, recipeId }: { dishListId: string; recipeId: string }) =>
+      removeRecipeFromDishList(dishListId, recipeId),
+
+    onMutate: async ({ dishListId, recipeId }) => {
+      // Cancel outgoing queries
+      await queryClient.cancelQueries({ queryKey: queryKeys.dishLists.detail(dishListId) });
+
+      // Snapshot previous state
+      const previousDetail = queryClient.getQueryData(
+        queryKeys.dishLists.detail(dishListId)
+      );
+
+      // Optimistically update - remove recipe from detail view
+      queryClient.setQueryData(
+        queryKeys.dishLists.detail(dishListId),
+        (old: any) => {
+          if (!old) return old;
+          return {
+            ...old,
+            recipes: old.recipes.filter((r: any) => r.id !== recipeId),
+            recipeCount: old.recipeCount - 1,
+          };
+        }
+      );
+
+      return { previousDetail };
+    },
+
+    onError: (error, variables, context) => {
+      // Rollback
+      if (context?.previousDetail) {
+        queryClient.setQueryData(
+          queryKeys.dishLists.detail(variables.dishListId),
+          context.previousDetail
+        );
+      }
+
+      Alert.alert("Error", "Failed to remove recipe. Please try again.");
+    },
+
+    onSuccess: (_, variables) => {
+      // Invalidate to ensure consistency
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.dishLists.detail(variables.dishListId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.dishLists.all,
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["recipe", variables.recipeId, "dishlists"],
       });
     },
   });

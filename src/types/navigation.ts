@@ -38,6 +38,7 @@ export type RootStackParamList = {
   };
   RecipeDetail: {
     recipeId: string;
+    dishListId?: string;
   };
 };
 

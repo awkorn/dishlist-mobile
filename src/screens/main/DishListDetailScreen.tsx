@@ -298,7 +298,10 @@ export default function DishListDetailScreen({
                   key={recipe.id}
                   recipe={recipe}
                   onPress={() =>
-                    navigation.navigate("RecipeDetail", { recipeId: recipe.id })
+                    navigation.navigate("RecipeDetail", {
+                      recipeId: recipe.id,
+                      dishListId: dishListId, 
+                    })
                   }
                 />
               ))}

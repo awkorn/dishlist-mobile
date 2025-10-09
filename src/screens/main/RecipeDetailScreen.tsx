@@ -19,12 +19,13 @@ import {
   Plus,
   Edit3,
   ShoppingCart,
+  Trash2,
 } from "lucide-react-native";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { typography } from "../../styles/typography";
 import { theme } from "../../styles/theme";
-import { getRecipe } from "../../services/api";
+import { getRecipe, getDishListDetail } from "../../services/api";
 import ActionSheet, {
   ActionSheetOption,
 } from "../../components/ui/ActionSheet";
@@ -33,11 +34,14 @@ import NutritionSection from "../../components/recipe/NutritionSection";
 import CookModeModal from "../../components/recipe/CookModeModal";
 import AddToDishListModal from "../../components/recipe/AddToDishListModal";
 import { useAuth } from "../../providers/AuthProvider/AuthContext";
+import { useRemoveRecipeFromDishList } from "../../hooks/mutations/useDishListMutations";
+import { queryKeys } from "../../lib/queryKeys";
 
 interface RecipeDetailScreenProps {
   route: {
     params: {
       recipeId: string;
+      dishListId?: string;
     };
   };
   navigation: any;
@@ -52,15 +56,27 @@ export default function RecipeDetailScreen({
   route,
   navigation,
 }: RecipeDetailScreenProps) {
-  const { recipeId } = route.params;
+  const { recipeId, dishListId } = route.params;
   const { user } = useAuth();
+  const queryClient = useQueryClient();
+
   const [showActionSheet, setShowActionSheet] = useState(false);
+  const [showCookMode, setShowCookMode] = useState(false);
+  const [showAddToDishListModal, setShowAddToDishListModal] = useState(false);
   const [progress, setProgress] = useState<RecipeProgress>({
     checkedIngredients: new Set(),
     completedSteps: new Set(),
   });
-  const [showCookMode, setShowCookMode] = useState(false);
-  const [showAddToDishListModal, setShowAddToDishListModal] = useState(false);
+
+  const removeRecipeMutation = useRemoveRecipeFromDishList();
+
+  // Load DishList for permissions if dishListId is provided
+  const { data: dishList } = useQuery({
+    queryKey: queryKeys.dishLists.detail(dishListId || ""),
+    queryFn: () => getDishListDetail(dishListId!),
+    enabled: !!dishListId,
+    staleTime: 5 * 60 * 1000,
+  });
 
   const {
     data: recipe,
@@ -73,150 +89,170 @@ export default function RecipeDetailScreen({
     staleTime: 5 * 60 * 1000,
   });
 
-  const queryClient = useQueryClient();
-
+  // === Local Storage Progress ===
   useEffect(() => {
     const loadProgress = async () => {
       try {
-        const savedProgress = await AsyncStorage.getItem(
-          `recipe_progress_${recipeId}`
-        );
-        if (savedProgress) {
-          const parsed = JSON.parse(savedProgress);
+        const saved = await AsyncStorage.getItem(`recipe_progress_${recipeId}`);
+        if (saved) {
+          const parsed = JSON.parse(saved);
           setProgress({
             checkedIngredients: new Set(parsed.checkedIngredients || []),
             completedSteps: new Set(parsed.completedSteps || []),
           });
         }
-      } catch (error) {
-        console.warn("Failed to load recipe progress:", error);
+      } catch (e) {
+        console.warn("Failed to load recipe progress:", e);
       }
     };
     loadProgress();
   }, [recipeId]);
 
   const saveProgress = useCallback(
-    async (newProgress: RecipeProgress) => {
+    async (p: RecipeProgress) => {
       try {
         await AsyncStorage.setItem(
           `recipe_progress_${recipeId}`,
           JSON.stringify({
-            checkedIngredients: Array.from(newProgress.checkedIngredients),
-            completedSteps: Array.from(newProgress.completedSteps),
+            checkedIngredients: Array.from(p.checkedIngredients),
+            completedSteps: Array.from(p.completedSteps),
           })
         );
-      } catch (error) {
-        console.warn("Failed to save recipe progress:", error);
+      } catch (e) {
+        console.warn("Failed to save recipe progress:", e);
       }
     },
     [recipeId]
   );
 
   const toggleIngredient = useCallback(
-    (index: number) => {
+    (i: number) => {
       setProgress((prev) => {
-        const newChecked = new Set(prev.checkedIngredients);
-        if (newChecked.has(index)) {
-          newChecked.delete(index);
-        } else {
-          newChecked.add(index);
-        }
-        const newProgress = { ...prev, checkedIngredients: newChecked };
-        saveProgress(newProgress);
-        return newProgress;
+        const next = new Set(prev.checkedIngredients);
+        next.has(i) ? next.delete(i) : next.add(i);
+        const updated = { ...prev, checkedIngredients: next };
+        saveProgress(updated);
+        return updated;
       });
     },
     [saveProgress]
   );
 
   const toggleStep = useCallback(
-    (index: number) => {
+    (i: number) => {
       setProgress((prev) => {
-        const newCompleted = new Set(prev.completedSteps);
-        if (newCompleted.has(index)) {
-          newCompleted.delete(index);
-        } else {
-          newCompleted.add(index);
-        }
-        const newProgress = { ...prev, completedSteps: newCompleted };
-        saveProgress(newProgress);
-        return newProgress;
+        const next = new Set(prev.completedSteps);
+        next.has(i) ? next.delete(i) : next.add(i);
+        const updated = { ...prev, completedSteps: next };
+        saveProgress(updated);
+        return updated;
       });
     },
     [saveProgress]
   );
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  };
+  // === DishList Permissions ===
+  const canRemoveFromDishList = useMemo(() => {
+    if (!dishListId || !dishList) return false;
+    return dishList.isOwner || dishList.isCollaborator;
+  }, [dishListId, dishList]);
 
-  const totalTime = useMemo(() => {
-    if (!recipe) return 0;
-    return (recipe.prepTime || 0) + (recipe.cookTime || 0);
-  }, [recipe]);
+  const handleRemoveFromDishList = useCallback(() => {
+    if (!dishListId) return;
+    Alert.alert(
+      "Remove Recipe",
+      `Remove "${recipe?.title}" from this DishList?`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Remove",
+          style: "destructive",
+          onPress: async () => {
+            await removeRecipeMutation.mutateAsync({ dishListId, recipeId });
+            navigation.goBack();
+          },
+        },
+      ]
+    );
+  }, [dishListId, recipeId, recipe, removeRecipeMutation, navigation]);
 
+  // === Action Sheet Options ===
   const actionSheetOptions: ActionSheetOption[] = useMemo(() => {
     if (!recipe) return [];
 
-    const options: ActionSheetOption[] = [
+    const opts: ActionSheetOption[] = [
       {
         title: "Add to DishList",
         icon: Plus,
-        onPress: () => {
-          setShowAddToDishListModal(true);
-        },
+        onPress: () => setShowAddToDishListModal(true),
       },
       {
         title: "Add to Grocery List",
         icon: ShoppingCart,
         onPress: () => {
-          const uncheckedIngredients =
+          const unchecked =
             recipe.ingredients?.filter(
-              (_, index) => !progress.checkedIngredients.has(index)
+              (_, i) => !progress.checkedIngredients.has(i)
             ) || [];
-
-          if (uncheckedIngredients.length === 0) {
+          if (unchecked.length === 0) {
             Alert.alert("No Items", "All ingredients are already checked off.");
             return;
           }
-
           Alert.alert(
             "Added to Grocery List",
-            `${uncheckedIngredients.length} ingredients added to your grocery list.`
+            `${unchecked.length} ingredients added to your grocery list.`
           );
         },
       },
     ];
 
-    // Only show edit option if user is the recipe owner
     const isOwner = recipe.creator.uid === user?.uid;
     if (isOwner) {
-      options.splice(1, 0, {
+      opts.splice(1, 0, {
         title: "Edit Recipe",
         icon: Edit3,
-        onPress: () => {
+        onPress: () =>
           navigation.navigate("AddRecipe", {
-            dishListId: "", // Not needed for edit mode
+            dishListId: "",
             recipeId: recipe.id,
-            recipe: recipe,
-          });
-        },
+            recipe,
+          }),
       });
     }
 
-    return options;
-  }, [recipe, progress.checkedIngredients, navigation]);
+    if (canRemoveFromDishList) {
+      opts.push({
+        title: "Remove from DishList",
+        icon: Trash2,
+        destructive: true,
+        onPress: handleRemoveFromDishList,
+      });
+    }
 
-  const handleCookMode = () => {
-    setShowCookMode(true);
-  };
+    return opts;
+  }, [
+    recipe,
+    progress.checkedIngredients,
+    navigation,
+    canRemoveFromDishList,
+    handleRemoveFromDishList,
+    user,
+  ]);
 
-  if (isLoading) {
+  const totalTime = useMemo(
+    () => (recipe ? (recipe.prepTime || 0) + (recipe.cookTime || 0) : 0),
+    [recipe]
+  );
+
+  const formatDate = (d: string) =>
+    new Date(d).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+
+  // === Loading/Error states ===
+  if (isLoading)
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
@@ -225,9 +261,8 @@ export default function RecipeDetailScreen({
         </View>
       </SafeAreaView>
     );
-  }
 
-  if (isError || !recipe) {
+  if (isError || !recipe)
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.errorContainer}>
@@ -241,7 +276,6 @@ export default function RecipeDetailScreen({
         </View>
       </SafeAreaView>
     );
-  }
 
   return (
     <QueryErrorBoundary
@@ -250,6 +284,7 @@ export default function RecipeDetailScreen({
       message="Unable to display recipe content."
     >
       <SafeAreaView style={styles.container}>
+        {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity
             onPress={() => navigation.goBack()}
@@ -257,7 +292,6 @@ export default function RecipeDetailScreen({
           >
             <ChevronLeft size={24} color={theme.colors.neutral[700]} />
           </TouchableOpacity>
-
           <TouchableOpacity
             onPress={() => setShowActionSheet(true)}
             style={styles.menuButton}
@@ -266,6 +300,7 @@ export default function RecipeDetailScreen({
           </TouchableOpacity>
         </View>
 
+        {/* Main content */}
         <ScrollView
           style={styles.scrollContainer}
           contentContainerStyle={styles.scrollContent}
@@ -273,7 +308,7 @@ export default function RecipeDetailScreen({
         >
           <Text style={styles.title}>{recipe.title}</Text>
 
-          {/* Time & Servings Row */}
+          {/* Metadata */}
           <View style={styles.metadataRow}>
             {recipe.prepTime && (
               <View style={styles.metadataItem}>
@@ -286,7 +321,6 @@ export default function RecipeDetailScreen({
                 </View>
               </View>
             )}
-
             {recipe.cookTime && (
               <View style={styles.metadataItem}>
                 <ChefHat size={16} color={theme.colors.neutral[600]} />
@@ -298,7 +332,6 @@ export default function RecipeDetailScreen({
                 </View>
               </View>
             )}
-
             {totalTime > 0 && (
               <View style={styles.metadataItem}>
                 <Clock size={16} color={theme.colors.primary[600]} />
@@ -310,7 +343,6 @@ export default function RecipeDetailScreen({
                 </View>
               </View>
             )}
-
             {recipe.servings && (
               <View style={styles.metadataItem}>
                 <Users size={16} color={theme.colors.neutral[600]} />
@@ -322,127 +354,94 @@ export default function RecipeDetailScreen({
             )}
           </View>
 
-          {/* Created Date Row */}
+          {/* Created date */}
           <View style={styles.createdDateRow}>
             <Text style={styles.createdDate}>
               Created {formatDate(recipe.createdAt)}
             </Text>
           </View>
 
+          {/* Cook mode */}
           <TouchableOpacity
             style={styles.cookModeButton}
-            onPress={handleCookMode}
+            onPress={() => setShowCookMode(true)}
           >
             <PlayCircle size={20} color="#00295B" />
             <Text style={styles.cookModeText}>Cook Mode</Text>
           </TouchableOpacity>
 
+          {/* Ingredients */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Ingredients</Text>
-            {recipe.ingredients?.map((ingredient, index) => (
+            {recipe.ingredients?.map((ing, i) => (
               <TouchableOpacity
-                key={index}
+                key={i}
                 style={styles.ingredientRow}
-                onPress={() => toggleIngredient(index)}
+                onPress={() => toggleIngredient(i)}
               >
                 <View style={styles.checkbox}>
-                  {progress.checkedIngredients.has(index) && (
+                  {progress.checkedIngredients.has(i) && (
                     <View style={styles.checkboxFilled} />
                   )}
                 </View>
                 <Text
                   style={[
                     styles.ingredientText,
-                    progress.checkedIngredients.has(index) && styles.crossedOut,
+                    progress.checkedIngredients.has(i) && styles.crossedOut,
                   ]}
                 >
-                  {ingredient}
+                  {ing}
                 </Text>
               </TouchableOpacity>
             ))}
           </View>
 
+          {/* Instructions */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Instructions</Text>
-            {recipe.instructions?.map((instruction, index) => (
+            {recipe.instructions?.map((inst, i) => (
               <TouchableOpacity
-                key={index}
+                key={i}
                 style={styles.instructionRow}
-                onPress={() => toggleStep(index)}
+                onPress={() => toggleStep(i)}
               >
                 <View style={styles.stepNumber}>
                   <Text
                     style={[
                       styles.stepNumberText,
-                      progress.completedSteps.has(index) &&
+                      progress.completedSteps.has(i) &&
                         styles.completedStepNumber,
                     ]}
                   >
-                    {index + 1}
+                    {i + 1}
                   </Text>
                 </View>
                 <Text
                   style={[
                     styles.instructionText,
-                    progress.completedSteps.has(index) && styles.crossedOut,
+                    progress.completedSteps.has(i) && styles.crossedOut,
                   ]}
                 >
-                  {instruction}
+                  {inst}
                 </Text>
               </TouchableOpacity>
             ))}
           </View>
 
+          {/* Nutrition */}
           <View style={styles.section}>
             <NutritionSection
               nutrition={recipe.nutrition}
               ingredients={recipe.ingredients}
               servings={recipe.servings || 1}
               recipeId={recipe.id}
-              onNutritionCalculated={(nutritionData) => {
-                queryClient.setQueryData(
-                  ["recipe", recipeId],
-                  (oldData: any) => {
-                    if (!oldData) return oldData;
-                    return {
-                      ...oldData,
-                      nutrition: nutritionData,
-                    };
-                  }
+              onNutritionCalculated={(data) => {
+                queryClient.setQueryData(["recipe", recipeId], (old: any) =>
+                  old ? { ...old, nutrition: data } : old
                 );
-
-                const queryCache = queryClient.getQueryCache();
-                const dishListQueries = queryCache.findAll({
-                  queryKey: ["dishList"],
-                  type: "active",
-                });
-
-                dishListQueries.forEach((query) => {
-                  const dishListData = query.state.data as any;
-                  if (dishListData?.recipes) {
-                    const updatedData = {
-                      ...dishListData,
-                      recipes: dishListData.recipes.map((r: any) =>
-                        r.id === recipeId
-                          ? { ...r, nutrition: nutritionData }
-                          : r
-                      ),
-                    };
-                    queryClient.setQueryData(query.queryKey, updatedData);
-                  }
-                });
               }}
             />
           </View>
-
-          {recipe.imageUrl && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Photos</Text>
-              <Text style={styles.placeholderText}>
-                Photo display coming soon
-              </Text>
-            </View>
-          )}
         </ScrollView>
 
         <ActionSheet
@@ -475,20 +474,14 @@ export default function RecipeDetailScreen({
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: theme.colors.background,
-  },
+  container: { flex: 1, backgroundColor: theme.colors.background },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     gap: theme.spacing.lg,
   },
-  loadingText: {
-    ...typography.body,
-    color: theme.colors.neutral[600],
-  },
+  loadingText: { ...typography.body, color: theme.colors.neutral[600] },
   errorContainer: {
     flex: 1,
     justifyContent: "center",
@@ -507,10 +500,7 @@ const styles = StyleSheet.create({
     paddingVertical: theme.spacing.md,
     borderRadius: theme.borderRadius.md,
   },
-  retryButtonText: {
-    ...typography.button,
-    color: "white",
-  },
+  retryButtonText: { ...typography.button, color: "white" },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -518,15 +508,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.spacing.xl,
     paddingVertical: theme.spacing.lg,
   },
-  backButton: {
-    padding: theme.spacing.xs,
-  },
-  menuButton: {
-    padding: theme.spacing.xs,
-  },
-  scrollContainer: {
-    flex: 1,
-  },
+  backButton: { padding: theme.spacing.xs },
+  menuButton: { padding: theme.spacing.xs },
+  scrollContainer: { flex: 1 },
   scrollContent: {
     paddingHorizontal: theme.spacing.xl,
     paddingBottom: theme.spacing["4xl"],
@@ -539,6 +523,8 @@ const styles = StyleSheet.create({
   metadataRow: {
     flexDirection: "row",
     marginBottom: theme.spacing.lg,
+    flexWrap: "wrap",
+    gap: theme.spacing.md,
   },
   metadataItem: {
     flexDirection: "row",
@@ -546,34 +532,21 @@ const styles = StyleSheet.create({
     gap: theme.spacing.sm,
     minWidth: 95,
   },
-  metadataTextGroup: {
-    flexDirection: "column",
-  },
-  metadataLabel: {
-    ...typography.caption,
-    color: theme.colors.neutral[600],
-  },
+  metadataTextGroup: { flexDirection: "column" },
+  metadataLabel: { ...typography.caption, color: theme.colors.neutral[600] },
   metadataValue: {
     ...typography.body,
     fontWeight: "600",
     color: theme.colors.neutral[800],
   },
-  totalTimeValue: {
-    color: theme.colors.neutral[600],
-  },
+  totalTimeValue: { color: theme.colors.neutral[600] },
   createdDateRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: theme.spacing.sm,
     marginBottom: theme.spacing.xl,
     borderBottomWidth: 1,
-    borderBottomColor: theme.colors.neutral[500],
+    borderBottomColor: theme.colors.neutral[300],
+    paddingBottom: theme.spacing.sm,
   },
-  createdDate: {
-    ...typography.caption,
-    color: theme.colors.neutral[500],
-    marginBottom: theme.spacing.md,
-  },
+  createdDate: { ...typography.caption, color: theme.colors.neutral[500] },
   cookModeButton: {
     flexDirection: "row",
     alignItems: "center",
@@ -629,10 +602,7 @@ const styles = StyleSheet.create({
     color: theme.colors.neutral[800],
     flex: 1,
   },
-  crossedOut: {
-    textDecorationLine: "line-through",
-    opacity: 0.6,
-  },
+  crossedOut: { textDecorationLine: "line-through", opacity: 0.6 },
   instructionRow: {
     flexDirection: "row",
     alignItems: "flex-start",
@@ -654,18 +624,11 @@ const styles = StyleSheet.create({
     color: theme.colors.neutral[700],
     fontSize: 12,
   },
-  completedStepNumber: {
-    color: theme.colors.primary[500],
-  },
+  completedStepNumber: { color: theme.colors.primary[500] },
   instructionText: {
     ...typography.body,
     color: theme.colors.neutral[800],
     flex: 1,
     lineHeight: 20,
-  },
-  placeholderText: {
-    ...typography.body,
-    color: theme.colors.neutral[500],
-    fontStyle: "italic",
   },
 });
