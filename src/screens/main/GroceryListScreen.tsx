@@ -14,8 +14,10 @@ import { Swipeable } from "react-native-gesture-handler";
 import { theme } from "../../styles/theme";
 import { typography } from "../../styles/typography";
 import { groceryStorage, GroceryItem } from "../../services/groceryStorage";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function GroceryListScreen() {
+  const insets = useSafeAreaInsets();
   const [items, setItems] = useState<GroceryItem[]>([]);
   const [isAdding, setIsAdding] = useState(false);
   const [newItemText, setNewItemText] = useState("");
@@ -99,44 +101,40 @@ export default function GroceryListScreen() {
   const allChecked = items.length > 0 && items.every((i) => i.checked);
 
   return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: theme.colors.surface }]}
-      edges={["top"]}
-    >
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.title}>Grocery List</Text>
-        <View style={styles.headerButtons}>
-          <TouchableOpacity
-            style={styles.headerButton}
-            onPress={handleCheckAll}
-            disabled={items.length === 0}
-          >
-            <Text
-              style={[
-                styles.headerButtonText,
-                items.length === 0 && styles.disabledText,
-              ]}
+    <View style={styles.container}>
+      {/* Header - extends to top of screen */}
+      <SafeAreaView edges={["top"]} style={styles.headerSafeArea}>
+        <View style={styles.header}>
+          <Text style={styles.title}>Grocery List</Text>
+          <View style={styles.headerButtons}>
+            <TouchableOpacity
+              style={styles.headerButton}
+              onPress={handleCheckAll}
+              disabled={items.length === 0}
             >
-              {allChecked ? "Uncheck All" : "Check All"}
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.headerButton}
-            onPress={handleClearChecked}
-          >
-            <Text style={styles.headerButtonText}>Clear Checked</Text>
-          </TouchableOpacity>
+              <Text
+                style={[
+                  styles.headerButtonText,
+                  items.length === 0 && styles.disabledText,
+                ]}
+              >
+                {allChecked ? "Uncheck All" : "Check All"}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.headerButton}
+              onPress={handleClearChecked}
+            >
+              <Text style={styles.headerButtonText}>Clear Checked</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
+      </SafeAreaView>
 
       {/* Scrollable content */}
       <ScrollView
         style={styles.scrollView}
-        contentContainerStyle={[
-          styles.scrollContent,
-          { flexGrow: 1 }, // ensures ScrollView fills remaining space
-        ]}
+        contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
       >
         {items.length === 0 && !isAdding && (
@@ -202,21 +200,23 @@ export default function GroceryListScreen() {
         )}
       </ScrollView>
 
-      {/* Fixed Footer */}
-      <View style={styles.footer}>
-        <TouchableOpacity
-          style={styles.addButton}
-          onPress={() => {
-            setIsAdding(true);
-            setTimeout(() => inputRef.current?.focus(), 100);
-          }}
-          disabled={isAdding}
-        >
-          <Plus size={20} color={theme.colors.primary[500]} />
-          <Text style={styles.addButtonText}>Add Item</Text>
-        </TouchableOpacity>
+      {/* Footer */}
+      <View style={[{ paddingBottom: 80 + insets.bottom }]}>
+        <View style={styles.footer}>
+          <TouchableOpacity
+            style={styles.addButton}
+            onPress={() => {
+              setIsAdding(true);
+              setTimeout(() => inputRef.current?.focus(), 100);
+            }}
+            disabled={isAdding}
+          >
+            <Plus size={20} color={theme.colors.primary[500]} />
+            <Text style={styles.addButtonText}>Add Item</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -224,6 +224,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
+  },
+  headerSafeArea: {
+    backgroundColor: theme.colors.surface,
   },
   header: {
     paddingHorizontal: theme.spacing.xl,
@@ -258,13 +261,12 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingTop: theme.spacing.md,
+    paddingBottom: theme.spacing.xl,
   },
   emptyState: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
     paddingHorizontal: theme.spacing["4xl"],
     paddingVertical: theme.spacing["4xl"],
+    alignItems: "center",
   },
   emptyTitle: {
     ...typography.heading3,
@@ -301,7 +303,6 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: theme.colors.neutral[200],
     marginHorizontal: theme.spacing.xl,
-    borderStyle: "dashed",
   },
   addingRow: {
     flexDirection: "row",
@@ -326,10 +327,8 @@ const styles = StyleSheet.create({
   },
   footer: {
     paddingHorizontal: theme.spacing.xl,
-    paddingVertical: theme.spacing.lg,
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.neutral[200],
-    backgroundColor: theme.colors.surface,
+    paddingTop: theme.spacing.lg,
+    paddingBottom: theme.spacing.md,
   },
   addButton: {
     flexDirection: "row",
