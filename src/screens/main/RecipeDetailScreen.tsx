@@ -35,6 +35,7 @@ import CookModeModal from "../../components/recipe/CookModeModal";
 import AddToDishListModal from "../../components/recipe/AddToDishListModal";
 import { useAuth } from "../../providers/AuthProvider/AuthContext";
 import { useRemoveRecipeFromDishList } from "../../hooks/mutations/useDishListMutations";
+import { groceryStorage } from "../../services/groceryStorage";
 import { queryKeys } from "../../lib/queryKeys";
 
 interface RecipeDetailScreenProps {
@@ -189,7 +190,7 @@ export default function RecipeDetailScreen({
       {
         title: "Add to Grocery List",
         icon: ShoppingCart,
-        onPress: () => {
+        onPress: async () => {
           const unchecked =
             recipe.ingredients?.filter(
               (_, i) => !progress.checkedIngredients.has(i)
@@ -198,9 +199,13 @@ export default function RecipeDetailScreen({
             Alert.alert("No Items", "All ingredients are already checked off.");
             return;
           }
+
+          await groceryStorage.addItems(unchecked);
           Alert.alert(
             "Added to Grocery List",
-            `${unchecked.length} ingredients added to your grocery list.`
+            `${unchecked.length} ${
+              unchecked.length === 1 ? "ingredient" : "ingredients"
+            } added to your grocery list.`
           );
         },
       },

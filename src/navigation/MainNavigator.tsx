@@ -12,6 +12,7 @@ import { RootStackParamList } from "../types/navigation";
 import AddRecipeScreen from "../screens/main/AddRecipeScreen";
 import RecipeDetailScreen from "../screens/main/RecipeDetailScreen";
 import { usePrefetchDishLists } from "../hooks/usePrefetchDishLists";
+import GroceryListScreen from "../screens/main/GroceryListScreen";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -56,7 +57,7 @@ const AuthenticatedApp = ({ navigation }: any) => {
           />
         );
       case "grocery":
-        return <PlaceholderScreen title="Grocery List" />;
+        return <GroceryListScreen />;
       case "search":
         return <PlaceholderScreen title="Search" />;
       case "builder":

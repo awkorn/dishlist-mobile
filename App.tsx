@@ -9,6 +9,8 @@ import { View, ActivityIndicator } from "react-native";
 import { useEffect } from "react";
 import NetInfo from "@react-native-community/netinfo";
 import { GlobalErrorBoundary } from "./src/providers/ErrorBoundary";
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -30,7 +32,7 @@ const queryClient = new QueryClient({
     mutations: {
       retry: 1,
       retryDelay: 1000,
-      networkMode: "online", 
+      networkMode: "online",
     },
   },
 });
@@ -60,17 +62,19 @@ export default function App() {
   }
 
   return (
-    <GlobalErrorBoundary>
-      <QueryClientProvider client={queryClient}>
-        <SafeAreaProvider>
-          <AuthProvider>
-            <NavigationContainer>
-              <MainNavigator />
-              <StatusBar style="auto" />
-            </NavigationContainer>
-          </AuthProvider>
-        </SafeAreaProvider>
-      </QueryClientProvider>
-    </GlobalErrorBoundary>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <GlobalErrorBoundary>
+        <QueryClientProvider client={queryClient}>
+          <SafeAreaProvider>
+            <AuthProvider>
+              <NavigationContainer>
+                <MainNavigator />
+                <StatusBar style="auto" />
+              </NavigationContainer>
+            </AuthProvider>
+          </SafeAreaProvider>
+        </QueryClientProvider>
+      </GlobalErrorBoundary>
+    </GestureHandlerRootView>
   );
 }
