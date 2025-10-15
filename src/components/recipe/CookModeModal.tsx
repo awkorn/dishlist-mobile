@@ -318,8 +318,8 @@ const styles = StyleSheet.create({
     gap: theme.spacing.md,
   },
   ingredientBullet: {
-    width: 8,
-    height: 2,
+    width: 6,
+    height: 6,
     borderRadius: 4,
     backgroundColor: theme.colors.neutral[600],
   },
