@@ -38,7 +38,7 @@ export const typography = {
     lineHeight: 24,
   },
   body: {
-    fontFamily: 'Bricolage-Regular',
+    fontFamily: 'Myanmar Sans Pro',
     fontSize: 16,
     lineHeight: 20,
   },

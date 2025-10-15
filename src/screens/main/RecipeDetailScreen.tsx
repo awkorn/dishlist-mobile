@@ -12,9 +12,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import {
   ChevronLeft,
   MoreHorizontal,
-  Clock,
-  ChefHat,
-  Users,
   PlayCircle,
   Plus,
   Edit3,
@@ -317,7 +314,6 @@ export default function RecipeDetailScreen({
           <View style={styles.metadataRow}>
             {recipe.prepTime && (
               <View style={styles.metadataItem}>
-                <Clock size={16} color={theme.colors.neutral[600]} />
                 <View style={styles.metadataTextGroup}>
                   <Text style={styles.metadataLabel}>Prep Time</Text>
                   <Text style={styles.metadataValue}>
@@ -328,7 +324,6 @@ export default function RecipeDetailScreen({
             )}
             {recipe.cookTime && (
               <View style={styles.metadataItem}>
-                <ChefHat size={16} color={theme.colors.neutral[600]} />
                 <View style={styles.metadataTextGroup}>
                   <Text style={styles.metadataLabel}>Cook Time</Text>
                   <Text style={styles.metadataValue}>
@@ -339,18 +334,14 @@ export default function RecipeDetailScreen({
             )}
             {totalTime > 0 && (
               <View style={styles.metadataItem}>
-                <Clock size={16} color={theme.colors.primary[600]} />
                 <View style={styles.metadataTextGroup}>
                   <Text style={styles.metadataLabel}>Total Time</Text>
-                  <Text style={[styles.metadataValue, styles.totalTimeValue]}>
-                    {totalTime} min
-                  </Text>
+                  <Text style={[styles.metadataValue]}>{totalTime} min</Text>
                 </View>
               </View>
             )}
             {recipe.servings && (
               <View style={styles.metadataItem}>
-                <Users size={16} color={theme.colors.neutral[600]} />
                 <View style={styles.metadataTextGroup}>
                   <Text style={styles.metadataLabel}>Servings</Text>
                   <Text style={styles.metadataValue}>{recipe.servings}</Text>
@@ -527,15 +518,12 @@ const styles = StyleSheet.create({
   },
   metadataRow: {
     flexDirection: "row",
+    justifyContent: "space-between",
     marginBottom: theme.spacing.lg,
-    flexWrap: "wrap",
-    gap: theme.spacing.md,
   },
   metadataItem: {
     flexDirection: "row",
     alignItems: "center",
-    gap: theme.spacing.sm,
-    minWidth: 95,
   },
   metadataTextGroup: { flexDirection: "column" },
   metadataLabel: { ...typography.caption, color: theme.colors.neutral[600] },
@@ -544,7 +532,6 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: theme.colors.neutral[800],
   },
-  totalTimeValue: { color: theme.colors.neutral[600] },
   createdDateRow: {
     marginBottom: theme.spacing.xl,
     borderBottomWidth: 1,

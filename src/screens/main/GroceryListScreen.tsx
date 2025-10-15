@@ -273,7 +273,7 @@ const styles = StyleSheet.create({
     gap: theme.spacing.md,
   },
   headerButton: {
-    paddingHorizontal: theme.spacing.md,
+    paddingHorizontal: theme.spacing.xs,
     paddingVertical: theme.spacing.sm,
   },
   headerButtonText: {
@@ -292,7 +292,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
+    marginTop: theme.spacing.lg,
     paddingTop: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.md,  
   },
   emptyState: {
     paddingHorizontal: theme.spacing["4xl"],
@@ -328,10 +330,10 @@ const styles = StyleSheet.create({
   itemContainer: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: theme.spacing.lg,
+    paddingVertical: theme.spacing.md,
     paddingHorizontal: theme.spacing.xl,
     backgroundColor: theme.colors.surface,
-    gap: theme.spacing.md,
+    gap: theme.spacing.sm,
   },
   itemCheckbox: {
     padding: theme.spacing.xs,
