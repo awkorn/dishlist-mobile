@@ -9,14 +9,12 @@ import {
   Platform,
   ScrollView,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 import {
   X,
   ChevronLeft,
   ChevronRight,
-  Clock,
-  ChefHat,
   CheckCircle2,
 } from "lucide-react-native";
 import { theme } from "../../styles/theme";
@@ -43,6 +41,7 @@ export default function CookModeModal({
   recipe,
 }: CookModeModalProps) {
   const [currentStep, setCurrentStep] = useState(0);
+  const insets = useSafeAreaInsets();
 
   const handleClose = () => {
     setCurrentStep(0);
@@ -59,11 +58,11 @@ export default function CookModeModal({
 
   const goToStep = (stepIndex: number) => {
     if (stepIndex < 0 || stepIndex >= recipe.instructions.length) return;
-    
+
     if (Platform.OS === "ios") {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
-    
+
     setCurrentStep(stepIndex);
   };
 
@@ -79,7 +78,12 @@ export default function CookModeModal({
       presentationStyle="fullScreen"
       onRequestClose={handleClose}
     >
-      <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
+      <View
+        style={[
+          styles.safeArea,
+          { paddingTop: insets.top, paddingBottom: insets.bottom },
+        ]}
+      >
         {/* Header - fixed */}
         <View style={styles.header}>
           <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
@@ -110,7 +114,6 @@ export default function CookModeModal({
         <ScrollView
           style={styles.content}
           contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
         >
           {/* Step header */}
           <View style={styles.stepHeader}>
@@ -138,9 +141,7 @@ export default function CookModeModal({
           {/* Ingredients */}
           {currentStepIngredients.length > 0 ? (
             <View style={styles.ingredientsSection}>
-              <Text style={styles.sectionLabel}>
-                Ingredients for this step
-              </Text>
+              <Text style={styles.sectionLabel}>Ingredients for this step</Text>
               {currentStepIngredients.map((ingredient, index) => (
                 <View key={index} style={styles.ingredientItem}>
                   <View style={styles.ingredientBullet} />
@@ -149,31 +150,6 @@ export default function CookModeModal({
               ))}
             </View>
           ) : null}
-
-          {/* Time Info */}
-          {isFirstStep && (recipe.prepTime || recipe.cookTime) && (
-            <View style={styles.timeSection}>
-              <Text style={styles.sectionLabel}>Time Information</Text>
-              <View style={styles.timeRow}>
-                {recipe.prepTime && (
-                  <View style={styles.timeItem}>
-                    <Clock size={16} color={theme.colors.neutral[600]} />
-                    <Text style={styles.timeText}>
-                      Prep: {recipe.prepTime}m
-                    </Text>
-                  </View>
-                )}
-                {recipe.cookTime && (
-                  <View style={styles.timeItem}>
-                    <ChefHat size={16} color={theme.colors.neutral[600]} />
-                    <Text style={styles.timeText}>
-                      Cook: {recipe.cookTime}m
-                    </Text>
-                  </View>
-                )}
-              </View>
-            </View>
-          )}
         </ScrollView>
 
         {/* Footer - fixed */}
@@ -224,7 +200,7 @@ export default function CookModeModal({
             {isLastStep && <CheckCircle2 size={24} color="white" />}
           </TouchableOpacity>
         </View>
-      </SafeAreaView>
+      </View>
     </Modal>
   );
 }
@@ -330,11 +306,10 @@ const styles = StyleSheet.create({
   },
   ingredientsSection: {
     marginBottom: theme.spacing.xl,
-    backgroundColor: theme.colors.success + "10",
+    backgroundColor: theme.colors.primary[50],
     padding: theme.spacing.xl,
     borderRadius: theme.borderRadius.lg,
-    borderWidth: 1,
-    borderColor: theme.colors.success + "30",
+    ...theme.shadows.sm,
   },
   ingredientItem: {
     flexDirection: "row",
@@ -344,36 +319,15 @@ const styles = StyleSheet.create({
   },
   ingredientBullet: {
     width: 8,
-    height: 8,
+    height: 2,
     borderRadius: 4,
-    backgroundColor: theme.colors.success,
+    backgroundColor: theme.colors.neutral[600],
   },
   ingredientText: {
     ...typography.body,
     color: theme.colors.neutral[700],
     fontSize: 16,
     flex: 1,
-  },
-  timeSection: {
-    backgroundColor: theme.colors.primary[50],
-    padding: theme.spacing.lg,
-    borderRadius: theme.borderRadius.lg,
-    borderWidth: 1,
-    borderColor: theme.colors.primary[500],
-  },
-  timeRow: {
-    flexDirection: "row",
-    gap: theme.spacing.xl,
-  },
-  timeItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: theme.spacing.sm,
-  },
-  timeText: {
-    ...typography.body,
-    color: theme.colors.neutral[700],
-    fontSize: 15,
   },
   footer: {
     flexDirection: "row",
