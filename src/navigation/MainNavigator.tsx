@@ -1,98 +1,23 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useAuth } from "../providers/AuthProvider/AuthContext";
-import { View, Text, ActivityIndicator, StyleSheet } from "react-native";
+import { View, ActivityIndicator, StyleSheet } from "react-native";
 import LoginScreen from "../screens/auth/LoginScreen";
 import SignUpScreen from "../screens/auth/SignUpScreen";
-import DishListsScreen from "../screens/main/DishListsScreen";
 import CreateDishListScreen from "../screens/main/CreateDishListScreen";
 import DishListDetailScreen from "../screens/main/DishListDetailScreen";
-import BottomNavigation from "../components/navigation/BottomNavigation";
-import { RootStackParamList } from "../types/navigation";
 import AddRecipeScreen from "../screens/main/AddRecipeScreen";
 import RecipeDetailScreen from "../screens/main/RecipeDetailScreen";
-import { usePrefetchDishLists } from "../hooks/usePrefetchDishLists";
-import GroceryListScreen from "../screens/main/GroceryListScreen";
+import TabNavigator from "./TabNavigator";
+import { RootStackParamList } from "../types/navigation";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
-// Temporary placeholder screens for other tabs
-const PlaceholderScreen = ({ title }: { title: string }) => (
-  <View style={styles.container}>
-    <Text style={styles.text}>{title} - Coming Soon!</Text>
-  </View>
-);
-
 const LoadingScreen = () => (
-  <View style={styles.container}>
+  <View style={styles.loadingContainer}>
     <ActivityIndicator size="large" color="#2563eb" />
   </View>
 );
-
-const AuthenticatedApp = ({ navigation }: any) => {
-  const [activeTab, setActiveTab] = useState("dishlist");
-  const { prefetchDishLists } = usePrefetchDishLists();
-  const [isPrefetching, setIsPrefetching] = useState(true);
-
-  // Prefetch data when user logs in
-  useEffect(() => {
-    const prefetch = async () => {
-      setIsPrefetching(true);
-      await prefetchDishLists();
-      setIsPrefetching(false);
-    };
-
-    // Small delay to let auth settle
-    const timer = setTimeout(prefetch, 500);
-    return () => clearTimeout(timer);
-  }, []);
-
-  const renderActiveScreen = () => {
-    switch (activeTab) {
-      case "dishlist":
-        return (
-          <DishListsScreen
-            navigation={navigation}
-            isPrefetching={isPrefetching}
-          />
-        );
-      case "grocery":
-        return <GroceryListScreen />;
-      case "search":
-        return <PlaceholderScreen title="Search" />;
-      case "builder":
-        return <PlaceholderScreen title="Recipe Builder" />;
-      case "profile":
-        return <PlaceholderScreen title="Profile" />;
-      default:
-        return (
-          <DishListsScreen
-            navigation={navigation}
-            isPrefetching={isPrefetching}
-          />
-        );
-    }
-  };
-  return (
-    <View style={{ flex: 1 }}>
-      <View style={{ flex: 1, marginBottom: 70 }}>{renderActiveScreen()}</View>
-      <BottomNavigation activeTab={activeTab} onTabPress={setActiveTab} />
-    </View>
-  );
-};
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#f5f5f5",
-  },
-  text: {
-    fontSize: 18,
-    fontWeight: "600",
-  },
-});
 
 export default function MainNavigator() {
   const { user, loading } = useAuth();
@@ -105,7 +30,10 @@ export default function MainNavigator() {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       {user ? (
         <Stack.Group>
-          <Stack.Screen name="Home" component={AuthenticatedApp} />
+          {/* Main Tabs - This is the home screen */}
+          <Stack.Screen name="Home" component={TabNavigator} />
+
+          {/* Modal Screens */}
           <Stack.Screen
             name="CreateDishList"
             component={CreateDishListScreen}
@@ -117,7 +45,7 @@ export default function MainNavigator() {
           />
           <Stack.Screen
             name="EditDishList"
-            component={CreateDishListScreen} // Reusing screen for edit
+            component={CreateDishListScreen}
             options={{
               presentation: "modal",
               gestureEnabled: true,
@@ -153,3 +81,12 @@ export default function MainNavigator() {
     </Stack.Navigator>
   );
 }
+
+const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#f5f5f5",
+  },
+});

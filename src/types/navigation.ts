@@ -7,6 +7,14 @@ export type RootStackParamList = {
 
   // Main app screens
   Home: undefined;
+
+  // Tab Screens (nested in Home)
+  DishListsTab: undefined;
+  GroceryTab: undefined;
+  SearchTab: undefined;
+  BuilderTab: undefined;
+  ProfileTab: undefined;
+
   CreateDishList:
     | {
         dishListId?: string;

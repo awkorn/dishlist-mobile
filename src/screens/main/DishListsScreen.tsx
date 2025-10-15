@@ -21,9 +21,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import PagerView from "react-native-pager-view";
 import { Search, Plus, Wifi, WifiOff } from "lucide-react-native";
-import {
-  useQuery,
-} from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import NetInfo from "@react-native-community/netinfo";
 import { typography } from "../../styles/typography";
 import DishListTile from "../../components/dishlist/DishListTile";
@@ -31,6 +29,10 @@ import { getDishLists, DishList } from "../../services/api";
 import { queryKeys } from "../../lib/queryKeys";
 import { theme } from "../../styles/theme";
 import { QueryErrorBoundary } from "../../providers/ErrorBoundary";
+import { useNavigation } from "@react-navigation/native";
+import { usePrefetchDishLists } from "../../hooks/usePrefetchDishLists";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { RootStackParamList } from '../../types/navigation';
 
 type TabType = "All" | "My DishLists" | "Collaborations" | "Following";
 
@@ -165,13 +167,22 @@ const useDishListsQuery = (tab: string, searchQuery: string) => {
   };
 };
 
-export default function DishListsScreen({
-  navigation,
-  isPrefetching = false,
-}: {
-  navigation?: any;
-  isPrefetching?: boolean;
-}) {
+type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
+
+export default function DishListsScreen() {
+  const navigation = useNavigation<NavigationProp>();
+  const { prefetchDishLists } = usePrefetchDishLists();
+  const [isPrefetching, setIsPrefetching] = useState(true);
+
+  useEffect(() => {
+    const prefetch = async () => {
+      setIsPrefetching(true);
+      await prefetchDishLists();
+      setIsPrefetching(false);
+    };
+    prefetch();
+  }, [prefetchDishLists]);
+
   const [activeTab, setActiveTab] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
   const [isOnline, setIsOnline] = useState(true);
