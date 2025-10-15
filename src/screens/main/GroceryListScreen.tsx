@@ -7,19 +7,22 @@ import {
   TouchableOpacity,
   TextInput,
   Alert,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { Trash2, Plus, CheckSquare, Square } from "lucide-react-native";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
+import { Trash2, CheckSquare, Square, Plus } from "lucide-react-native";
 import { Swipeable } from "react-native-gesture-handler";
 import { theme } from "../../styles/theme";
 import { typography } from "../../styles/typography";
 import { groceryStorage, GroceryItem } from "../../services/groceryStorage";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function GroceryListScreen() {
   const insets = useSafeAreaInsets();
   const [items, setItems] = useState<GroceryItem[]>([]);
-  const [isAdding, setIsAdding] = useState(false);
   const [newItemText, setNewItemText] = useState("");
   const inputRef = useRef<TextInput>(null);
 
@@ -44,13 +47,9 @@ export default function GroceryListScreen() {
 
   const handleAddItem = async () => {
     const text = newItemText.trim();
-    if (!text) {
-      setIsAdding(false);
-      return;
-    }
+    if (!text) return;
     await groceryStorage.addItems([text]);
     setNewItemText("");
-    setIsAdding(false);
     loadItems();
   };
 
@@ -101,8 +100,11 @@ export default function GroceryListScreen() {
   const allChecked = items.length > 0 && items.every((i) => i.checked);
 
   return (
-    <View style={styles.container}>
-      {/* Header - extends to top of screen */}
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      style={styles.container}
+    >
+      {/* Header */}
       <SafeAreaView edges={["top"]} style={styles.headerSafeArea}>
         <View style={styles.header}>
           <Text style={styles.title}>Grocery List</Text>
@@ -131,17 +133,20 @@ export default function GroceryListScreen() {
         </View>
       </SafeAreaView>
 
-      {/* Scrollable content */}
+      {/* List */}
       <ScrollView
         style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[
+          styles.scrollContent,
+          { paddingBottom: 100 + insets.bottom },
+        ]}
         keyboardShouldPersistTaps="handled"
       >
-        {items.length === 0 && !isAdding && (
+        {items.length === 0 && (
           <View style={styles.emptyState}>
             <Text style={styles.emptyTitle}>Your grocery list is empty</Text>
             <Text style={styles.emptyText}>
-              Add items from recipes or tap "Add Item" below
+              Add items from recipes or below
             </Text>
           </View>
         )}
@@ -177,46 +182,30 @@ export default function GroceryListScreen() {
             {index < items.length - 1 && <View style={styles.divider} />}
           </View>
         ))}
-
-        {/* Inline Add Row */}
-        {isAdding && (
-          <View style={styles.addingRow}>
-            <View style={styles.itemCheckbox}>
-              <Square size={24} color={theme.colors.neutral[300]} />
-            </View>
-            <TextInput
-              ref={inputRef}
-              style={styles.addInput}
-              placeholder="Enter item..."
-              placeholderTextColor={theme.colors.neutral[400]}
-              value={newItemText}
-              onChangeText={setNewItemText}
-              onSubmitEditing={handleAddItem}
-              onBlur={handleAddItem}
-              returnKeyType="done"
-              autoFocus
-            />
-          </View>
-        )}
       </ScrollView>
 
-      {/* Footer */}
-      <View style={[{ paddingBottom: 80 + insets.bottom }]}>
-        <View style={styles.footer}>
-          <TouchableOpacity
-            style={styles.addButton}
-            onPress={() => {
-              setIsAdding(true);
-              setTimeout(() => inputRef.current?.focus(), 100);
-            }}
-            disabled={isAdding}
-          >
-            <Plus size={20} color={theme.colors.primary[500]} />
-            <Text style={styles.addButtonText}>Add Item</Text>
+      {/* Add Bar */}
+      <SafeAreaView
+        edges={["bottom"]}
+        style={[styles.addBar, { paddingBottom: insets.bottom || 16 }]}
+      >
+        <View style={styles.addRow}>
+          <TextInput
+            ref={inputRef}
+            style={styles.addInput}
+            placeholder="Add an item..."
+            placeholderTextColor={theme.colors.neutral[400]}
+            value={newItemText}
+            onChangeText={setNewItemText}
+            onSubmitEditing={handleAddItem}
+            returnKeyType="done"
+          />
+          <TouchableOpacity style={styles.addButton} onPress={handleAddItem}>
+            <Plus size={22} color="white" />
           </TouchableOpacity>
         </View>
-      </View>
-    </View>
+      </SafeAreaView>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -233,7 +222,6 @@ const styles = StyleSheet.create({
     paddingVertical: theme.spacing.lg,
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.neutral[200],
-    backgroundColor: theme.colors.surface,
   },
   title: {
     ...typography.heading2,
@@ -261,7 +249,6 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingTop: theme.spacing.md,
-    paddingBottom: theme.spacing.xl,
   },
   emptyState: {
     paddingHorizontal: theme.spacing["4xl"],
@@ -304,20 +291,6 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.neutral[200],
     marginHorizontal: theme.spacing.xl,
   },
-  addingRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: theme.spacing.lg,
-    paddingHorizontal: theme.spacing.xl,
-    backgroundColor: theme.colors.surface,
-    gap: theme.spacing.md,
-  },
-  addInput: {
-    ...typography.body,
-    flex: 1,
-    padding: 0,
-    color: theme.colors.neutral[800],
-  },
   deleteButton: {
     backgroundColor: theme.colors.error,
     justifyContent: "center",
@@ -325,25 +298,33 @@ const styles = StyleSheet.create({
     width: 80,
     height: "100%",
   },
-  footer: {
+  addBar: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: theme.colors.surface,
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.neutral[200],
     paddingHorizontal: theme.spacing.xl,
-    paddingTop: theme.spacing.lg,
-    paddingBottom: theme.spacing.md,
   },
-  addButton: {
+  addRow: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    gap: theme.spacing.sm,
-    paddingVertical: theme.spacing.lg,
-    borderRadius: theme.borderRadius.md,
-    borderWidth: 1,
-    borderColor: theme.colors.primary[500],
-    borderStyle: "dashed",
-    backgroundColor: theme.colors.surface,
+    gap: theme.spacing.md,
+    paddingVertical: theme.spacing.md,
   },
-  addButtonText: {
-    ...typography.button,
-    color: theme.colors.primary[500],
+  addInput: {
+    flex: 1,
+    ...typography.body,
+    color: theme.colors.neutral[800],
+    paddingVertical: 8,
+  },
+  addButton: {
+    backgroundColor: theme.colors.primary[500],
+    borderRadius: theme.borderRadius.md,
+    padding: theme.spacing.md,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });

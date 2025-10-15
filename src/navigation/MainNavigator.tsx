@@ -73,10 +73,9 @@ const AuthenticatedApp = ({ navigation }: any) => {
         );
     }
   };
-
   return (
     <View style={{ flex: 1 }}>
-      {renderActiveScreen()}
+      <View style={{ flex: 1, marginBottom: 70 }}>{renderActiveScreen()}</View>
       <BottomNavigation activeTab={activeTab} onTabPress={setActiveTab} />
     </View>
   );
