@@ -7,8 +7,6 @@ import {
   TouchableOpacity,
   TextInput,
   Alert,
-  KeyboardAvoidingView,
-  Platform,
 } from "react-native";
 import {
   SafeAreaView,
@@ -23,12 +21,21 @@ import { groceryStorage, GroceryItem } from "../../services/groceryStorage";
 export default function GroceryListScreen() {
   const insets = useSafeAreaInsets();
   const [items, setItems] = useState<GroceryItem[]>([]);
-  const [newItemText, setNewItemText] = useState("");
+  const [isAddingItem, setIsAddingItem] = useState(false);
+  const [editingText, setEditingText] = useState("");
   const inputRef = useRef<TextInput>(null);
 
   useEffect(() => {
     loadItems();
   }, []);
+
+  // Auto-focus input when entering edit mode
+  useEffect(() => {
+    if (isAddingItem) {
+      // Small delay to ensure render completes
+      setTimeout(() => inputRef.current?.focus(), 100);
+    }
+  }, [isAddingItem]);
 
   const loadItems = async () => {
     const loaded = await groceryStorage.loadItems();
@@ -45,12 +52,36 @@ export default function GroceryListScreen() {
     loadItems();
   };
 
-  const handleAddItem = async () => {
-    const text = newItemText.trim();
-    if (!text) return;
-    await groceryStorage.addItems([text]);
-    setNewItemText("");
-    loadItems();
+  const handleStartAdding = async () => {
+    // If already editing with text, save current item first
+    if (isAddingItem && editingText.trim()) {
+      await saveCurrentItem();
+    }
+    
+    // Start new item
+    setIsAddingItem(true);
+    setEditingText("");
+  };
+
+  const saveCurrentItem = async () => {
+    const text = editingText.trim();
+    if (text) {
+      await groceryStorage.addItems([text]);
+      await loadItems();
+    }
+    setEditingText("");
+  };
+
+  const handleDoneEditing = async () => {
+    await saveCurrentItem();
+    setIsAddingItem(false);
+  };
+
+  const handleBlur = () => {
+    // If text is empty when keyboard dismissed, exit edit mode
+    if (!editingText.trim()) {
+      setIsAddingItem(false);
+    }
   };
 
   const handleClearChecked = () => {
@@ -100,10 +131,7 @@ export default function GroceryListScreen() {
   const allChecked = items.length > 0 && items.every((i) => i.checked);
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-      style={styles.container}
-    >
+    <View style={styles.container}>
       {/* Header */}
       <SafeAreaView edges={["top"]} style={styles.headerSafeArea}>
         <View style={styles.header}>
@@ -129,6 +157,12 @@ export default function GroceryListScreen() {
             >
               <Text style={styles.headerButtonText}>Clear Checked</Text>
             </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.addButton}
+              onPress={handleStartAdding}
+            >
+              <Plus size={20} color={theme.colors.primary[500]} />
+            </TouchableOpacity>
           </View>
         </View>
       </SafeAreaView>
@@ -138,19 +172,46 @@ export default function GroceryListScreen() {
         style={styles.scrollView}
         contentContainerStyle={[
           styles.scrollContent,
-          { paddingBottom: 100 + insets.bottom },
+          { paddingBottom: insets.bottom + 20 },
         ]}
         keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
       >
-        {items.length === 0 && (
+        {/* Empty State */}
+        {items.length === 0 && !isAddingItem && (
           <View style={styles.emptyState}>
-            <Text style={styles.emptyTitle}>Your grocery list is empty</Text>
+            <Text style={styles.emptyTitle}>Your list is empty</Text>
             <Text style={styles.emptyText}>
-              Add items from recipes or below
+              Tap + to add your first item
             </Text>
           </View>
         )}
 
+        {/* Editing Row (appears at top when adding) */}
+        {isAddingItem && (
+          <>
+            <View style={styles.editingRow}>
+              <View style={styles.itemCheckbox}>
+                <Square size={24} color={theme.colors.neutral[300]} />
+              </View>
+              <TextInput
+                ref={inputRef}
+                style={styles.editingInput}
+                placeholder="Item name"
+                placeholderTextColor={theme.colors.neutral[400]}
+                value={editingText}
+                onChangeText={setEditingText}
+                onSubmitEditing={handleDoneEditing}
+                onBlur={handleBlur}
+                returnKeyType="done"
+                autoCapitalize="sentences"
+              />
+            </View>
+            {items.length > 0 && <View style={styles.divider} />}
+          </>
+        )}
+
+        {/* Existing Items */}
         {items.map((item, index) => (
           <View key={item.id}>
             <Swipeable
@@ -183,29 +244,7 @@ export default function GroceryListScreen() {
           </View>
         ))}
       </ScrollView>
-
-      {/* Add Bar */}
-      <SafeAreaView
-        edges={["bottom"]}
-        style={[styles.addBar, { paddingBottom: insets.bottom || 16 }]}
-      >
-        <View style={styles.addRow}>
-          <TextInput
-            ref={inputRef}
-            style={styles.addInput}
-            placeholder="Add an item..."
-            placeholderTextColor={theme.colors.neutral[400]}
-            value={newItemText}
-            onChangeText={setNewItemText}
-            onSubmitEditing={handleAddItem}
-            returnKeyType="done"
-          />
-          <TouchableOpacity style={styles.addButton} onPress={handleAddItem}>
-            <Plus size={22} color="white" />
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
-    </KeyboardAvoidingView>
+    </View>
   );
 }
 
@@ -216,12 +255,12 @@ const styles = StyleSheet.create({
   },
   headerSafeArea: {
     backgroundColor: theme.colors.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.neutral[200],
   },
   header: {
     paddingHorizontal: theme.spacing.xl,
     paddingVertical: theme.spacing.lg,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.neutral[200],
   },
   title: {
     ...typography.heading2,
@@ -230,6 +269,7 @@ const styles = StyleSheet.create({
   },
   headerButtons: {
     flexDirection: "row",
+    alignItems: "center",
     gap: theme.spacing.md,
   },
   headerButton: {
@@ -244,11 +284,15 @@ const styles = StyleSheet.create({
   disabledText: {
     color: theme.colors.neutral[400],
   },
+  addButton: {
+    padding: theme.spacing.sm,
+    marginLeft: "auto",
+  },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    paddingTop: theme.spacing.md,
+    paddingTop: theme.spacing.sm,
   },
   emptyState: {
     paddingHorizontal: theme.spacing["4xl"],
@@ -265,6 +309,21 @@ const styles = StyleSheet.create({
     ...typography.body,
     color: theme.colors.neutral[500],
     textAlign: "center",
+  },
+  editingRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: theme.spacing.lg,
+    paddingHorizontal: theme.spacing.xl,
+    backgroundColor: theme.colors.surface,
+    gap: theme.spacing.md,
+  },
+  editingInput: {
+    flex: 1,
+    ...typography.body,
+    fontSize: 16,
+    color: theme.colors.neutral[800],
+    paddingVertical: 0,
   },
   itemContainer: {
     flexDirection: "row",
@@ -297,34 +356,5 @@ const styles = StyleSheet.create({
     alignItems: "center",
     width: 80,
     height: "100%",
-  },
-  addBar: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: theme.colors.surface,
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.neutral[200],
-    paddingHorizontal: theme.spacing.xl,
-  },
-  addRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: theme.spacing.md,
-    paddingVertical: theme.spacing.md,
-  },
-  addInput: {
-    flex: 1,
-    ...typography.body,
-    color: theme.colors.neutral[800],
-    paddingVertical: 8,
-  },
-  addButton: {
-    backgroundColor: theme.colors.primary[500],
-    borderRadius: theme.borderRadius.md,
-    padding: theme.spacing.md,
-    justifyContent: "center",
-    alignItems: "center",
   },
 });

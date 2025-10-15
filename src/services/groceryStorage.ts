@@ -1,6 +1,6 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const GROCERY_LIST_KEY = 'grocery_list';
+const GROCERY_LIST_KEY = "grocery_list";
 
 export interface GroceryItem {
   id: string;
@@ -15,7 +15,7 @@ export const groceryStorage = {
       const data = await AsyncStorage.getItem(GROCERY_LIST_KEY);
       return data ? JSON.parse(data) : [];
     } catch (error) {
-      console.error('Failed to load grocery items:', error);
+      console.error("Failed to load grocery items:", error);
       return [];
     }
   },
@@ -24,24 +24,24 @@ export const groceryStorage = {
     try {
       await AsyncStorage.setItem(GROCERY_LIST_KEY, JSON.stringify(items));
     } catch (error) {
-      console.error('Failed to save grocery items:', error);
+      console.error("Failed to save grocery items:", error);
     }
   },
 
   async addItems(texts: string[]): Promise<void> {
     const existing = await this.loadItems();
-    const newItems: GroceryItem[] = texts.map(text => ({
+    const newItems: GroceryItem[] = texts.map((text) => ({
       id: `${Date.now()}-${Math.random()}`,
       text: text.trim(),
       checked: false,
       addedAt: Date.now(),
     }));
-    await this.saveItems([...existing, ...newItems]);
+    await this.saveItems([...newItems, ...existing]);
   },
 
   async toggleCheck(id: string): Promise<void> {
     const items = await this.loadItems();
-    const updated = items.map(item =>
+    const updated = items.map((item) =>
       item.id === id ? { ...item, checked: !item.checked } : item
     );
     await this.saveItems(updated);
@@ -49,21 +49,21 @@ export const groceryStorage = {
 
   async deleteItem(id: string): Promise<void> {
     const items = await this.loadItems();
-    await this.saveItems(items.filter(item => item.id !== id));
+    await this.saveItems(items.filter((item) => item.id !== id));
   },
 
   async clearChecked(): Promise<void> {
     const items = await this.loadItems();
-    await this.saveItems(items.filter(item => !item.checked));
+    await this.saveItems(items.filter((item) => !item.checked));
   },
 
   async checkAll(): Promise<void> {
     const items = await this.loadItems();
-    await this.saveItems(items.map(item => ({ ...item, checked: true })));
+    await this.saveItems(items.map((item) => ({ ...item, checked: true })));
   },
 
   async uncheckAll(): Promise<void> {
     const items = await this.loadItems();
-    await this.saveItems(items.map(item => ({ ...item, checked: false })));
+    await this.saveItems(items.map((item) => ({ ...item, checked: false })));
   },
 };
