@@ -23,7 +23,6 @@ const PlaceholderScreen = ({ title }: { title: string }) => (
 
 const SearchScreen = () => <PlaceholderScreen title="Search" />;
 const BuilderScreen = () => <PlaceholderScreen title="Recipe Builder" />;
-const ProfileScreen = () => <PlaceholderScreen title="Profile" />;
 
 export default function TabNavigator() {
   return (
@@ -56,6 +55,13 @@ export default function TabNavigator() {
         }}
       />
       <Tab.Screen
+        name="SearchTab"
+        component={SearchScreen}
+        options={{
+          tabBarIcon: ({ color, size }) => <Search size={size} color={color} />,
+        }}
+      />
+      <Tab.Screen
         name="GroceryTab"
         component={GroceryListScreen}
         options={{
@@ -65,26 +71,12 @@ export default function TabNavigator() {
         }}
       />
       <Tab.Screen
-        name="SearchTab"
-        component={SearchScreen}
-        options={{
-          tabBarIcon: ({ color, size }) => <Search size={size} color={color} />,
-        }}
-      />
-      <Tab.Screen
         name="BuilderTab"
         component={BuilderScreen}
         options={{
           tabBarIcon: ({ color, size }) => (
             <PlusSquare size={size} color={color} />
           ),
-        }}
-      />
-      <Tab.Screen
-        name="ProfileTab"
-        component={ProfileScreen}
-        options={{
-          tabBarIcon: ({ color, size }) => <User size={size} color={color} />,
         }}
       />
     </Tab.Navigator>

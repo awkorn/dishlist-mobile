@@ -21,10 +21,9 @@ export default function BottomNavigation({
 }: BottomNavigationProps) {
   const tabs = [
     { id: "dishlist", icon: BookOpen, label: "DishList" },
-    { id: "grocery", icon: ShoppingCart, label: "Grocery" },
     { id: "search", icon: Search, label: "Search" },
+    { id: "grocery", icon: ShoppingCart, label: "Grocery" },
     { id: "builder", icon: PlusSquare, label: "Builder" },
-    { id: "profile", icon: User, label: "Profile" },
   ];
 
   return (

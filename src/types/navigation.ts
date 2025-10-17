@@ -13,7 +13,8 @@ export type RootStackParamList = {
   GroceryTab: undefined;
   SearchTab: undefined;
   BuilderTab: undefined;
-  ProfileTab: undefined;
+  
+  ProfileScreen: undefined;
 
   CreateDishList:
     | {
