@@ -49,6 +49,7 @@ export type RootStackParamList = {
     recipeId: string;
     dishListId?: string;
   };
+  Profile: { userId: string };
 };
 
 export type DishListDetailScreenProps = NativeStackScreenProps<

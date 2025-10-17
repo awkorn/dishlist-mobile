@@ -59,6 +59,26 @@ export interface DishListDetail extends DishList {
   recipes: Recipe[];
 }
 
+export interface UserProfile {
+  uid: string;
+  email: string;
+  username?: string;
+  firstName?: string;
+  lastName?: string;
+  bio?: string;
+  avatarUrl?: string;
+  followerCount: number;
+  followingCount: number;
+  isFollowing: boolean;
+  isOwnProfile: boolean;
+}
+
+export interface ProfileData {
+  user: UserProfile;
+  dishlists: DishList[];
+  recipes: Recipe[];
+}
+
 const api = axios.create({
   baseURL: API_BASE_URL,
   timeout: 10000,
@@ -187,6 +207,22 @@ export const removeRecipeFromDishList = async (
   recipeId: string
 ): Promise<void> => {
   await api.delete(`/dishlists/${dishListId}/recipes/${recipeId}`);
+};
+
+export const getUserProfile = async (userId: string): Promise<ProfileData> => {
+  const response = await api.get(`/users/${userId}`);
+  return response.data;
+};
+
+export const updateUserProfile = async (data: {
+  username?: string;
+  firstName?: string;
+  lastName?: string;
+  bio?: string;
+  avatarUrl?: string;
+}): Promise<UserProfile> => {
+  const response = await api.put("/users/me", data);
+  return response.data.user;
 };
 
 export default api;

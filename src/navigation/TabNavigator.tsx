@@ -35,12 +35,12 @@ export default function TabNavigator() {
           backgroundColor: theme.colors.surface,
           borderTopWidth: 1,
           borderTopColor: theme.colors.neutral[200],
-          height: 90, // Adjust based on your design
-          paddingBottom: 30, // iOS safe area
+          height: 90,
+          paddingBottom: 30, 
           paddingTop: 12,
         },
         tabBarLabelStyle: {
-          fontSize: 0, // Hide labels, only show icons
+          fontSize: 0, 
         },
         tabBarShowLabel: false,
       }}
