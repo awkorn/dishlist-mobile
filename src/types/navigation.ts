@@ -1,19 +1,13 @@
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 
 export type RootStackParamList = {
-  // Auth screens
   Login: undefined;
   SignUp: undefined;
-
-  // Main app screens
   Home: undefined;
-
-  // Tab Screens (nested in Home)
   DishListsTab: undefined;
   GroceryTab: undefined;
   SearchTab: undefined;
   BuilderTab: undefined;
-  
   ProfileScreen: undefined;
 
   CreateDishList:

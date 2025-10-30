@@ -8,6 +8,7 @@ import CreateDishListScreen from "../screens/main/CreateDishListScreen";
 import DishListDetailScreen from "../screens/main/DishListDetailScreen";
 import AddRecipeScreen from "../screens/main/AddRecipeScreen";
 import RecipeDetailScreen from "../screens/main/RecipeDetailScreen";
+import ProfileScreen from "../screens/main/ProfileScreen";
 import TabNavigator from "./TabNavigator";
 import { RootStackParamList } from "../types/navigation";
 
@@ -69,6 +70,11 @@ export default function MainNavigator() {
           <Stack.Screen
             name="RecipeDetail"
             component={RecipeDetailScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="Profile"
+            component={ProfileScreen}
             options={{ headerShown: false }}
           />
         </Stack.Group>

@@ -17,10 +17,12 @@ import {
   Animated,
   LayoutAnimation,
   ActivityIndicator,
+  Image
 } from "react-native";
+import { useAuth } from "../../providers/AuthProvider/AuthContext";
 import { SafeAreaView } from "react-native-safe-area-context";
 import PagerView from "react-native-pager-view";
-import { Search, Plus, Wifi, WifiOff } from "lucide-react-native";
+import { Search, Plus, Wifi, WifiOff, User } from "lucide-react-native";
 import { useQuery } from "@tanstack/react-query";
 import NetInfo from "@react-native-community/netinfo";
 import { typography } from "../../styles/typography";
@@ -32,7 +34,7 @@ import { QueryErrorBoundary } from "../../providers/ErrorBoundary";
 import { useNavigation } from "@react-navigation/native";
 import { usePrefetchDishLists } from "../../hooks/usePrefetchDishLists";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { RootStackParamList } from '../../types/navigation';
+import { RootStackParamList } from "../../types/navigation";
 
 type TabType = "All" | "My DishLists" | "Collaborations" | "Following";
 
@@ -276,6 +278,14 @@ export default function DishListsScreen() {
     return `${hours} hours ago`;
   }, [dataUpdatedAt]);
 
+  const { userProfile } = useAuth();
+
+  const handleProfilePress = useCallback(() => {
+    if (userProfile?.uid) {
+      navigation.navigate("Profile", { userId: userProfile.uid });
+    }
+  }, [navigation, userProfile]);
+
   const renderContent = useCallback(() => {
     // Show skeletons during initial prefetch OR when loading with no data
     if ((isPrefetching || isLoading) && dishLists.length === 0) {
@@ -404,11 +414,29 @@ export default function DishListsScreen() {
               style={styles.headerLoader}
             />
           )}
+          {/* Search is here (already exists in your code) */}
+          {/* Add button moved here */}
           <TouchableOpacity
             style={styles.addButton}
             onPress={handleCreateDishList}
           >
             <Plus size={24} color="#2563eb" />
+          </TouchableOpacity>
+          {/* Profile button - NEW */}
+          <TouchableOpacity
+            style={styles.profileButton}
+            onPress={handleProfilePress}
+          >
+            {userProfile?.avatarUrl ? (
+              <Image
+                source={{ uri: userProfile.avatarUrl }}
+                style={styles.profileAvatar}
+              />
+            ) : (
+              <View style={styles.profileAvatarPlaceholder}>
+                <User size={20} color={theme.colors.neutral[600]} />
+              </View>
+            )}
           </TouchableOpacity>
         </View>
       </View>
@@ -636,4 +664,21 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.neutral[200],
     borderRadius: 6,
   },
+  profileButton: {
+    marginLeft: 12,
+  },
+  profileAvatar: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: theme.colors.neutral[200],
+  },
+  profileAvatarPlaceholder: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: theme.colors.neutral[200],
+    justifyContent: "center",
+    alignItems: "center",
+  }
 });
