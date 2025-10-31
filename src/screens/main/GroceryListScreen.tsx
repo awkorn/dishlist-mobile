@@ -8,11 +8,9 @@ import {
   TextInput,
   Alert,
 } from "react-native";
-import {
-  SafeAreaView,
-  useSafeAreaInsets,
-} from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Trash2, CheckSquare, Square, Plus } from "lucide-react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import { Swipeable } from "react-native-gesture-handler";
 import { theme } from "../../styles/theme";
 import { typography } from "../../styles/typography";
@@ -29,10 +27,8 @@ export default function GroceryListScreen() {
     loadItems();
   }, []);
 
-  // Auto-focus input when entering edit mode
   useEffect(() => {
     if (isAddingItem) {
-      // Small delay to ensure render completes
       setTimeout(() => inputRef.current?.focus(), 100);
     }
   }, [isAddingItem]);
@@ -53,12 +49,9 @@ export default function GroceryListScreen() {
   };
 
   const handleStartAdding = async () => {
-    // If already editing with text, save current item first
     if (isAddingItem && editingText.trim()) {
       await saveCurrentItem();
     }
-    
-    // Start new item
     setIsAddingItem(true);
     setEditingText("");
   };
@@ -78,10 +71,7 @@ export default function GroceryListScreen() {
   };
 
   const handleBlur = () => {
-    // If text is empty when keyboard dismissed, exit edit mode
-    if (!editingText.trim()) {
-      setIsAddingItem(false);
-    }
+    if (!editingText.trim()) setIsAddingItem(false);
   };
 
   const handleClearChecked = () => {
@@ -111,11 +101,8 @@ export default function GroceryListScreen() {
 
   const handleCheckAll = async () => {
     const allChecked = items.every((i) => i.checked);
-    if (allChecked) {
-      await groceryStorage.uncheckAll();
-    } else {
-      await groceryStorage.checkAll();
-    }
+    if (allChecked) await groceryStorage.uncheckAll();
+    else await groceryStorage.checkAll();
     loadItems();
   };
 
@@ -132,8 +119,15 @@ export default function GroceryListScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
-      <SafeAreaView edges={["top"]} style={styles.headerSafeArea}>
+      <LinearGradient
+        colors={["#FFFFFF", "#F4F2EE"]}
+        locations={[0, 1]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
+        style={{
+          paddingTop: insets.top,
+        }}
+      >
         <View style={styles.header}>
           <Text style={styles.title}>Grocery List</Text>
           <View style={styles.headerButtons}>
@@ -151,12 +145,14 @@ export default function GroceryListScreen() {
                 {allChecked ? "Uncheck All" : "Check All"}
               </Text>
             </TouchableOpacity>
+
             <TouchableOpacity
               style={styles.headerButton}
               onPress={handleClearChecked}
             >
               <Text style={styles.headerButtonText}>Clear Checked</Text>
             </TouchableOpacity>
+
             <TouchableOpacity
               style={styles.addButton}
               onPress={handleStartAdding}
@@ -165,9 +161,8 @@ export default function GroceryListScreen() {
             </TouchableOpacity>
           </View>
         </View>
-      </SafeAreaView>
+      </LinearGradient>
 
-      {/* List */}
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={[
@@ -177,17 +172,13 @@ export default function GroceryListScreen() {
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
       >
-        {/* Empty State */}
         {items.length === 0 && !isAddingItem && (
           <View style={styles.emptyState}>
             <Text style={styles.emptyTitle}>Your list is empty</Text>
-            <Text style={styles.emptyText}>
-              Tap + to add your first item
-            </Text>
+            <Text style={styles.emptyText}>Tap + to add your first item</Text>
           </View>
         )}
 
-        {/* Editing Row (appears at top when adding) */}
         {isAddingItem && (
           <>
             <View style={styles.editingRow}>
@@ -211,7 +202,6 @@ export default function GroceryListScreen() {
           </>
         )}
 
-        {/* Existing Items */}
         {items.map((item, index) => (
           <View key={item.id}>
             <Swipeable
@@ -249,14 +239,9 @@ export default function GroceryListScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: theme.colors.background,
-  },
-  headerSafeArea: {
-    backgroundColor: theme.colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.neutral[200],
+  container: { flex: 1, backgroundColor: theme.colors.background },
+  gradientContainer: {
+    width: "100%",
   },
   header: {
     paddingHorizontal: theme.spacing.xl,
@@ -281,21 +266,16 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: theme.colors.primary[500],
   },
-  disabledText: {
-    color: theme.colors.neutral[400],
-  },
-  addButton: {
-    padding: theme.spacing.sm,
-    marginLeft: "auto",
-  },
-  scrollView: {
-    flex: 1,
-  },
+  disabledText: { color: theme.colors.neutral[400] },
+  addButton: { padding: theme.spacing.sm, marginLeft: "auto" },
+
+  scrollView: { flex: 1 },
   scrollContent: {
     marginTop: theme.spacing.lg,
     paddingTop: theme.spacing.sm,
-    paddingHorizontal: theme.spacing.md,  
+    paddingHorizontal: theme.spacing.md,
   },
+
   emptyState: {
     paddingHorizontal: theme.spacing["4xl"],
     paddingVertical: theme.spacing["4xl"],
@@ -312,6 +292,7 @@ const styles = StyleSheet.create({
     color: theme.colors.neutral[500],
     textAlign: "center",
   },
+
   editingRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -327,6 +308,7 @@ const styles = StyleSheet.create({
     color: theme.colors.neutral[800],
     paddingVertical: 0,
   },
+
   itemContainer: {
     flexDirection: "row",
     alignItems: "center",
@@ -335,9 +317,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surface,
     gap: theme.spacing.sm,
   },
-  itemCheckbox: {
-    padding: theme.spacing.xs,
-  },
+  itemCheckbox: { padding: theme.spacing.xs },
   itemText: {
     ...typography.body,
     color: theme.colors.neutral[800],
@@ -347,6 +327,7 @@ const styles = StyleSheet.create({
     textDecorationLine: "line-through",
     color: theme.colors.neutral[500],
   },
+
   divider: {
     height: 1,
     backgroundColor: theme.colors.neutral[200],
