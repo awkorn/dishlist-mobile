@@ -10,7 +10,7 @@ import {
   Dimensions,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { ChevronLeft, User as UserIcon } from "lucide-react-native";
+import { MoveLeft, User as UserIcon } from "lucide-react-native";
 import { useQuery } from "@tanstack/react-query";
 import { theme } from "../../styles/theme";
 import { typography } from "../../styles/typography";
@@ -103,7 +103,7 @@ export default function ProfileScreen() {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-          <ChevronLeft size={24} color={theme.colors.neutral[700]} />
+          <MoveLeft size={24} color={theme.colors.neutral[700]} />
         </TouchableOpacity>
         <View style={styles.headerSpacer} />
       </View>
@@ -130,7 +130,7 @@ export default function ProfileScreen() {
                   onPress={handleEditProfile}
                   style={styles.editIconBtn}
                 >
-                  <Text style={styles.editIconText}>Edit</Text>
+                  <Text style={styles.editIconText}>Edit Profile</Text>
                 </TouchableOpacity>
               )}
             </View>
@@ -252,7 +252,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   backButton: {
-    padding: 4,
+    padding: 1,
   },
   headerSpacer: {
     flex: 1,
@@ -331,7 +331,7 @@ const styles = StyleSheet.create({
   displayName: {
     ...typography.heading3,
     color: theme.colors.neutral[900],
-    marginBottom: 4,
+    marginBottom: 1,
   },
   username: {
     ...typography.body,
@@ -350,7 +350,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   stat: {
-    alignItems: "center",
+    alignItems: "flex-start",
   },
   statNumber: {
     ...typography.body,
@@ -365,9 +365,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: 8,
-    borderWidth: 1,
-    borderColor: theme.colors.neutral[300],
-    backgroundColor: theme.colors.neutral[100],
+    backgroundColor: theme.colors.neutral[200],
   },
   editIconText: {
     ...typography.caption,
@@ -391,7 +389,7 @@ const styles = StyleSheet.create({
   },
   tabText: {
     ...typography.subtitle,
-    color: theme.colors.neutral[600],
+    color: theme.colors.neutral[500],
   },
   activeTabText: {
     color: theme.colors.secondary[50],

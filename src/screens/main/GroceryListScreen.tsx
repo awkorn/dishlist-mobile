@@ -271,7 +271,7 @@ const styles = StyleSheet.create({
 
   scrollView: { flex: 1 },
   scrollContent: {
-    marginTop: theme.spacing.lg,
+    marginTop: theme.spacing.xs,
     paddingTop: theme.spacing.sm,
     paddingHorizontal: theme.spacing.md,
   },
@@ -331,7 +331,6 @@ const styles = StyleSheet.create({
   divider: {
     height: 1,
     backgroundColor: theme.colors.neutral[200],
-    marginHorizontal: theme.spacing.xl,
   },
   deleteButton: {
     backgroundColor: theme.colors.error,
