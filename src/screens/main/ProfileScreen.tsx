@@ -23,7 +23,7 @@ import { RootStackParamList } from "../../types/navigation";
 import EditProfileSheet from "../../components/profile/EditProfileSheet";
 
 const { width } = Dimensions.get("window");
-const tileWidth = (width - 60) / 2;
+const tileWidth = (width - theme.spacing.xl * 2 - theme.spacing.lg) / 2;
 
 type ProfileScreenRouteProp = RouteProp<RootStackParamList, "Profile">;
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -111,7 +111,6 @@ export default function ProfileScreen() {
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Profile Header */}
         <View style={styles.profileHeader}>
-          {/* Avatar */}
           <View style={styles.avatarContainer}>
             {user.avatarUrl ? (
               <Image source={{ uri: user.avatarUrl }} style={styles.avatar} />
@@ -122,15 +121,25 @@ export default function ProfileScreen() {
             )}
           </View>
 
-          {/* User Info */}
-          <View style={styles.userInfo}>
-            <Text style={styles.displayName}>{displayName}</Text>
+          <View style={{ flex: 1 }}>
+            <View style={styles.nameRow}>
+              <Text style={styles.displayName}>{displayName}</Text>
+
+              {user.isOwnProfile && (
+                <TouchableOpacity
+                  onPress={handleEditProfile}
+                  style={styles.editIconBtn}
+                >
+                  <Text style={styles.editIconText}>Edit</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+
             {user.username && (
               <Text style={styles.username}>@{user.username}</Text>
             )}
             {user.bio && <Text style={styles.bio}>{user.bio}</Text>}
 
-            {/* Follower Stats */}
             <View style={styles.statsRow}>
               <View style={styles.stat}>
                 <Text style={styles.statNumber}>{user.followerCount}</Text>
@@ -143,16 +152,6 @@ export default function ProfileScreen() {
                 <Text style={styles.statLabel}>Following</Text>
               </View>
             </View>
-
-            {/* Edit Profile Button (only for own profile) */}
-            {user.isOwnProfile && (
-              <TouchableOpacity
-                style={styles.editButton}
-                onPress={handleEditProfile}
-              >
-                <Text style={styles.editButtonText}>Edit Profile</Text>
-              </TouchableOpacity>
-            )}
           </View>
         </View>
 
@@ -298,9 +297,10 @@ const styles = StyleSheet.create({
   },
   profileHeader: {
     flexDirection: "row",
-    padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.neutral[200],
+    paddingHorizontal: 20,
+    paddingTop: 8,
+    paddingBottom: 16,
+    alignItems: "flex-start",
   },
   avatarContainer: {
     marginRight: 16,
@@ -322,6 +322,12 @@ const styles = StyleSheet.create({
   userInfo: {
     flex: 1,
   },
+  nameRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 4,
+  },
   displayName: {
     ...typography.heading3,
     color: theme.colors.neutral[900],
@@ -339,7 +345,8 @@ const styles = StyleSheet.create({
   },
   statsRow: {
     flexDirection: "row",
-    gap: 20,
+    gap: 30,
+    marginTop: 5,
     marginBottom: 16,
   },
   stat: {
@@ -354,37 +361,36 @@ const styles = StyleSheet.create({
     ...typography.body,
     color: theme.colors.neutral[600],
   },
-  editButton: {
-    backgroundColor: theme.colors.neutral[100],
-    paddingVertical: 8,
-    paddingHorizontal: 16,
+  editIconBtn: {
+    paddingVertical: 6,
+    paddingHorizontal: 12,
     borderRadius: 8,
-    alignSelf: "flex-start",
     borderWidth: 1,
     borderColor: theme.colors.neutral[300],
+    backgroundColor: theme.colors.neutral[100],
   },
-  editButtonText: {
-    ...typography.body,
+  editIconText: {
+    ...typography.caption,
     fontWeight: "600",
     color: theme.colors.neutral[700],
   },
   tabRow: {
     flexDirection: "row",
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.neutral[200],
-    paddingHorizontal: 20,
+    marginBottom: theme.spacing.xl,
   },
   tab: {
+    flex: 1,
     paddingVertical: 12,
-    paddingHorizontal: 16,
-    marginRight: 8,
+    alignItems: "center",
+    justifyContent: "center",
   },
   activeTab: {
     borderBottomWidth: 2,
     borderBottomColor: theme.colors.secondary[50],
+    marginHorizontal: 10,
   },
   tabText: {
-    ...typography.body,
+    ...typography.subtitle,
     color: theme.colors.neutral[600],
   },
   activeTabText: {
@@ -392,12 +398,12 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   content: {
-    padding: 20,
+    padding: theme.spacing.xl,
   },
   grid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 20,
+    gap: theme.spacing.lg,
   },
   emptyContainer: {
     paddingVertical: 40,

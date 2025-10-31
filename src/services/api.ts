@@ -197,7 +197,6 @@ export const addRecipeToDishList = async (
 export const getRecipeDishLists = async (
   recipeId: string
 ): Promise<string[]> => {
-  // Returns array of dishListIds that contain this recipe
   const response = await api.get(`/recipes/${recipeId}/dishlists`);
   return response.data.dishListIds;
 };
