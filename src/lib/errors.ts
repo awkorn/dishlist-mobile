@@ -31,8 +31,6 @@ const authErrorMap: Record<string, ErrorMapping> = {
     message: 'Too many failed attempts',
     action: 'Please try again later or reset your password',
   },
-  
-  // Sign up errors
   'auth/email-already-in-use': {
     message: 'An account with this email already exists',
     action: 'Try logging in instead',
@@ -45,8 +43,6 @@ const authErrorMap: Record<string, ErrorMapping> = {
     message: 'Email/password sign-in is not enabled',
     action: 'Contact support',
   },
-  
-  // Network errors
   'auth/network-request-failed': {
     message: 'Connection error',
     action: 'Check your internet connection and try again',
@@ -76,7 +72,7 @@ const apiErrorMap: Record<number, ErrorMapping> = {
   },
   404: {
     message: 'Not found',
-    action: 'The item you\'re looking for doesn\'t exist',
+    action: "The item you're looking for doesn't exist",
   },
   409: {
     message: 'Conflict',
@@ -96,7 +92,7 @@ const apiErrorMap: Record<number, ErrorMapping> = {
   },
   503: {
     message: 'Service unavailable',
-    action: 'We\'re experiencing issues. Please try again soon',
+    action: "We're experiencing issues. Please try again soon",
   },
 };
 
@@ -104,79 +100,61 @@ const apiErrorMap: Record<number, ErrorMapping> = {
 // Error Extraction Functions
 // ============================================================================
 
-/**
- * Extract user-friendly error from Firebase Auth error
- */
 export function getAuthErrorMessage(error: any): ErrorMapping {
-  // Extract Firebase error code
   const code = error?.code || '';
-  
-  // Check if we have a mapping for this error
+
   if (authErrorMap[code]) {
     return authErrorMap[code];
   }
-  
-  // Check for network errors
+
   if (error?.message?.includes('network') || error?.message?.includes('connection')) {
     return {
       message: 'Connection error',
       action: 'Check your internet and try again',
     };
   }
-  
-  // Default fallback
+
   return {
     message: 'Something went wrong',
     action: 'Please try again',
   };
 }
 
-/**
- * Extract user-friendly error from API error
- */
 export function getApiErrorMessage(error: any): ErrorMapping {
-  // Check for specific error message from backend
   if (error?.response?.data?.error) {
     return {
       message: error.response.data.error,
     };
   }
-  
-  // Check HTTP status code
+
   const status = error?.response?.status;
   if (status && apiErrorMap[status]) {
     return apiErrorMap[status];
   }
-  
-  // Check for network errors
+
   if (!error?.response) {
     return {
       message: 'No internet connection',
       action: 'Check your connection and try again',
     };
   }
-  
-  // Default fallback
+
   return {
     message: 'Something went wrong',
     action: 'Please try again',
   };
 }
 
-/**
- * Get a simple error message string (for backward compatibility)
- */
 export function getErrorMessage(error: any): string {
   const authError = getAuthErrorMessage(error);
   const apiError = getApiErrorMessage(error);
-  
-  // Try auth error first, then API error
+
   if (error?.code?.startsWith('auth/')) {
-    return authError.action 
+    return authError.action
       ? `${authError.message}. ${authError.action}`
       : authError.message;
   }
-  
+
   return apiError.action
     ? `${apiError.message}. ${apiError.action}`
     : apiError.message;

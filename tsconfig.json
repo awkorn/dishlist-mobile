@@ -1,6 +1,22 @@
 {
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
-    "strict": true
-  }
+    "strict": true,
+    "baseUrl": ".",
+    "paths": {
+      "@features/*": ["src/features/*"],
+      "@components/*": ["src/components/*"],
+      "@lib/*": ["src/lib/*"],
+      "@services/*": ["src/services/*"],
+      "@hooks/*": ["src/hooks/*"],
+      "@providers/*": ["src/providers/*"],
+      "@navigation/*": ["src/navigation/*"],
+      "@app-types": ["src/types"],
+      "@app-types/*": ["src/types/*"],
+      "@styles/*": ["src/styles/*"]
+    },
+    "types": ["jest", "@testing-library/jest-native"]
+  },
+  "include": ["**/*.ts", "**/*.tsx", "jest.setup.js"],
+  "exclude": ["node_modules"]
 }

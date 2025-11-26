@@ -21,7 +21,7 @@ import { typography } from "../../styles/typography";
 import Button from "../../components/ui/Button";
 import { createRecipe } from "../../services/api";
 import { useUpdateRecipe } from "../../hooks/mutations/useRecipeMutations";
-import { uploadImage } from "../../services/firebase";
+import { uploadImage } from "../../services/image";
 import { queryKeys } from "../../lib/queryKeys";
 import NutritionFacts from "../../components/recipe/NutritionFacts";
 import NutritionSection from "../../components/recipe/NutritionSection";

@@ -19,7 +19,7 @@ import { useMutation } from "@tanstack/react-query";
 import { theme } from "../../styles/theme";
 import { typography } from "../../styles/typography";
 import { UserProfile, updateUserProfile } from "../../services/api";
-import { uploadImage } from "../../services/firebase";
+import { uploadImage } from "../../services/image";
 import Button from "../ui/Button";
 
 interface EditProfileSheetProps {

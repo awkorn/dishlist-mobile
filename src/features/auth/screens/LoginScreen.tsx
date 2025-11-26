@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -6,29 +6,32 @@ import {
   TouchableOpacity,
   StyleSheet,
   Image,
-} from "react-native";
-import { useAuth } from "../../providers/AuthProvider/AuthContext";
-import { typography } from "../../styles/typography";
-import { theme } from "../../styles/theme";
-import Button from "../../components/ui/Button";
-import InlineError from "../../components/ui/InlineError";
-import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-import { getAuthErrorMessage } from "../../utils/errors";
+} from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { useAuth } from '@providers/AuthProvider/AuthContext';
+import { getAuthErrorMessage } from '@lib/errors';
+import { VALIDATION } from '@lib/constants';
+import { typography } from '@styles/typography';
+import { theme } from '@styles/theme';
+import Button from '@components/ui/Button';
+import InlineError from '@components/ui/InlineError';
 
-export default function LoginScreen({ navigation }: any) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+interface LoginScreenProps {
+  navigation: any;
+}
+
+export default function LoginScreen({ navigation }: LoginScreenProps) {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<{ message: string; action?: string } | null>(null);
   const { signIn } = useAuth();
 
   const handleLogin = async () => {
-    // Clear previous errors
     setError(null);
 
-    // Basic validation
     if (!email.trim()) {
-      setError({ 
+      setError({
         message: 'Email is required',
         action: 'Please enter your email address',
       });
@@ -36,7 +39,7 @@ export default function LoginScreen({ navigation }: any) {
     }
 
     if (!password.trim()) {
-      setError({ 
+      setError({
         message: 'Password is required',
         action: 'Please enter your password',
       });
@@ -47,14 +50,12 @@ export default function LoginScreen({ navigation }: any) {
 
     try {
       const result = await signIn(email, password);
-      
+
       if (result.error) {
-        // Convert Firebase error to user-friendly message
         const errorInfo = getAuthErrorMessage({ code: result.error });
         setError(errorInfo);
       }
     } catch (err) {
-      // Fallback for unexpected errors
       setError({
         message: 'Something went wrong',
         action: 'Please try again',
@@ -79,7 +80,7 @@ export default function LoginScreen({ navigation }: any) {
         <View style={styles.header}>
           <View style={styles.logoContainer}>
             <Image
-              source={require("../../../assets/images/dishlist-logo.png")}
+              source={require('../../../../assets/images/dishlist-logo.png')}
               style={styles.logo}
               resizeMode="contain"
             />
@@ -87,19 +88,12 @@ export default function LoginScreen({ navigation }: any) {
           <Text style={styles.title}>DishList</Text>
         </View>
 
-        {/* Error Message */}
         {error && (
           <InlineError
             message={error.message}
-            action={
-              error.message.includes('password') 
-                ? 'Reset Password' 
-                : undefined
-            }
+            action={error.message.includes('password') ? 'Reset Password' : undefined}
             onActionPress={
-              error.message.includes('password')
-                ? handleForgotPassword
-                : undefined
+              error.message.includes('password') ? handleForgotPassword : undefined
             }
           />
         )}
@@ -115,13 +109,14 @@ export default function LoginScreen({ navigation }: any) {
             value={email}
             onChangeText={(text) => {
               setEmail(text);
-              setError(null); 
+              setError(null);
             }}
             keyboardType="email-address"
             autoCapitalize="none"
             autoCorrect={false}
             autoComplete="email"
             editable={!loading}
+            testID="email-input"
           />
 
           <TextInput
@@ -134,11 +129,12 @@ export default function LoginScreen({ navigation }: any) {
             value={password}
             onChangeText={(text) => {
               setPassword(text);
-              setError(null); 
+              setError(null);
             }}
             secureTextEntry
             autoComplete="password"
             editable={!loading}
+            testID="password-input"
           />
 
           <Button
@@ -149,7 +145,7 @@ export default function LoginScreen({ navigation }: any) {
             style={styles.loginButton}
           />
 
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={handleForgotPassword}
             style={styles.forgotPassword}
             disabled={loading}
@@ -160,9 +156,10 @@ export default function LoginScreen({ navigation }: any) {
 
         <View style={styles.footer}>
           <Text style={styles.footerText}>New user? </Text>
-          <TouchableOpacity 
-            onPress={() => navigation.navigate("SignUp")}
+          <TouchableOpacity
+            onPress={() => navigation.navigate('SignUp')}
             disabled={loading}
+            testID="signup-link"
           >
             <Text style={styles.linkText}>Sign up</Text>
           </TouchableOpacity>
@@ -176,16 +173,16 @@ const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
     backgroundColor: theme.colors.background,
-    justifyContent: "center",
+    justifyContent: 'center',
     paddingHorizontal: theme.spacing['4xl'],
   },
   content: {
     flex: 1,
-    justifyContent: "center",
+    justifyContent: 'center',
     marginTop: -150,
   },
   header: {
-    alignItems: "center",
+    alignItems: 'center',
     marginBottom: theme.spacing['4xl'],
   },
   logoContainer: {
@@ -228,14 +225,14 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   footer: {
-    flexDirection: "row",
-    justifyContent: "center",
+    flexDirection: 'row',
+    justifyContent: 'center',
   },
   footerText: {
     color: theme.colors.neutral[500],
   },
   linkText: {
     color: theme.colors.primary[500],
-    fontWeight: "600",
+    fontWeight: '600',
   },
 });

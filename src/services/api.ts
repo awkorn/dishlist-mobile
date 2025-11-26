@@ -1,5 +1,5 @@
 import axios from "axios";
-import { auth } from "../config/firebase";
+import { auth } from '@services/firebase';
 
 // TODO : Update the API base URL
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:3000";

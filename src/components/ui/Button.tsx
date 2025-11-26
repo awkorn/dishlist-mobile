@@ -1,13 +1,20 @@
-import React from 'react';
-import { TouchableOpacity, Text, StyleSheet, ActivityIndicator, ViewStyle, TextStyle } from 'react-native';
-import { theme } from '../../styles/theme';
-import { typography } from '../../styles/typography';
+import React from "react";
+import {
+  TouchableOpacity,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+  ViewStyle,
+  TextStyle,
+} from "react-native";
+import { theme } from "../../styles/theme";
+import { typography } from "../../styles/typography";
 
 interface ButtonProps {
   title: string;
   onPress: () => void;
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
-  size?: 'sm' | 'md' | 'lg';
+  variant?: "primary" | "secondary" | "outline" | "ghost";
+  size?: "sm" | "md" | "lg";
   disabled?: boolean;
   loading?: boolean;
   style?: ViewStyle;
@@ -17,8 +24,8 @@ interface ButtonProps {
 export default function Button({
   title,
   onPress,
-  variant = 'primary',
-  size = 'md',
+  variant = "primary",
+  size = "md",
   disabled = false,
   loading = false,
   style,
@@ -49,8 +56,9 @@ export default function Button({
     >
       {loading ? (
         <ActivityIndicator
+          testID="button-loading"
           size="small"
-          color={variant === 'primary' ? 'white' : theme.colors.primary[500]}
+          color={variant === "primary" ? "white" : theme.colors.primary[500]}
         />
       ) : (
         <Text style={textStyles}>{title}</Text>
@@ -62,9 +70,9 @@ export default function Button({
 const styles = StyleSheet.create({
   base: {
     borderRadius: theme.borderRadius.md,
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexDirection: 'row',
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
   },
   // Variants
   primary: {
@@ -74,12 +82,12 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.secondary[50],
   },
   outline: {
-    backgroundColor: 'transparent',
+    backgroundColor: "transparent",
     borderWidth: 1,
     borderColor: theme.colors.primary[500],
   },
   ghost: {
-    backgroundColor: 'transparent',
+    backgroundColor: "transparent",
   },
   // Sizes
   sm: {
@@ -99,10 +107,10 @@ const styles = StyleSheet.create({
     ...typography.button,
   },
   primaryText: {
-    color: 'white',
+    color: "white",
   },
   secondaryText: {
-    color: 'white',
+    color: "white",
   },
   outlineText: {
     color: theme.colors.primary[500],

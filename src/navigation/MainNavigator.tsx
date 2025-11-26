@@ -1,16 +1,19 @@
-import React from "react";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { useAuth } from "../providers/AuthProvider/AuthContext";
-import { View, ActivityIndicator, StyleSheet } from "react-native";
-import LoginScreen from "../screens/auth/LoginScreen";
-import SignUpScreen from "../screens/auth/SignUpScreen";
-import CreateDishListScreen from "../screens/main/CreateDishListScreen";
-import DishListDetailScreen from "../screens/main/DishListDetailScreen";
-import AddRecipeScreen from "../screens/main/AddRecipeScreen";
-import RecipeDetailScreen from "../screens/main/RecipeDetailScreen";
-import ProfileScreen from "../screens/main/ProfileScreen";
-import TabNavigator from "./TabNavigator";
-import { RootStackParamList } from "../types/navigation";
+import React from 'react';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { useAuth } from '@providers/AuthProvider/AuthContext';
+import { View, ActivityIndicator, StyleSheet } from 'react-native';
+
+// Auth screens from feature
+import { LoginScreen, SignUpScreen } from '@features/auth';
+
+// Other screens (will migrate in Phase 3)
+import CreateDishListScreen from '../screens/main/CreateDishListScreen';
+import DishListDetailScreen from '../screens/main/DishListDetailScreen';
+import AddRecipeScreen from '../screens/main/AddRecipeScreen';
+import RecipeDetailScreen from '../screens/main/RecipeDetailScreen';
+import ProfileScreen from '../screens/main/ProfileScreen';
+import TabNavigator from './TabNavigator';
+import { RootStackParamList } from '@app-types/navigation';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -31,26 +34,23 @@ export default function MainNavigator() {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       {user ? (
         <Stack.Group>
-          {/* Main Tabs - This is the home screen */}
           <Stack.Screen name="Home" component={TabNavigator} />
-
-          {/* Modal Screens */}
           <Stack.Screen
             name="CreateDishList"
             component={CreateDishListScreen}
             options={{
-              presentation: "modal",
+              presentation: 'modal',
               gestureEnabled: true,
-              gestureDirection: "vertical",
+              gestureDirection: 'vertical',
             }}
           />
           <Stack.Screen
             name="EditDishList"
             component={CreateDishListScreen}
             options={{
-              presentation: "modal",
+              presentation: 'modal',
               gestureEnabled: true,
-              gestureDirection: "vertical",
+              gestureDirection: 'vertical',
             }}
           />
           <Stack.Screen
@@ -62,9 +62,9 @@ export default function MainNavigator() {
             name="AddRecipe"
             component={AddRecipeScreen}
             options={{
-              presentation: "modal",
+              presentation: 'modal',
               gestureEnabled: true,
-              gestureDirection: "vertical",
+              gestureDirection: 'vertical',
             }}
           />
           <Stack.Screen
@@ -91,8 +91,8 @@ export default function MainNavigator() {
 const styles = StyleSheet.create({
   loadingContainer: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#f5f5f5",
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f5f5f5',
   },
 });
