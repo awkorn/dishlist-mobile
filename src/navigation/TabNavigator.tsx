@@ -10,7 +10,7 @@ import {
 import { View, Text, StyleSheet } from "react-native";
 import { theme } from "../styles/theme";
 import DishListsScreen from "../screens/main/DishListsScreen";
-import GroceryListScreen from "../screens/main/GroceryListScreen";
+import { GroceryListScreen } from "@features/grocery";
 
 const Tab = createBottomTabNavigator();
 

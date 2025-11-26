@@ -32,7 +32,7 @@ import CookModeModal from "../../components/recipe/CookModeModal";
 import AddToDishListModal from "../../components/recipe/AddToDishListModal";
 import { useAuth } from "../../providers/AuthProvider/AuthContext";
 import { useRemoveRecipeFromDishList } from "../../hooks/mutations/useDishListMutations";
-import { groceryStorage } from "../../services/groceryStorage";
+import { groceryStorage } from "@features/grocery";
 import { queryKeys } from "../../lib/queryKeys";
 
 interface RecipeDetailScreenProps {
