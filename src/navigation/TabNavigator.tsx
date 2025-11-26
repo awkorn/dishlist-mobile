@@ -9,7 +9,7 @@ import {
 } from "lucide-react-native";
 import { View, Text, StyleSheet } from "react-native";
 import { theme } from "../styles/theme";
-import DishListsScreen from "../screens/main/DishListsScreen";
+import { DishListsScreen } from '@features/dishlist';
 import { GroceryListScreen } from "@features/grocery";
 
 const Tab = createBottomTabNavigator();

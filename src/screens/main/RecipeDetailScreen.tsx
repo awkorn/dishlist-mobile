@@ -31,7 +31,7 @@ import NutritionSection from "../../components/recipe/NutritionSection";
 import CookModeModal from "../../components/recipe/CookModeModal";
 import AddToDishListModal from "../../components/recipe/AddToDishListModal";
 import { useAuth } from "../../providers/AuthProvider/AuthContext";
-import { useRemoveRecipeFromDishList } from "../../hooks/mutations/useDishListMutations";
+import { useRemoveRecipeFromDishList } from "@features/dishlist"
 import { groceryStorage } from "@features/grocery";
 import { queryKeys } from "../../lib/queryKeys";
 

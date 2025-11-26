@@ -22,22 +22,18 @@ import {
   Trash2,
   UserPlus,
 } from "lucide-react-native";
-import { useQuery } from "@tanstack/react-query";
-import { typography } from "../../styles/typography";
-import { theme } from "../../styles/theme";
-import { getDishListDetail } from "../../services/api";
+import { typography } from "@styles/typography";
+import { theme } from "@styles/theme";
+import RecipeTile from "@components/recipe/RecipeTile";
+import ActionSheet, { ActionSheetOption } from "@components/ui/ActionSheet";
+import { QueryErrorBoundary } from "@providers/ErrorBoundary";
+import { DishListDetailScreenProps } from "@app-types/navigation";
 import {
+  useDishListDetail,
   useTogglePinDishList,
   useToggleFollowDishList,
   useDeleteDishList,
-} from "../../hooks/mutations/useDishListMutations";
-import RecipeTile from "../../components/recipe/RecipeTile";
-import ActionSheet, {
-  ActionSheetOption,
-} from "../../components/ui/ActionSheet";
-import { QueryErrorBoundary } from "../../providers/ErrorBoundary";
-import { queryKeys } from "../../lib/queryKeys";
-import { DishListDetailScreenProps } from "../../types/navigation";
+} from "../hooks";
 
 export default function DishListDetailScreen({
   route,
@@ -48,35 +44,21 @@ export default function DishListDetailScreen({
   const [showActionSheet, setShowActionSheet] = useState(false);
 
   const {
-    data: dishList,
+    dishList,
+    filteredRecipes,
     isLoading,
     isError,
-    error,
-    refetch,
     isRefetching,
-  } = useQuery({
-    queryKey: queryKeys.dishLists.detail(dishListId),
-    queryFn: async () => {
-      const result = await getDishListDetail(dishListId);
-      return result;
-    },
-    staleTime: 2 * 60 * 1000,
-  });
+    refetch,
+  } = useDishListDetail({ dishListId, searchQuery });
 
-  // Mutations
-  const followMutation = useToggleFollowDishList();
   const pinMutation = useTogglePinDishList();
+  const followMutation = useToggleFollowDishList();
   const deleteMutation = useDeleteDishList();
 
-  const filteredRecipes = useMemo(() => {
-    if (!dishList?.recipes) return [];
-    if (!searchQuery.trim()) return dishList.recipes;
-    return dishList.recipes.filter(
-      (recipe) =>
-        recipe.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        recipe.description?.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  }, [dishList?.recipes, searchQuery]);
+  const handleRefresh = useCallback(() => {
+    refetch();
+  }, [refetch]);
 
   const actionSheetOptions: ActionSheetOption[] = useMemo(() => {
     if (!dishList) return [];
@@ -91,7 +73,11 @@ export default function DishListDetailScreen({
           onPress: () =>
             navigation.navigate("EditDishList", {
               dishListId,
-              dishList,
+              dishList: {
+                title: dishList.title,
+                description: dishList.description,
+                visibility: dishList.visibility,
+              },
             }),
         },
         {
@@ -118,7 +104,6 @@ export default function DishListDetailScreen({
         }),
     });
 
-    // Only show delete option for owners AND non-default DishLists
     if (dishList.isOwner && !dishList.isDefault) {
       options.push({
         title: "Delete DishList",
@@ -135,9 +120,7 @@ export default function DishListDetailScreen({
                 style: "destructive",
                 onPress: () => {
                   deleteMutation.mutate(dishListId, {
-                    onSuccess: () => {
-                      navigation.goBack();
-                    },
+                    onSuccess: () => navigation.goBack(),
                   });
                 },
               },
@@ -149,10 +132,6 @@ export default function DishListDetailScreen({
 
     return options;
   }, [dishList, navigation, pinMutation, deleteMutation, dishListId]);
-
-  const handleRefresh = useCallback(() => {
-    refetch();
-  }, [refetch]);
 
   if (isLoading) {
     return (
@@ -190,7 +169,6 @@ export default function DishListDetailScreen({
       <SafeAreaView style={styles.container}>
         {/* Header */}
         <View style={styles.header}>
-          {/* Row 1: Back button and search bar */}
           <View style={styles.topRow}>
             <TouchableOpacity
               onPress={() => navigation.goBack()}
@@ -199,7 +177,6 @@ export default function DishListDetailScreen({
               <ChevronLeft size={24} color={theme.colors.neutral[700]} />
             </TouchableOpacity>
 
-            {/* Search Bar */}
             <View style={styles.searchContainer}>
               <Search
                 size={20}
@@ -217,16 +194,14 @@ export default function DishListDetailScreen({
             </View>
           </View>
 
-          {/* Row 2: Title + menu */}
           <View style={styles.titleRow}>
             <View style={{ flex: 1 }}>
               <Text style={styles.headerTitle} numberOfLines={1}>
                 {dishList.title}
               </Text>
 
-              {/* Row 3: Info */}
               <View style={styles.infoRow}>
-                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <View style={styles.infoItem}>
                   <Text
                     style={[
                       styles.infoText,
@@ -256,43 +231,51 @@ export default function DishListDetailScreen({
             </View>
 
             <TouchableOpacity
-              onPress={() => setShowActionSheet(true)}
               style={styles.menuButton}
+              onPress={() => setShowActionSheet(true)}
             >
               <MoreHorizontal size={24} color={theme.colors.neutral[700]} />
             </TouchableOpacity>
           </View>
         </View>
 
-        {/* Recipes Grid */}
+        {/* Recipe Grid */}
         <ScrollView
-          style={styles.scrollContainer}
+          style={styles.content}
           contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
           refreshControl={
             <RefreshControl
               refreshing={isRefetching}
               onRefresh={handleRefresh}
-              colors={[theme.colors.primary[500]]}
-              tintColor={theme.colors.primary[500]}
+              colors={["#2563eb"]}
+              tintColor="#2563eb"
             />
           }
         >
           {filteredRecipes.length === 0 ? (
             <View style={styles.emptyContainer}>
               <Text style={styles.emptyTitle}>
-                {searchQuery ? "No matching recipes" : "No recipes yet"}
+                {searchQuery ? "No Recipes Found" : "No Recipes Yet"}
               </Text>
               <Text style={styles.emptyText}>
                 {searchQuery
                   ? `No recipes match "${searchQuery}"`
-                  : dishList.isOwner
-                  ? "Add your first recipe to get started"
-                  : "This DishList is empty"}
+                  : "Add your first recipe to this DishList"}
               </Text>
+              {!searchQuery && dishList.isOwner && (
+                <TouchableOpacity
+                  style={styles.addRecipeButton}
+                  onPress={() =>
+                    navigation.navigate("AddRecipe", { dishListId })
+                  }
+                >
+                  <Plus size={20} color="white" />
+                  <Text style={styles.addRecipeButtonText}>Add Recipe</Text>
+                </TouchableOpacity>
+              )}
             </View>
           ) : (
-            <View style={styles.recipesGrid}>
+            <View style={styles.recipeGrid}>
               {filteredRecipes.map((recipe) => (
                 <RecipeTile
                   key={recipe.id}
@@ -300,7 +283,7 @@ export default function DishListDetailScreen({
                   onPress={() =>
                     navigation.navigate("RecipeDetail", {
                       recipeId: recipe.id,
-                      dishListId: dishListId, 
+                      dishListId,
                     })
                   }
                 />
@@ -313,7 +296,6 @@ export default function DishListDetailScreen({
         <ActionSheet
           visible={showActionSheet}
           onClose={() => setShowActionSheet(false)}
-          title="DishList Options"
           options={actionSheetOptions}
         />
       </SafeAreaView>
@@ -336,6 +318,33 @@ const styles = StyleSheet.create({
     ...typography.body,
     color: theme.colors.neutral[600],
   },
+  errorContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: theme.spacing.xl,
+  },
+  errorTitle: {
+    ...typography.heading3,
+    color: theme.colors.neutral[900],
+    marginBottom: theme.spacing.sm,
+  },
+  errorMessage: {
+    ...typography.body,
+    color: theme.colors.neutral[500],
+    textAlign: "center",
+    marginBottom: theme.spacing.lg,
+  },
+  retryButton: {
+    backgroundColor: theme.colors.primary[500],
+    paddingVertical: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.xl,
+    borderRadius: theme.borderRadius.md,
+  },
+  retryButtonText: {
+    ...typography.button,
+    color: "white",
+  },
   header: {
     paddingHorizontal: theme.spacing.lg,
     paddingVertical: theme.spacing.lg,
@@ -348,31 +357,6 @@ const styles = StyleSheet.create({
   backButton: {
     padding: theme.spacing.xs,
     marginRight: theme.spacing.sm,
-  },
-  titleRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-  },
-  headerTitle: {
-    ...typography.heading2,
-    fontSize: 32,
-    color: theme.colors.textPrimary,
-    marginBottom: theme.spacing.sm,
-  },
-  infoRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: theme.spacing.md,
-    marginBottom: theme.spacing.sm,
-    marginTop: theme.spacing.sm,
-  },
-  infoText: {
-    ...typography.body,
-    color: theme.colors.neutral[600],
-  },
-  menuButton: {
-    padding: theme.spacing.xs,
-    marginLeft: theme.spacing.md,
   },
   searchContainer: {
     flex: 1,
@@ -392,65 +376,74 @@ const styles = StyleSheet.create({
     color: theme.colors.neutral[800],
     padding: 0,
   },
-  scrollContainer: {
+  titleRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+  },
+  headerTitle: {
+    ...typography.heading2,
+    fontSize: 32,
+    color: theme.colors.textPrimary,
+    marginBottom: theme.spacing.sm,
+  },
+  infoRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: theme.spacing.md,
+    marginBottom: theme.spacing.sm,
+    marginTop: theme.spacing.sm,
+  },
+  infoItem: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  infoText: {
+    ...typography.body,
+    color: theme.colors.neutral[600],
+  },
+  menuButton: {
+    padding: theme.spacing.xs,
+    marginLeft: theme.spacing.md,
+  },
+  content: {
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 100,
-  },
-  recipesGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "flex-start",
-    paddingHorizontal: theme.spacing.lg,
-    gap: theme.spacing.md,
+    padding: theme.spacing.lg,
   },
   emptyContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    paddingHorizontal: theme.spacing["4xl"],
     paddingVertical: theme.spacing["4xl"],
   },
   emptyTitle: {
     ...typography.heading3,
-    color: theme.colors.neutral[800],
+    color: theme.colors.neutral[900],
     marginBottom: theme.spacing.sm,
-    textAlign: "center",
   },
   emptyText: {
     ...typography.body,
     color: theme.colors.neutral[500],
     textAlign: "center",
-    lineHeight: 20,
+    marginBottom: theme.spacing.lg,
   },
-  errorContainer: {
-    flex: 1,
-    justifyContent: "center",
+  addRecipeButton: {
+    flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: theme.spacing["4xl"],
-  },
-  errorTitle: {
-    ...typography.heading3,
-    color: theme.colors.error,
-    marginBottom: theme.spacing.sm,
-    textAlign: "center",
-  },
-  errorMessage: {
-    ...typography.body,
-    color: theme.colors.neutral[500],
-    textAlign: "center",
-    marginBottom: theme.spacing.xl,
-    lineHeight: 20,
-  },
-  retryButton: {
     backgroundColor: theme.colors.primary[500],
-    paddingHorizontal: theme.spacing.xl,
-    paddingVertical: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.lg,
     borderRadius: theme.borderRadius.md,
+    gap: theme.spacing.xs,
   },
-  retryButtonText: {
+  addRecipeButtonText: {
     ...typography.button,
     color: "white",
+  },
+  recipeGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
   },
 });

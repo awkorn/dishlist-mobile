@@ -3,15 +3,14 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useAuth } from '@providers/AuthProvider/AuthContext';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
 
-// Auth screens from feature
+
 import { LoginScreen, SignUpScreen } from '@features/auth';
-
-// Profile screen from feature
 import { ProfileScreen } from '@features/profile';
-
-// Other screens (will migrate in Phase 3)
-import CreateDishListScreen from '../screens/main/CreateDishListScreen';
-import DishListDetailScreen from '../screens/main/DishListDetailScreen';
+import { 
+  DishListsScreen, 
+  DishListDetailScreen, 
+  CreateDishListScreen 
+} from '@features/dishlist';
 import AddRecipeScreen from '../screens/main/AddRecipeScreen';
 import RecipeDetailScreen from '../screens/main/RecipeDetailScreen';
 import TabNavigator from './TabNavigator';

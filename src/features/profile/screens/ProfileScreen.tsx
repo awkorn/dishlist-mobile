@@ -14,7 +14,7 @@ import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { theme } from "@styles/theme";
 import { typography } from "@styles/typography";
-import DishListTile from "@components/dishlist/DishListTile";
+import { DishListTile } from "@features/dishlist/components/DishListTile";
 import RecipeTile from "@components/recipe/RecipeTile";
 import { RootStackParamList } from "@app-types/navigation";
 import { useProfile } from "../hooks/useProfile";

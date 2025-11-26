@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -9,13 +9,13 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { useCreateDishList, useUpdateDishList } from "../../hooks/mutations/useDishListMutations";
-import { X, Globe, Lock } from "lucide-react-native";
-import { typography } from "../../styles/typography";
-import { theme } from "../../styles/theme";
-import Button from "../../components/ui/Button";
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { X, Globe, Lock } from 'lucide-react-native';
+import { typography } from '@styles/typography';
+import { theme } from '@styles/theme';
+import Button from '@components/ui/Button';
+import { useCreateDishList, useUpdateDishList } from '../hooks';
 
 interface CreateDishListScreenProps {
   route: {
@@ -24,7 +24,7 @@ interface CreateDishListScreenProps {
       dishList?: {
         title: string;
         description?: string;
-        visibility: "PUBLIC" | "PRIVATE";
+        visibility: 'PUBLIC' | 'PRIVATE';
       };
     };
   };
@@ -38,30 +38,32 @@ export default function CreateDishListScreen({
   const { dishListId, dishList } = route.params || {};
   const isEditMode = !!dishListId;
 
-  const [title, setTitle] = useState(dishList?.title || "");
-  const [description, setDescription] = useState(dishList?.description || "");
-  const [visibility, setVisibility] = useState<"PUBLIC" | "PRIVATE">(
-    dishList?.visibility || "PUBLIC"
+  const [title, setTitle] = useState(dishList?.title || '');
+  const [description, setDescription] = useState(dishList?.description || '');
+  const [visibility, setVisibility] = useState<'PUBLIC' | 'PRIVATE'>(
+    dishList?.visibility || 'PUBLIC'
   );
-  const [titleError, setTitleError] = useState("");
+  const [titleError, setTitleError] = useState('');
 
-  const createDishListMutation = useCreateDishList();
-  const updateDishListMutation = useUpdateDishList();
+  const createMutation = useCreateDishList();
+  const updateMutation = useUpdateDishList();
+
+  const isLoading = createMutation.isPending || updateMutation.isPending;
 
   const validateTitle = (value: string) => {
     if (!value.trim()) {
-      setTitleError("Title is required");
+      setTitleError('Title is required');
       return false;
     }
     if (value.trim().length < 2) {
-      setTitleError("Title must be at least 2 characters");
+      setTitleError('Title must be at least 2 characters');
       return false;
     }
     if (value.trim().length > 50) {
-      setTitleError("Title must be less than 50 characters");
+      setTitleError('Title must be less than 50 characters');
       return false;
     }
-    setTitleError("");
+    setTitleError('');
     return true;
   };
 
@@ -75,21 +77,17 @@ export default function CreateDishListScreen({
   const handleCancel = () => {
     const hasChanges = isEditMode
       ? title.trim() !== dishList?.title ||
-        description.trim() !== (dishList?.description || "") ||
+        description.trim() !== (dishList?.description || '') ||
         visibility !== dishList?.visibility
       : title.trim() || description.trim();
 
     if (hasChanges) {
       Alert.alert(
-        "Discard Changes?",
-        "You have unsaved changes. Are you sure you want to go back?",
+        'Discard Changes?',
+        'You have unsaved changes. Are you sure you want to go back?',
         [
-          { text: "Keep Editing", style: "cancel" },
-          {
-            text: "Discard",
-            style: "destructive",
-            onPress: () => navigation.goBack(),
-          },
+          { text: 'Keep Editing', style: 'cancel' },
+          { text: 'Discard', style: 'destructive', onPress: () => navigation.goBack() },
         ]
       );
     } else {
@@ -97,57 +95,49 @@ export default function CreateDishListScreen({
     }
   };
 
-  const handleCreate = async () => {
+  const handleSave = () => {
     if (!validateTitle(title)) return;
 
-    try {
-      if (isEditMode) {
-        await updateDishListMutation.mutateAsync({
-          dishListId: dishListId!,
+    if (isEditMode && dishListId) {
+      updateMutation.mutate(
+        {
+          dishListId,
           title: title.trim(),
           description: description.trim() || undefined,
           visibility,
-        });
-      } else {
-        await createDishListMutation.mutateAsync({
+        },
+        {
+          onSuccess: () => navigation.goBack(),
+        }
+      );
+    } else {
+      createMutation.mutate(
+        {
           title: title.trim(),
           description: description.trim() || undefined,
           visibility,
-        });
-      }
-      navigation.goBack();
-    } catch (error) {
-      console.error("Save DishList error:", error);
+        },
+        {
+          onSuccess: () => navigation.goBack(),
+        }
+      );
     }
   };
-
-  const getVisibilityMessage = () => {
-    return visibility === "PUBLIC"
-      ? "Anyone can view, follow, and copy recipes from this DishList."
-      : "Only you and collaborators can view this DishList.";
-  };
-
-  const isLoading = createDishListMutation.isPending;
-  const canCreate = title.trim().length >= 2 && !titleError && !isLoading;
 
   return (
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity
-            onPress={handleCancel}
-            style={styles.cancelButton}
-            disabled={isLoading}
-          >
-            <X size={24} color={theme.colors.neutral[600]} />
+          <TouchableOpacity onPress={handleCancel} disabled={isLoading}>
+            <X size={24} color={theme.colors.neutral[700]} />
           </TouchableOpacity>
 
           <Text style={styles.headerTitle}>
-            {isEditMode ? "Edit DishList" : "Create new DishList"}
+            {isEditMode ? 'Edit DishList' : 'Create new DishList'}
           </Text>
 
           <View style={styles.headerSpacer} />
@@ -206,74 +196,83 @@ export default function CreateDishListScreen({
               <TouchableOpacity
                 style={[
                   styles.visibilityOption,
-                  visibility === "PUBLIC" && styles.visibilityOptionActive,
+                  visibility === 'PUBLIC' && styles.visibilityOptionActive,
                 ]}
-                onPress={() => setVisibility("PUBLIC")}
+                onPress={() => setVisibility('PUBLIC')}
                 disabled={isLoading}
               >
                 <View style={styles.visibilityHeader}>
                   <Globe
                     size={20}
                     color={
-                      visibility === "PUBLIC"
+                      visibility === 'PUBLIC'
                         ? theme.colors.primary[500]
-                        : theme.colors.neutral[600]
+                        : theme.colors.neutral[500]
                     }
                   />
                   <Text
                     style={[
                       styles.visibilityTitle,
-                      visibility === "PUBLIC" && styles.visibilityTitleActive,
+                      visibility === 'PUBLIC' && styles.visibilityTitleActive,
                     ]}
                   >
                     Public
                   </Text>
                 </View>
+                <Text style={styles.visibilityDescription}>
+                  Anyone can view and follow this DishList
+                </Text>
               </TouchableOpacity>
 
               <TouchableOpacity
                 style={[
                   styles.visibilityOption,
-                  visibility === "PRIVATE" && styles.visibilityOptionActive,
+                  visibility === 'PRIVATE' && styles.visibilityOptionActive,
                 ]}
-                onPress={() => setVisibility("PRIVATE")}
+                onPress={() => setVisibility('PRIVATE')}
                 disabled={isLoading}
               >
                 <View style={styles.visibilityHeader}>
                   <Lock
                     size={20}
                     color={
-                      visibility === "PRIVATE"
+                      visibility === 'PRIVATE'
                         ? theme.colors.primary[500]
-                        : theme.colors.neutral[600]
+                        : theme.colors.neutral[500]
                     }
                   />
                   <Text
                     style={[
                       styles.visibilityTitle,
-                      visibility === "PRIVATE" && styles.visibilityTitleActive,
+                      visibility === 'PRIVATE' && styles.visibilityTitleActive,
                     ]}
                   >
                     Private
                   </Text>
                 </View>
+                <Text style={styles.visibilityDescription}>
+                  Only you and collaborators can view
+                </Text>
               </TouchableOpacity>
             </View>
-
-            <Text style={styles.visibilityMessage}>
-              {getVisibilityMessage()}
-            </Text>
           </View>
         </ScrollView>
 
-        {/* Footer Button */}
+        {/* Footer */}
         <View style={styles.footer}>
           <Button
-            title={isEditMode ? "Update DishList" : "Create DishList"}
-            onPress={handleCreate}
-            disabled={!canCreate}
+            title="Cancel"
+            variant="outline"
+            onPress={handleCancel}
+            disabled={isLoading}
+            style={styles.cancelButton}
+          />
+          <Button
+            title={isEditMode ? 'Save Changes' : 'Create DishList'}
+            onPress={handleSave}
             loading={isLoading}
-            style={styles.createButton}
+            disabled={!title.trim() || isLoading}
+            style={styles.saveButton}
           />
         </View>
       </KeyboardAvoidingView>
@@ -284,35 +283,31 @@ export default function CreateDishListScreen({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background,
+    backgroundColor: 'white',
   },
   keyboardView: {
     flex: 1,
   },
   header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: theme.spacing.xl,
-    paddingVertical: theme.spacing.lg,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: theme.spacing.lg,
+    paddingVertical: theme.spacing.md,
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.neutral[200],
-    backgroundColor: theme.colors.surface,
-  },
-  cancelButton: {
-    padding: theme.spacing.xs,
   },
   headerTitle: {
     ...typography.heading3,
-    color: theme.colors.textPrimary,
+    color: theme.colors.neutral[900],
   },
   headerSpacer: {
-    width: 32,
+    width: 24,
   },
   content: {
     flex: 1,
-    padding: theme.spacing["3xl"],
-    marginTop: theme.spacing.md,
+    paddingHorizontal: theme.spacing.lg,
+    paddingTop: theme.spacing.lg,
   },
   inputSection: {
     marginBottom: theme.spacing.lg,
@@ -323,20 +318,20 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.sm,
   },
   input: {
+    ...typography.body,
     borderWidth: 1,
-    borderColor: theme.colors.neutral[200],
+    borderColor: theme.colors.neutral[300],
     borderRadius: theme.borderRadius.md,
-    padding: theme.spacing.lg,
-    fontSize: 16,
-    backgroundColor: theme.colors.surface,
-    color: theme.colors.neutral[800],
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
+    color: theme.colors.neutral[900],
   },
   inputError: {
     borderColor: theme.colors.error,
   },
   textArea: {
-    height: 80,
-    paddingTop: theme.spacing.lg,
+    minHeight: 100,
+    paddingTop: theme.spacing.sm,
   },
   errorText: {
     ...typography.caption,
@@ -345,8 +340,8 @@ const styles = StyleSheet.create({
   },
   characterCount: {
     ...typography.caption,
-    color: theme.colors.neutral[500],
-    textAlign: "right",
+    color: theme.colors.neutral[400],
+    textAlign: 'right',
     marginTop: theme.spacing.xs,
   },
   visibilityOptions: {
@@ -354,41 +349,44 @@ const styles = StyleSheet.create({
   },
   visibilityOption: {
     borderWidth: 1,
-    borderColor: theme.colors.neutral[200],
+    borderColor: theme.colors.neutral[300],
     borderRadius: theme.borderRadius.md,
-    padding: theme.spacing.lg,
-    backgroundColor: theme.colors.surface,
+    padding: theme.spacing.md,
   },
   visibilityOptionActive: {
     borderColor: theme.colors.primary[500],
     backgroundColor: theme.colors.primary[50],
   },
   visibilityHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: theme.spacing.md,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: theme.spacing.xs,
+    gap: theme.spacing.sm,
   },
   visibilityTitle: {
     ...typography.body,
+    fontWeight: '600',
     color: theme.colors.neutral[700],
-    fontWeight: "600",
   },
   visibilityTitleActive: {
     color: theme.colors.primary[500],
   },
-  visibilityMessage: {
+  visibilityDescription: {
     ...typography.caption,
     color: theme.colors.neutral[500],
-    marginTop: theme.spacing.md,
-    lineHeight: 18,
+    marginLeft: 28,
   },
   footer: {
-    paddingHorizontal: theme.spacing.xl,
-    paddingVertical: theme.spacing.lg,
-    paddingBottom: Platform.OS === "ios" ? 34 : theme.spacing.lg,
-    alignItems: "center",
+    flexDirection: 'row',
+    padding: theme.spacing.lg,
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.neutral[200],
+    gap: theme.spacing.md,
   },
-  createButton: {
-    width: "90%",
+  cancelButton: {
+    flex: 1,
+  },
+  saveButton: {
+    flex: 1,
   },
 });
