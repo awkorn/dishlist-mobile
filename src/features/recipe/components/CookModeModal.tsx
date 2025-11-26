@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
   Modal,
   View,
@@ -17,20 +17,22 @@ import {
   ChevronRight,
   CheckCircle2,
 } from "lucide-react-native";
-import { theme } from "../../styles/theme";
-import { typography } from "../../styles/typography";
-import { isIngredientInInstruction } from "../../utils/ingredientParser";
+import { theme } from "@styles/theme";
+import { typography } from "@styles/typography";
+import { isIngredientInInstruction } from "@utils/ingredientParser";
+
+interface CookModeRecipe {
+  title: string;
+  instructions: string[];
+  ingredients: string[];
+  prepTime?: number;
+  cookTime?: number;
+}
 
 interface CookModeModalProps {
   visible: boolean;
   onClose: () => void;
-  recipe: {
-    title: string;
-    instructions: string[];
-    ingredients: string[];
-    prepTime?: number;
-    cookTime?: number;
-  };
+  recipe: CookModeRecipe;
 }
 
 const { width } = Dimensions.get("window");
@@ -48,7 +50,7 @@ export default function CookModeModal({
     onClose();
   };
 
-  const currentStepIngredients = React.useMemo(() => {
+  const currentStepIngredients = useMemo(() => {
     if (!recipe.ingredients) return [];
     const instruction = recipe.instructions[currentStep];
     return recipe.ingredients.filter((ingredient) =>
@@ -108,6 +110,8 @@ export default function CookModeModal({
               </View>
             </View>
           </View>
+
+          <View style={styles.headerSpacer} />
         </View>
 
         {/* Content - scrollable */}
@@ -139,7 +143,7 @@ export default function CookModeModal({
           </View>
 
           {/* Ingredients */}
-          {currentStepIngredients.length > 0 ? (
+          {currentStepIngredients.length > 0 && (
             <View style={styles.ingredientsSection}>
               <Text style={styles.sectionLabel}>Ingredients for this step</Text>
               {currentStepIngredients.map((ingredient, index) => (
@@ -149,7 +153,7 @@ export default function CookModeModal({
                 </View>
               ))}
             </View>
-          ) : null}
+          )}
         </ScrollView>
 
         {/* Footer - fixed */}
@@ -213,6 +217,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: theme.spacing.xl,
     paddingVertical: theme.spacing.lg,
     borderBottomWidth: 1,
@@ -220,11 +225,15 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surface,
   },
   closeButton: {
-    padding: theme.spacing.sm,
+    padding: theme.spacing.xs,
   },
   headerCenter: {
     flex: 1,
-    marginLeft: theme.spacing.lg,
+    alignItems: "center",
+    marginHorizontal: theme.spacing.lg,
+  },
+  headerSpacer: {
+    width: 36,
   },
   recipeTitle: {
     ...typography.subtitle,
@@ -232,26 +241,25 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.xs,
   },
   progressContainer: {
-    flexDirection: "row",
+    width: "100%",
     alignItems: "center",
-    gap: theme.spacing.md,
   },
   stepCounter: {
     ...typography.caption,
-    color: theme.colors.neutral[600],
-    minWidth: 80,
+    color: theme.colors.neutral[500],
+    marginBottom: theme.spacing.xs,
   },
   progressBar: {
-    flex: 1,
-    height: 6,
+    width: "80%",
+    height: 4,
     backgroundColor: theme.colors.neutral[200],
-    borderRadius: 3,
+    borderRadius: 2,
     overflow: "hidden",
   },
   progressFill: {
     height: "100%",
     backgroundColor: theme.colors.primary[500],
-    borderRadius: 3,
+    borderRadius: 2,
   },
   content: {
     flex: 1,

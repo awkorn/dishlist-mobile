@@ -15,7 +15,7 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { theme } from "@styles/theme";
 import { typography } from "@styles/typography";
 import { DishListTile } from "@features/dishlist/components/DishListTile";
-import RecipeTile from "@components/recipe/RecipeTile";
+import { RecipeTile } from "@features/recipe";
 import { RootStackParamList } from "@app-types/navigation";
 import { useProfile } from "../hooks/useProfile";
 import {

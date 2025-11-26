@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -9,13 +9,13 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { X, Globe, Lock } from 'lucide-react-native';
-import { typography } from '@styles/typography';
-import { theme } from '@styles/theme';
-import Button from '@components/ui/Button';
-import { useCreateDishList, useUpdateDishList } from '../hooks';
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { X, Globe, Lock } from "lucide-react-native";
+import { typography } from "@styles/typography";
+import { theme } from "@styles/theme";
+import Button from "@components/ui/Button";
+import { useCreateDishList, useUpdateDishList } from "../hooks";
 
 interface CreateDishListScreenProps {
   route: {
@@ -24,7 +24,7 @@ interface CreateDishListScreenProps {
       dishList?: {
         title: string;
         description?: string;
-        visibility: 'PUBLIC' | 'PRIVATE';
+        visibility: "PUBLIC" | "PRIVATE";
       };
     };
   };
@@ -38,12 +38,12 @@ export default function CreateDishListScreen({
   const { dishListId, dishList } = route.params || {};
   const isEditMode = !!dishListId;
 
-  const [title, setTitle] = useState(dishList?.title || '');
-  const [description, setDescription] = useState(dishList?.description || '');
-  const [visibility, setVisibility] = useState<'PUBLIC' | 'PRIVATE'>(
-    dishList?.visibility || 'PUBLIC'
+  const [title, setTitle] = useState(dishList?.title || "");
+  const [description, setDescription] = useState(dishList?.description || "");
+  const [visibility, setVisibility] = useState<"PUBLIC" | "PRIVATE">(
+    dishList?.visibility || "PUBLIC"
   );
-  const [titleError, setTitleError] = useState('');
+  const [titleError, setTitleError] = useState("");
 
   const createMutation = useCreateDishList();
   const updateMutation = useUpdateDishList();
@@ -52,18 +52,18 @@ export default function CreateDishListScreen({
 
   const validateTitle = (value: string) => {
     if (!value.trim()) {
-      setTitleError('Title is required');
+      setTitleError("Title is required");
       return false;
     }
     if (value.trim().length < 2) {
-      setTitleError('Title must be at least 2 characters');
+      setTitleError("Title must be at least 2 characters");
       return false;
     }
     if (value.trim().length > 50) {
-      setTitleError('Title must be less than 50 characters');
+      setTitleError("Title must be less than 50 characters");
       return false;
     }
-    setTitleError('');
+    setTitleError("");
     return true;
   };
 
@@ -77,17 +77,21 @@ export default function CreateDishListScreen({
   const handleCancel = () => {
     const hasChanges = isEditMode
       ? title.trim() !== dishList?.title ||
-        description.trim() !== (dishList?.description || '') ||
+        description.trim() !== (dishList?.description || "") ||
         visibility !== dishList?.visibility
       : title.trim() || description.trim();
 
     if (hasChanges) {
       Alert.alert(
-        'Discard Changes?',
-        'You have unsaved changes. Are you sure you want to go back?',
+        "Discard Changes?",
+        "You have unsaved changes. Are you sure you want to go back?",
         [
-          { text: 'Keep Editing', style: 'cancel' },
-          { text: 'Discard', style: 'destructive', onPress: () => navigation.goBack() },
+          { text: "Keep Editing", style: "cancel" },
+          {
+            text: "Discard",
+            style: "destructive",
+            onPress: () => navigation.goBack(),
+          },
         ]
       );
     } else {
@@ -127,7 +131,7 @@ export default function CreateDishListScreen({
   return (
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.keyboardView}
       >
         {/* Header */}
@@ -137,7 +141,7 @@ export default function CreateDishListScreen({
           </TouchableOpacity>
 
           <Text style={styles.headerTitle}>
-            {isEditMode ? 'Edit DishList' : 'Create new DishList'}
+            {isEditMode ? "Edit DishList" : "Create new DishList"}
           </Text>
 
           <View style={styles.headerSpacer} />
@@ -196,16 +200,16 @@ export default function CreateDishListScreen({
               <TouchableOpacity
                 style={[
                   styles.visibilityOption,
-                  visibility === 'PUBLIC' && styles.visibilityOptionActive,
+                  visibility === "PUBLIC" && styles.visibilityOptionActive,
                 ]}
-                onPress={() => setVisibility('PUBLIC')}
+                onPress={() => setVisibility("PUBLIC")}
                 disabled={isLoading}
               >
                 <View style={styles.visibilityHeader}>
                   <Globe
                     size={20}
                     color={
-                      visibility === 'PUBLIC'
+                      visibility === "PUBLIC"
                         ? theme.colors.primary[500]
                         : theme.colors.neutral[500]
                     }
@@ -213,7 +217,7 @@ export default function CreateDishListScreen({
                   <Text
                     style={[
                       styles.visibilityTitle,
-                      visibility === 'PUBLIC' && styles.visibilityTitleActive,
+                      visibility === "PUBLIC" && styles.visibilityTitleActive,
                     ]}
                   >
                     Public
@@ -227,16 +231,16 @@ export default function CreateDishListScreen({
               <TouchableOpacity
                 style={[
                   styles.visibilityOption,
-                  visibility === 'PRIVATE' && styles.visibilityOptionActive,
+                  visibility === "PRIVATE" && styles.visibilityOptionActive,
                 ]}
-                onPress={() => setVisibility('PRIVATE')}
+                onPress={() => setVisibility("PRIVATE")}
                 disabled={isLoading}
               >
                 <View style={styles.visibilityHeader}>
                   <Lock
                     size={20}
                     color={
-                      visibility === 'PRIVATE'
+                      visibility === "PRIVATE"
                         ? theme.colors.primary[500]
                         : theme.colors.neutral[500]
                     }
@@ -244,7 +248,7 @@ export default function CreateDishListScreen({
                   <Text
                     style={[
                       styles.visibilityTitle,
-                      visibility === 'PRIVATE' && styles.visibilityTitleActive,
+                      visibility === "PRIVATE" && styles.visibilityTitleActive,
                     ]}
                   >
                     Private
@@ -268,7 +272,7 @@ export default function CreateDishListScreen({
             style={styles.cancelButton}
           />
           <Button
-            title={isEditMode ? 'Save Changes' : 'Create DishList'}
+            title={isEditMode ? "Save Changes" : "Create DishList"}
             onPress={handleSave}
             loading={isLoading}
             disabled={!title.trim() || isLoading}
@@ -283,31 +287,32 @@ export default function CreateDishListScreen({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'white',
+    backgroundColor: theme.colors.background,
   },
   keyboardView: {
     flex: 1,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: theme.spacing.lg,
-    paddingVertical: theme.spacing.md,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: theme.spacing.xl,
+    paddingVertical: theme.spacing.xl,
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.neutral[200],
+    backgroundColor: theme.colors.surface,
   },
   headerTitle: {
     ...typography.heading3,
-    color: theme.colors.neutral[900],
+    color: theme.colors.textPrimary,
   },
   headerSpacer: {
-    width: 24,
+    width: 32,
   },
   content: {
     flex: 1,
-    paddingHorizontal: theme.spacing.lg,
-    paddingTop: theme.spacing.lg,
+    padding: theme.spacing["3xl"],
+    marginTop: theme.spacing.md,
   },
   inputSection: {
     marginBottom: theme.spacing.lg,
@@ -318,20 +323,20 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.sm,
   },
   input: {
-    ...typography.body,
     borderWidth: 1,
-    borderColor: theme.colors.neutral[300],
+    borderColor: theme.colors.neutral[200],
     borderRadius: theme.borderRadius.md,
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
-    color: theme.colors.neutral[900],
+    padding: theme.spacing.lg,
+    fontSize: 16,
+    backgroundColor: theme.colors.surface,
+    color: theme.colors.neutral[800],
   },
   inputError: {
     borderColor: theme.colors.error,
   },
   textArea: {
     minHeight: 100,
-    paddingTop: theme.spacing.sm,
+    paddingTop: theme.spacing.md,
   },
   errorText: {
     ...typography.caption,
@@ -340,8 +345,8 @@ const styles = StyleSheet.create({
   },
   characterCount: {
     ...typography.caption,
-    color: theme.colors.neutral[400],
-    textAlign: 'right',
+    color: theme.colors.neutral[500],
+    textAlign: "right",
     marginTop: theme.spacing.xs,
   },
   visibilityOptions: {
@@ -358,14 +363,14 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.primary[50],
   },
   visibilityHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: theme.spacing.xs,
     gap: theme.spacing.sm,
   },
   visibilityTitle: {
     ...typography.body,
-    fontWeight: '600',
+    fontWeight: "600",
     color: theme.colors.neutral[700],
   },
   visibilityTitleActive: {
@@ -377,10 +382,8 @@ const styles = StyleSheet.create({
     marginLeft: 28,
   },
   footer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     padding: theme.spacing.lg,
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.neutral[200],
     gap: theme.spacing.md,
   },
   cancelButton: {

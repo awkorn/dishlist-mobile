@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -6,18 +6,11 @@ import {
   TouchableOpacity,
   Animated,
   Easing,
-} from "react-native";
-import { ChevronDown } from "lucide-react-native";
-import { theme } from "../../styles/theme";
-import { typography } from "../../styles/typography";
-
-interface NutritionInfo {
-  calories?: number;
-  protein?: number;
-  carbs?: number;
-  sugar?: number;
-  fat?: number;
-}
+} from 'react-native';
+import { ChevronDown } from 'lucide-react-native';
+import { theme } from '@styles/theme';
+import { typography } from '@styles/typography';
+import type { NutritionInfo } from '../types';
 
 interface NutritionFactsProps {
   nutrition: NutritionInfo;
@@ -38,60 +31,39 @@ const MacroBar: React.FC<MacroBarProps> = ({ protein, carbs, fat }) => {
   const proteinCals = protein * 4;
   const carbsCals = carbs * 4;
   const fatCals = fat * 9;
-
   const totalCals = proteinCals + carbsCals + fatCals;
 
-  // Calculate percentages with minimum width enforcement
-  const totalPercent = 100;
-  const minPercent = 2; // Minimum percentage for visibility
-  let proteinPercent = totalCals > 0 ? (proteinCals / totalCals) * 100 : 0;
-  let carbsPercent = totalCals > 0 ? (carbsCals / totalCals) * 100 : 0;
-  let fatPercent = totalCals > 0 ? (fatCals / totalCals) * 100 : 0;
+  // Calculate percentages
+  const proteinPercent = totalCals > 0 ? (proteinCals / totalCals) * 100 : 0;
+  const carbsPercent = totalCals > 0 ? (carbsCals / totalCals) * 100 : 0;
+  const fatPercent = totalCals > 0 ? (fatCals / totalCals) * 100 : 0;
 
-  // Ensure minimum width for visible macros
-  const visibleMacros = [proteinPercent, carbsPercent, fatPercent].filter(
-    (p) => p > 0
-  ).length;
-  if (visibleMacros > 1) {
-    if (proteinPercent > 0 && proteinPercent < minPercent)
-      proteinPercent = minPercent;
-    if (carbsPercent > 0 && carbsPercent < minPercent)
-      carbsPercent = minPercent;
-    if (fatPercent > 0 && fatPercent < minPercent) fatPercent = minPercent;
-
-    // Normalize percentages to maintain total of 100%
-    const sumPercent = proteinPercent + carbsPercent + fatPercent;
-    if (sumPercent !== totalPercent) {
-      const scale = totalPercent / sumPercent;
-      proteinPercent *= scale;
-      carbsPercent *= scale;
-      fatPercent *= scale;
-    }
-  }
-
-  const proteinWidth = new Animated.Value(0);
-  const carbsWidth = new Animated.Value(0);
-  const fatWidth = new Animated.Value(0);
+  // Animated widths
+  const [proteinWidth] = useState(new Animated.Value(0));
+  const [carbsWidth] = useState(new Animated.Value(0));
+  const [fatWidth] = useState(new Animated.Value(0));
 
   React.useEffect(() => {
-    const animateBar = (
-      animatedValue: Animated.Value,
-      toValue: number,
-      delay: number
-    ) => {
-      setTimeout(() => {
-        Animated.timing(animatedValue, {
-          toValue,
-          duration: 800,
-          easing: Easing.out(Easing.cubic),
-          useNativeDriver: false,
-        }).start();
-      }, delay);
-    };
-
-    animateBar(proteinWidth, proteinPercent, 0);
-    animateBar(carbsWidth, carbsPercent, 200);
-    animateBar(fatWidth, fatPercent, 400);
+    Animated.parallel([
+      Animated.timing(proteinWidth, {
+        toValue: proteinPercent,
+        duration: 600,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: false,
+      }),
+      Animated.timing(carbsWidth, {
+        toValue: carbsPercent,
+        duration: 600,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: false,
+      }),
+      Animated.timing(fatWidth, {
+        toValue: fatPercent,
+        duration: 600,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: false,
+      }),
+    ]).start();
   }, [proteinPercent, carbsPercent, fatPercent]);
 
   return (
@@ -105,18 +77,13 @@ const MacroBar: React.FC<MacroBarProps> = ({ protein, carbs, fat }) => {
               {
                 width: proteinWidth.interpolate({
                   inputRange: [0, 100],
-                  outputRange: ["0%", "100%"],
+                  outputRange: ['0%', '100%'],
                 }),
               },
             ]}
           >
             {proteinPercent > 10 && (
-              <Text
-                style={[
-                  styles.macroText,
-                  { fontSize: proteinPercent < 15 ? 8 : 10 },
-                ]}
-              >
+              <Text style={[styles.macroText, { fontSize: proteinPercent < 15 ? 8 : 10 }]}>
                 {Math.round(protein)}g
               </Text>
             )}
@@ -131,18 +98,13 @@ const MacroBar: React.FC<MacroBarProps> = ({ protein, carbs, fat }) => {
               {
                 width: carbsWidth.interpolate({
                   inputRange: [0, 100],
-                  outputRange: ["0%", "100%"],
+                  outputRange: ['0%', '100%'],
                 }),
               },
             ]}
           >
             {carbsPercent > 10 && (
-              <Text
-                style={[
-                  styles.macroText,
-                  { fontSize: carbsPercent < 15 ? 8 : 10 },
-                ]}
-              >
+              <Text style={[styles.macroText, { fontSize: carbsPercent < 15 ? 8 : 10 }]}>
                 {Math.round(carbs)}g
               </Text>
             )}
@@ -157,18 +119,13 @@ const MacroBar: React.FC<MacroBarProps> = ({ protein, carbs, fat }) => {
               {
                 width: fatWidth.interpolate({
                   inputRange: [0, 100],
-                  outputRange: ["0%", "100%"],
+                  outputRange: ['0%', '100%'],
                 }),
               },
             ]}
           >
             {fatPercent > 10 && (
-              <Text
-                style={[
-                  styles.macroText,
-                  { fontSize: fatPercent < 15 ? 8 : 10 },
-                ]}
-              >
+              <Text style={[styles.macroText, { fontSize: fatPercent < 15 ? 8 : 10 }]}>
                 {Math.round(fat)}g
               </Text>
             )}
@@ -179,21 +136,15 @@ const MacroBar: React.FC<MacroBarProps> = ({ protein, carbs, fat }) => {
       <View style={styles.macroLegend}>
         <View style={styles.legendItem}>
           <View style={[styles.legendDot, styles.proteinFill]} />
-          <Text style={styles.legendText}>
-            Protein
-          </Text>
+          <Text style={styles.legendText}>Protein</Text>
         </View>
         <View style={styles.legendItem}>
           <View style={[styles.legendDot, styles.carbsFill]} />
-          <Text style={styles.legendText}>
-            Carbs
-          </Text>
+          <Text style={styles.legendText}>Carbs</Text>
         </View>
         <View style={styles.legendItem}>
           <View style={[styles.legendDot, styles.fatFill]} />
-          <Text style={styles.legendText}>
-            Fat
-          </Text>
+          <Text style={styles.legendText}>Fat</Text>
         </View>
       </View>
     </View>
@@ -222,16 +173,10 @@ export default function NutritionFacts({
 
   const rotateInterpolation = rotateAnimation.interpolate({
     inputRange: [0, 1],
-    outputRange: ["0deg", "180deg"],
+    outputRange: ['0deg', '180deg'],
   });
 
-  const {
-    calories = 0,
-    protein = 0,
-    carbs = 0,
-    sugar = 0,
-    fat = 0,
-  } = nutrition;
+  const { calories = 0, protein = 0, carbs = 0, sugar = 0, fat = 0 } = nutrition;
 
   return (
     <View style={styles.container}>
@@ -245,7 +190,7 @@ export default function NutritionFacts({
       {isExpanded && (
         <View style={styles.content}>
           <Text style={styles.servingInfo}>
-            Per serving ({servings} {servings === 1 ? "serving" : "servings"})
+            Per serving ({servings} {servings === 1 ? 'serving' : 'servings'})
           </Text>
 
           <View style={styles.caloriesSection}>
@@ -290,12 +235,12 @@ const styles = StyleSheet.create({
     borderRadius: theme.borderRadius.md,
     borderWidth: 2,
     borderColor: theme.colors.neutral[800],
-    overflow: "hidden",
+    overflow: 'hidden',
   },
   header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     padding: theme.spacing.lg,
     borderBottomWidth: 4,
     borderBottomColor: theme.colors.neutral[800],
@@ -304,7 +249,7 @@ const styles = StyleSheet.create({
   title: {
     ...typography.subtitle,
     fontSize: 18,
-    fontWeight: "900",
+    fontWeight: '900',
     color: theme.colors.neutral[800],
     letterSpacing: 0.5,
   },
@@ -326,19 +271,19 @@ const styles = StyleSheet.create({
   caloriesLabel: {
     ...typography.body,
     fontSize: 16,
-    fontWeight: "600",
+    fontWeight: '600',
     color: theme.colors.neutral[800],
   },
   caloriesValue: {
     ...typography.body,
     fontSize: 18,
-    fontWeight: "900",
+    fontWeight: '900',
     color: theme.colors.neutral[800],
   },
   nutrientRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     paddingVertical: theme.spacing.xs,
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.neutral[200],
@@ -346,13 +291,13 @@ const styles = StyleSheet.create({
   nutrientName: {
     ...typography.body,
     fontSize: 14,
-    fontWeight: "500",
+    fontWeight: '500',
     color: theme.colors.neutral[700],
   },
   nutrientValue: {
     ...typography.body,
     fontSize: 14,
-    fontWeight: "700",
+    fontWeight: '700',
     color: theme.colors.neutral[800],
   },
   indented: {
@@ -361,51 +306,50 @@ const styles = StyleSheet.create({
   detailsSection: {
     marginTop: theme.spacing.sm,
   },
-
   // Macro Bar Styles
   macroBarContainer: {
     marginVertical: theme.spacing.lg,
   },
   macroBar: {
     height: 28,
-    flexDirection: "row",
+    flexDirection: 'row',
     backgroundColor: theme.colors.neutral[200],
     borderRadius: 14,
-    overflow: "hidden",
+    overflow: 'hidden',
     marginBottom: theme.spacing.sm,
     borderWidth: 1,
     borderColor: theme.colors.neutral[300],
   },
   macroFill: {
-    height: "100%",
-    justifyContent: "center",
-    alignItems: "center",
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
     borderRightWidth: 1,
     borderRightColor: theme.colors.neutral[300],
   },
   macroText: {
-    color: "white",
-    fontWeight: "700",
-    textShadowColor: "rgba(0,0,0,0.4)",
+    color: 'white',
+    fontWeight: '700',
+    textShadowColor: 'rgba(0,0,0,0.4)',
     textShadowOffset: { width: 0.5, height: 0.5 },
     textShadowRadius: 2,
   },
   proteinFill: {
-    backgroundColor: "#4CAF50",
+    backgroundColor: '#4CAF50',
   },
   carbsFill: {
-    backgroundColor: "#2196F3",
+    backgroundColor: '#2196F3',
   },
   fatFill: {
-    backgroundColor: "#FF9800",
+    backgroundColor: '#FF9800',
   },
   macroLegend: {
-    flexDirection: "row",
-    justifyContent: "space-around",
+    flexDirection: 'row',
+    justifyContent: 'space-around',
   },
   legendItem: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: theme.spacing.xs,
   },
   legendDot: {
@@ -417,6 +361,6 @@ const styles = StyleSheet.create({
     ...typography.caption,
     fontSize: 11,
     color: theme.colors.neutral[600],
-    fontWeight: "500",
+    fontWeight: '500',
   },
 });

@@ -24,7 +24,7 @@ import {
 } from "lucide-react-native";
 import { typography } from "@styles/typography";
 import { theme } from "@styles/theme";
-import RecipeTile from "@components/recipe/RecipeTile";
+import RecipeTile from "@features/recipe/components/RecipeTile";
 import ActionSheet, { ActionSheetOption } from "@components/ui/ActionSheet";
 import { QueryErrorBoundary } from "@providers/ErrorBoundary";
 import { DishListDetailScreenProps } from "@app-types/navigation";
@@ -444,6 +444,6 @@ const styles = StyleSheet.create({
   recipeGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    justifyContent: "space-between",
+    gap: theme.spacing.lg,
   },
 });

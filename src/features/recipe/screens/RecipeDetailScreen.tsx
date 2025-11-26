@@ -1,0 +1,564 @@
+import React, { useState, useCallback, useMemo } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  ActivityIndicator,
+  Alert,
+  Image,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import {
+  ChevronLeft,
+  MoreHorizontal,
+  PlayCircle,
+  Plus,
+  Edit3,
+  ShoppingCart,
+  Trash2,
+  Clock,
+  Users,
+} from 'lucide-react-native';
+import { useQuery } from '@tanstack/react-query';
+import { typography } from '@styles/typography';
+import { theme } from '@styles/theme';
+import ActionSheet, { ActionSheetOption } from '@components/ui/ActionSheet';
+import { QueryErrorBoundary } from '@providers/ErrorBoundary';
+import { useAuth } from '@providers/AuthProvider/AuthContext';
+import { queryKeys } from '@lib/queryKeys';
+import { groceryStorage } from '@features/grocery';
+import { useRemoveRecipeFromDishList, dishlistService } from '@features/dishlist';
+import { useRecipeDetail, useRecipeProgress } from '../hooks';
+import { NutritionSection, CookModeModal, AddToDishListModal } from '../components';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import type { RootStackParamList } from '@app-types/navigation';
+
+type Props = NativeStackScreenProps<RootStackParamList, 'RecipeDetail'>;
+
+export default function RecipeDetailScreen({ route, navigation }: Props) {
+  const { recipeId, dishListId } = route.params;
+  const { user } = useAuth();
+
+  const [showActionSheet, setShowActionSheet] = useState(false);
+  const [showCookMode, setShowCookMode] = useState(false);
+  const [showAddToDishListModal, setShowAddToDishListModal] = useState(false);
+
+  // Recipe data
+  const {
+    recipe,
+    isLoading,
+    isError,
+    refetch,
+    updateNutritionCache,
+  } = useRecipeDetail({ recipeId });
+
+  // Recipe progress (ingredients/steps checked)
+  const {
+    progress,
+    toggleIngredient,
+    toggleStep,
+  } = useRecipeProgress({ recipeId });
+
+  // Load DishList for permissions if dishListId is provided
+  const { data: dishList } = useQuery({
+    queryKey: queryKeys.dishLists.detail(dishListId || ''),
+    queryFn: () => dishlistService.getDishListDetail(dishListId!),
+    enabled: !!dishListId,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const removeRecipeMutation = useRemoveRecipeFromDishList();
+
+  // Permission checks
+  const canRemoveFromDishList = useMemo(() => {
+    if (!dishListId || !dishList) return false;
+    return dishList.isOwner || dishList.isCollaborator;
+  }, [dishListId, dishList]);
+
+  const handleRemoveFromDishList = useCallback(() => {
+    if (!dishListId) return;
+
+    Alert.alert(
+      'Remove Recipe',
+      'Are you sure you want to remove this recipe from this DishList?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Remove',
+          style: 'destructive',
+          onPress: () => {
+            removeRecipeMutation.mutate(
+              { dishListId, recipeId },
+              { onSuccess: () => navigation.goBack() }
+            );
+          },
+        },
+      ]
+    );
+  }, [dishListId, recipeId, removeRecipeMutation, navigation]);
+
+  // Action sheet options
+  const actionSheetOptions: ActionSheetOption[] = useMemo(() => {
+    if (!recipe) return [];
+
+    const opts: ActionSheetOption[] = [
+      {
+        title: 'Cook Mode',
+        icon: PlayCircle,
+        onPress: () => setShowCookMode(true),
+      },
+      {
+        title: 'Add to Another DishList',
+        icon: Plus,
+        onPress: () => setShowAddToDishListModal(true),
+      },
+      {
+        title: 'Add Ingredients to Grocery List',
+        icon: ShoppingCart,
+        onPress: async () => {
+          const unchecked = (recipe.ingredients || []).filter(
+            (_, i) => !progress.checkedIngredients.has(i)
+          );
+
+          if (unchecked.length === 0) {
+            Alert.alert(
+              'All Ingredients Checked',
+              'All ingredients are already checked off.'
+            );
+            return;
+          }
+
+          await groceryStorage.addItems(unchecked);
+          Alert.alert(
+            'Added to Grocery List',
+            `${unchecked.length} ${
+              unchecked.length === 1 ? 'ingredient' : 'ingredients'
+            } added to your grocery list.`
+          );
+        },
+      },
+    ];
+
+    const isOwner = recipe.creator.uid === user?.uid;
+    if (isOwner) {
+      opts.splice(1, 0, {
+        title: 'Edit Recipe',
+        icon: Edit3,
+        onPress: () =>
+          navigation.navigate('AddRecipe', {
+            dishListId: '',
+            recipeId: recipe.id,
+            recipe,
+          }),
+      });
+    }
+
+    if (canRemoveFromDishList) {
+      opts.push({
+        title: 'Remove from DishList',
+        icon: Trash2,
+        destructive: true,
+        onPress: handleRemoveFromDishList,
+      });
+    }
+
+    return opts;
+  }, [
+    recipe,
+    progress.checkedIngredients,
+    navigation,
+    canRemoveFromDishList,
+    handleRemoveFromDishList,
+    user,
+  ]);
+
+  const totalTime = useMemo(
+    () => (recipe ? (recipe.prepTime || 0) + (recipe.cookTime || 0) : 0),
+    [recipe]
+  );
+
+  const formatDate = (d: string) =>
+    new Date(d).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={theme.colors.primary[500]} />
+          <Text style={styles.loadingText}>Loading recipe...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // Error state
+  if (isError || !recipe) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorTitle}>Unable to load recipe</Text>
+          <TouchableOpacity style={styles.retryButton} onPress={() => refetch()}>
+            <Text style={styles.retryButtonText}>Try Again</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  return (
+    <QueryErrorBoundary
+      onRetry={() => refetch()}
+      title="Something went wrong"
+      message="Unable to display recipe content."
+    >
+      <SafeAreaView style={styles.container}>
+        {/* Header */}
+        <View style={styles.header}>
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            style={styles.headerButton}
+          >
+            <ChevronLeft size={24} color={theme.colors.neutral[700]} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle} numberOfLines={1}>
+            {recipe.title}
+          </Text>
+          <TouchableOpacity
+            onPress={() => setShowActionSheet(true)}
+            style={styles.headerButton}
+          >
+            <MoreHorizontal size={24} color={theme.colors.neutral[700]} />
+          </TouchableOpacity>
+        </View>
+
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Hero Image */}
+          {recipe.imageUrl ? (
+            <Image source={{ uri: recipe.imageUrl }} style={styles.heroImage} />
+          ) : (
+            <View style={styles.heroPlaceholder}>
+              <Text style={styles.heroEmoji}>🍽️</Text>
+            </View>
+          )}
+
+          {/* Meta Info */}
+          <View style={styles.metaSection}>
+            <View style={styles.metaRow}>
+              {totalTime > 0 && (
+                <View style={styles.metaItem}>
+                  <Clock size={16} color={theme.colors.neutral[500]} />
+                  <Text style={styles.metaText}>{totalTime} min</Text>
+                </View>
+              )}
+              {recipe.servings && recipe.servings > 0 && (
+                <View style={styles.metaItem}>
+                  <Users size={16} color={theme.colors.neutral[500]} />
+                  <Text style={styles.metaText}>
+                    {recipe.servings} {recipe.servings === 1 ? 'serving' : 'servings'}
+                  </Text>
+                </View>
+              )}
+            </View>
+            <Text style={styles.creatorText}>
+              By {recipe.creator.firstName || recipe.creator.username || 'Unknown'} •{' '}
+              {formatDate(recipe.createdAt)}
+            </Text>
+          </View>
+
+          {/* Cook Mode Button */}
+          <TouchableOpacity
+            style={styles.cookModeButton}
+            onPress={() => setShowCookMode(true)}
+          >
+            <PlayCircle size={20} color="white" />
+            <Text style={styles.cookModeButtonText}>Cook Mode</Text>
+          </TouchableOpacity>
+
+          {/* Ingredients */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Ingredients</Text>
+            {recipe.ingredients?.map((ing, i) => (
+              <TouchableOpacity
+                key={i}
+                style={styles.ingredientRow}
+                onPress={() => toggleIngredient(i)}
+              >
+                <View
+                  style={[
+                    styles.checkbox,
+                    progress.checkedIngredients.has(i) && styles.checkboxChecked,
+                  ]}
+                />
+                <Text
+                  style={[
+                    styles.ingredientText,
+                    progress.checkedIngredients.has(i) && styles.crossedOut,
+                  ]}
+                >
+                  {ing}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          {/* Instructions */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Instructions</Text>
+            {recipe.instructions?.map((inst, i) => (
+              <TouchableOpacity
+                key={i}
+                style={styles.instructionRow}
+                onPress={() => toggleStep(i)}
+              >
+                <View style={styles.stepNumber}>
+                  <Text
+                    style={[
+                      styles.stepNumberText,
+                      progress.completedSteps.has(i) && styles.completedStepNumber,
+                    ]}
+                  >
+                    {i + 1}
+                  </Text>
+                </View>
+                <Text
+                  style={[
+                    styles.instructionText,
+                    progress.completedSteps.has(i) && styles.crossedOut,
+                  ]}
+                >
+                  {inst}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          {/* Nutrition */}
+          <View style={styles.section}>
+            <NutritionSection
+              nutrition={recipe.nutrition}
+              ingredients={recipe.ingredients}
+              servings={recipe.servings || 1}
+              recipeId={recipe.id}
+              onNutritionCalculated={updateNutritionCache}
+            />
+          </View>
+        </ScrollView>
+
+        <ActionSheet
+          visible={showActionSheet}
+          onClose={() => setShowActionSheet(false)}
+          title="Recipe Options"
+          options={actionSheetOptions}
+        />
+
+        <CookModeModal
+          visible={showCookMode}
+          onClose={() => setShowCookMode(false)}
+          recipe={{
+            title: recipe.title,
+            instructions: recipe.instructions || [],
+            ingredients: recipe.ingredients || [],
+            prepTime: recipe.prepTime,
+            cookTime: recipe.cookTime,
+          }}
+        />
+
+        <AddToDishListModal
+          visible={showAddToDishListModal}
+          onClose={() => setShowAddToDishListModal(false)}
+          recipeId={recipeId}
+          recipeTitle={recipe.title}
+        />
+      </SafeAreaView>
+    </QueryErrorBoundary>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: theme.colors.background,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: theme.spacing.lg,
+  },
+  loadingText: {
+    ...typography.body,
+    color: theme.colors.neutral[600],
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: theme.spacing['4xl'],
+  },
+  errorTitle: {
+    ...typography.heading3,
+    color: theme.colors.error,
+    marginBottom: theme.spacing.lg,
+    textAlign: 'center',
+  },
+  retryButton: {
+    backgroundColor: theme.colors.primary[500],
+    paddingHorizontal: theme.spacing.xl,
+    paddingVertical: theme.spacing.md,
+    borderRadius: theme.borderRadius.md,
+  },
+  retryButtonText: {
+    ...typography.button,
+    color: 'white',
+  },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: theme.spacing.xl,
+    paddingVertical: theme.spacing.lg,
+  },
+  headerButton: {
+    padding: theme.spacing.xs,
+  },
+  headerTitle: {
+    ...typography.subtitle,
+    flex: 1,
+    textAlign: 'center',
+    marginHorizontal: theme.spacing.md,
+    color: theme.colors.textPrimary,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: theme.spacing['4xl'],
+  },
+  heroImage: {
+    width: '100%',
+    height: 250,
+    backgroundColor: theme.colors.neutral[200],
+  },
+  heroPlaceholder: {
+    width: '100%',
+    height: 250,
+    backgroundColor: theme.colors.neutral[100],
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  heroEmoji: {
+    fontSize: 64,
+  },
+  metaSection: {
+    padding: theme.spacing.xl,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.neutral[200],
+  },
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.xl,
+    marginBottom: theme.spacing.sm,
+  },
+  metaItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.xs,
+  },
+  metaText: {
+    ...typography.body,
+    color: theme.colors.neutral[600],
+  },
+  creatorText: {
+    ...typography.caption,
+    color: theme.colors.neutral[500],
+  },
+  cookModeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: theme.colors.primary[500],
+    marginHorizontal: theme.spacing.xl,
+    marginTop: theme.spacing.xl,
+    padding: theme.spacing.lg,
+    borderRadius: theme.borderRadius.md,
+    gap: theme.spacing.sm,
+  },
+  cookModeButtonText: {
+    ...typography.button,
+    color: 'white',
+  },
+  section: {
+    padding: theme.spacing.xl,
+  },
+  sectionTitle: {
+    ...typography.heading3,
+    color: theme.colors.textPrimary,
+    marginBottom: theme.spacing.lg,
+  },
+  ingredientRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: theme.spacing.sm,
+    gap: theme.spacing.md,
+  },
+  checkbox: {
+    width: 22,
+    height: 22,
+    borderRadius: 4,
+    borderWidth: 2,
+    borderColor: theme.colors.neutral[400],
+  },
+  checkboxChecked: {
+    backgroundColor: theme.colors.primary[500],
+    borderColor: theme.colors.primary[500],
+  },
+  ingredientText: {
+    ...typography.body,
+    color: theme.colors.neutral[800],
+    flex: 1,
+  },
+  instructionRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    paddingVertical: theme.spacing.md,
+    gap: theme.spacing.md,
+  },
+  stepNumber: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: theme.colors.neutral[200],
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  stepNumberText: {
+    ...typography.subtitle,
+    fontSize: 14,
+    color: theme.colors.primary[600],
+  },
+  completedStepNumber: {
+    color: theme.colors.neutral[400],
+  },
+  instructionText: {
+    ...typography.body,
+    color: theme.colors.neutral[800],
+    flex: 1,
+    lineHeight: 24,
+  },
+  crossedOut: {
+    textDecorationLine: 'line-through',
+    color: theme.colors.neutral[400],
+  },
+});

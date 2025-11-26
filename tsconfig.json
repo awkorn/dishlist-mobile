@@ -13,7 +13,9 @@
       "@navigation/*": ["src/navigation/*"],
       "@app-types": ["src/types"],
       "@app-types/*": ["src/types/*"],
-      "@styles/*": ["src/styles/*"]
+      "@styles/*": ["src/styles/*"],
+      "@utils": ["src/utils"],
+      "@utils/*": ["src/utils/*"]
     },
     "types": ["jest", "@testing-library/jest-native"]
   },

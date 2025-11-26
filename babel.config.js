@@ -18,6 +18,7 @@ module.exports = function (api) {
             '@app-types': './src/types',
             '@app-types/*': './src/types/*',
             '@styles': './src/styles',
+            '@utils': './src/utils',
           },
         },
       ],

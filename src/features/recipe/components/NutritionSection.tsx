@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -6,21 +6,14 @@ import {
   StyleSheet,
   ActivityIndicator,
   Alert,
-} from "react-native";
-import { Calculator } from "lucide-react-native";
-import { useMutation } from "@tanstack/react-query";
-import { theme } from "../../styles/theme";
-import { typography } from "../../styles/typography";
-import { calculateNutrition } from "../../services/nutrition";
-import NutritionFacts from "./NutritionFacts";
-
-interface NutritionInfo {
-  calories?: number;
-  protein?: number;
-  carbs?: number;
-  sugar?: number;
-  fat?: number;
-}
+} from 'react-native';
+import { Calculator } from 'lucide-react-native';
+import { useMutation } from '@tanstack/react-query';
+import { theme } from '@styles/theme';
+import { typography } from '@styles/typography';
+import { calculateNutrition } from '@services/nutrition';
+import NutritionFacts from './NutritionFacts';
+import type { NutritionInfo } from '../types';
 
 interface NutritionSectionProps {
   nutrition?: NutritionInfo | null;
@@ -45,7 +38,7 @@ export default function NutritionSection({
   const calculateNutritionMutation = useMutation({
     mutationFn: async () => {
       if (!ingredients || ingredients.length === 0) {
-        throw new Error("Missing ingredients");
+        throw new Error('Missing ingredients');
       }
       return calculateNutrition(ingredients, servings);
     },
@@ -53,16 +46,16 @@ export default function NutritionSection({
       setCalculatedNutrition(nutritionData);
       onNutritionCalculated?.(nutritionData);
     },
-    onError: (error) => {
-      Alert.alert("Error", "Failed to calculate nutrition. Please try again.");
+    onError: () => {
+      Alert.alert('Error', 'Failed to calculate nutrition. Please try again.');
     },
   });
 
   const handleCalculateNutrition = () => {
     if (!ingredients || ingredients.length === 0) {
       Alert.alert(
-        "No Ingredients",
-        "This recipe needs ingredients to calculate nutrition."
+        'No Ingredients',
+        'This recipe needs ingredients to calculate nutrition.'
       );
       return;
     }
@@ -76,18 +69,15 @@ export default function NutritionSection({
   return (
     <View style={styles.container}>
       <Text style={styles.sectionTitle}>Nutrition Information</Text>
-      
+
       {displayNutrition ? (
-        <NutritionFacts 
-          nutrition={displayNutrition}
-          servings={servings}
-        />
+        <NutritionFacts nutrition={displayNutrition} servings={servings} />
       ) : (
         <View style={styles.nutritionContainer}>
           <Text style={styles.nutritionDescription}>
             Get detailed nutrition facts for this recipe based on its ingredients.
           </Text>
-          
+
           <TouchableOpacity
             style={[
               styles.nutritionButton,
@@ -101,9 +91,7 @@ export default function NutritionSection({
             ) : (
               <>
                 <Calculator size={20} color="white" />
-                <Text style={styles.nutritionButtonText}>
-                  Calculate Nutrition
-                </Text>
+                <Text style={styles.nutritionButtonText}>Calculate Nutrition</Text>
               </>
             )}
           </TouchableOpacity>
@@ -115,7 +103,7 @@ export default function NutritionSection({
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: theme.spacing["3xl"],
+    marginBottom: theme.spacing['3xl'],
   },
   sectionTitle: {
     ...typography.subtitle,
@@ -132,9 +120,9 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   nutritionButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: theme.colors.primary[500],
     padding: theme.spacing.lg,
     borderRadius: theme.borderRadius.md,
@@ -145,6 +133,6 @@ const styles = StyleSheet.create({
   },
   nutritionButtonText: {
     ...typography.button,
-    color: "white",
+    color: 'white',
   },
 });
