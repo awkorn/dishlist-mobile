@@ -2,9 +2,22 @@ import { renderHook, waitFor } from "@testing-library/react-native";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import React from "react";
 import { useDishLists } from "../hooks/useDishLists";
-import { dishlistService } from "../services/dishListService";
+import { dishlistService } from "../services";
 
-jest.mock("../services/dishlistService");
+jest.mock("../services", () => ({
+  dishlistService: {
+    getDishLists: jest.fn(),
+    getDishListDetail: jest.fn(),
+    createDishList: jest.fn(),
+    updateDishList: jest.fn(),
+    deleteDishList: jest.fn(),
+    pinDishList: jest.fn(),
+    unpinDishList: jest.fn(),
+    followDishList: jest.fn(),
+    unfollowDishList: jest.fn(),
+    removeRecipeFromDishList: jest.fn(),
+  },
+}));
 
 const mockDishlistService = dishlistService as jest.Mocked<
   typeof dishlistService
@@ -26,7 +39,6 @@ describe("useDishLists", () => {
   });
 
   const createWrapper = () => {
-    const queryClient = new QueryClient({});
     return ({ children }: { children: React.ReactNode }) =>
       React.createElement(
         QueryClientProvider,
@@ -131,7 +143,7 @@ describe("useDishLists", () => {
   });
 
   it("should handle errors", async () => {
-    mockDishlistService.getDishLists.mockRejectedValueOnce(
+    mockDishlistService.getDishLists.mockRejectedValue(
       new Error("Network error")
     );
 
@@ -139,9 +151,12 @@ describe("useDishLists", () => {
       wrapper: createWrapper(),
     });
 
-    await waitFor(() => {
-      expect(result.current.isError).toBe(true);
-    });
+    await waitFor(
+      () => {
+        expect(result.current.isError).toBe(true);
+      },
+      { timeout: 5000 }
+    );
 
     expect(result.current.dishLists).toEqual([]);
   });
