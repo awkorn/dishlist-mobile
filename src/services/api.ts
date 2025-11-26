@@ -225,3 +225,4 @@ export const updateUserProfile = async (data: {
 };
 
 export default api;
+export { api };
