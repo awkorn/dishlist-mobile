@@ -35,9 +35,6 @@ jest.mock('expo-image-picker', () => ({
   requestMediaLibraryPermissionsAsync: jest.fn(() => 
     Promise.resolve({ granted: true })
   ),
-  MediaTypeOptions: {
-    Images: 'Images',
-  },
 }));
 
 // Mock Firebase

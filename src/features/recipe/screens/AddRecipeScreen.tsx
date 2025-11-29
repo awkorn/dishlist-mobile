@@ -19,7 +19,6 @@ import { theme } from '@styles/theme';
 import { typography } from '@styles/typography';
 import Button from '@components/ui/Button';
 import { uploadImage } from '@services/image';
-import { queryKeys } from '@lib/queryKeys';
 import { useCreateRecipe, useUpdateRecipe } from '../hooks';
 import { NutritionSection } from '../components';
 import type { NutritionInfo, Recipe } from '../types';
@@ -157,7 +156,7 @@ export default function AddRecipeScreen({ route, navigation }: Props) {
     }
 
     const result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ['images'],
       allowsEditing: true,
       aspect: [4, 3],
       quality: 0.8,
@@ -178,7 +177,7 @@ export default function AddRecipeScreen({ route, navigation }: Props) {
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ['images'],
       allowsEditing: true,
       aspect: [4, 3],
       quality: 0.8,
