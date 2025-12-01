@@ -1,42 +1,36 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useRef } from "react";
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
-  ScrollView,
   ActivityIndicator,
-  Dimensions,
+  FlatList,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import PagerView from "react-native-pager-view";
 import { MoveLeft } from "lucide-react-native";
-import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import type { RootStackParamList } from "@app-types/navigation";
+
+import { useProfile } from "../hooks/useProfile";
+import { ProfileHeader } from "../components/ProfileHeader";
+import { ProfileTabs } from "../components/ProfileTabs";
+import { EditProfileSheet } from "../components/EditProfileSheet";
+import { DishListTile } from "@features/dishlist";
+import { RecipeTile } from "@features/recipe";
+import { ProfileEmptyState } from "../components/ProfileEmptyState";
+
 import { theme } from "@styles/theme";
 import { typography } from "@styles/typography";
-import { DishListTile } from "@features/dishlist/components/DishListTile";
-import { RecipeTile } from "@features/recipe";
-import { RootStackParamList } from "@app-types/navigation";
-import { useProfile } from "../hooks/useProfile";
-import {
-  EditProfileSheet,
-  ProfileHeader,
-  ProfileTabs,
-  ProfileEmptyState,
-} from "../components";
 
-const { width } = Dimensions.get("window");
-const tileWidth = (width - theme.spacing.xl * 2 - theme.spacing.lg) / 2;
+type Props = NativeStackScreenProps<RootStackParamList, "Profile">;
 
-type ProfileScreenRouteProp = RouteProp<RootStackParamList, "Profile">;
-type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
-
-export default function ProfileScreen() {
-  const navigation = useNavigation<NavigationProp>();
-  const route = useRoute<ProfileScreenRouteProp>();
+export default function ProfileScreen({ navigation, route }: Props) {
   const { userId } = route.params;
-
   const [showEditSheet, setShowEditSheet] = useState(false);
+  
+  const pagerRef = useRef<PagerView>(null);
 
   const {
     user,
@@ -50,18 +44,32 @@ export default function ProfileScreen() {
     setActiveTab,
   } = useProfile(userId);
 
-  const handleBack = useCallback(() => {
+  const handleBack = () => {
     navigation.goBack();
-  }, [navigation]);
+  };
 
-  const handleEditProfile = useCallback(() => {
+  const handleEditProfile = () => {
     setShowEditSheet(true);
-  }, []);
+  };
 
-  const handleEditComplete = useCallback(() => {
+  const handleEditComplete = () => {
     setShowEditSheet(false);
     refetch();
-  }, [refetch]);
+  };
+
+  // Handle tab press - programmatically change page
+  const handleTabChange = (tab: "DishLists" | "Recipes") => {
+    const pageIndex = tab === "DishLists" ? 0 : 1;
+    pagerRef.current?.setPage(pageIndex);
+    setActiveTab(tab);
+  };
+
+  // Handle page swipe - update active tab
+  const handlePageSelected = (e: any) => {
+    const position = e.nativeEvent.position;
+    const newTab = position === 0 ? "DishLists" : "Recipes";
+    setActiveTab(newTab);
+  };
 
   if (isLoading) {
     return (
@@ -78,7 +86,7 @@ export default function ProfileScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.errorContainer}>
-          <Text style={styles.errorTitle}>Unable to Load Profile</Text>
+          <Text style={styles.errorTitle}>Unable to load profile</Text>
           <Text style={styles.errorText}>
             Something went wrong. Please try again.
           </Text>
@@ -103,27 +111,38 @@ export default function ProfileScreen() {
         <View style={styles.headerSpacer} />
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Profile Header */}
-        <ProfileHeader
-          user={user}
-          displayName={displayName}
-          onEditPress={user.isOwnProfile ? handleEditProfile : undefined}
-        />
+      {/* Profile Header */}
+      <ProfileHeader
+        user={user}
+        displayName={displayName}
+        onEditPress={user.isOwnProfile ? handleEditProfile : undefined}
+      />
 
-        {/* Tabs */}
-        <ProfileTabs activeTab={activeTab} onTabChange={setActiveTab} />
+      {/* Tabs */}
+      <ProfileTabs 
+        activeTab={activeTab} 
+        onTabChange={handleTabChange}
+      />
 
-        {/* Content */}
-        <View style={styles.content}>
-          {activeTab === "DishLists" ? (
-            dishlists.length > 0 ? (
-              <View style={styles.grid}>
-                {dishlists.map((dishlist) => (
-                  <DishListTile key={dishlist.id} dishList={dishlist} />
-                ))}
-              </View>
-            ) : (
+      {/* Swipeable Content with FlatList */}
+      <PagerView
+        ref={pagerRef}
+        style={styles.pager}
+        initialPage={0}
+        onPageSelected={handlePageSelected}
+        scrollEnabled={true}
+      >
+        {/* DishLists Page */}
+        <View style={styles.page} key="0">
+          <FlatList
+            data={dishlists}
+            renderItem={({ item }) => <DishListTile dishList={item} />}
+            keyExtractor={(item) => item.id}
+            numColumns={2}
+            columnWrapperStyle={styles.row}
+            contentContainerStyle={styles.listContent}
+            ItemSeparatorComponent={() => <View style={styles.separator} />}
+            ListEmptyComponent={
               <ProfileEmptyState
                 message={
                   user.isOwnProfile
@@ -131,30 +150,41 @@ export default function ProfileScreen() {
                     : "No public DishLists"
                 }
               />
-            )
-          ) : recipes.length > 0 ? (
-            <View style={styles.grid}>
-              {recipes.map((recipe) => (
-                <RecipeTile
-                  key={recipe.id}
-                  recipe={recipe}
-                  onPress={() =>
-                    navigation.navigate("RecipeDetail", { recipeId: recipe.id })
-                  }
-                />
-              ))}
-            </View>
-          ) : (
-            <ProfileEmptyState
-              message={
-                user.isOwnProfile
-                  ? "You don't have any recipes yet"
-                  : "No recipes in public DishLists"
-              }
-            />
-          )}
+            }
+            showsVerticalScrollIndicator={false}
+          />
         </View>
-      </ScrollView>
+
+        {/* Recipes Page */}
+        <View style={styles.page} key="1">
+          <FlatList
+            data={recipes}
+            renderItem={({ item }) => (
+              <RecipeTile
+                recipe={item}
+                onPress={() =>
+                  navigation.navigate("RecipeDetail", { recipeId: item.id })
+                }
+              />
+            )}
+            keyExtractor={(item) => item.id}
+            numColumns={2}
+            columnWrapperStyle={styles.row}
+            contentContainerStyle={styles.listContent}
+            ItemSeparatorComponent={() => <View style={styles.separator} />}
+            ListEmptyComponent={
+              <ProfileEmptyState
+                message={
+                  user.isOwnProfile
+                    ? "You don't have any recipes yet"
+                    : "No recipes in public DishLists"
+                }
+              />
+            }
+            showsVerticalScrollIndicator={false}
+          />
+        </View>
+      </PagerView>
 
       {/* Edit Profile Sheet */}
       {user.isOwnProfile && (
@@ -224,12 +254,21 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "white",
   },
-  content: {
-    padding: theme.spacing.xl,
+  pager: {
+    flex: 1,
   },
-  grid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
+  page: {
+    flex: 1,
+  },
+  listContent: {
+    padding: theme.spacing.xl,
+    paddingBottom: theme.spacing.xl + 20,
+  },
+  row: {
+    justifyContent: "space-between",
     gap: theme.spacing.lg,
+  },
+  separator: {
+    height: theme.spacing.lg, // Vertical spacing between rows
   },
 });

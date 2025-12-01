@@ -15,6 +15,7 @@ export function ProfileTabs({ activeTab, onTabChange }: ProfileTabsProps) {
       <TouchableOpacity
         style={[styles.tab, activeTab === 'DishLists' && styles.activeTab]}
         onPress={() => onTabChange('DishLists')}
+        activeOpacity={0.7}
       >
         <Text style={[styles.tabText, activeTab === 'DishLists' && styles.activeTabText]}>
           DishLists
@@ -23,6 +24,7 @@ export function ProfileTabs({ activeTab, onTabChange }: ProfileTabsProps) {
       <TouchableOpacity
         style={[styles.tab, activeTab === 'Recipes' && styles.activeTab]}
         onPress={() => onTabChange('Recipes')}
+        activeOpacity={0.7}
       >
         <Text style={[styles.tabText, activeTab === 'Recipes' && styles.activeTabText]}>
           Recipes
@@ -36,6 +38,7 @@ const styles = StyleSheet.create({
   tabRow: {
     flexDirection: 'row',
     marginBottom: theme.spacing.xl,
+    backgroundColor: theme.colors.background,
   },
   tab: {
     flex: 1,
