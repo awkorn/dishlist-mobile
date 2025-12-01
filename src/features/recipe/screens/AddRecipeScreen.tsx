@@ -253,7 +253,7 @@ export default function AddRecipeScreen({ route, navigation }: Props) {
           ...recipeData,
           dishListId,
         });
-        // Navigation handled by mutation onSuccess
+        navigation.goBack();
       }
     } catch (error) {
       setImageUploading(false);
