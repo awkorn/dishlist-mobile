@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   View,
   Text,
@@ -6,14 +6,18 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
-} from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Plus } from 'lucide-react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { theme } from '@styles/theme';
-import { typography } from '@styles/typography';
-import { useGroceryList } from '../hooks/useGroceryList';
-import { GroceryItemRow, GroceryEmptyState, GroceryInputRow } from '../components';
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Plus } from "lucide-react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { theme } from "@styles/theme";
+import { typography } from "@styles/typography";
+import { useGroceryList } from "../hooks/useGroceryList";
+import {
+  GroceryItemRow,
+  GroceryEmptyState,
+  GroceryInputRow,
+} from "../components";
 
 export default function GroceryListScreen() {
   const insets = useSafeAreaInsets();
@@ -37,7 +41,7 @@ export default function GroceryListScreen() {
       await saveCurrentItem();
     }
     setIsAddingItem(true);
-    setEditingText('');
+    setEditingText("");
   };
 
   const handleDoneEditing = async () => {
@@ -62,7 +66,7 @@ export default function GroceryListScreen() {
   return (
     <View style={styles.container}>
       <LinearGradient
-        colors={['#FFFFFF', '#F4F2EE']}
+        colors={["#FFFFFF", "#F4F2EE"]}
         locations={[0, 1]}
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
@@ -83,7 +87,7 @@ export default function GroceryListScreen() {
                   items.length === 0 && styles.disabledText,
                 ]}
               >
-                {allChecked ? 'Uncheck All' : 'Check All'}
+                {allChecked ? "Uncheck All" : "Check All"}
               </Text>
             </TouchableOpacity>
 
@@ -149,8 +153,8 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.background,
   },
   loadingContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   header: {
     paddingHorizontal: theme.spacing.xl,
@@ -162,8 +166,8 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.md,
   },
   headerButtons: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: theme.spacing.md,
   },
   headerButton: {
@@ -180,7 +184,7 @@ const styles = StyleSheet.create({
   },
   addButton: {
     padding: theme.spacing.sm,
-    marginLeft: 'auto',
+    marginLeft: "auto",
   },
   scrollView: {
     flex: 1,

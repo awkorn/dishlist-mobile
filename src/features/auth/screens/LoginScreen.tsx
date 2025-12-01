@@ -10,7 +10,6 @@ import {
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { useAuth } from '@providers/AuthProvider/AuthContext';
 import { getAuthErrorMessage } from '@lib/errors';
-import { VALIDATION } from '@lib/constants';
 import { typography } from '@styles/typography';
 import { theme } from '@styles/theme';
 import Button from '@components/ui/Button';

@@ -22,6 +22,7 @@ export function GroceryEmptyState({
 
 const styles = StyleSheet.create({
   container: {
+    marginTop: '40%',
     paddingHorizontal: theme.spacing['4xl'],
     paddingVertical: theme.spacing['4xl'],
     alignItems: 'center',
