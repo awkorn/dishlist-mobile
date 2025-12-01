@@ -53,6 +53,7 @@ const styles = StyleSheet.create({
   },
   tabText: {
     ...typography.subtitle,
+    fontSize: 18,
     color: theme.colors.neutral[500],
   },
   activeTabText: {

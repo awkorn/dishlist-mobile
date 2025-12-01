@@ -275,9 +275,8 @@ const styles = StyleSheet.create({
   footer: {
     flexDirection: 'row',
     paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.neutral[200],
+    paddingTop: 16,
+    paddingBottom: theme.spacing["4xl"],
     gap: 12,
   },
   cancelButton: {
