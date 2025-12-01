@@ -27,6 +27,7 @@ export default function GroceryListScreen() {
     isAddingItem,
     editingText,
     allChecked,
+    checkedCount,
     setIsAddingItem,
     setEditingText,
     toggleCheck,
@@ -91,13 +92,15 @@ export default function GroceryListScreen() {
               </Text>
             </TouchableOpacity>
 
-            <TouchableOpacity
-              style={styles.headerButton}
-              onPress={handleClearChecked}
-              testID="clear-checked-button"
-            >
-              <Text style={styles.headerButtonText}>Clear Checked</Text>
-            </TouchableOpacity>
+            {checkedCount === 0 ? null : (
+              <TouchableOpacity
+                style={styles.headerButton}
+                onPress={handleClearChecked}
+                testID="clear-checked-button"
+              >
+                <Text style={styles.headerButtonText}>Clear Checked</Text>
+              </TouchableOpacity>
+            )}
 
             <TouchableOpacity
               style={styles.addButton}
@@ -176,7 +179,7 @@ const styles = StyleSheet.create({
   },
   headerButtonText: {
     ...typography.button,
-    fontSize: 14,
+    fontSize: 16,
     color: theme.colors.primary[500],
   },
   disabledText: {
