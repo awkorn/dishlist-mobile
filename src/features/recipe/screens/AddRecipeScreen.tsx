@@ -319,9 +319,10 @@ export default function AddRecipeScreen({ route, navigation }: Props) {
           >
             {/* Recipe Title */}
             <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Title</Text>
               <TextInput
                 style={[styles.titleInput, errors.title && styles.inputError]}
-                placeholder="Recipe Title"
+                placeholder="Recipe title"
                 placeholderTextColor={theme.colors.neutral[400]}
                 value={title}
                 onChangeText={setTitle}

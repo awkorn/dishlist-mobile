@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { useRef, useEffect } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import { Swipeable } from 'react-native-gesture-handler';
 import { CheckSquare, Square, Trash2 } from 'lucide-react-native';
 import { theme } from '@styles/theme';
@@ -8,17 +8,50 @@ import type { GroceryItem } from '../types';
 
 interface GroceryItemRowProps {
   item: GroceryItem;
+  isEditing: boolean;
+  editingText: string;
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
+  onStartEditing: (id: string, text: string) => void;
+  onChangeEditingText: (text: string) => void;
+  onSaveEdit: (id: string, newText: string) => void;
+  onCancelEdit: () => void;
   showDivider?: boolean;
 }
 
 export function GroceryItemRow({
   item,
+  isEditing,
+  editingText,
   onToggle,
   onDelete,
+  onStartEditing,
+  onChangeEditingText,
+  onSaveEdit,
+  onCancelEdit,
   showDivider = true,
 }: GroceryItemRowProps) {
+  const inputRef = useRef<TextInput>(null);
+
+  useEffect(() => {
+    if (isEditing) {
+      const timer = setTimeout(() => inputRef.current?.focus(), 100);
+      return () => clearTimeout(timer);
+    }
+  }, [isEditing]);
+
+  const handleBlur = () => {
+    if (!editingText.trim()) {
+      onCancelEdit();
+    } else {
+      onSaveEdit(item.id, editingText);
+    }
+  };
+
+  const handleSubmit = () => {
+    onSaveEdit(item.id, editingText);
+  };
+
   const renderRightActions = () => (
     <TouchableOpacity
       style={styles.deleteButton}
@@ -34,12 +67,14 @@ export function GroceryItemRow({
       <Swipeable
         renderRightActions={renderRightActions}
         overshootRight={false}
+        enabled={!isEditing}
       >
         <View style={styles.itemContainer}>
           <TouchableOpacity
             style={styles.itemCheckbox}
             onPress={() => onToggle(item.id)}
             testID={`toggle-${item.id}`}
+            disabled={isEditing}
           >
             {item.checked ? (
               <CheckSquare size={24} color={theme.colors.primary[500]} />
@@ -47,12 +82,33 @@ export function GroceryItemRow({
               <Square size={24} color={theme.colors.neutral[400]} />
             )}
           </TouchableOpacity>
-          <Text
-            style={[styles.itemText, item.checked && styles.itemTextChecked]}
-            numberOfLines={2}
-          >
-            {item.text}
-          </Text>
+
+          {isEditing ? (
+            <TextInput
+              ref={inputRef}
+              style={styles.itemInput}
+              value={editingText}
+              onChangeText={onChangeEditingText}
+              onSubmitEditing={handleSubmit}
+              onBlur={handleBlur}
+              returnKeyType="done"
+              autoCapitalize="sentences"
+              testID={`edit-input-${item.id}`}
+            />
+          ) : (
+            <TouchableOpacity
+              style={styles.textContainer}
+              onPress={() => onStartEditing(item.id, item.text)}
+              testID={`text-${item.id}`}
+            >
+              <Text
+                style={[styles.itemText, item.checked && styles.itemTextChecked]}
+                numberOfLines={2}
+              >
+                {item.text}
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
       </Swipeable>
       {showDivider && <View style={styles.divider} />}
@@ -72,14 +128,23 @@ const styles = StyleSheet.create({
   itemCheckbox: {
     padding: theme.spacing.xs,
   },
+  textContainer: {
+    flex: 1,
+  },
   itemText: {
     ...typography.body,
     color: theme.colors.neutral[800],
-    flex: 1,
   },
   itemTextChecked: {
     textDecorationLine: 'line-through',
     color: theme.colors.neutral[500],
+  },
+  itemInput: {
+    flex: 1,
+    ...typography.body,
+    fontSize: 16,
+    color: theme.colors.neutral[800],
+    paddingVertical: 0,
   },
   divider: {
     height: 1,

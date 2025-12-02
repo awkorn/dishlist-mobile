@@ -26,6 +26,7 @@ export default function GroceryListScreen() {
     isLoading,
     isAddingItem,
     editingText,
+    editingItemId,
     allChecked,
     checkedCount,
     setIsAddingItem,
@@ -33,11 +34,19 @@ export default function GroceryListScreen() {
     toggleCheck,
     deleteItem,
     saveCurrentItem,
+    startEditing,
+    cancelEditing,
+    saveEditedItem,
     handleClearChecked,
     handleToggleAll,
   } = useGroceryList();
 
   const handleStartAdding = async () => {
+    // Cancel any item editing first
+    if (editingItemId) {
+      cancelEditing();
+    }
+
     if (isAddingItem && editingText.trim()) {
       await saveCurrentItem();
     }
@@ -54,6 +63,14 @@ export default function GroceryListScreen() {
     if (!editingText.trim()) {
       setIsAddingItem(false);
     }
+  };
+
+  const handleStartItemEditing = (id: string, text: string) => {
+    // Close add row if open
+    if (isAddingItem) {
+      setIsAddingItem(false);
+    }
+    startEditing(id, text);
   };
 
   if (isLoading) {
@@ -140,8 +157,14 @@ export default function GroceryListScreen() {
           <GroceryItemRow
             key={item.id}
             item={item}
+            isEditing={editingItemId === item.id}
+            editingText={editingItemId === item.id ? editingText : ""}
             onToggle={toggleCheck}
             onDelete={deleteItem}
+            onStartEditing={handleStartItemEditing}
+            onChangeEditingText={setEditingText}
+            onSaveEdit={saveEditedItem}
+            onCancelEdit={cancelEditing}
             showDivider={index < items.length - 1}
           />
         ))}

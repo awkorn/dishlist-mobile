@@ -56,6 +56,15 @@ export const groceryStorage = {
     return updated;
   },
 
+  async updateItem(id: string, newText: string): Promise<GroceryItem[]> {
+    const items = await this.loadItems();
+    const updated = items.map((item) =>
+      item.id === id ? { ...item, text: newText.trim() } : item
+    );
+    await this.saveItems(updated);
+    return updated;
+  },
+
   async clearChecked(): Promise<GroceryItem[]> {
     const items = await this.loadItems();
     const updated = items.filter((item) => !item.checked);

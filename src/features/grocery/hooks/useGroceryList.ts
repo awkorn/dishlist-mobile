@@ -3,35 +3,19 @@ import { Alert } from 'react-native';
 import { groceryStorage } from '../services/groceryStorage';
 import type { GroceryItem } from '../types';
 
-interface UseGroceryListReturn {
-  items: GroceryItem[];
-  isLoading: boolean;
-  isAddingItem: boolean;
-  editingText: string;
-  allChecked: boolean;
-  checkedCount: number;
-  setIsAddingItem: (value: boolean) => void;
-  setEditingText: (value: string) => void;
-  toggleCheck: (id: string) => Promise<void>;
-  deleteItem: (id: string) => Promise<void>;
-  saveCurrentItem: () => Promise<void>;
-  handleClearChecked: () => void;
-  handleToggleAll: () => Promise<void>;
-  refresh: () => Promise<void>;
-}
-
-export function useGroceryList(): UseGroceryListReturn {
+export function useGroceryList() {
   const [items, setItems] = useState<GroceryItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isAddingItem, setIsAddingItem] = useState(false);
   const [editingText, setEditingText] = useState('');
+  const [editingItemId, setEditingItemId] = useState<string | null>(null);
 
   const loadItems = useCallback(async () => {
     try {
       const loaded = await groceryStorage.loadItems();
       setItems(loaded);
     } catch (error) {
-      console.error('Failed to load grocery items:', error);
+      Alert.alert('Error', 'Failed to load grocery list');
     } finally {
       setIsLoading(false);
     }
@@ -60,23 +44,54 @@ export function useGroceryList(): UseGroceryListReturn {
   }, []);
 
   const saveCurrentItem = useCallback(async () => {
-    const text = editingText.trim();
-    if (text) {
-      try {
-        const updated = await groceryStorage.addItems([text]);
-        setItems(updated);
-      } catch (error) {
-        Alert.alert('Error', 'Failed to add item');
-      }
+    if (!editingText.trim()) return;
+
+    try {
+      const updated = await groceryStorage.addItems([editingText]);
+      setItems(updated);
+      setEditingText('');
+    } catch (error) {
+      Alert.alert('Error', 'Failed to add item');
     }
-    setEditingText('');
   }, [editingText]);
 
-  const handleClearChecked = useCallback(() => {
+  // Start editing an existing item
+  const startEditing = useCallback((id: string, currentText: string) => {
+    setEditingItemId(id);
+    setEditingText(currentText);
+  }, []);
+
+  // Cancel editing and revert
+  const cancelEditing = useCallback(() => {
+    setEditingItemId(null);
+    setEditingText('');
+  }, []);
+
+  // Save the edited item
+  const saveEditedItem = useCallback(async (id: string, newText: string) => {
+    const trimmed = newText.trim();
+    
+    // If empty, cancel edit (don't delete)
+    if (!trimmed) {
+      cancelEditing();
+      return;
+    }
+
+    try {
+      const updated = await groceryStorage.updateItem(id, trimmed);
+      setItems(updated);
+    } catch (error) {
+      Alert.alert('Error', 'Failed to update item');
+    } finally {
+      setEditingItemId(null);
+      setEditingText('');
+    }
+  }, [cancelEditing]);
+
+  const handleClearChecked = useCallback(async () => {
     const checkedCount = items.filter((i) => i.checked).length;
     
     if (checkedCount === 0) {
-      Alert.alert('No Items', 'There are no checked items to clear.');
       return;
     }
 
@@ -122,6 +137,7 @@ export function useGroceryList(): UseGroceryListReturn {
     isLoading,
     isAddingItem,
     editingText,
+    editingItemId,
     allChecked,
     checkedCount,
     setIsAddingItem,
@@ -129,6 +145,9 @@ export function useGroceryList(): UseGroceryListReturn {
     toggleCheck,
     deleteItem,
     saveCurrentItem,
+    startEditing,
+    cancelEditing,
+    saveEditedItem,
     handleClearChecked,
     handleToggleAll,
     refresh: loadItems,
