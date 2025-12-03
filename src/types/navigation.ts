@@ -1,4 +1,5 @@
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import type { ImportedRecipeData } from "@features/recipe/types";
 
 export type RootStackParamList = {
   Login: undefined;
@@ -35,6 +36,8 @@ export type RootStackParamList = {
     dishListId: string;
     recipeId?: string;
     recipe?: any;
+    importedRecipe?: ImportedRecipeData; 
+    importWarnings?: string[];   
   };
   InviteCollaborator: {
     dishListId: string;

@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect } from "react";
 import {
   View,
   Text,
@@ -8,24 +8,23 @@ import {
   ScrollView,
   Alert,
   Image,
-  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { ChevronLeft, X, Camera } from 'lucide-react-native';
-import * as ImagePicker from 'expo-image-picker';
-import { theme } from '@styles/theme';
-import { typography } from '@styles/typography';
-import Button from '@components/ui/Button';
-import { uploadImage } from '@services/image';
-import { useCreateRecipe, useUpdateRecipe } from '../hooks';
-import { NutritionSection } from '../components';
-import type { NutritionInfo, Recipe } from '../types';
-import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import type { RootStackParamList } from '@app-types/navigation';
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { ChevronLeft, X, Camera, AlertCircle } from "lucide-react-native";
+import * as ImagePicker from "expo-image-picker";
+import { theme } from "@styles/theme";
+import { typography } from "@styles/typography";
+import Button from "@components/ui/Button";
+import { uploadImage } from "@services/image";
+import { useCreateRecipe, useUpdateRecipe } from "../hooks";
+import { NutritionSection } from "../components";
+import type { NutritionInfo } from "../types";
+import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import type { RootStackParamList } from "@app-types/navigation";
 
-type Props = NativeStackScreenProps<RootStackParamList, 'AddRecipe'>;
+type Props = NativeStackScreenProps<RootStackParamList, "AddRecipe">;
 
 interface TimeInputProps {
   label: string;
@@ -34,7 +33,12 @@ interface TimeInputProps {
   unit: string;
 }
 
-const TimeInput: React.FC<TimeInputProps> = ({ label, value, onChange, unit }) => {
+const TimeInput: React.FC<TimeInputProps> = ({
+  label,
+  value,
+  onChange,
+  unit,
+}) => {
   const [inputValue, setInputValue] = useState(value.toString());
 
   useEffect(() => {
@@ -42,7 +46,7 @@ const TimeInput: React.FC<TimeInputProps> = ({ label, value, onChange, unit }) =
   }, [value]);
 
   const handleTextChange = (text: string) => {
-    const numericText = text.replace(/[^0-9]/g, '');
+    const numericText = text.replace(/[^0-9]/g, "");
     setInputValue(numericText);
     const numValue = parseInt(numericText) || 0;
     onChange(Math.max(0, numValue));
@@ -75,28 +79,56 @@ const TimeInput: React.FC<TimeInputProps> = ({ label, value, onChange, unit }) =
 };
 
 export default function AddRecipeScreen({ route, navigation }: Props) {
-  const { dishListId, recipeId, recipe: editRecipe } = route.params;
+  const {
+    dishListId,
+    recipeId,
+    recipe: editRecipe,
+    importedRecipe,
+    importWarnings,
+  } = route.params;
+
   const isEditMode = !!recipeId && !!editRecipe;
+  const isImportMode = !!importedRecipe && !isEditMode;
 
   // Form state
-  const [title, setTitle] = useState(editRecipe?.title || '');
-  const [prepTime, setPrepTime] = useState(editRecipe?.prepTime || 0);
-  const [cookTime, setCookTime] = useState(editRecipe?.cookTime || 0);
-  const [servings, setServings] = useState(editRecipe?.servings || 1);
+  const [title, setTitle] = useState(
+    editRecipe?.title || importedRecipe?.title || ""
+  );
+  const [prepTime, setPrepTime] = useState(
+    editRecipe?.prepTime || importedRecipe?.prepTime || 0
+  );
+  const [cookTime, setCookTime] = useState(
+    editRecipe?.cookTime || importedRecipe?.cookTime || 0
+  );
+  const [servings, setServings] = useState(
+    editRecipe?.servings || importedRecipe?.servings || 1
+  );
   const [ingredients, setIngredients] = useState<string[]>(
-    editRecipe?.ingredients?.length > 0 ? editRecipe.ingredients : ['']
+    (editRecipe?.ingredients?.length ?? 0) > 0
+      ? editRecipe!.ingredients
+      : (importedRecipe?.ingredients?.length ?? 0) > 0
+      ? importedRecipe!.ingredients
+      : [""]
   );
   const [instructions, setInstructions] = useState<string[]>(
-    editRecipe?.instructions?.length > 0 ? editRecipe.instructions : ['']
+    (editRecipe?.instructions?.length ?? 0) > 0
+      ? editRecipe!.instructions
+      : (importedRecipe?.instructions?.length ?? 0) > 0
+      ? importedRecipe!.instructions
+      : [""]
   );
-  const [imageUri, setImageUri] = useState<string | null>(editRecipe?.imageUrl || null);
+  const [imageUri, setImageUri] = useState<string | null>(
+    editRecipe?.imageUrl || null
+  );
   const [imageChanged, setImageChanged] = useState(false);
   const [imageUploading, setImageUploading] = useState(false);
-  const [calculatedNutrition, setCalculatedNutrition] = useState<NutritionInfo | null>(
-    editRecipe?.nutrition || null
+  const [calculatedNutrition, setCalculatedNutrition] =
+    useState<NutritionInfo | null>(editRecipe?.nutrition || null);
+  const [originalIngredients] = useState<string[]>(
+    editRecipe?.ingredients || []
   );
-  const [originalIngredients] = useState<string[]>(editRecipe?.ingredients || []);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [warningsDismissed, setWarningsDismissed] = useState(false);
 
   // Mutations
   const createRecipeMutation = useCreateRecipe();
@@ -109,7 +141,7 @@ export default function AddRecipeScreen({ route, navigation }: Props) {
   }, [ingredients, originalIngredients, isEditMode]);
 
   // Ingredient management
-  const addIngredient = () => setIngredients([...ingredients, '']);
+  const addIngredient = () => setIngredients([...ingredients, ""]);
 
   const removeIngredient = (index: number) => {
     if (ingredients.length > 1) {
@@ -124,7 +156,7 @@ export default function AddRecipeScreen({ route, navigation }: Props) {
   };
 
   // Instruction management
-  const addInstruction = () => setInstructions([...instructions, '']);
+  const addInstruction = () => setInstructions([...instructions, ""]);
 
   const removeInstruction = (index: number) => {
     if (instructions.length > 1) {
@@ -140,10 +172,10 @@ export default function AddRecipeScreen({ route, navigation }: Props) {
 
   // Image handling
   const pickImage = async () => {
-    Alert.alert('Select Image', 'Choose how you want to add an image', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Camera', onPress: openCamera },
-      { text: 'Photo Library', onPress: openImagePicker },
+    Alert.alert("Select Image", "Choose how you want to add an image", [
+      { text: "Cancel", style: "cancel" },
+      { text: "Camera", onPress: openCamera },
+      { text: "Photo Library", onPress: openImagePicker },
     ]);
   };
 
@@ -151,12 +183,15 @@ export default function AddRecipeScreen({ route, navigation }: Props) {
     const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
 
     if (!permissionResult.granted) {
-      Alert.alert('Permission Required', 'Camera permission is needed to take photos.');
+      Alert.alert(
+        "Permission Required",
+        "Camera permission is needed to take photos."
+      );
       return;
     }
 
     const result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ['images'],
+      mediaTypes: ["images"],
       allowsEditing: true,
       aspect: [4, 3],
       quality: 0.8,
@@ -169,15 +204,19 @@ export default function AddRecipeScreen({ route, navigation }: Props) {
   };
 
   const openImagePicker = async () => {
-    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    const permissionResult =
+      await ImagePicker.requestMediaLibraryPermissionsAsync();
 
     if (!permissionResult.granted) {
-      Alert.alert('Permission Required', 'Photo library access is needed to select images.');
+      Alert.alert(
+        "Permission Required",
+        "Photo library access is needed to select images."
+      );
       return;
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
+      mediaTypes: ["images"],
       allowsEditing: true,
       aspect: [4, 3],
       quality: 0.8,
@@ -194,17 +233,17 @@ export default function AddRecipeScreen({ route, navigation }: Props) {
     const newErrors: Record<string, string> = {};
 
     if (!title.trim()) {
-      newErrors.title = 'Title is required';
+      newErrors.title = "Title is required";
     }
 
     const validIngredients = ingredients.filter((ing) => ing.trim());
     if (validIngredients.length === 0) {
-      newErrors.ingredients = 'At least one ingredient is required';
+      newErrors.ingredients = "At least one ingredient is required";
     }
 
     const validInstructions = instructions.filter((inst) => inst.trim());
     if (validInstructions.length === 0) {
-      newErrors.instructions = 'At least one instruction is required';
+      newErrors.instructions = "At least one instruction is required";
     }
 
     setErrors(newErrors);
@@ -221,7 +260,7 @@ export default function AddRecipeScreen({ route, navigation }: Props) {
       // Upload image if changed
       if (imageChanged && imageUri) {
         setImageUploading(true);
-        finalImageUrl = await uploadImage(imageUri, 'recipes');
+        finalImageUrl = await uploadImage(imageUri, "recipes");
         setImageUploading(false);
       }
 
@@ -257,27 +296,27 @@ export default function AddRecipeScreen({ route, navigation }: Props) {
       }
     } catch (error) {
       setImageUploading(false);
-      console.error('Save recipe error:', error);
+      console.error("Save recipe error:", error);
     }
   };
 
   // Cancel handler
   const handleCancel = () => {
     const hasChanges =
-      title.trim() !== (editRecipe?.title || '') ||
+      title.trim() !== (editRecipe?.title || "") ||
       ingredients.some((ing) => ing.trim()) ||
       instructions.some((inst) => inst.trim()) ||
       imageChanged;
 
     if (hasChanges) {
       Alert.alert(
-        isEditMode ? 'Discard Changes?' : 'Discard Recipe?',
-        'You have unsaved changes. Are you sure you want to go back?',
+        isEditMode ? "Discard Changes?" : "Discard Recipe?",
+        "You have unsaved changes. Are you sure you want to go back?",
         [
-          { text: 'Keep Editing', style: 'cancel' },
+          { text: "Keep Editing", style: "cancel" },
           {
-            text: 'Discard',
-            style: 'destructive',
+            text: "Discard",
+            style: "destructive",
             onPress: () => navigation.goBack(),
           },
         ]
@@ -292,11 +331,40 @@ export default function AddRecipeScreen({ route, navigation }: Props) {
     updateRecipeMutation.isPending ||
     imageUploading;
 
+  const ImportWarningBanner = () => {
+    if (!isImportMode || !importWarnings?.length || warningsDismissed) {
+      return null;
+    }
+
+    return (
+      <View style={styles.warningBanner}>
+        <View style={styles.warningHeader}>
+          <AlertCircle size={20} color={theme.colors.warning} />
+          <Text style={styles.warningTitle}>Import Notes</Text>
+          <TouchableOpacity onPress={() => setWarningsDismissed(true)}>
+            <X size={18} color={theme.colors.warning} />
+          </TouchableOpacity>
+        </View>
+        <Text style={styles.warningText}>
+          Some details couldn't be extracted automatically:
+        </Text>
+        {importWarnings.map((warning, index) => (
+          <Text key={index} style={styles.warningItem}>
+            • {warning}
+          </Text>
+        ))}
+        <Text style={styles.warningHint}>
+          Please review and fill in any missing information.
+        </Text>
+      </View>
+    );
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView
         style={styles.keyboardView}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
         <View style={styles.main}>
           {/* Header */}
@@ -305,7 +373,11 @@ export default function AddRecipeScreen({ route, navigation }: Props) {
               <ChevronLeft size={24} color={theme.colors.neutral[700]} />
             </TouchableOpacity>
             <Text style={styles.headerTitle}>
-              {isEditMode ? 'Edit Recipe' : 'Add Recipe'}
+              {isEditMode
+                ? "Edit Recipe"
+                : isImportMode
+                ? "Review Imported Recipe"
+                : "Add Recipe"}
             </Text>
             <View style={styles.headerSpacer} />
           </View>
@@ -329,7 +401,9 @@ export default function AddRecipeScreen({ route, navigation }: Props) {
                 returnKeyType="next"
                 maxLength={100}
               />
-              {errors.title && <Text style={styles.errorText}>{errors.title}</Text>}
+              {errors.title && (
+                <Text style={styles.errorText}>{errors.title}</Text>
+              )}
             </View>
 
             {/* Time & Servings */}
@@ -380,7 +454,10 @@ export default function AddRecipeScreen({ route, navigation }: Props) {
                   </TouchableOpacity>
                 </View>
               ))}
-              <TouchableOpacity style={styles.addButton} onPress={addIngredient}>
+              <TouchableOpacity
+                style={styles.addButton}
+                onPress={addIngredient}
+              >
                 <Text style={styles.addButtonText}>Add Ingredient</Text>
               </TouchableOpacity>
             </View>
@@ -394,7 +471,11 @@ export default function AddRecipeScreen({ route, navigation }: Props) {
               {instructions.map((instruction, index) => (
                 <View key={index} style={styles.dynamicInputRow}>
                   <TextInput
-                    style={[styles.dynamicInput, styles.instructionInput, { flex: 1 }]}
+                    style={[
+                      styles.dynamicInput,
+                      styles.instructionInput,
+                      { flex: 1 },
+                    ]}
                     placeholder={`Step ${index + 1}`}
                     placeholderTextColor={theme.colors.neutral[400]}
                     value={instruction}
@@ -409,7 +490,10 @@ export default function AddRecipeScreen({ route, navigation }: Props) {
                   </TouchableOpacity>
                 </View>
               ))}
-              <TouchableOpacity style={styles.addButton} onPress={addInstruction}>
+              <TouchableOpacity
+                style={styles.addButton}
+                onPress={addInstruction}
+              >
                 <Text style={styles.addButtonText}>Add Step</Text>
               </TouchableOpacity>
             </View>
@@ -418,8 +502,8 @@ export default function AddRecipeScreen({ route, navigation }: Props) {
             {ingredientsChanged && calculatedNutrition && (
               <View style={styles.nutritionWarning}>
                 <Text style={styles.nutritionWarningText}>
-                  ⚠️ Ingredients changed - nutrition data will be cleared. Recalculate
-                  after saving.
+                  ⚠️ Ingredients changed - nutrition data will be cleared.
+                  Recalculate after saving.
                 </Text>
               </View>
             )}
@@ -433,9 +517,15 @@ export default function AddRecipeScreen({ route, navigation }: Props) {
             {/* Recipe Image */}
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Recipe Image</Text>
-              <TouchableOpacity style={styles.imagePickerButton} onPress={pickImage}>
+              <TouchableOpacity
+                style={styles.imagePickerButton}
+                onPress={pickImage}
+              >
                 {imageUri ? (
-                  <Image source={{ uri: imageUri }} style={styles.selectedImage} />
+                  <Image
+                    source={{ uri: imageUri }}
+                    style={styles.selectedImage}
+                  />
                 ) : (
                   <View style={styles.imagePlaceholder}>
                     <Camera size={32} color={theme.colors.neutral[400]} />
@@ -448,9 +538,9 @@ export default function AddRecipeScreen({ route, navigation }: Props) {
         </View>
 
         {/* Footer */}
-        <SafeAreaView edges={['bottom']} style={styles.footer}>
+        <SafeAreaView edges={["bottom"]} style={styles.footer}>
           <Button
-            title={isEditMode ? 'Update Recipe' : 'Add Recipe'}
+            title={isEditMode ? "Update Recipe" : "Add Recipe"}
             onPress={handleSave}
             loading={isLoading}
             disabled={isLoading}
@@ -474,9 +564,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: theme.spacing.xl,
     paddingVertical: theme.spacing.lg,
     borderBottomWidth: 1,
@@ -500,11 +590,11 @@ const styles = StyleSheet.create({
     padding: theme.spacing.xl,
   },
   section: {
-    marginBottom: theme.spacing['3xl'],
+    marginBottom: theme.spacing["3xl"],
     backgroundColor: theme.colors.surface,
     padding: theme.spacing.xl,
     borderRadius: theme.borderRadius.lg,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 4,
@@ -533,13 +623,13 @@ const styles = StyleSheet.create({
     marginTop: theme.spacing.xs,
   },
   timeSection: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     gap: theme.spacing.md,
   },
   timeInputContainer: {
     flex: 1,
-    alignItems: 'center',
+    alignItems: "center",
   },
   timeLabel: {
     ...typography.caption,
@@ -548,8 +638,8 @@ const styles = StyleSheet.create({
   },
   timeInput: {
     ...typography.body,
-    width: '100%',
-    textAlign: 'center',
+    width: "100%",
+    textAlign: "center",
     padding: theme.spacing.md,
     borderWidth: 1,
     borderColor: theme.colors.neutral[200],
@@ -562,8 +652,8 @@ const styles = StyleSheet.create({
     marginTop: theme.spacing.xs,
   },
   dynamicInputRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: theme.spacing.md,
     gap: theme.spacing.sm,
   },
@@ -577,25 +667,25 @@ const styles = StyleSheet.create({
   },
   instructionInput: {
     minHeight: 60,
-    textAlignVertical: 'top',
+    textAlignVertical: "top",
   },
   removeButton: {
     padding: theme.spacing.sm,
   },
   addButton: {
-    alignItems: 'center',
+    alignItems: "center",
     padding: theme.spacing.md,
     borderWidth: 1,
     borderColor: theme.colors.primary[500],
     borderRadius: theme.borderRadius.md,
-    borderStyle: 'dashed',
+    borderStyle: "dashed",
   },
   addButtonText: {
     ...typography.button,
     color: theme.colors.primary[500],
   },
   nutritionWarning: {
-    backgroundColor: theme.colors.warning + '20',
+    backgroundColor: theme.colors.warning + "20",
     padding: theme.spacing.md,
     borderRadius: theme.borderRadius.md,
     marginBottom: theme.spacing.lg,
@@ -605,21 +695,21 @@ const styles = StyleSheet.create({
     color: theme.colors.warning,
   },
   imagePickerButton: {
-    width: '100%',
+    width: "100%",
     height: 200,
     borderRadius: theme.borderRadius.md,
-    overflow: 'hidden',
+    overflow: "hidden",
     borderWidth: 1,
     borderColor: theme.colors.neutral[200],
   },
   selectedImage: {
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
   },
   imagePlaceholder: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     backgroundColor: theme.colors.neutral[100],
   },
   imagePickerText: {
@@ -632,7 +722,44 @@ const styles = StyleSheet.create({
     paddingVertical: theme.spacing.xl,
   },
   saveButton: {
-    width: '100%',
+    width: "100%",
     paddingVertical: theme.spacing.lg,
+  },
+  warningBanner: {
+    backgroundColor: theme.colors.warning + "15",
+    marginHorizontal: theme.spacing.xl,
+    marginTop: theme.spacing.md,
+    padding: theme.spacing.md,
+    borderRadius: theme.borderRadius.md,
+    borderLeftWidth: 4,
+    borderLeftColor: theme.colors.warning,
+  },
+  warningHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: theme.spacing.sm,
+    gap: theme.spacing.sm,
+  },
+  warningTitle: {
+    ...typography.subtitle,
+    color: theme.colors.warning,
+    flex: 1,
+  },
+  warningText: {
+    ...typography.body,
+    color: theme.colors.neutral[700],
+    marginBottom: theme.spacing.xs,
+  },
+  warningItem: {
+    ...typography.caption,
+    color: theme.colors.neutral[600],
+    marginLeft: theme.spacing.sm,
+    marginBottom: 2,
+  },
+  warningHint: {
+    ...typography.caption,
+    color: theme.colors.neutral[500],
+    marginTop: theme.spacing.sm,
+    fontStyle: "italic",
   },
 });

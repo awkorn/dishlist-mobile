@@ -62,3 +62,24 @@ export interface SerializedRecipeProgress {
   checkedIngredients: number[];
   completedSteps: number[];
 }
+
+export interface ImportedRecipeData {
+  title: string;
+  prepTime: number | null;
+  cookTime: number | null;
+  servings: number | null;
+  ingredients: string[];
+  instructions: string[];
+}
+
+export interface ImportRecipeResponse {
+  recipe: ImportedRecipeData;
+  warnings?: string[];
+  success: boolean;
+}
+
+export interface ImageData {
+  base64: string;
+  mimeType: string;
+  uri: string; // Local URI for preview
+}

@@ -21,6 +21,8 @@ import {
   Edit3,
   Trash2,
   UserPlus,
+  UserMinus,
+  Camera,
 } from "lucide-react-native";
 import { typography } from "@styles/typography";
 import { theme } from "@styles/theme";
@@ -28,6 +30,8 @@ import RecipeTile from "@features/recipe/components/RecipeTile";
 import ActionSheet, { ActionSheetOption } from "@components/ui/ActionSheet";
 import { QueryErrorBoundary } from "@providers/ErrorBoundary";
 import { DishListDetailScreenProps } from "@app-types/navigation";
+import { ImportRecipeModal } from "@features/recipe/components";
+import type { ImportRecipeResponse } from "@features/recipe/types";
 import {
   useDishListDetail,
   useTogglePinDishList,
@@ -42,6 +46,7 @@ export default function DishListDetailScreen({
   const { dishListId } = route.params;
   const [searchQuery, setSearchQuery] = useState("");
   const [showActionSheet, setShowActionSheet] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
 
   const {
     dishList,
@@ -60,11 +65,40 @@ export default function DishListDetailScreen({
     refetch();
   }, [refetch]);
 
+  const handleImportComplete = useCallback(
+    (response: ImportRecipeResponse) => {
+      // Navigate to AddRecipe with pre-filled data
+      navigation.navigate("AddRecipe", {
+        dishListId,
+        importedRecipe: response.recipe,
+        importWarnings: response.warnings,
+      });
+    },
+    [navigation, dishListId]
+  );
+
   const actionSheetOptions: ActionSheetOption[] = useMemo(() => {
     if (!dishList) return [];
 
     const options: ActionSheetOption[] = [];
 
+    // Add/Import recipes - available to owners and collaborators
+    if (dishList.isOwner || dishList.isCollaborator) {
+      options.push(
+        {
+          title: "Add Recipe",
+          icon: Plus,
+          onPress: () => navigation.navigate("AddRecipe", { dishListId }),
+        },
+        {
+          title: "Import Recipe",
+          icon: Camera,
+          onPress: () => setShowImportModal(true),
+        }
+      );
+    }
+
+    // Owner-only options
     if (dishList.isOwner) {
       options.push(
         {
@@ -81,11 +115,6 @@ export default function DishListDetailScreen({
             }),
         },
         {
-          title: "Add Recipe",
-          icon: Plus,
-          onPress: () => navigation.navigate("AddRecipe", { dishListId }),
-        },
-        {
           title: "Invite Collaborator",
           icon: UserPlus,
           onPress: () =>
@@ -94,6 +123,7 @@ export default function DishListDetailScreen({
       );
     }
 
+    // Pin toggle - available to everyone
     options.push({
       title: dishList.isPinned ? "Unpin DishList" : "Pin DishList",
       icon: dishList.isPinned ? PinOff : Pin,
@@ -104,6 +134,20 @@ export default function DishListDetailScreen({
         }),
     });
 
+    // Follow toggle - only for non-owners
+    if (!dishList.isOwner) {
+      options.push({
+        title: dishList.isFollowing ? "Unfollow DishList" : "Follow DishList",
+        icon: dishList.isFollowing ? UserMinus : UserPlus,
+        onPress: () =>
+          followMutation.mutate({
+            dishListId,
+            isFollowing: !dishList.isFollowing,
+          }),
+      });
+    }
+
+    // Delete - owner only, destructive
     if (dishList.isOwner && !dishList.isDefault) {
       options.push({
         title: "Delete DishList",
@@ -129,7 +173,6 @@ export default function DishListDetailScreen({
         },
       });
     }
-
     return options;
   }, [dishList, navigation, pinMutation, deleteMutation, dishListId]);
 
@@ -297,6 +340,11 @@ export default function DishListDetailScreen({
           visible={showActionSheet}
           onClose={() => setShowActionSheet(false)}
           options={actionSheetOptions}
+        />
+        <ImportRecipeModal
+          visible={showImportModal}
+          onClose={() => setShowImportModal(false)}
+          onImportComplete={handleImportComplete}
         />
       </SafeAreaView>
     </QueryErrorBoundary>
