@@ -1,147 +1,160 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { Alert } from 'react-native';
+import { useQuery } from '@tanstack/react-query';
 import { groceryStorage } from '../services/groceryStorage';
-import type { GroceryItem } from '../types';
+import {
+  useAddGroceryItems,
+  useToggleGroceryItem,
+  useDeleteGroceryItem,
+  useUpdateGroceryItem,
+  useClearCheckedGroceryItems,
+  useCheckAllGroceryItems,
+  useUncheckAllGroceryItems,
+} from './useGroceryMutations';
+import { STALE_TIMES } from '@lib/constants';
+import { queryKeys } from '@lib/queryKeys';
 
 export function useGroceryList() {
-  const [items, setItems] = useState<GroceryItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [isAddingItem, setIsAddingItem] = useState(false);
   const [editingText, setEditingText] = useState('');
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
 
-  const loadItems = useCallback(async () => {
-    try {
-      const loaded = await groceryStorage.loadItems();
-      setItems(loaded);
-    } catch (error) {
-      Alert.alert('Error', 'Failed to load grocery list');
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+  // Query for fetching items
+  const {
+    data: items = [],
+    isLoading,
+    refetch,
+  } = useQuery({
+    queryKey: queryKeys.grocery.list(),
+    queryFn: groceryStorage.loadItems,
+    staleTime: STALE_TIMES.GROCERY,
+    gcTime: 30 * 60 * 1000, // 30 minutes
+  });
 
-  useEffect(() => {
-    loadItems();
-  }, [loadItems]);
+  // Mutations
+  const addItemsMutation = useAddGroceryItems();
+  const toggleMutation = useToggleGroceryItem();
+  const deleteMutation = useDeleteGroceryItem();
+  const updateMutation = useUpdateGroceryItem();
+  const clearCheckedMutation = useClearCheckedGroceryItems();
+  const checkAllMutation = useCheckAllGroceryItems();
+  const uncheckAllMutation = useUncheckAllGroceryItems();
 
-  const toggleCheck = useCallback(async (id: string) => {
-    try {
-      const updated = await groceryStorage.toggleCheck(id);
-      setItems(updated);
-    } catch (error) {
-      Alert.alert('Error', 'Failed to update item');
-    }
-  }, []);
+  // Computed values
+  const allChecked = useMemo(
+    () => items.length > 0 && items.every((item) => item.checked),
+    [items]
+  );
 
-  const deleteItem = useCallback(async (id: string) => {
-    try {
-      const updated = await groceryStorage.deleteItem(id);
-      setItems(updated);
-    } catch (error) {
-      Alert.alert('Error', 'Failed to delete item');
-    }
-  }, []);
+  const checkedCount = useMemo(
+    () => items.filter((item) => item.checked).length,
+    [items]
+  );
+
+  // Actions
+  const toggleCheck = useCallback(
+    (id: string) => {
+      toggleMutation.mutate(id);
+    },
+    [toggleMutation]
+  );
+
+  const deleteItem = useCallback(
+    (id: string) => {
+      deleteMutation.mutate(id);
+    },
+    [deleteMutation]
+  );
 
   const saveCurrentItem = useCallback(async () => {
     if (!editingText.trim()) return;
 
-    try {
-      const updated = await groceryStorage.addItems([editingText]);
-      setItems(updated);
-      setEditingText('');
-    } catch (error) {
-      Alert.alert('Error', 'Failed to add item');
-    }
-  }, [editingText]);
+    addItemsMutation.mutate([editingText], {
+      onSuccess: () => {
+        setEditingText('');
+      },
+    });
+  }, [editingText, addItemsMutation]);
 
-  // Start editing an existing item
   const startEditing = useCallback((id: string, currentText: string) => {
     setEditingItemId(id);
     setEditingText(currentText);
   }, []);
 
-  // Cancel editing and revert
   const cancelEditing = useCallback(() => {
     setEditingItemId(null);
     setEditingText('');
   }, []);
 
-  // Save the edited item
-  const saveEditedItem = useCallback(async (id: string, newText: string) => {
-    const trimmed = newText.trim();
-    
-    // If empty, cancel edit (don't delete)
-    if (!trimmed) {
-      cancelEditing();
-      return;
-    }
+  const saveEditedItem = useCallback(
+    (id: string, newText: string) => {
+      const trimmed = newText.trim();
 
-    try {
-      const updated = await groceryStorage.updateItem(id, trimmed);
-      setItems(updated);
-    } catch (error) {
-      Alert.alert('Error', 'Failed to update item');
-    } finally {
-      setEditingItemId(null);
-      setEditingText('');
-    }
-  }, [cancelEditing]);
+      // If empty, cancel edit (don't delete)
+      if (!trimmed) {
+        cancelEditing();
+        return;
+      }
 
-  const handleClearChecked = useCallback(async () => {
-    const checkedCount = items.filter((i) => i.checked).length;
-    
-    if (checkedCount === 0) {
+      updateMutation.mutate(
+        { id, text: trimmed },
+        {
+          onSuccess: () => {
+            setEditingItemId(null);
+            setEditingText('');
+          },
+        }
+      );
+    },
+    [updateMutation, cancelEditing]
+  );
+
+  const handleClearChecked = useCallback(() => {
+    const count = checkedCount;
+
+    if (count === 0) {
       return;
     }
 
     Alert.alert(
       'Clear Checked Items',
-      `Remove ${checkedCount} checked ${checkedCount === 1 ? 'item' : 'items'}?`,
+      `Remove ${count} checked ${count === 1 ? 'item' : 'items'}?`,
       [
         { text: 'Cancel', style: 'cancel' },
         {
           text: 'Clear',
           style: 'destructive',
-          onPress: async () => {
-            try {
-              const updated = await groceryStorage.clearChecked();
-              setItems(updated);
-            } catch (error) {
-              Alert.alert('Error', 'Failed to clear items');
-            }
-          },
+          onPress: () => clearCheckedMutation.mutate(),
         },
       ]
     );
-  }, [items]);
+  }, [checkedCount, clearCheckedMutation]);
 
-  const handleToggleAll = useCallback(async () => {
-    const allChecked = items.length > 0 && items.every((i) => i.checked);
-    
-    try {
-      const updated = allChecked
-        ? await groceryStorage.uncheckAll()
-        : await groceryStorage.checkAll();
-      setItems(updated);
-    } catch (error) {
-      Alert.alert('Error', 'Failed to update items');
+  const handleToggleAll = useCallback(() => {
+    if (allChecked) {
+      uncheckAllMutation.mutate();
+    } else {
+      checkAllMutation.mutate();
     }
-  }, [items]);
-
-  const allChecked = items.length > 0 && items.every((i) => i.checked);
-  const checkedCount = items.filter((i) => i.checked).length;
+  }, [allChecked, checkAllMutation, uncheckAllMutation]);
 
   return {
+    // Data
     items,
     isLoading,
+    allChecked,
+    checkedCount,
+
+    // UI state
     isAddingItem,
     editingText,
     editingItemId,
-    allChecked,
-    checkedCount,
+
+    // UI state setters
     setIsAddingItem,
     setEditingText,
+
+    // Actions
     toggleCheck,
     deleteItem,
     saveCurrentItem,
@@ -150,6 +163,6 @@ export function useGroceryList() {
     saveEditedItem,
     handleClearChecked,
     handleToggleAll,
-    refresh: loadItems,
+    refresh: refetch,
   };
 }

@@ -15,6 +15,7 @@ export const STALE_TIMES = {
   DISHLIST_MY: 3 * 60 * 1000,   // 3 minutes (own lists change more)
   RECIPE: 5 * 60 * 1000,        // 5 minutes
   PROFILE: 5 * 60 * 1000,       // 5 minutes
+  GROCERY: 1 * 60 * 1000        // 1 minute     
 } as const;
 
 // ============================================================================

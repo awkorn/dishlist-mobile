@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo } from "react";
 import {
   View,
   Text,
@@ -8,8 +8,8 @@ import {
   ActivityIndicator,
   Alert,
   Image,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import {
   ChevronLeft,
   MoreHorizontal,
@@ -20,22 +20,29 @@ import {
   Trash2,
   Clock,
   Users,
-} from 'lucide-react-native';
-import { useQuery } from '@tanstack/react-query';
-import { typography } from '@styles/typography';
-import { theme } from '@styles/theme';
-import ActionSheet, { ActionSheetOption } from '@components/ui/ActionSheet';
-import { QueryErrorBoundary } from '@providers/ErrorBoundary';
-import { useAuth } from '@providers/AuthProvider/AuthContext';
-import { queryKeys } from '@lib/queryKeys';
-import { groceryStorage } from '@features/grocery';
-import { useRemoveRecipeFromDishList, dishlistService } from '@features/dishlist';
-import { useRecipeDetail, useRecipeProgress } from '../hooks';
-import { NutritionSection, CookModeModal, AddToDishListModal } from '../components';
-import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import type { RootStackParamList } from '@app-types/navigation';
+} from "lucide-react-native";
+import { useQuery } from "@tanstack/react-query";
+import { typography } from "@styles/typography";
+import { theme } from "@styles/theme";
+import ActionSheet, { ActionSheetOption } from "@components/ui/ActionSheet";
+import { QueryErrorBoundary } from "@providers/ErrorBoundary";
+import { useAuth } from "@providers/AuthProvider/AuthContext";
+import { queryKeys } from "@lib/queryKeys";
+import {
+  useRemoveRecipeFromDishList,
+  dishlistService,
+} from "@features/dishlist";
+import { useRecipeDetail, useRecipeProgress } from "../hooks";
+import {
+  NutritionSection,
+  CookModeModal,
+  AddToDishListModal,
+} from "../components";
+import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import type { RootStackParamList } from "@app-types/navigation";
+import { useAddGroceryItems } from "@features/grocery/hooks";
 
-type Props = NativeStackScreenProps<RootStackParamList, 'RecipeDetail'>;
+type Props = NativeStackScreenProps<RootStackParamList, "RecipeDetail">;
 
 export default function RecipeDetailScreen({ route, navigation }: Props) {
   const { recipeId, dishListId } = route.params;
@@ -46,30 +53,24 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
   const [showAddToDishListModal, setShowAddToDishListModal] = useState(false);
 
   // Recipe data
-  const {
-    recipe,
-    isLoading,
-    isError,
-    refetch,
-    updateNutritionCache,
-  } = useRecipeDetail({ recipeId });
+  const { recipe, isLoading, isError, refetch, updateNutritionCache } =
+    useRecipeDetail({ recipeId });
 
   // Recipe progress (ingredients/steps checked)
-  const {
-    progress,
-    toggleIngredient,
-    toggleStep,
-  } = useRecipeProgress({ recipeId });
+  const { progress, toggleIngredient, toggleStep } = useRecipeProgress({
+    recipeId,
+  });
 
   // Load DishList for permissions if dishListId is provided
   const { data: dishList } = useQuery({
-    queryKey: queryKeys.dishLists.detail(dishListId || ''),
+    queryKey: queryKeys.dishLists.detail(dishListId || ""),
     queryFn: () => dishlistService.getDishListDetail(dishListId!),
     enabled: !!dishListId,
     staleTime: 5 * 60 * 1000,
   });
 
   const removeRecipeMutation = useRemoveRecipeFromDishList();
+  const addToGroceryMutation = useAddGroceryItems();
 
   // Permission checks
   const canRemoveFromDishList = useMemo(() => {
@@ -81,13 +82,13 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
     if (!dishListId) return;
 
     Alert.alert(
-      'Remove Recipe',
-      'Are you sure you want to remove this recipe from this DishList?',
+      "Remove Recipe",
+      "Are you sure you want to remove this recipe from this DishList?",
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: "Cancel", style: "cancel" },
         {
-          text: 'Remove',
-          style: 'destructive',
+          text: "Remove",
+          style: "destructive",
           onPress: () => {
             removeRecipeMutation.mutate(
               { dishListId, recipeId },
@@ -105,38 +106,36 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
 
     const opts: ActionSheetOption[] = [
       {
-        title: 'Cook Mode',
-        icon: PlayCircle,
-        onPress: () => setShowCookMode(true),
-      },
-      {
-        title: 'Add to Another DishList',
+        title: "Add to Another DishList",
         icon: Plus,
         onPress: () => setShowAddToDishListModal(true),
       },
       {
-        title: 'Add Ingredients to Grocery List',
+        title: "Add Ingredients to Grocery List",
         icon: ShoppingCart,
-        onPress: async () => {
+        onPress: () => {
           const unchecked = (recipe.ingredients || []).filter(
             (_, i) => !progress.checkedIngredients.has(i)
           );
 
           if (unchecked.length === 0) {
             Alert.alert(
-              'All Ingredients Checked',
-              'All ingredients are already checked off.'
+              "All Ingredients Checked",
+              "All ingredients are already checked off."
             );
             return;
           }
 
-          await groceryStorage.addItems(unchecked);
-          Alert.alert(
-            'Added to Grocery List',
-            `${unchecked.length} ${
-              unchecked.length === 1 ? 'ingredient' : 'ingredients'
-            } added to your grocery list.`
-          );
+          addToGroceryMutation.mutate(unchecked, {
+            onSuccess: () => {
+              Alert.alert(
+                "Added to Grocery List",
+                `${unchecked.length} ${
+                  unchecked.length === 1 ? "ingredient" : "ingredients"
+                } added to your grocery list.`
+              );
+            },
+          });
         },
       },
     ];
@@ -144,11 +143,11 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
     const isOwner = recipe.creator.uid === user?.uid;
     if (isOwner) {
       opts.splice(1, 0, {
-        title: 'Edit Recipe',
+        title: "Edit Recipe",
         icon: Edit3,
         onPress: () =>
-          navigation.navigate('AddRecipe', {
-            dishListId: '',
+          navigation.navigate("AddRecipe", {
+            dishListId: "",
             recipeId: recipe.id,
             recipe,
           }),
@@ -157,7 +156,7 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
 
     if (canRemoveFromDishList) {
       opts.push({
-        title: 'Remove from DishList',
+        title: "Remove from DishList",
         icon: Trash2,
         destructive: true,
         onPress: handleRemoveFromDishList,
@@ -172,6 +171,7 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
     canRemoveFromDishList,
     handleRemoveFromDishList,
     user,
+    addToGroceryMutation,
   ]);
 
   const totalTime = useMemo(
@@ -180,10 +180,10 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
   );
 
   const formatDate = (d: string) =>
-    new Date(d).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
+    new Date(d).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
 
   // Loading state
@@ -204,7 +204,10 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
       <SafeAreaView style={styles.container}>
         <View style={styles.errorContainer}>
           <Text style={styles.errorTitle}>Unable to load recipe</Text>
-          <TouchableOpacity style={styles.retryButton} onPress={() => refetch()}>
+          <TouchableOpacity
+            style={styles.retryButton}
+            onPress={() => refetch()}
+          >
             <Text style={styles.retryButtonText}>Try Again</Text>
           </TouchableOpacity>
         </View>
@@ -265,14 +268,16 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
                 <View style={styles.metaItem}>
                   <Users size={16} color={theme.colors.neutral[500]} />
                   <Text style={styles.metaText}>
-                    {recipe.servings} {recipe.servings === 1 ? 'serving' : 'servings'}
+                    {recipe.servings}{" "}
+                    {recipe.servings === 1 ? "serving" : "servings"}
                   </Text>
                 </View>
               )}
             </View>
             <Text style={styles.creatorText}>
-              By {recipe.creator.firstName || recipe.creator.username || 'Unknown'} •{' '}
-              {formatDate(recipe.createdAt)}
+              By{" "}
+              {recipe.creator.firstName || recipe.creator.username || "Unknown"}{" "}
+              • {formatDate(recipe.createdAt)}
             </Text>
           </View>
 
@@ -297,7 +302,8 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
                 <View
                   style={[
                     styles.checkbox,
-                    progress.checkedIngredients.has(i) && styles.checkboxChecked,
+                    progress.checkedIngredients.has(i) &&
+                      styles.checkboxChecked,
                   ]}
                 />
                 <Text
@@ -325,7 +331,8 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
                   <Text
                     style={[
                       styles.stepNumberText,
-                      progress.completedSteps.has(i) && styles.completedStepNumber,
+                      progress.completedSteps.has(i) &&
+                        styles.completedStepNumber,
                     ]}
                   >
                     {i + 1}
@@ -392,8 +399,8 @@ const styles = StyleSheet.create({
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     gap: theme.spacing.lg,
   },
   loadingText: {
@@ -402,15 +409,15 @@ const styles = StyleSheet.create({
   },
   errorContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: theme.spacing['4xl'],
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: theme.spacing["4xl"],
   },
   errorTitle: {
     ...typography.heading3,
     color: theme.colors.error,
     marginBottom: theme.spacing.lg,
-    textAlign: 'center',
+    textAlign: "center",
   },
   retryButton: {
     backgroundColor: theme.colors.primary[500],
@@ -420,7 +427,7 @@ const styles = StyleSheet.create({
   },
   retryButtonText: {
     ...typography.button,
-    color: 'white',
+    color: "white",
   },
   header: {
     flexDirection: "row",
@@ -435,7 +442,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     ...typography.subtitle,
     flex: 1,
-    textAlign: 'center',
+    textAlign: "center",
     marginHorizontal: theme.spacing.md,
     color: theme.colors.textPrimary,
   },
@@ -443,19 +450,19 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: theme.spacing['4xl'],
+    paddingBottom: theme.spacing["4xl"],
   },
   heroImage: {
-    width: '100%',
+    width: "100%",
     height: 250,
     backgroundColor: theme.colors.neutral[200],
   },
   heroPlaceholder: {
-    width: '100%',
+    width: "100%",
     height: 250,
     backgroundColor: theme.colors.neutral[100],
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   heroEmoji: {
     fontSize: 64,
@@ -466,14 +473,14 @@ const styles = StyleSheet.create({
     borderBottomColor: theme.colors.neutral[200],
   },
   metaRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: theme.spacing.xl,
     marginBottom: theme.spacing.sm,
   },
   metaItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: theme.spacing.xs,
   },
   metaText: {
@@ -485,9 +492,9 @@ const styles = StyleSheet.create({
     color: theme.colors.neutral[500],
   },
   cookModeButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     backgroundColor: theme.colors.primary[500],
     marginHorizontal: theme.spacing.xl,
     marginTop: theme.spacing.xl,
@@ -497,7 +504,7 @@ const styles = StyleSheet.create({
   },
   cookModeButtonText: {
     ...typography.button,
-    color: 'white',
+    color: "white",
   },
   section: {
     padding: theme.spacing.xl,
@@ -508,8 +515,8 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.lg,
   },
   ingredientRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingVertical: theme.spacing.sm,
     gap: theme.spacing.md,
   },
@@ -530,8 +537,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   instructionRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
+    flexDirection: "row",
+    alignItems: "flex-start",
     paddingVertical: theme.spacing.md,
     gap: theme.spacing.md,
   },
@@ -540,8 +547,8 @@ const styles = StyleSheet.create({
     height: 28,
     borderRadius: 14,
     backgroundColor: theme.colors.neutral[200],
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   stepNumberText: {
     ...typography.subtitle,
@@ -558,7 +565,7 @@ const styles = StyleSheet.create({
     lineHeight: 24,
   },
   crossedOut: {
-    textDecorationLine: 'line-through',
+    textDecorationLine: "line-through",
     color: theme.colors.neutral[400],
   },
 });

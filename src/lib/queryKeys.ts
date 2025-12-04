@@ -20,4 +20,8 @@ export const queryKeys = {
     all: ['notifications'] as const,
     unread: () => [...queryKeys.notifications.all, 'unread'] as const,
   },
+  grocery: {
+    all: ['grocery'] as const,
+    list: () => [...queryKeys.grocery.all, 'list'] as const,
+  }
 } as const;
