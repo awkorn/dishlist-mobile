@@ -180,13 +180,6 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
     [recipe]
   );
 
-  const formatDate = (d: string) =>
-    new Date(d).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-
   // Loading state
   if (isLoading) {
     return (
@@ -277,8 +270,7 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
             </View>
             <Text style={styles.creatorText}>
               By{" "}
-              {recipe.creator.firstName || recipe.creator.username || "Unknown"}{" "}
-              • {formatDate(recipe.createdAt)}
+              {recipe.creator.firstName + " " + recipe.creator.lastName || recipe.creator.username || "Unknown"}{" "}
             </Text>
           </View>
 

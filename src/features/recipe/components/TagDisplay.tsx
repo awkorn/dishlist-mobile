@@ -19,7 +19,6 @@ export default function TagDisplay({ tags }: TagDisplayProps) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Tags</Text>
       <View style={styles.tagsContainer}>
         {tags.map((tag, index) => (
           <View key={index} style={styles.tag}>
@@ -35,17 +34,13 @@ const styles = StyleSheet.create({
   container: {
     gap: theme.spacing.md,
   },
-  title: {
-    ...typography.subtitle,
-    color: theme.colors.textPrimary,
-  },
   tagsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: theme.spacing.sm,
   },
   tag: {
-    backgroundColor: theme.colors.neutral[100],
+    backgroundColor: theme.colors.primary[50],
     borderRadius: theme.borderRadius.md,
     paddingVertical: theme.spacing.xs,
     paddingHorizontal: theme.spacing.md,
