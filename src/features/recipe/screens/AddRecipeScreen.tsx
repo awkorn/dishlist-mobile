@@ -19,7 +19,7 @@ import { typography } from "@styles/typography";
 import Button from "@components/ui/Button";
 import { uploadImage } from "@services/image";
 import { useCreateRecipe, useUpdateRecipe } from "../hooks";
-import { NutritionSection } from "../components";
+import { NutritionSection, TagInput } from "../components";
 import type { NutritionInfo } from "../types";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "@app-types/navigation";
@@ -129,6 +129,7 @@ export default function AddRecipeScreen({ route, navigation }: Props) {
   );
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [warningsDismissed, setWarningsDismissed] = useState(false);
+  const [tags, setTags] = useState<string[]>(editRecipe?.tags || []);
 
   // Mutations
   const createRecipeMutation = useCreateRecipe();
@@ -279,6 +280,7 @@ export default function AddRecipeScreen({ route, navigation }: Props) {
         servings: servings > 0 ? servings : undefined,
         imageUrl: finalImageUrl,
         nutrition: nutritionData || undefined,
+        tags: tags,
       };
 
       if (isEditMode && recipeId) {
@@ -533,6 +535,12 @@ export default function AddRecipeScreen({ route, navigation }: Props) {
                   </View>
                 )}
               </TouchableOpacity>
+            </View>
+
+            {/* Tags */}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Tags (Optional)</Text>
+              <TagInput tags={tags} onTagsChange={setTags} />
             </View>
           </ScrollView>
         </View>

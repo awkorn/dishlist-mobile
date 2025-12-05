@@ -37,6 +37,7 @@ import {
   NutritionSection,
   CookModeModal,
   AddToDishListModal,
+  TagDisplay,
 } from "../components";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "@app-types/navigation";
@@ -360,6 +361,13 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
               onNutritionCalculated={updateNutritionCache}
             />
           </View>
+
+          {/* Tags */}
+          {recipe.tags && recipe.tags.length > 0 && (
+            <View style={styles.section}>
+              <TagDisplay tags={recipe.tags} />
+            </View>
+          )}
         </ScrollView>
 
         <ActionSheet

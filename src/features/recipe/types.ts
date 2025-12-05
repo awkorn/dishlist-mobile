@@ -17,6 +17,7 @@ export interface Recipe {
   servings?: number;
   imageUrl?: string;
   nutrition?: NutritionInfo | null;
+  tags?: string[];
   creatorId: string;
   creator: {
     uid: string;
@@ -38,6 +39,7 @@ export interface CreateRecipeData {
   servings?: number;
   imageUrl?: string | null;
   nutrition?: NutritionInfo;
+  tags?: string[];
   dishListId: string;
 }
 
@@ -51,6 +53,7 @@ export interface UpdateRecipeData {
   servings?: number;
   imageUrl?: string | null;
   nutrition?: NutritionInfo;
+  tags?: string[];
 }
 
 export interface RecipeProgress {
