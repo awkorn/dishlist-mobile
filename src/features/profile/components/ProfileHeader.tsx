@@ -1,136 +1,187 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
-import { User as UserIcon } from 'lucide-react-native';
+import { 
+  MoveLeft, 
+  Search, 
+  SquarePen, 
+  EllipsisVertical,
+  User as UserIcon 
+} from 'lucide-react-native';
 import { theme } from '@styles/theme';
 import { typography } from '@styles/typography';
 import type { UserProfile } from '../types';
 
+const AVATAR_SIZE = 80;
+
 interface ProfileHeaderProps {
   user: UserProfile;
   displayName: string;
+  onBackPress: () => void;
   onEditPress?: () => void;
+  onSearchPress?: () => void;
+  onMenuPress?: () => void;
 }
 
-export function ProfileHeader({ user, displayName, onEditPress }: ProfileHeaderProps) {
+export function ProfileHeader({ 
+  user, 
+  displayName, 
+  onBackPress,
+  onEditPress,
+  onSearchPress,
+  onMenuPress,
+}: ProfileHeaderProps) {
   return (
-    <View style={styles.profileHeader}>
-      <View style={styles.avatarContainer}>
-        {user.avatarUrl ? (
-          <Image source={{ uri: user.avatarUrl }} style={styles.avatar} />
-        ) : (
-          <View style={styles.avatarPlaceholder}>
-            <UserIcon size={40} color={theme.colors.neutral[400]} />
+    <View style={styles.container}>
+      {/* White section with icons */}
+      <View style={styles.whiteSection}>
+        <View style={styles.iconRow}>
+          <TouchableOpacity onPress={onBackPress} style={styles.iconButton}>
+            <MoveLeft size={24} color={theme.colors.neutral[700]} />
+          </TouchableOpacity>
+          
+          <View style={styles.rightIcons}>
+            <TouchableOpacity onPress={onSearchPress} style={styles.iconButton}>
+              <Search size={22} color={theme.colors.neutral[700]} />
+            </TouchableOpacity>
+            
+            {user.isOwnProfile && onEditPress && (
+              <TouchableOpacity onPress={onEditPress} style={styles.iconButton}>
+                <SquarePen size={22} color={theme.colors.neutral[700]} />
+              </TouchableOpacity>
+            )}
+            
+            <TouchableOpacity onPress={onMenuPress} style={styles.iconButton}>
+              <EllipsisVertical size={22} color={theme.colors.neutral[700]} />
+            </TouchableOpacity>
           </View>
-        )}
+        </View>
       </View>
 
-      <View style={styles.userInfo}>
-        <View style={styles.nameRow}>
-          <Text style={styles.displayName}>{displayName}</Text>
-
-          {user.isOwnProfile && onEditPress && (
-            <TouchableOpacity onPress={onEditPress} style={styles.editIconBtn}>
-              <Text style={styles.editIconText}>Edit Profile</Text>
-            </TouchableOpacity>
+      {/* Beige section with avatar and info */}
+      <View style={styles.profileSection}>
+        {/* Avatar - overlaps into white section */}
+        <View style={styles.avatarContainer}>
+          {user.avatarUrl ? (
+            <Image source={{ uri: user.avatarUrl }} style={styles.avatar} />
+          ) : (
+            <View style={styles.avatarPlaceholder}>
+              <UserIcon size={40} color={theme.colors.neutral[400]} />
+            </View>
           )}
         </View>
 
-        {user.username && <Text style={styles.username}>@{user.username}</Text>}
-        {user.bio && <Text style={styles.bio}>{user.bio}</Text>}
-
-        <View style={styles.statsRow}>
-          <View style={styles.stat}>
-            <Text style={styles.statNumber}>{user.followerCount}</Text>
-            <Text style={styles.statLabel}>
-              Follower{user.followerCount !== 1 ? 's' : ''}
-            </Text>
+        {/* Name, username, and stats row - below avatar */}
+        <View style={styles.infoRow}>
+          <View style={styles.nameSection}>
+            <Text style={styles.displayName}>{displayName}</Text>
+            {user.username && (
+              <Text style={styles.username}>@{user.username}</Text>
+            )}
           </View>
-          <View style={styles.stat}>
-            <Text style={styles.statNumber}>{user.followingCount}</Text>
-            <Text style={styles.statLabel}>Following</Text>
+
+          <View style={styles.statsSection}>
+            <View style={styles.stat}>
+              <Text style={styles.statNumber}>{user.followerCount}</Text>
+              <Text style={styles.statLabel}>Followers</Text>
+            </View>
+            <View style={styles.stat}>
+              <Text style={styles.statNumber}>{user.followingCount}</Text>
+              <Text style={styles.statLabel}>Following</Text>
+            </View>
           </View>
         </View>
+
+        {/* Bio section - if exists */}
+        {user.bio && <Text style={styles.bio}>{user.bio}</Text>}
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  profileHeader: {
-    flexDirection: 'row',
-    paddingHorizontal: 20,
-    paddingTop: 8,
-    paddingBottom: 16,
-    alignItems: 'flex-start',
+  container: {},
+  whiteSection: {
+    backgroundColor: theme.colors.surface,
+    paddingBottom: AVATAR_SIZE / 2, // Space for avatar to overlap
   },
-  avatarContainer: {
-    marginRight: 16,
-  },
-  avatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: theme.colors.neutral[200],
-  },
-  avatarPlaceholder: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: theme.colors.neutral[200],
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  userInfo: {
-    flex: 1,
-  },
-  nameRow: {
+  iconRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 4,
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 16,
+  },
+  iconButton: {
+    padding: 8,
+  },
+  rightIcons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  profileSection: {
+    paddingHorizontal: 20,
+    paddingBottom: 16,
+  },
+  avatarContainer: {
+    marginTop: -(AVATAR_SIZE / 2), // Pull avatar up into white section
+    marginBottom: 12,
+  },
+  avatar: {
+    width: AVATAR_SIZE,
+    height: AVATAR_SIZE,
+    borderRadius: AVATAR_SIZE / 2,
+    backgroundColor: theme.colors.neutral[200],
+    borderWidth: 3,
+    borderColor: theme.colors.surface,
+  },
+  avatarPlaceholder: {
+    width: AVATAR_SIZE,
+    height: AVATAR_SIZE,
+    borderRadius: AVATAR_SIZE / 2,
+    backgroundColor: theme.colors.neutral[200],
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 3,
+    borderColor: theme.colors.surface,
+  },
+  infoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  nameSection: {
+    flex: 1,
   },
   displayName: {
     ...typography.heading3,
     color: theme.colors.neutral[900],
-    marginBottom: 1,
+    marginBottom: 2,
   },
   username: {
     ...typography.body,
     color: theme.colors.neutral[600],
-    marginBottom: 8,
   },
-  bio: {
-    ...typography.caption,
-    color: theme.colors.neutral[700],
-    marginBottom: 12,
-  },
-  statsRow: {
+  statsSection: {
     flexDirection: 'row',
-    gap: 30,
-    marginTop: 5,
-    marginBottom: 16,
+    gap: 20,
+    marginRight: 30,
   },
   stat: {
-    alignItems: 'flex-start',
+    alignItems: 'center',
   },
   statNumber: {
-    ...typography.body,
-    fontWeight: '600',
-    color: theme.colors.neutral[900],
+    ...typography.subtitle,
+    color: theme.colors.textPrimary,
   },
   statLabel: {
-    ...typography.body,
+    ...typography.caption,
     color: theme.colors.neutral[600],
   },
-  editIconBtn: {
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    backgroundColor: theme.colors.neutral[200],
-  },
-  editIconText: {
-    ...typography.caption,
-    fontWeight: '600',
+  bio: {
+    ...typography.body,
     color: theme.colors.neutral[700],
+    marginTop: 12,
   },
 });

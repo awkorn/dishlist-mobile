@@ -9,7 +9,6 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import PagerView from "react-native-pager-view";
-import { MoveLeft } from "lucide-react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "@app-types/navigation";
 
@@ -29,7 +28,7 @@ type Props = NativeStackScreenProps<RootStackParamList, "Profile">;
 export default function ProfileScreen({ navigation, route }: Props) {
   const { userId } = route.params;
   const [showEditSheet, setShowEditSheet] = useState(false);
-  
+
   const pagerRef = useRef<PagerView>(null);
 
   const {
@@ -57,6 +56,16 @@ export default function ProfileScreen({ navigation, route }: Props) {
     refetch();
   };
 
+  const handleSearchPress = () => {
+    // TODO: Implement search functionality
+    console.log("Search pressed");
+  };
+
+  const handleMenuPress = () => {
+    // TODO: Implement menu functionality
+    console.log("Menu pressed");
+  };
+
   // Handle tab press - programmatically change page
   const handleTabChange = (tab: "DishLists" | "Recipes") => {
     const pageIndex = tab === "DishLists" ? 0 : 1;
@@ -73,18 +82,20 @@ export default function ProfileScreen({ navigation, route }: Props) {
 
   if (isLoading) {
     return (
-      <SafeAreaView style={styles.container}>
+      <View style={styles.loadingWrapper}>
+        <SafeAreaView style={styles.loadingSafeArea} edges={["top"]} />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={theme.colors.primary[500]} />
           <Text style={styles.loadingText}>Loading profile...</Text>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
   if (isError || !user) {
     return (
-      <SafeAreaView style={styles.container}>
+      <View style={styles.loadingWrapper}>
+        <SafeAreaView style={styles.loadingSafeArea} edges={["top"]} />
         <View style={styles.errorContainer}>
           <Text style={styles.errorTitle}>Unable to load profile</Text>
           <Text style={styles.errorText}>
@@ -97,32 +108,27 @@ export default function ProfileScreen({ navigation, route }: Props) {
             <Text style={styles.retryButtonText}>Try Again</Text>
           </TouchableOpacity>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-          <MoveLeft size={24} color={theme.colors.neutral[700]} />
-        </TouchableOpacity>
-        <View style={styles.headerSpacer} />
-      </View>
+    <View style={styles.container}>
+      {/* White safe area for status bar */}
+      <SafeAreaView style={styles.safeArea} edges={["top"]} />
 
-      {/* Profile Header */}
+      {/* Profile Header with icons and user info */}
       <ProfileHeader
         user={user}
         displayName={displayName}
+        onBackPress={handleBack}
         onEditPress={user.isOwnProfile ? handleEditProfile : undefined}
+        onSearchPress={handleSearchPress}
+        onMenuPress={handleMenuPress}
       />
 
       {/* Tabs */}
-      <ProfileTabs 
-        activeTab={activeTab} 
-        onTabChange={handleTabChange}
-      />
+      <ProfileTabs activeTab={activeTab} onTabChange={handleTabChange} />
 
       {/* Swipeable Content with FlatList */}
       <PagerView
@@ -195,7 +201,7 @@ export default function ProfileScreen({ navigation, route }: Props) {
           currentUser={user}
         />
       )}
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -204,17 +210,15 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: theme.colors.background,
   },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+  safeArea: {
+    backgroundColor: theme.colors.surface,
   },
-  backButton: {
-    padding: 1,
-  },
-  headerSpacer: {
+  loadingWrapper: {
     flex: 1,
+    backgroundColor: theme.colors.background,
+  },
+  loadingSafeArea: {
+    backgroundColor: theme.colors.surface,
   },
   loadingContainer: {
     flex: 1,
@@ -269,6 +273,6 @@ const styles = StyleSheet.create({
     gap: theme.spacing.lg,
   },
   separator: {
-    height: theme.spacing.lg, // Vertical spacing between rows
+    height: theme.spacing.lg,
   },
 });
