@@ -62,9 +62,9 @@ export interface ProfileData {
 export interface UpdateProfileData {
   username?: string;
   firstName?: string;
-  lastName?: string;
-  bio?: string;
-  avatarUrl?: string;
+  lastName?: string | null;
+  bio?: string | null;
+  avatarUrl?: string | null;
 }
 
 export interface EditProfileState {

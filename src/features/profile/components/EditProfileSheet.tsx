@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect } from "react";
 import {
   View,
   Text,
@@ -10,13 +10,13 @@ import {
   Image,
   KeyboardAvoidingView,
   Platform,
-} from 'react-native';
-import { X, Camera, User as UserIcon } from 'lucide-react-native';
-import { theme } from '@styles/theme';
-import { typography } from '@styles/typography';
-import Button from '@components/ui/Button';
-import { useEditProfile } from '../hooks/useEditProfile';
-import type { UserProfile } from '../types';
+} from "react-native";
+import { X, Camera, User as UserIcon } from "lucide-react-native";
+import { theme } from "@styles/theme";
+import { typography } from "@styles/typography";
+import Button from "@components/ui/Button";
+import { useEditProfile } from "../hooks/useEditProfile";
+import type { UserProfile } from "../types";
 
 interface EditProfileSheetProps {
   visible: boolean;
@@ -62,7 +62,7 @@ export function EditProfileSheet({
     >
       <KeyboardAvoidingView
         style={styles.container}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
         {/* Header */}
         <View style={styles.header}>
@@ -86,7 +86,10 @@ export function EditProfileSheet({
               style={styles.avatarTouchable}
             >
               {formState.avatarUri ? (
-                <Image source={{ uri: formState.avatarUri }} style={styles.avatar} />
+                <Image
+                  source={{ uri: formState.avatarUri }}
+                  style={styles.avatar}
+                />
               ) : (
                 <View style={styles.avatarPlaceholder}>
                   <UserIcon size={40} color={theme.colors.neutral[400]} />
@@ -101,7 +104,9 @@ export function EditProfileSheet({
 
           {/* First Name */}
           <View style={styles.inputSection}>
-            <Text style={styles.label}>First Name</Text>
+            <Text style={styles.label}>
+              First Name <Text style={styles.required}>*</Text>
+            </Text>
             <TextInput
               style={styles.input}
               placeholder="Enter first name"
@@ -129,7 +134,9 @@ export function EditProfileSheet({
 
           {/* Username */}
           <View style={styles.inputSection}>
-            <Text style={styles.label}>Username</Text>
+            <Text style={styles.label}>
+              Username <Text style={styles.required}>*</Text>
+            </Text>
             <TextInput
               style={styles.input}
               placeholder="Enter username"
@@ -157,7 +164,9 @@ export function EditProfileSheet({
               textAlignVertical="top"
               editable={!isLoading}
             />
-            <Text style={styles.characterCount}>{formState.bio.length}/160</Text>
+            <Text style={styles.characterCount}>
+              {formState.bio.length}/160
+            </Text>
           </View>
         </ScrollView>
 
@@ -171,7 +180,7 @@ export function EditProfileSheet({
             <Text style={styles.cancelButtonText}>Cancel</Text>
           </TouchableOpacity>
           <Button
-            title={isLoading ? 'Saving...' : 'Save Changes'}
+            title={isLoading ? "Saving..." : "Save Changes"}
             onPress={handleSave}
             disabled={isLoading}
             style={styles.saveButton}
@@ -188,9 +197,9 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.background,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
@@ -205,11 +214,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   avatarSection: {
-    alignItems: 'center',
+    alignItems: "center",
     paddingVertical: 24,
   },
   avatarTouchable: {
-    position: 'relative',
+    position: "relative",
   },
   avatar: {
     width: 100,
@@ -222,19 +231,19 @@ const styles = StyleSheet.create({
     height: 100,
     borderRadius: 50,
     backgroundColor: theme.colors.neutral[200],
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   cameraIcon: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 0,
     right: 0,
     width: 32,
     height: 32,
     borderRadius: 16,
     backgroundColor: theme.colors.primary[500],
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     borderWidth: 3,
     borderColor: theme.colors.background,
   },
@@ -248,13 +257,16 @@ const styles = StyleSheet.create({
   },
   label: {
     ...typography.body,
-    fontWeight: '600',
+    fontWeight: "600",
     color: theme.colors.neutral[700],
     marginBottom: 8,
   },
+  required: {
+    color: theme.colors.error,
+  },
   input: {
     ...typography.body,
-    backgroundColor: 'white',
+    backgroundColor: "white",
     borderWidth: 1,
     borderColor: theme.colors.neutral[300],
     borderRadius: 8,
@@ -269,11 +281,11 @@ const styles = StyleSheet.create({
   characterCount: {
     ...typography.body,
     color: theme.colors.neutral[500],
-    textAlign: 'right',
+    textAlign: "right",
     marginTop: 4,
   },
   footer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     paddingHorizontal: 20,
     paddingTop: 16,
     paddingBottom: theme.spacing["4xl"],
@@ -285,12 +297,12 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     borderColor: theme.colors.neutral[300],
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   cancelButtonText: {
     ...typography.body,
-    fontWeight: '600',
+    fontWeight: "600",
     color: theme.colors.neutral[700],
   },
   saveButton: {

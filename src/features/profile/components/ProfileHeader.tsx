@@ -11,7 +11,7 @@ import { theme } from '@styles/theme';
 import { typography } from '@styles/typography';
 import type { UserProfile } from '../types';
 
-const AVATAR_SIZE = 80;
+const AVATAR_SIZE = 100;
 
 interface ProfileHeaderProps {
   user: UserProfile;
