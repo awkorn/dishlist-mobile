@@ -144,7 +144,7 @@ describe('useEditProfile', () => {
     expect(profileService.updateProfile).toHaveBeenCalledWith(
       {
         firstName: 'John',
-        lastName: 'Doe',
+        lastName: undefined, // Not changed
         username: 'testuser',
         bio: 'Updated bio',
         avatarUrl: undefined, // Not changed
