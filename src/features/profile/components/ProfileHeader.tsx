@@ -10,7 +10,7 @@ import {
 import {
   MoveLeft,
   Search,
-  SquarePen,
+  UserPen,
   EllipsisVertical,
   User as UserIcon,
 } from "lucide-react-native";
@@ -99,7 +99,7 @@ export function ProfileHeader({
 
               {user.isOwnProfile && onEditPress && (
                 <TouchableOpacity onPress={onEditPress} style={styles.iconBtn}>
-                  <SquarePen size={22} color={theme.colors.neutral[700]} />
+                  <UserPen size={22} color={theme.colors.neutral[700]} />
                 </TouchableOpacity>
               )}
 
