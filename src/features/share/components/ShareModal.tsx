@@ -163,11 +163,6 @@ export function ShareModal({
             <View style={styles.headerSpacer} />
           </View>
 
-          {/* Drag Handle */}
-          <View style={styles.handleContainer}>
-            <View style={styles.handle} />
-          </View>
-
           {/* Search Bar */}
           <View style={styles.searchContainer}>
             <Search size={20} color={theme.colors.neutral[400]} />
@@ -264,25 +259,15 @@ const styles = StyleSheet.create({
   headerSpacer: {
     width: 32,
   },
-  handleContainer: {
-    alignItems: 'center',
-    paddingVertical: theme.spacing.sm,
-    backgroundColor: theme.colors.neutral[100],
-  },
-  handle: {
-    width: 36,
-    height: 4,
-    backgroundColor: theme.colors.neutral[300],
-    borderRadius: 2,
-  },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: theme.colors.neutral[200],
+    backgroundColor: theme.colors.surface,
     borderRadius: theme.borderRadius.md,
     paddingHorizontal: theme.spacing.md,
     marginHorizontal: theme.spacing.xl,
-    marginVertical: theme.spacing.md,
+    marginTop: theme.spacing['3xl'],
+    marginBottom: theme.spacing.md,
     height: 40,
   },
   searchInput: {
