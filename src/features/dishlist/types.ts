@@ -29,6 +29,8 @@ export interface DishListRecipe {
   prepTime?: number;
   cookTime?: number;
   servings?: number;
+  tags?: string[];
+  ingredients?: string[];
   creatorId: string;
   creator: DishListOwner;
   createdAt: string;

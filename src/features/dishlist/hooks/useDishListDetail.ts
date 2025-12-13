@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { queryKeys } from '@lib/queryKeys';
 import { dishlistService } from '../services';
+import { searchRecipes } from '@utils/recipeSearch';
 import type { DishListDetail, DishListRecipe } from '../types';
 
 interface UseDishListDetailOptions {
@@ -33,11 +34,9 @@ export function useDishListDetail({
   const filteredRecipes = useMemo(() => {
     if (!query.data?.recipes) return [];
     if (!searchQuery.trim()) return query.data.recipes;
-    return query.data.recipes.filter(
-      (recipe) =>
-        recipe.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        recipe.description?.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    
+    // Use the new intelligent search utility
+    return searchRecipes(query.data.recipes, searchQuery);
   }, [query.data?.recipes, searchQuery]);
 
   return {
