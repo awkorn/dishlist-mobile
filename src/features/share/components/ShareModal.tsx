@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback } from "react";
 import {
   View,
   Text,
@@ -12,28 +12,30 @@ import {
   Dimensions,
   KeyboardAvoidingView,
   Platform,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { 
-  Search, 
-  User as UserIcon, 
-  MessageCircle, 
-  Link2, 
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  Search,
+  User as UserIcon,
+  MessageCircle,
+  Link2,
   Check,
   X,
-} from 'lucide-react-native';
-import { theme } from '@styles/theme';
-import { typography } from '@styles/typography';
-import Button from '@components/ui/Button';
-import { useShareModal } from '../hooks/useShareModal';
-import type { ShareModalProps } from '../types';
-import type { MutualUser } from '../types';
+} from "lucide-react-native";
+import { theme } from "@styles/theme";
+import { typography } from "@styles/typography";
+import Button from "@components/ui/Button";
+import { useShareModal } from "../hooks/useShareModal";
+import type { ShareModalProps } from "../types";
+import type { MutualUser } from "../types";
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const AVATAR_SIZE = 64;
 const GRID_COLUMNS = 3;
 const GRID_GAP = theme.spacing.lg;
-const ITEM_WIDTH = (SCREEN_WIDTH - theme.spacing.xl * 2 - GRID_GAP * (GRID_COLUMNS - 1)) / GRID_COLUMNS;
+const ITEM_WIDTH =
+  (SCREEN_WIDTH - theme.spacing.xl * 2 - GRID_GAP * (GRID_COLUMNS - 1)) /
+  GRID_COLUMNS;
 
 export function ShareModal({
   visible,
@@ -68,44 +70,47 @@ export function ShareModal({
     onClose();
   }, [clearSelection, onClose]);
 
-  const renderUserItem = useCallback(({ item }: { item: MutualUser }) => {
-    const isSelected = selectedUserIds.has(item.uid);
-    const displayName = item.firstName 
-      ? `${item.firstName} ${item.lastName || ''}`.trim()
-      : item.username || 'User';
+  const renderUserItem = useCallback(
+    ({ item }: { item: MutualUser }) => {
+      const isSelected = selectedUserIds.has(item.uid);
+      const displayName = item.firstName
+        ? `${item.firstName} ${item.lastName || ""}`.trim()
+        : item.username || "User";
 
-    return (
-      <TouchableOpacity
-        style={styles.userItem}
-        onPress={() => toggleUserSelection(item.uid)}
-        activeOpacity={0.7}
-      >
-        <View style={styles.avatarContainer}>
-          {item.avatarUrl ? (
-            <Image source={{ uri: item.avatarUrl }} style={styles.avatar} />
-          ) : (
-            <View style={styles.avatarPlaceholder}>
-              <UserIcon size={28} color={theme.colors.neutral[400]} />
-            </View>
-          )}
-          
-          {/* Selection checkmark overlay */}
-          {isSelected && (
-            <View style={styles.checkOverlay}>
-              <Check size={20} color="white" strokeWidth={3} />
-            </View>
-          )}
-        </View>
-        
-        <Text 
-          style={[styles.userName, isSelected && styles.userNameSelected]} 
-          numberOfLines={1}
+      return (
+        <TouchableOpacity
+          style={styles.userItem}
+          onPress={() => toggleUserSelection(item.uid)}
+          activeOpacity={0.7}
         >
-          {displayName}
-        </Text>
-      </TouchableOpacity>
-    );
-  }, [selectedUserIds, toggleUserSelection]);
+          <View style={styles.avatarContainer}>
+            {item.avatarUrl ? (
+              <Image source={{ uri: item.avatarUrl }} style={styles.avatar} />
+            ) : (
+              <View style={styles.avatarPlaceholder}>
+                <UserIcon size={28} color={theme.colors.neutral[400]} />
+              </View>
+            )}
+
+            {/* Selection checkmark overlay */}
+            {isSelected && (
+              <View style={styles.checkOverlay}>
+                <Check size={20} color="white" strokeWidth={3} />
+              </View>
+            )}
+          </View>
+
+          <Text
+            style={[styles.userName, isSelected && styles.userNameSelected]}
+            numberOfLines={1}
+          >
+            {displayName}
+          </Text>
+        </TouchableOpacity>
+      );
+    },
+    [selectedUserIds, toggleUserSelection]
+  );
 
   const renderEmptyState = useCallback(() => {
     if (isLoadingMutuals) {
@@ -149,18 +154,14 @@ export function ShareModal({
       presentationStyle="pageSheet"
       onRequestClose={handleClose}
     >
-      <SafeAreaView style={styles.container} edges={['top']}>
+      <SafeAreaView style={styles.container} edges={["top"]}>
         <KeyboardAvoidingView
           style={styles.keyboardView}
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
         >
-          {/* Header */}
-          <View style={styles.header}>
-            <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
-              <X size={24} color={theme.colors.neutral[700]} />
-            </TouchableOpacity>
-            <Text style={styles.headerTitle}>Share</Text>
-            <View style={styles.headerSpacer} />
+          {/* Header Handle */}
+          <View style={styles.handleContainer}>
+            <View style={styles.handle} />
           </View>
 
           {/* Search Bar */}
@@ -217,7 +218,9 @@ export function ShareModal({
             {/* Send Button - Only show when users are selected */}
             {hasSelection && (
               <Button
-                title={`Send to ${selectionCount} ${selectionCount === 1 ? 'person' : 'people'}`}
+                title={`Send to ${selectionCount} ${
+                  selectionCount === 1 ? "person" : "people"
+                }`}
                 onPress={handleSendToSelected}
                 loading={isSending}
                 disabled={isSending}
@@ -239,35 +242,27 @@ const styles = StyleSheet.create({
   keyboardView: {
     flex: 1,
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: theme.spacing.lg,
-    paddingVertical: theme.spacing.md,
-    backgroundColor: theme.colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.neutral[200],
+  handleContainer: {
+    alignItems: "center",
+    paddingTop: theme.spacing.lg,
+    paddingBottom: theme.spacing.lg,
+    backgroundColor: theme.colors.neutral[100],
+    marginTop: theme.spacing.xs,
   },
-  closeButton: {
-    padding: theme.spacing.xs,
-  },
-  headerTitle: {
-    ...typography.heading3,
-    color: theme.colors.textPrimary,
-  },
-  headerSpacer: {
-    width: 32,
+  handle: {
+    width: 36,
+    height: 4,
+    backgroundColor: theme.colors.neutral[300],
+    borderRadius: 2,
   },
   searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: theme.colors.surface,
     borderRadius: theme.borderRadius.md,
     paddingHorizontal: theme.spacing.md,
     marginHorizontal: theme.spacing.xl,
-    marginTop: theme.spacing['3xl'],
-    marginBottom: theme.spacing.md,
+    marginVertical: theme.spacing.sm,
     height: 40,
   },
   searchInput: {
@@ -283,16 +278,16 @@ const styles = StyleSheet.create({
     paddingBottom: theme.spacing.xl,
   },
   gridRow: {
-    justifyContent: 'flex-start',
+    justifyContent: "flex-start",
     gap: GRID_GAP,
     marginBottom: theme.spacing.lg,
   },
   userItem: {
     width: ITEM_WIDTH,
-    alignItems: 'center',
+    alignItems: "center",
   },
   avatarContainer: {
-    position: 'relative',
+    position: "relative",
     marginBottom: theme.spacing.sm,
   },
   avatar: {
@@ -306,49 +301,49 @@ const styles = StyleSheet.create({
     height: AVATAR_SIZE,
     borderRadius: AVATAR_SIZE / 2,
     backgroundColor: theme.colors.neutral[200],
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   checkOverlay: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 0,
     right: 0,
     width: 24,
     height: 24,
     borderRadius: 12,
     backgroundColor: theme.colors.primary[500],
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     borderWidth: 2,
     borderColor: theme.colors.surface,
   },
   userName: {
     ...typography.caption,
     color: theme.colors.textPrimary,
-    textAlign: 'center',
-    width: '100%',
+    textAlign: "center",
+    width: "100%",
   },
   userNameSelected: {
-    fontWeight: '600',
+    fontWeight: "600",
     color: theme.colors.primary[600],
   },
   emptyContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: theme.spacing['4xl'],
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: theme.spacing["4xl"],
     paddingHorizontal: theme.spacing.xl,
   },
   emptyTitle: {
     ...typography.heading3,
     color: theme.colors.neutral[800],
     marginBottom: theme.spacing.sm,
-    textAlign: 'center',
+    textAlign: "center",
   },
   emptyText: {
     ...typography.body,
     color: theme.colors.neutral[500],
-    textAlign: 'center',
+    textAlign: "center",
   },
   bottomActions: {
     paddingHorizontal: theme.spacing.xl,
@@ -358,7 +353,7 @@ const styles = StyleSheet.create({
     borderTopColor: theme.colors.neutral[200],
   },
   externalShareRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: theme.spacing.md,
     marginBottom: theme.spacing.md,
   },
@@ -369,11 +364,11 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   messageIcon: {
-    backgroundColor: '#34C759', // iOS green message color
+    backgroundColor: "#34C759",
   },
   linkIcon: {
     backgroundColor: theme.colors.neutral[200],
