@@ -10,7 +10,7 @@ import { useEffect } from "react";
 import NetInfo from "@react-native-community/netinfo";
 import { GlobalErrorBoundary } from "./src/providers/ErrorBoundary";
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-
+import { linking } from '@navigation/linking';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -67,7 +67,7 @@ export default function App() {
         <QueryClientProvider client={queryClient}>
           <SafeAreaProvider>
             <AuthProvider>
-              <NavigationContainer>
+              <NavigationContainer linking={linking}>
                 <MainNavigator />
                 <StatusBar style="auto" />
               </NavigationContainer>
