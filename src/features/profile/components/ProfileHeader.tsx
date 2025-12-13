@@ -74,7 +74,7 @@ export function ProfileHeader({
             <MoveLeft size={24} color={theme.colors.neutral[700]} />
           </TouchableOpacity>
 
-          {/* Inline search */}
+          {/* Inline search - will expand to fill space when active */}
           <InlineSearchInput
             isActive={isSearchActive}
             value={searchQuery}
@@ -82,32 +82,32 @@ export function ProfileHeader({
             onClose={onSearchToggle}
           />
 
-          {/* Right icons */}
-          <Animated.View
-            style={[
-              styles.rightIcons,
-              {
-                opacity: iconsOpacity,
-                transform: [{ scaleX: iconsScale }],
-                marginLeft: "auto",
-                pointerEvents: isSearchActive ? "none" : "auto",
-              },
-            ]}
-          >
-            <TouchableOpacity onPress={onSearchToggle} style={styles.iconBtn}>
-              <Search size={22} color={theme.colors.neutral[700]} />
-            </TouchableOpacity>
-
-            {user.isOwnProfile && onEditPress && (
-              <TouchableOpacity onPress={onEditPress} style={styles.iconBtn}>
-                <SquarePen size={22} color={theme.colors.neutral[700]} />
+          {/* Right icons - hide when search is active */}
+          {!isSearchActive && (
+            <Animated.View
+              style={[
+                styles.rightIcons,
+                {
+                  opacity: iconsOpacity,
+                  transform: [{ scale: iconsScale }],
+                },
+              ]}
+            >
+              <TouchableOpacity onPress={onSearchToggle} style={styles.iconBtn}>
+                <Search size={22} color={theme.colors.neutral[700]} />
               </TouchableOpacity>
-            )}
 
-            <TouchableOpacity onPress={onMenuPress} style={styles.iconBtn}>
-              <EllipsisVertical size={22} color={theme.colors.neutral[700]} />
-            </TouchableOpacity>
-          </Animated.View>
+              {user.isOwnProfile && onEditPress && (
+                <TouchableOpacity onPress={onEditPress} style={styles.iconBtn}>
+                  <SquarePen size={22} color={theme.colors.neutral[700]} />
+                </TouchableOpacity>
+              )}
+
+              <TouchableOpacity onPress={onMenuPress} style={styles.iconBtn}>
+                <EllipsisVertical size={22} color={theme.colors.neutral[700]} />
+              </TouchableOpacity>
+            </Animated.View>
+          )}
         </View>
       </View>
 
@@ -168,10 +168,10 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   rightIcons: {
-    marginLeft: "auto",
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
+    marginLeft: "auto",
   },
   profileSection: {
     paddingHorizontal: 20,

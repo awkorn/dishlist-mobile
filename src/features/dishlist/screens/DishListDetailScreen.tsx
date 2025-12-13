@@ -228,7 +228,7 @@ export default function DishListDetailScreen({
               />
               <TextInput
                 style={styles.searchInput}
-                placeholder="Find Recipe"
+                placeholder="Search Recipes..."
                 value={searchQuery}
                 onChangeText={setSearchQuery}
                 returnKeyType="search"
@@ -411,7 +411,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: theme.colors.surface,
-    borderRadius: theme.borderRadius.lg,
+    borderRadius: theme.borderRadius.md,
     paddingHorizontal: theme.spacing.md,
     paddingVertical: theme.spacing.sm,
   },

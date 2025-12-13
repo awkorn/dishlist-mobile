@@ -22,7 +22,7 @@ import { theme } from "@styles/theme";
 import { useAuth } from "@providers/AuthProvider/AuthContext";
 import { QueryErrorBoundary } from "@providers/ErrorBoundary";
 import { queryKeys } from "@lib/queryKeys";
-import { getUserProfile } from "@services/api";
+import { profileService } from "@features/profile/services/profileService";
 import { RootStackParamList } from "@app-types/navigation";
 import { useDishLists, usePrefetchDishLists } from "../hooks";
 import {
@@ -81,7 +81,7 @@ export default function DishListsScreen() {
   // User profile for avatar
   const { data: userProfile } = useQuery({
     queryKey: queryKeys.users.profile(user?.uid || ""),
-    queryFn: () => getUserProfile(user!.uid),
+    queryFn: () => profileService.getUserProfile(user!.uid),
     enabled: !!user?.uid,
     staleTime: 10 * 60 * 1000,
   });
