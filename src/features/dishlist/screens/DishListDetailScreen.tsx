@@ -23,6 +23,7 @@ import {
   UserPlus,
   UserMinus,
   Camera,
+  Share2,
 } from "lucide-react-native";
 import { typography } from "@styles/typography";
 import { theme } from "@styles/theme";
@@ -32,6 +33,7 @@ import { QueryErrorBoundary } from "@providers/ErrorBoundary";
 import { DishListDetailScreenProps } from "@app-types/navigation";
 import { ImportRecipeModal } from "@features/recipe/components";
 import type { ImportRecipeResponse } from "@features/recipe/types";
+import { ShareModal } from "@features/share";
 import {
   useDishListDetail,
   useTogglePinDishList,
@@ -47,6 +49,7 @@ export default function DishListDetailScreen({
   const [searchQuery, setSearchQuery] = useState("");
   const [showActionSheet, setShowActionSheet] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
 
   const {
     dishList,
@@ -96,6 +99,22 @@ export default function DishListDetailScreen({
           onPress: () => setShowImportModal(true),
         }
       );
+    }
+
+    // Share - only for PUBLIC dishlists
+    if (dishList.visibility === "PUBLIC") {
+      options.push({
+        title: "Share DishList",
+        icon: Share2,
+        onPress: () => {
+          setShowActionSheet(false);
+
+          // Close action sheet first
+          // Small delay to allow action sheet to close before opening share modal
+
+          setTimeout(() => setShowShareModal(true), 300);
+        },
+      });
     }
 
     // Owner-only options
@@ -345,6 +364,13 @@ export default function DishListDetailScreen({
           visible={showImportModal}
           onClose={() => setShowImportModal(false)}
           onImportComplete={handleImportComplete}
+        />
+        <ShareModal
+          visible={showShareModal}
+          onClose={() => setShowShareModal(false)}
+          shareType="dishlist"
+          contentId={dishListId}
+          contentTitle={dishList?.title || ""}
         />
       </SafeAreaView>
     </QueryErrorBoundary>
