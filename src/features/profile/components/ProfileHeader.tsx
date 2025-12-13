@@ -1,15 +1,23 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
-import { 
-  MoveLeft, 
-  Search, 
-  SquarePen, 
+import React, { useEffect, useRef } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+  Animated,
+} from "react-native";
+import {
+  MoveLeft,
+  Search,
+  SquarePen,
   EllipsisVertical,
-  User as UserIcon 
-} from 'lucide-react-native';
-import { theme } from '@styles/theme';
-import { typography } from '@styles/typography';
-import type { UserProfile } from '../types';
+  User as UserIcon,
+} from "lucide-react-native";
+import { theme } from "@styles/theme";
+import { typography } from "@styles/typography";
+import { InlineSearchInput } from "@components/ui";
+import type { UserProfile } from "../types";
 
 const AVATAR_SIZE = 100;
 
@@ -18,48 +26,93 @@ interface ProfileHeaderProps {
   displayName: string;
   onBackPress: () => void;
   onEditPress?: () => void;
-  onSearchPress?: () => void;
   onMenuPress?: () => void;
+
+  isSearchActive: boolean;
+  searchQuery: string;
+  onSearchToggle: () => void;
+  onSearchChange: (query: string) => void;
 }
 
-export function ProfileHeader({ 
-  user, 
-  displayName, 
+export function ProfileHeader({
+  user,
+  displayName,
   onBackPress,
   onEditPress,
-  onSearchPress,
   onMenuPress,
+  isSearchActive,
+  searchQuery,
+  onSearchToggle,
+  onSearchChange,
 }: ProfileHeaderProps) {
+  const iconsOpacity = useRef(new Animated.Value(1)).current;
+  const iconsScale = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(iconsOpacity, {
+        toValue: isSearchActive ? 0 : 1,
+        duration: 160,
+        useNativeDriver: true,
+      }),
+      Animated.timing(iconsScale, {
+        toValue: isSearchActive ? 0 : 1,
+        duration: 220,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [isSearchActive]);
+
   return (
     <View style={styles.container}>
-      {/* White section with icons */}
+      {/* White header */}
       <View style={styles.whiteSection}>
-        <View style={styles.iconRow}>
-          <TouchableOpacity onPress={onBackPress} style={styles.iconButton}>
+        {/* Top row */}
+        <View style={styles.topRow}>
+          {/* Back */}
+          <TouchableOpacity onPress={onBackPress} style={styles.iconBtn}>
             <MoveLeft size={24} color={theme.colors.neutral[700]} />
           </TouchableOpacity>
-          
-          <View style={styles.rightIcons}>
-            <TouchableOpacity onPress={onSearchPress} style={styles.iconButton}>
+
+          {/* Inline search */}
+          <InlineSearchInput
+            isActive={isSearchActive}
+            value={searchQuery}
+            onChangeText={onSearchChange}
+            onClose={onSearchToggle}
+          />
+
+          {/* Right icons */}
+          <Animated.View
+            style={[
+              styles.rightIcons,
+              {
+                opacity: iconsOpacity,
+                transform: [{ scaleX: iconsScale }],
+                marginLeft: "auto",
+                pointerEvents: isSearchActive ? "none" : "auto",
+              },
+            ]}
+          >
+            <TouchableOpacity onPress={onSearchToggle} style={styles.iconBtn}>
               <Search size={22} color={theme.colors.neutral[700]} />
             </TouchableOpacity>
-            
+
             {user.isOwnProfile && onEditPress && (
-              <TouchableOpacity onPress={onEditPress} style={styles.iconButton}>
+              <TouchableOpacity onPress={onEditPress} style={styles.iconBtn}>
                 <SquarePen size={22} color={theme.colors.neutral[700]} />
               </TouchableOpacity>
             )}
-            
-            <TouchableOpacity onPress={onMenuPress} style={styles.iconButton}>
+
+            <TouchableOpacity onPress={onMenuPress} style={styles.iconBtn}>
               <EllipsisVertical size={22} color={theme.colors.neutral[700]} />
             </TouchableOpacity>
-          </View>
+          </Animated.View>
         </View>
       </View>
 
-      {/* Beige section with avatar and info */}
+      {/* Profile content */}
       <View style={styles.profileSection}>
-        {/* Avatar - overlaps into white section */}
         <View style={styles.avatarContainer}>
           {user.avatarUrl ? (
             <Image source={{ uri: user.avatarUrl }} style={styles.avatar} />
@@ -70,7 +123,6 @@ export function ProfileHeader({
           )}
         </View>
 
-        {/* Name, username, and stats row - below avatar */}
         <View style={styles.infoRow}>
           <View style={styles.nameSection}>
             <Text style={styles.displayName}>{displayName}</Text>
@@ -79,6 +131,7 @@ export function ProfileHeader({
             )}
           </View>
 
+          {/* Followers / Following (unchanged) */}
           <View style={styles.statsSection}>
             <View style={styles.stat}>
               <Text style={styles.statNumber}>{user.followerCount}</Text>
@@ -91,7 +144,6 @@ export function ProfileHeader({
           </View>
         </View>
 
-        {/* Bio section - if exists */}
         {user.bio && <Text style={styles.bio}>{user.bio}</Text>}
       </View>
     </View>
@@ -102,22 +154,23 @@ const styles = StyleSheet.create({
   container: {},
   whiteSection: {
     backgroundColor: theme.colors.surface,
-    paddingBottom: AVATAR_SIZE / 2, // Space for avatar to overlap
+    paddingBottom: AVATAR_SIZE / 2,
   },
-  iconRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+  topRow: {
+    flexDirection: "row",
+    alignItems: "center",
     paddingHorizontal: 16,
     paddingTop: 12,
     paddingBottom: 16,
   },
-  iconButton: {
+  iconBtn: {
     padding: 8,
+    borderRadius: 8,
   },
   rightIcons: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    marginLeft: "auto",
+    flexDirection: "row",
+    alignItems: "center",
     gap: 4,
   },
   profileSection: {
@@ -125,7 +178,7 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
   },
   avatarContainer: {
-    marginTop: -(AVATAR_SIZE / 2), // Pull avatar up into white section
+    marginTop: -(AVATAR_SIZE / 2),
     marginBottom: 12,
   },
   avatar: {
@@ -134,22 +187,23 @@ const styles = StyleSheet.create({
     borderRadius: AVATAR_SIZE / 2,
     backgroundColor: theme.colors.neutral[200],
     borderWidth: 3,
-    borderColor: theme.colors.surface,
+    borderColor: theme.colors.background,
   },
   avatarPlaceholder: {
     width: AVATAR_SIZE,
     height: AVATAR_SIZE,
     borderRadius: AVATAR_SIZE / 2,
     backgroundColor: theme.colors.neutral[200],
-    justifyContent: 'center',
-    alignItems: 'center',
     borderWidth: 3,
-    borderColor: theme.colors.surface,
+    borderColor: theme.colors.background,
+    justifyContent: "center",
+    alignItems: "center",
   },
   infoRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    marginBottom: 8,
   },
   nameSection: {
     flex: 1,
@@ -161,27 +215,26 @@ const styles = StyleSheet.create({
   },
   username: {
     ...typography.body,
-    color: theme.colors.neutral[600],
+    color: theme.colors.neutral[500],
   },
   statsSection: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 20,
-    marginRight: 30,
   },
   stat: {
-    alignItems: 'center',
+    alignItems: "center",
   },
   statNumber: {
-    ...typography.subtitle,
-    color: theme.colors.textPrimary,
+    ...typography.heading3,
+    color: theme.colors.neutral[900],
   },
   statLabel: {
     ...typography.caption,
-    color: theme.colors.neutral[600],
+    color: theme.colors.neutral[500],
   },
   bio: {
     ...typography.body,
     color: theme.colors.neutral[700],
-    marginTop: 12,
+    marginTop: 8,
   },
 });

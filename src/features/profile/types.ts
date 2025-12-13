@@ -42,6 +42,8 @@ export interface ProfileRecipe {
   prepTime?: number;
   cookTime?: number;
   servings?: number;
+  tags?: string[];
+  ingredients?: string[];
   creatorId: string;
   creator: {
     uid: string;

@@ -35,12 +35,19 @@ export default function ProfileScreen({ navigation, route }: Props) {
     user,
     dishlists,
     recipes,
+    allDishListsCount,
+    allRecipesCount,
     displayName,
     activeTab,
+    searchQuery,
+    isSearchActive,
     isLoading,
     isError,
     refetch,
     setActiveTab,
+    setSearchQuery,
+    toggleSearch,
+    closeSearch,
   } = useProfile(userId);
 
   const handleBack = () => {
@@ -54,11 +61,6 @@ export default function ProfileScreen({ navigation, route }: Props) {
   const handleEditComplete = () => {
     setShowEditSheet(false);
     refetch();
-  };
-
-  const handleSearchPress = () => {
-    // TODO: Implement search functionality
-    console.log("Search pressed");
   };
 
   const handleMenuPress = () => {
@@ -78,6 +80,28 @@ export default function ProfileScreen({ navigation, route }: Props) {
     const position = e.nativeEvent.position;
     const newTab = position === 0 ? "DishLists" : "Recipes";
     setActiveTab(newTab);
+  };
+
+  // Dynamic search placeholder based on active tab
+  const searchPlaceholder = activeTab === "DishLists" 
+    ? "Search DishLists..." 
+    : "Search recipes, tags, ingredients...";
+
+  // Get empty state message based on search and tab
+  const getEmptyMessage = (isRecipeTab: boolean) => {
+    if (searchQuery.trim()) {
+      return isRecipeTab 
+        ? `No recipes found for "${searchQuery}"`
+        : `No DishLists found for "${searchQuery}"`;
+    }
+    if (isRecipeTab) {
+      return user?.isOwnProfile
+        ? "You don't have any recipes yet"
+        : "No recipes in public DishLists";
+    }
+    return user?.isOwnProfile
+      ? "You don't have any public DishLists yet"
+      : "No public DishLists";
   };
 
   if (isLoading) {
@@ -117,18 +141,34 @@ export default function ProfileScreen({ navigation, route }: Props) {
       {/* White safe area for status bar */}
       <SafeAreaView style={styles.safeArea} edges={["top"]} />
 
-      {/* Profile Header with icons and user info */}
+      {/* Profile Header with icons, search, and user info */}
       <ProfileHeader
         user={user}
         displayName={displayName}
         onBackPress={handleBack}
         onEditPress={user.isOwnProfile ? handleEditProfile : undefined}
-        onSearchPress={handleSearchPress}
         onMenuPress={handleMenuPress}
+        isSearchActive={isSearchActive}
+        searchQuery={searchQuery}
+        onSearchToggle={toggleSearch}
+        onSearchChange={setSearchQuery}
+        searchPlaceholder={searchPlaceholder}
       />
 
       {/* Tabs */}
       <ProfileTabs activeTab={activeTab} onTabChange={handleTabChange} />
+
+      {/* Search Results Info */}
+      {isSearchActive && searchQuery.trim() && (
+        <View style={styles.searchInfo}>
+          <Text style={styles.searchInfoText}>
+            {activeTab === "DishLists" 
+              ? `${dishlists.length} of ${allDishListsCount} DishLists`
+              : `${recipes.length} of ${allRecipesCount} recipes`
+            }
+          </Text>
+        </View>
+      )}
 
       {/* Swipeable Content with FlatList */}
       <PagerView
@@ -149,13 +189,7 @@ export default function ProfileScreen({ navigation, route }: Props) {
             contentContainerStyle={styles.listContent}
             ItemSeparatorComponent={() => <View style={styles.separator} />}
             ListEmptyComponent={
-              <ProfileEmptyState
-                message={
-                  user.isOwnProfile
-                    ? "You don't have any public DishLists yet"
-                    : "No public DishLists"
-                }
-              />
+              <ProfileEmptyState message={getEmptyMessage(false)} />
             }
             showsVerticalScrollIndicator={false}
           />
@@ -179,13 +213,7 @@ export default function ProfileScreen({ navigation, route }: Props) {
             contentContainerStyle={styles.listContent}
             ItemSeparatorComponent={() => <View style={styles.separator} />}
             ListEmptyComponent={
-              <ProfileEmptyState
-                message={
-                  user.isOwnProfile
-                    ? "You don't have any recipes yet"
-                    : "No recipes in public DishLists"
-                }
-              />
+              <ProfileEmptyState message={getEmptyMessage(true)} />
             }
             showsVerticalScrollIndicator={false}
           />
@@ -257,6 +285,14 @@ const styles = StyleSheet.create({
     ...typography.body,
     fontWeight: "600",
     color: "white",
+  },
+  searchInfo: {
+    paddingHorizontal: 20,
+    paddingBottom: 8,
+  },
+  searchInfoText: {
+    ...typography.caption,
+    color: theme.colors.neutral[500],
   },
   pager: {
     flex: 1,
