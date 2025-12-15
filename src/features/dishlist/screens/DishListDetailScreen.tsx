@@ -23,7 +23,7 @@ import {
   UserPlus,
   UserMinus,
   Camera,
-  Share2,
+  Share,
 } from "lucide-react-native";
 import { typography } from "@styles/typography";
 import { theme } from "@styles/theme";
@@ -105,7 +105,7 @@ export default function DishListDetailScreen({
     if (dishList.visibility === "PUBLIC") {
       options.push({
         title: "Share DishList",
-        icon: Share2,
+        icon: Share,
         onPress: () => {
           setShowActionSheet(false);
 

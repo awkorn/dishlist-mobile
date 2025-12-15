@@ -18,6 +18,7 @@ export interface Recipe {
   imageUrl?: string;
   nutrition?: NutritionInfo | null;
   tags?: string[];
+  isShareable?: boolean;
   creatorId: string;
   creator: {
     uid: string;

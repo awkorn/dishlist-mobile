@@ -20,6 +20,7 @@ import {
   Trash2,
   Clock,
   Users,
+  Share,
 } from "lucide-react-native";
 import { useQuery } from "@tanstack/react-query";
 import { typography } from "@styles/typography";
@@ -42,6 +43,7 @@ import {
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "@app-types/navigation";
 import { useAddGroceryItems } from "@features/grocery/hooks";
+import { ShareModal } from "@features/share";
 
 type Props = NativeStackScreenProps<RootStackParamList, "RecipeDetail">;
 
@@ -52,6 +54,7 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
   const [showActionSheet, setShowActionSheet] = useState(false);
   const [showCookMode, setShowCookMode] = useState(false);
   const [showAddToDishListModal, setShowAddToDishListModal] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
 
   // Recipe data
   const { recipe, isLoading, isError, refetch, updateNutritionCache } =
@@ -111,35 +114,48 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
         icon: Plus,
         onPress: () => setShowAddToDishListModal(true),
       },
-      {
-        title: "Add Ingredients to Grocery List",
-        icon: ShoppingCart,
-        onPress: () => {
-          const unchecked = (recipe.ingredients || []).filter(
-            (_, i) => !progress.checkedIngredients.has(i)
-          );
-
-          if (unchecked.length === 0) {
-            Alert.alert(
-              "All Ingredients Checked",
-              "All ingredients are already checked off."
-            );
-            return;
-          }
-
-          addToGroceryMutation.mutate(unchecked, {
-            onSuccess: () => {
-              Alert.alert(
-                "Added to Grocery List",
-                `${unchecked.length} ${
-                  unchecked.length === 1 ? "ingredient" : "ingredients"
-                } added to your grocery list.`
-              );
-            },
-          });
-        },
-      },
     ];
+
+    // Share Recipe - only if recipe is shareable (on a public DishList)
+    if (recipe.isShareable) {
+      opts.push({
+        title: "Share Recipe",
+        icon: Share,
+        onPress: () => {
+          setShowActionSheet(false);
+          setTimeout(() => setShowShareModal(true), 300);
+        },
+      });
+    }
+
+    opts.push({
+      title: "Add Ingredients to Grocery List",
+      icon: ShoppingCart,
+      onPress: () => {
+        const unchecked = (recipe.ingredients || []).filter(
+          (_, i) => !progress.checkedIngredients.has(i)
+        );
+
+        if (unchecked.length === 0) {
+          Alert.alert(
+            "All Ingredients Checked",
+            "All ingredients are already checked off."
+          );
+          return;
+        }
+
+        addToGroceryMutation.mutate(unchecked, {
+          onSuccess: () => {
+            Alert.alert(
+              "Added to Grocery List",
+              `${unchecked.length} ${
+                unchecked.length === 1 ? "ingredient" : "ingredients"
+              } added to your grocery list.`
+            );
+          },
+        });
+      },
+    });
 
     const isOwner = recipe.creator.uid === user?.uid;
     if (isOwner) {
@@ -270,7 +286,9 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
             </View>
             <Text style={styles.creatorText}>
               By{" "}
-              {recipe.creator.firstName + " " + recipe.creator.lastName || recipe.creator.username || "Unknown"}{" "}
+              {recipe.creator.firstName + " " + recipe.creator.lastName ||
+                recipe.creator.username ||
+                "Unknown"}{" "}
             </Text>
           </View>
 
@@ -386,6 +404,15 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
           onClose={() => setShowAddToDishListModal(false)}
           recipeId={recipeId}
           recipeTitle={recipe.title}
+        />
+
+        {/* Share Modal */}
+        <ShareModal
+          visible={showShareModal}
+          onClose={() => setShowShareModal(false)}
+          shareType="recipe"
+          contentId={recipeId}
+          contentTitle={recipe.title}
         />
       </SafeAreaView>
     </QueryErrorBoundary>

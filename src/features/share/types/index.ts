@@ -11,6 +11,11 @@ export interface ShareDishListData {
   recipientIds: string[];
 }
 
+export interface ShareRecipeData {
+  recipeId: string;
+  recipientIds: string[];
+}
+
 export interface ShareResponse {
   success: boolean;
   notificationsSent: number;

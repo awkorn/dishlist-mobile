@@ -3,7 +3,6 @@ import { Alert, Share, Clipboard } from 'react-native';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { shareService } from '../services/shareService';
 import { queryKeys } from '@lib/queryKeys';
-import type { MutualUser } from '../types';
 
 interface UseShareModalOptions {
   shareType: 'dishlist' | 'recipe';
@@ -44,7 +43,10 @@ export function useShareModal({
     });
   }, [mutuals, searchQuery]);
 
-  // Share mutation
+  // Dynamic labels based on share type
+  const contentTypeLabel = shareType === 'dishlist' ? 'DishList' : 'recipe';
+
+  // Share mutation - handles both DishList and Recipe
   const shareMutation = useMutation({
     mutationFn: async (recipientIds: string[]) => {
       if (shareType === 'dishlist') {
@@ -52,13 +54,17 @@ export function useShareModal({
           dishListId: contentId,
           recipientIds,
         });
+      } else {
+        return shareService.shareRecipe({
+          recipeId: contentId,
+          recipientIds,
+        });
       }
-      throw new Error('Recipe sharing not yet implemented');
     },
     onSuccess: (data) => {
       Alert.alert(
         'Shared!',
-        `DishList shared with ${data.notificationsSent} ${data.notificationsSent === 1 ? 'person' : 'people'}.`
+        `${contentTypeLabel} shared with ${data.notificationsSent} ${data.notificationsSent === 1 ? 'person' : 'people'}.`
       );
       setSelectedUserIds(new Set());
       onShareSuccess?.();
@@ -102,16 +108,21 @@ export function useShareModal({
       : shareService.generateRecipeLink(contentId);
   }, [shareType, contentId]);
 
+  // Dynamic share message based on content type
   const handleShareViaMessage = useCallback(async () => {
     try {
+      const message = shareType === 'dishlist'
+        ? `Check out this DishList: ${contentTitle}\n${shareLink}`
+        : `Check out this recipe: ${contentTitle}\n${shareLink}`;
+      
       await Share.share({
-        message: `Check out this DishList: ${contentTitle}\n${shareLink}`,
+        message,
         title: contentTitle,
       });
     } catch (error) {
       console.error('Share error:', error);
     }
-  }, [contentTitle, shareLink]);
+  }, [shareType, contentTitle, shareLink]);
 
   const handleCopyLink = useCallback(() => {
     Clipboard.setString(shareLink);
