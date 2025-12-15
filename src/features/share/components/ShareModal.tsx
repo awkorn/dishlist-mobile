@@ -20,7 +20,6 @@ import {
   MessageCircle,
   Link2,
   Check,
-  X,
 } from "lucide-react-native";
 import { theme } from "@styles/theme";
 import { typography } from "@styles/typography";
@@ -237,7 +236,7 @@ export function ShareModal({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.neutral[100],
+    backgroundColor: theme.colors.surface,
   },
   keyboardView: {
     flex: 1,
@@ -246,7 +245,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingTop: theme.spacing.lg,
     paddingBottom: theme.spacing.lg,
-    backgroundColor: theme.colors.neutral[100],
+    backgroundColor: theme.colors.surface,
     marginTop: theme.spacing.xs,
   },
   handle: {
@@ -258,7 +257,7 @@ const styles = StyleSheet.create({
   searchContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: theme.colors.surface,
+    backgroundColor: theme.colors.neutral[100],
     borderRadius: theme.borderRadius.md,
     paddingHorizontal: theme.spacing.md,
     marginHorizontal: theme.spacing.xl,
@@ -331,6 +330,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    marginTop: theme.spacing["4xl"],
     paddingVertical: theme.spacing["4xl"],
     paddingHorizontal: theme.spacing.xl,
   },
