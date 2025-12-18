@@ -32,6 +32,7 @@ interface ProfileHeaderProps {
   searchQuery: string;
   onSearchToggle: () => void;
   onSearchChange: (query: string) => void;
+  searchPlaceholder: string;
 }
 
 export function ProfileHeader({
@@ -44,6 +45,7 @@ export function ProfileHeader({
   searchQuery,
   onSearchToggle,
   onSearchChange,
+  searchPlaceholder,
 }: ProfileHeaderProps) {
   const iconsOpacity = useRef(new Animated.Value(1)).current;
   const iconsScale = useRef(new Animated.Value(1)).current;
@@ -80,6 +82,7 @@ export function ProfileHeader({
             value={searchQuery}
             onChangeText={onSearchChange}
             onClose={onSearchToggle}
+            placeholder={searchPlaceholder}
           />
 
           {/* Right icons - hide when search is active */}
