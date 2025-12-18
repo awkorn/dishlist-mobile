@@ -101,7 +101,7 @@ export default function AddRecipeScreen({ route, navigation }: Props) {
     editRecipe?.cookTime || importedRecipe?.cookTime || 0
   );
   const [servings, setServings] = useState(
-    editRecipe?.servings || importedRecipe?.servings || 1
+    editRecipe?.servings || importedRecipe?.servings || 0
   );
   const [ingredients, setIngredients] = useState<string[]>(
     (editRecipe?.ingredients?.length ?? 0) > 0
