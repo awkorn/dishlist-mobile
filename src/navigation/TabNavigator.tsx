@@ -5,12 +5,16 @@ import {
   ShoppingCart,
   Search,
   PlusSquare,
-  User,
 } from "lucide-react-native";
 import { View, Text, StyleSheet } from "react-native";
 import { theme } from "../styles/theme";
-import { DishListsScreen } from '@features/dishlist';
+import { DishListsScreen } from "@features/dishlist";
 import { GroceryListScreen } from "@features/grocery";
+import {
+  NotificationsScreen,
+  NotificationBadge,
+  useUnreadCount,
+} from "@features/notifications";
 
 const Tab = createBottomTabNavigator();
 
@@ -24,6 +28,12 @@ const PlaceholderScreen = ({ title }: { title: string }) => (
 const SearchScreen = () => <PlaceholderScreen title="Search" />;
 const BuilderScreen = () => <PlaceholderScreen title="Recipe Builder" />;
 
+// Wrapper component for notification icon with badge
+function NotificationTabIcon({ color, size }: { color: string; size: number }) {
+  const { count } = useUnreadCount();
+  return <NotificationBadge count={count} color={color} size={size} />;
+}
+
 export default function TabNavigator() {
   return (
     <Tab.Navigator
@@ -36,11 +46,11 @@ export default function TabNavigator() {
           borderTopWidth: 1,
           borderTopColor: theme.colors.neutral[200],
           height: 90,
-          paddingBottom: 30, 
+          paddingBottom: 30,
           paddingTop: 12,
         },
         tabBarLabelStyle: {
-          fontSize: 0, 
+          fontSize: 0,
         },
         tabBarShowLabel: false,
       }}
@@ -55,13 +65,6 @@ export default function TabNavigator() {
         }}
       />
       <Tab.Screen
-        name="SearchTab"
-        component={SearchScreen}
-        options={{
-          tabBarIcon: ({ color, size }) => <Search size={size} color={color} />,
-        }}
-      />
-      <Tab.Screen
         name="GroceryTab"
         component={GroceryListScreen}
         options={{
@@ -71,11 +74,27 @@ export default function TabNavigator() {
         }}
       />
       <Tab.Screen
+        name="SearchTab"
+        component={SearchScreen}
+        options={{
+          tabBarIcon: ({ color, size }) => <Search size={size} color={color} />,
+        }}
+      />
+      <Tab.Screen
         name="BuilderTab"
         component={BuilderScreen}
         options={{
           tabBarIcon: ({ color, size }) => (
             <PlusSquare size={size} color={color} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="NotificationsTab"
+        component={NotificationsScreen}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <NotificationTabIcon color={color} size={size} />
           ),
         }}
       />
