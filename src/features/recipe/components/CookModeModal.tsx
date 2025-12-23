@@ -20,11 +20,13 @@ import {
 import { theme } from "@styles/theme";
 import { typography } from "@styles/typography";
 import { isIngredientInInstruction } from "@utils/ingredientParser";
+import type { RecipeItem } from "../types";
+import { getSubsectionForIndex } from "../types";
 
 interface CookModeRecipe {
   title: string;
-  instructions: string[];
-  ingredients: string[];
+  instructions: RecipeItem[];
+  ingredients: RecipeItem[];
   prepTime?: number;
   cookTime?: number;
 }
@@ -42,36 +44,65 @@ export default function CookModeModal({
   onClose,
   recipe,
 }: CookModeModalProps) {
-  const [currentStep, setCurrentStep] = useState(0);
+  const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const insets = useSafeAreaInsets();
 
+  // Filter to only actual steps (not headers)
+  const actualSteps = useMemo(() => {
+    return recipe.instructions.filter((item) => item.type === "item");
+  }, [recipe.instructions]);
+
+  // Get the original index in the full array for the current step
+  const getOriginalIndex = (stepIndex: number): number => {
+    let itemCount = 0;
+    for (let i = 0; i < recipe.instructions.length; i++) {
+      if (recipe.instructions[i].type === "item") {
+        if (itemCount === stepIndex) return i;
+        itemCount++;
+      }
+    }
+    return 0;
+  };
+
+  const originalIndex = getOriginalIndex(currentStepIndex);
+  const currentSubsection = getSubsectionForIndex(
+    recipe.instructions,
+    originalIndex
+  );
+
   const handleClose = () => {
-    setCurrentStep(0);
+    setCurrentStepIndex(0);
     onClose();
   };
 
+  // Get ingredients for current step (only actual items, not headers)
   const currentStepIngredients = useMemo(() => {
-    if (!recipe.ingredients) return [];
-    const instruction = recipe.instructions[currentStep];
-    return recipe.ingredients.filter((ingredient) =>
-      isIngredientInInstruction(ingredient, instruction)
+    const ingredientItems = recipe.ingredients.filter(
+      (item) => item.type === "item"
     );
-  }, [currentStep, recipe.ingredients, recipe.instructions]);
+    const instruction = actualSteps[currentStepIndex]?.text || "";
+    return ingredientItems
+      .filter((item) => isIngredientInInstruction(item.text, instruction))
+      .map((item) => item.text);
+  }, [currentStepIndex, recipe.ingredients, actualSteps]);
 
   const goToStep = (stepIndex: number) => {
-    if (stepIndex < 0 || stepIndex >= recipe.instructions.length) return;
+    if (stepIndex < 0 || stepIndex >= actualSteps.length) return;
 
     if (Platform.OS === "ios") {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
 
-    setCurrentStep(stepIndex);
+    setCurrentStepIndex(stepIndex);
   };
 
-  const totalSteps = recipe.instructions.length;
-  const isFirstStep = currentStep === 0;
-  const isLastStep = currentStep === totalSteps - 1;
-  const progressPercentage = ((currentStep + 1) / totalSteps) * 100;
+  const totalSteps = actualSteps.length;
+  const isFirstStep = currentStepIndex === 0;
+  const isLastStep = currentStepIndex === totalSteps - 1;
+  const progressPercentage =
+    totalSteps > 0 ? ((currentStepIndex + 1) / totalSteps) * 100 : 0;
+
+  const currentInstruction = actualSteps[currentStepIndex]?.text || "";
 
   return (
     <Modal
@@ -98,7 +129,7 @@ export default function CookModeModal({
             </Text>
             <View style={styles.progressContainer}>
               <Text style={styles.stepCounter}>
-                Step {currentStep + 1} of {totalSteps}
+                Step {currentStepIndex + 1} of {totalSteps}
               </Text>
               <View style={styles.progressBar}>
                 <View
@@ -119,9 +150,18 @@ export default function CookModeModal({
           style={styles.content}
           contentContainerStyle={styles.scrollContent}
         >
+          {/* Subsection Badge (if in a subsection) */}
+          {currentSubsection && (
+            <View style={styles.subsectionBadge}>
+              <Text style={styles.subsectionBadgeText}>
+                {currentSubsection}
+              </Text>
+            </View>
+          )}
+
           {/* Step header */}
           <View style={styles.stepHeader}>
-            <Text style={styles.stepTitle}>Step {currentStep + 1}</Text>
+            <Text style={styles.stepTitle}>Step {currentStepIndex + 1}</Text>
             {isLastStep && (
               <View style={styles.finalStepBadge}>
                 <CheckCircle2
@@ -137,9 +177,7 @@ export default function CookModeModal({
           {/* Instruction */}
           <View style={styles.instructionSection}>
             <Text style={styles.sectionLabel}>Instruction</Text>
-            <Text style={styles.instructionText}>
-              {recipe.instructions[currentStep]}
-            </Text>
+            <Text style={styles.instructionText}>{currentInstruction}</Text>
           </View>
 
           {/* Ingredients */}
@@ -160,7 +198,7 @@ export default function CookModeModal({
         <View style={styles.footer}>
           <TouchableOpacity
             style={[styles.navButton, isFirstStep && styles.navButtonDisabled]}
-            onPress={() => goToStep(currentStep - 1)}
+            onPress={() => goToStep(currentStepIndex - 1)}
             disabled={isFirstStep}
           >
             <ChevronLeft
@@ -187,7 +225,7 @@ export default function CookModeModal({
               isLastStep ? styles.doneButton : styles.nextButton,
             ]}
             onPress={() =>
-              isLastStep ? handleClose() : goToStep(currentStep + 1)
+              isLastStep ? handleClose() : goToStep(currentStepIndex + 1)
             }
           >
             <Text
@@ -378,5 +416,19 @@ const styles = StyleSheet.create({
   },
   doneButtonText: {
     color: "white",
+  },
+  subsectionBadge: {
+    alignSelf: "flex-start",
+    backgroundColor: theme.colors.primary[500],
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.xs,
+    borderRadius: theme.borderRadius.sm,
+    marginBottom: theme.spacing.md,
+  },
+  subsectionBadgeText: {
+    ...typography.caption,
+    fontSize: 13,
+    color: theme.colors.primary[50],
+    fontWeight: "600",
   },
 });

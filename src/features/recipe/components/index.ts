@@ -6,3 +6,4 @@ export { default as AddToDishListModal } from './AddToDishListModal';
 export { default as ImportRecipeModal } from './ImportRecipeModal';
 export { default as TagDisplay } from './TagDisplay';
 export { default as TagInput } from './TagInput';
+export { default as DraggableRecipeList } from './DraggableRecipeList';
