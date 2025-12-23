@@ -43,9 +43,28 @@ import {
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "@app-types/navigation";
 import { useAddGroceryItems } from "@features/grocery/hooks";
+import type { RecipeItem } from "../types";
+import {
+  convertLegacyToStructured,
+  extractItemTexts,
+  getStepNumber,
+  isHeader,
+  isItem,
+} from "../types";
 import { ShareModal } from "@features/share";
 
 type Props = NativeStackScreenProps<RootStackParamList, "RecipeDetail">;
+
+// Helper to get display step number (excluding headers)
+function getDisplayStepNumber(items: RecipeItem[], index: number): number {
+  let stepCount = 0;
+  for (let i = 0; i <= index; i++) {
+    if (items[i]?.type === "item") {
+      stepCount++;
+    }
+  }
+  return stepCount;
+}
 
 export default function RecipeDetailScreen({ route, navigation }: Props) {
   const { recipeId, dishListId } = route.params;
@@ -129,17 +148,23 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
     }
 
     opts.push({
-      title: "Add Ingredients to Grocery List",
+      title: "Add to Grocery List",
       icon: ShoppingCart,
       onPress: () => {
-        const unchecked = (recipe.ingredients || []).filter(
-          (_, i) => !progress.checkedIngredients.has(i)
-        );
+        // Convert and filter: only items (not headers), and only unchecked ones
+        const items = convertLegacyToStructured(recipe.ingredients || []);
+        const unchecked = items
+          .filter(
+            (item, i) =>
+              item.type === "item" && !progress.checkedIngredients.has(i)
+          )
+          .map((item) => item.text)
+          .filter((text) => text.trim());
 
         if (unchecked.length === 0) {
           Alert.alert(
-            "All Ingredients Checked",
-            "All ingredients are already checked off."
+            "No Ingredients to Add",
+            "All ingredients have already been checked off."
           );
           return;
         }
@@ -304,68 +329,100 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
           {/* Ingredients */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Ingredients</Text>
-            {recipe.ingredients?.map((ing, i) => (
-              <TouchableOpacity
-                key={i}
-                style={styles.ingredientRow}
-                onPress={() => toggleIngredient(i)}
-              >
-                <View
-                  style={[
-                    styles.checkbox,
-                    progress.checkedIngredients.has(i) &&
-                      styles.checkboxChecked,
-                  ]}
-                />
-                <Text
-                  style={[
-                    styles.ingredientText,
-                    progress.checkedIngredients.has(i) && styles.crossedOut,
-                  ]}
-                >
-                  {ing}
-                </Text>
-              </TouchableOpacity>
-            ))}
+            {convertLegacyToStructured(recipe.ingredients || []).map(
+              (item, i) => {
+                if (item.type === "header") {
+                  return (
+                    <View key={i} style={styles.subsectionHeader}>
+                      <Text style={styles.subsectionHeaderText}>
+                        {item.text}
+                      </Text>
+                    </View>
+                  );
+                }
+                return (
+                  <TouchableOpacity
+                    key={i}
+                    style={styles.ingredientRow}
+                    onPress={() => toggleIngredient(i)}
+                  >
+                    <View
+                      style={[
+                        styles.checkbox,
+                        progress.checkedIngredients.has(i) &&
+                          styles.checkboxChecked,
+                      ]}
+                    />
+                    <Text
+                      style={[
+                        styles.ingredientText,
+                        progress.checkedIngredients.has(i) && styles.crossedOut,
+                      ]}
+                    >
+                      {item.text}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              }
+            )}
           </View>
 
           {/* Instructions */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Instructions</Text>
-            {recipe.instructions?.map((inst, i) => (
-              <TouchableOpacity
-                key={i}
-                style={styles.instructionRow}
-                onPress={() => toggleStep(i)}
-              >
-                <View style={styles.stepNumber}>
-                  <Text
-                    style={[
-                      styles.stepNumberText,
-                      progress.completedSteps.has(i) &&
-                        styles.completedStepNumber,
-                    ]}
+            {(() => {
+              const items = convertLegacyToStructured(
+                recipe.instructions || []
+              );
+              return items.map((item, i) => {
+                if (item.type === "header") {
+                  return (
+                    <View key={i} style={styles.subsectionHeader}>
+                      <Text style={styles.subsectionHeaderText}>
+                        {item.text}
+                      </Text>
+                    </View>
+                  );
+                }
+                const stepNum = getDisplayStepNumber(items, i);
+                return (
+                  <TouchableOpacity
+                    key={i}
+                    style={styles.instructionRow}
+                    onPress={() => toggleStep(i)}
                   >
-                    {i + 1}
-                  </Text>
-                </View>
-                <Text
-                  style={[
-                    styles.instructionText,
-                    progress.completedSteps.has(i) && styles.crossedOut,
-                  ]}
-                >
-                  {inst}
-                </Text>
-              </TouchableOpacity>
-            ))}
+                    <View style={styles.stepNumber}>
+                      <Text
+                        style={[
+                          styles.stepNumberText,
+                          progress.completedSteps.has(i) &&
+                            styles.completedStepNumber,
+                        ]}
+                      >
+                        {stepNum}
+                      </Text>
+                    </View>
+                    <Text
+                      style={[
+                        styles.instructionText,
+                        progress.completedSteps.has(i) && styles.crossedOut,
+                      ]}
+                    >
+                      {item.text}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              });
+            })()}
           </View>
 
           {/* Nutrition */}
           <View style={styles.section}>
             <NutritionSection
               nutrition={recipe.nutrition}
-              ingredients={recipe.ingredients}
+              ingredients={extractItemTexts(
+                convertLegacyToStructured(recipe.ingredients || [])
+              )}
               servings={recipe.servings || 1}
               recipeId={recipe.id}
               onNutritionCalculated={updateNutritionCache}
@@ -392,8 +449,8 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
           onClose={() => setShowCookMode(false)}
           recipe={{
             title: recipe.title,
-            instructions: recipe.instructions || [],
-            ingredients: recipe.ingredients || [],
+            instructions: convertLegacyToStructured(recipe.instructions || []),
+            ingredients: convertLegacyToStructured(recipe.ingredients || []),
             prepTime: recipe.prepTime,
             cookTime: recipe.cookTime,
           }}
@@ -594,5 +651,18 @@ const styles = StyleSheet.create({
   crossedOut: {
     textDecorationLine: "line-through",
     color: theme.colors.neutral[400],
+  },
+  subsectionHeader: {
+    marginTop: theme.spacing.lg,
+    marginBottom: theme.spacing.sm,
+    paddingBottom: theme.spacing.xs,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.neutral[200],
+  },
+  subsectionHeaderText: {
+    ...typography.subtitle,
+    fontSize: 15,
+    color: theme.colors.primary[600],
+    fontWeight: "600",
   },
 });

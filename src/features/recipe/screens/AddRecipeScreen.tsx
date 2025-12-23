@@ -19,8 +19,14 @@ import { typography } from "@styles/typography";
 import Button from "@components/ui/Button";
 import { uploadImage } from "@services/image";
 import { useCreateRecipe, useUpdateRecipe } from "../hooks";
-import { NutritionSection, TagInput } from "../components";
-import type { NutritionInfo } from "../types";
+import { NutritionSection, TagInput, DraggableRecipeList } from "../components";
+import type { NutritionInfo, RecipeItem } from "../types";
+import {
+  convertLegacyToStructured,
+  hasAtLeastOneItem,
+  cleanEmptyItems,
+  extractItemTexts,
+} from "../types";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "@app-types/navigation";
 
@@ -103,20 +109,27 @@ export default function AddRecipeScreen({ route, navigation }: Props) {
   const [servings, setServings] = useState(
     editRecipe?.servings || importedRecipe?.servings || 0
   );
-  const [ingredients, setIngredients] = useState<string[]>(
-    (editRecipe?.ingredients?.length ?? 0) > 0
-      ? editRecipe!.ingredients
-      : (importedRecipe?.ingredients?.length ?? 0) > 0
-      ? importedRecipe!.ingredients
-      : [""]
-  );
-  const [instructions, setInstructions] = useState<string[]>(
-    (editRecipe?.instructions?.length ?? 0) > 0
-      ? editRecipe!.instructions
-      : (importedRecipe?.instructions?.length ?? 0) > 0
-      ? importedRecipe!.instructions
-      : [""]
-  );
+
+  const [ingredients, setIngredients] = useState<RecipeItem[]>(() => {
+    if ((editRecipe?.ingredients?.length ?? 0) > 0) {
+      return convertLegacyToStructured(editRecipe!.ingredients!);
+    }
+    if ((importedRecipe?.ingredients?.length ?? 0) > 0) {
+      return convertLegacyToStructured(importedRecipe!.ingredients!);
+    }
+    return [{ type: "item", text: "" }];
+  });
+
+  const [instructions, setInstructions] = useState<RecipeItem[]>(() => {
+    if ((editRecipe?.instructions?.length ?? 0) > 0) {
+      return convertLegacyToStructured(editRecipe!.instructions!);
+    }
+    if ((importedRecipe?.instructions?.length ?? 0) > 0) {
+      return convertLegacyToStructured(importedRecipe!.instructions!);
+    }
+    return [{ type: "item", text: "" }];
+  });
+
   const [imageUri, setImageUri] = useState<string | null>(
     editRecipe?.imageUrl || null
   );
@@ -124,8 +137,10 @@ export default function AddRecipeScreen({ route, navigation }: Props) {
   const [imageUploading, setImageUploading] = useState(false);
   const [calculatedNutrition, setCalculatedNutrition] =
     useState<NutritionInfo | null>(editRecipe?.nutrition || null);
-  const [originalIngredients] = useState<string[]>(
-    editRecipe?.ingredients || []
+  const [originalIngredients] = useState<RecipeItem[]>(() =>
+    editRecipe?.ingredients
+      ? convertLegacyToStructured(editRecipe.ingredients)
+      : []
   );
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [warningsDismissed, setWarningsDismissed] = useState(false);
@@ -140,36 +155,6 @@ export default function AddRecipeScreen({ route, navigation }: Props) {
     if (!isEditMode) return false;
     return JSON.stringify(ingredients) !== JSON.stringify(originalIngredients);
   }, [ingredients, originalIngredients, isEditMode]);
-
-  // Ingredient management
-  const addIngredient = () => setIngredients([...ingredients, ""]);
-
-  const removeIngredient = (index: number) => {
-    if (ingredients.length > 1) {
-      setIngredients(ingredients.filter((_, i) => i !== index));
-    }
-  };
-
-  const updateIngredient = (index: number, value: string) => {
-    const updated = [...ingredients];
-    updated[index] = value;
-    setIngredients(updated);
-  };
-
-  // Instruction management
-  const addInstruction = () => setInstructions([...instructions, ""]);
-
-  const removeInstruction = (index: number) => {
-    if (instructions.length > 1) {
-      setInstructions(instructions.filter((_, i) => i !== index));
-    }
-  };
-
-  const updateInstruction = (index: number, value: string) => {
-    const updated = [...instructions];
-    updated[index] = value;
-    setInstructions(updated);
-  };
 
   // Image handling
   const pickImage = async () => {
@@ -237,13 +222,11 @@ export default function AddRecipeScreen({ route, navigation }: Props) {
       newErrors.title = "Title is required";
     }
 
-    const validIngredients = ingredients.filter((ing) => ing.trim());
-    if (validIngredients.length === 0) {
+    if (!hasAtLeastOneItem(ingredients)) {
       newErrors.ingredients = "At least one ingredient is required";
     }
 
-    const validInstructions = instructions.filter((inst) => inst.trim());
-    if (validInstructions.length === 0) {
+    if (!hasAtLeastOneItem(instructions)) {
       newErrors.instructions = "At least one instruction is required";
     }
 
@@ -265,8 +248,8 @@ export default function AddRecipeScreen({ route, navigation }: Props) {
         setImageUploading(false);
       }
 
-      const validIngredients = ingredients.filter((ing) => ing.trim());
-      const validInstructions = instructions.filter((inst) => inst.trim());
+      const validIngredients = cleanEmptyItems(ingredients);
+      const validInstructions = cleanEmptyItems(instructions);
 
       // Clear nutrition if ingredients changed
       const nutritionData = ingredientsChanged ? null : calculatedNutrition;
@@ -306,8 +289,8 @@ export default function AddRecipeScreen({ route, navigation }: Props) {
   const handleCancel = () => {
     const hasChanges =
       title.trim() !== (editRecipe?.title || "") ||
-      ingredients.some((ing) => ing.trim()) ||
-      instructions.some((inst) => inst.trim()) ||
+      ingredients.some((item) => item.text.trim()) ||
+      instructions.some((item) => item.text.trim()) ||
       imageChanged;
 
     if (hasChanges) {
@@ -434,71 +417,20 @@ export default function AddRecipeScreen({ route, navigation }: Props) {
             </View>
 
             {/* Ingredients */}
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Ingredients</Text>
-              {errors.ingredients && (
-                <Text style={styles.errorText}>{errors.ingredients}</Text>
-              )}
-              {ingredients.map((ingredient, index) => (
-                <View key={index} style={styles.dynamicInputRow}>
-                  <TextInput
-                    style={[styles.dynamicInput, { flex: 1 }]}
-                    placeholder={`Ingredient ${index + 1}`}
-                    placeholderTextColor={theme.colors.neutral[400]}
-                    value={ingredient}
-                    onChangeText={(value) => updateIngredient(index, value)}
-                  />
-                  <TouchableOpacity
-                    style={styles.removeButton}
-                    onPress={() => removeIngredient(index)}
-                  >
-                    <X size={16} color={theme.colors.error} />
-                  </TouchableOpacity>
-                </View>
-              ))}
-              <TouchableOpacity
-                style={styles.addButton}
-                onPress={addIngredient}
-              >
-                <Text style={styles.addButtonText}>Add Ingredient</Text>
-              </TouchableOpacity>
-            </View>
+            <DraggableRecipeList
+              items={ingredients}
+              onItemsChange={setIngredients}
+              type="ingredients"
+              error={errors.ingredients}
+            />
 
             {/* Instructions */}
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Instructions</Text>
-              {errors.instructions && (
-                <Text style={styles.errorText}>{errors.instructions}</Text>
-              )}
-              {instructions.map((instruction, index) => (
-                <View key={index} style={styles.dynamicInputRow}>
-                  <TextInput
-                    style={[
-                      styles.dynamicInput,
-                      styles.instructionInput,
-                      { flex: 1 },
-                    ]}
-                    placeholder={`Step ${index + 1}`}
-                    placeholderTextColor={theme.colors.neutral[400]}
-                    value={instruction}
-                    onChangeText={(value) => updateInstruction(index, value)}
-                    multiline
-                  />
-                  <TouchableOpacity
-                    style={styles.removeButton}
-                    onPress={() => removeInstruction(index)}
-                  >
-                    <X size={16} color={theme.colors.error} />
-                  </TouchableOpacity>
-                </View>
-              ))}
-              <TouchableOpacity
-                style={styles.addButton}
-                onPress={addInstruction}
-              >
-                <Text style={styles.addButtonText}>Add Step</Text>
-              </TouchableOpacity>
-            </View>
+            <DraggableRecipeList
+              items={instructions}
+              onItemsChange={setInstructions}
+              type="instructions"
+              error={errors.instructions}
+            />
 
             {/* Nutrition */}
             {ingredientsChanged && calculatedNutrition && (
@@ -511,7 +443,7 @@ export default function AddRecipeScreen({ route, navigation }: Props) {
             )}
             <NutritionSection
               nutrition={ingredientsChanged ? null : calculatedNutrition}
-              ingredients={ingredients.filter((ing) => ing.trim())}
+              ingredients={extractItemTexts(ingredients)}
               servings={servings}
               onNutritionCalculated={setCalculatedNutrition}
             />
