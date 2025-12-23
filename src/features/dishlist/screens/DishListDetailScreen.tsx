@@ -60,6 +60,7 @@ export default function DishListDetailScreen({
     dishList,
     filteredRecipes,
     isLoading,
+    isFetching,
     isError,
     isRefetching,
     refetch,
@@ -202,7 +203,8 @@ export default function DishListDetailScreen({
     return options;
   }, [dishList, navigation, pinMutation, deleteMutation, dishListId]);
 
-  if (isLoading) {
+  // Loading state
+  if (isLoading && !dishList) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
@@ -292,25 +294,24 @@ export default function DishListDetailScreen({
                   {dishList.recipeCount === 1 ? "Recipe" : "Recipes"}
                 </Text>
 
-                <Text style={styles.infoText}>
-                  {dishList.followerCount}{" "}
-                  {dishList.followerCount === 1 ? "Follower" : "Followers"}
-                </Text>
+                {dishList.visibility === "PUBLIC" && (
+                  <Text style={styles.infoText}>
+                    {dishList.followerCount}{" "}
+                    {dishList.followerCount === 1 ? "Follower" : "Followers"}
+                  </Text>
+                )}
               </View>
 
               <View style={styles.collabRow}>
-                {/* Collaborator count - clickable */}
-                {(dishList.collaboratorCount > 0 || dishList.isOwner) && (
+                {/* Collaborator count - only show if there are collaborators other than owner */}
+                {dishList.collaboratorCount > 0 && (
                   <TouchableOpacity
                     style={styles.collaboratorButton}
                     onPress={() => setShowCollaboratorsModal(true)}
                   >
                     <Users size={14} color={theme.colors.primary[600]} />
                     <Text style={styles.collaboratorText}>
-                      {(dishList.collaboratorCount || 0) + 1}{" "}
-                      {dishList.collaboratorCount === 0
-                        ? "Collaborator"
-                        : "Collaborators"}
+                      {dishList.collaboratorCount + 1} Collaborators
                     </Text>
                   </TouchableOpacity>
                 )}

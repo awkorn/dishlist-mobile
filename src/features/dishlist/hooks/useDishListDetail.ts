@@ -14,6 +14,7 @@ interface UseDishListDetailResult {
   dishList: DishListDetail | undefined;
   filteredRecipes: DishListRecipe[];
   isLoading: boolean;
+  isFetching: boolean;
   isError: boolean;
   isRefetching: boolean;
   error: Error | null;
@@ -29,13 +30,14 @@ export function useDishListDetail({
     queryFn: () => dishlistService.getDishListDetail(dishListId),
     staleTime: 2 * 60 * 1000,
     enabled: !!dishListId,
+    placeholderData: (previousData) => previousData, // keeps old data visible during refetch
+    refetchOnWindowFocus: false, // prevents refetch when app comes to foreground
   });
 
   const filteredRecipes = useMemo(() => {
     if (!query.data?.recipes) return [];
     if (!searchQuery.trim()) return query.data.recipes;
     
-    // Use the new intelligent search utility
     return searchRecipes(query.data.recipes, searchQuery);
   }, [query.data?.recipes, searchQuery]);
 
@@ -43,6 +45,7 @@ export function useDishListDetail({
     dishList: query.data,
     filteredRecipes,
     isLoading: query.isLoading,
+    isFetching: query.isFetching, 
     isError: query.isError,
     isRefetching: query.isRefetching,
     error: query.error,
