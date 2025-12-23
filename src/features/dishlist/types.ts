@@ -3,6 +3,7 @@ export interface DishListOwner {
   username?: string;
   firstName?: string;
   lastName?: string;
+  avatarUrl?: string;
 }
 
 export interface DishList {
@@ -39,6 +40,7 @@ export interface DishListRecipe {
 
 export interface DishListDetail extends DishList {
   followerCount: number;
+  collaboratorCount: number;
   recipes: DishListRecipe[];
 }
 

@@ -34,6 +34,9 @@ import { DishListDetailScreenProps } from "@app-types/navigation";
 import { ImportRecipeModal } from "@features/recipe/components";
 import type { ImportRecipeResponse } from "@features/recipe/types";
 import { ShareModal } from "@features/share";
+import { InviteCollaboratorModal } from "@features/invite";
+import { Users } from "lucide-react-native";
+import { CollaboratorsModal } from "@features/invite";
 import {
   useDishListDetail,
   useTogglePinDishList,
@@ -50,6 +53,8 @@ export default function DishListDetailScreen({
   const [showActionSheet, setShowActionSheet] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [showCollaboratorsModal, setShowCollaboratorsModal] = useState(false);
 
   const {
     dishList,
@@ -136,8 +141,10 @@ export default function DishListDetailScreen({
         {
           title: "Invite Collaborator",
           icon: UserPlus,
-          onPress: () =>
-            navigation.navigate("InviteCollaborator", { dishListId }),
+          onPress: () => {
+            setShowActionSheet(false);
+            setTimeout(() => setShowInviteModal(true), 300);
+          },
         }
       );
     }
@@ -290,6 +297,24 @@ export default function DishListDetailScreen({
                   {dishList.followerCount === 1 ? "Follower" : "Followers"}
                 </Text>
               </View>
+
+              <View style={styles.collabRow}>
+                {/* Collaborator count - clickable */}
+                {(dishList.collaboratorCount > 0 || dishList.isOwner) && (
+                  <TouchableOpacity
+                    style={styles.collaboratorButton}
+                    onPress={() => setShowCollaboratorsModal(true)}
+                  >
+                    <Users size={14} color={theme.colors.primary[600]} />
+                    <Text style={styles.collaboratorText}>
+                      {(dishList.collaboratorCount || 0) + 1}{" "}
+                      {dishList.collaboratorCount === 0
+                        ? "Collaborator"
+                        : "Collaborators"}
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </View>
             </View>
 
             <TouchableOpacity
@@ -372,6 +397,24 @@ export default function DishListDetailScreen({
           contentId={dishListId}
           contentTitle={dishList?.title || ""}
         />
+        {/* Invite Collaborator Modal */}
+        {dishList && (
+          <InviteCollaboratorModal
+            visible={showInviteModal}
+            onClose={() => setShowInviteModal(false)}
+            dishListId={dishListId}
+            dishListTitle={dishList.title}
+          />
+        )}
+        {/* Collaborators Modal */}
+        {dishList && (
+          <CollaboratorsModal
+            visible={showCollaboratorsModal}
+            onClose={() => setShowCollaboratorsModal(false)}
+            dishListId={dishListId}
+            dishListTitle={dishList.title}
+          />
+        )}
       </SafeAreaView>
     </QueryErrorBoundary>
   );
@@ -519,5 +562,29 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: theme.spacing.lg,
+  },
+  collabRow: {
+    flexDirection: "row",
+  },
+  collaboratorButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: theme.colors.primary[50],
+    paddingHorizontal: theme.spacing.sm,
+    paddingVertical: theme.spacing.xs,
+    borderRadius: theme.borderRadius.lg,
+    gap: 4,
+
+    // Shadow
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  collaboratorText: {
+    ...typography.caption,
+    color: theme.colors.primary[600],
+    fontWeight: "600",
   },
 });
