@@ -36,17 +36,17 @@ export type RootStackParamList = {
     dishListId: string;
     recipeId?: string;
     recipe?: any;
-    importedRecipe?: ImportedRecipeData; 
-    importWarnings?: string[];   
-  };
-  InviteCollaborator: {
-    dishListId: string;
+    importedRecipe?: ImportedRecipeData;
+    importWarnings?: string[];
   };
   RecipeDetail: {
     recipeId: string;
     dishListId?: string;
   };
   Profile: { userId: string };
+  InviteLanding: {
+    token: string;
+  };
 };
 
 export type DishListDetailScreenProps = NativeStackScreenProps<

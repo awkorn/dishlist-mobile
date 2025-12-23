@@ -246,7 +246,6 @@ const styles = StyleSheet.create({
     paddingTop: theme.spacing.lg,
     paddingBottom: theme.spacing.lg,
     backgroundColor: theme.colors.surface,
-    marginTop: theme.spacing.xs,
   },
   handle: {
     width: 36,

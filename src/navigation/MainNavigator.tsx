@@ -2,7 +2,6 @@ import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useAuth } from "@providers/AuthProvider/AuthContext";
 import { View, ActivityIndicator, StyleSheet } from "react-native";
-
 import { LoginScreen, SignUpScreen } from "@features/auth";
 import { ProfileScreen } from "@features/profile";
 import {
@@ -11,6 +10,7 @@ import {
   CreateDishListScreen,
 } from "@features/dishlist";
 import { AddRecipeScreen, RecipeDetailScreen } from "@features/recipe";
+import { InviteLandingScreen } from "@features/invite";
 import TabNavigator from "./TabNavigator";
 import { RootStackParamList } from "@app-types/navigation";
 
@@ -74,6 +74,11 @@ export default function MainNavigator() {
           <Stack.Screen
             name="Profile"
             component={ProfileScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="InviteLanding"
+            component={InviteLandingScreen}
             options={{ headerShown: false }}
           />
         </Stack.Group>
