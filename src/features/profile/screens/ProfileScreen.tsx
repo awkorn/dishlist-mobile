@@ -11,7 +11,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import PagerView from "react-native-pager-view";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "@app-types/navigation";
-
+import { useAuth } from "@providers/AuthProvider/AuthContext";
+import { ProfileMenu } from "../components/ProfileMenu";
 import { useProfile } from "../hooks/useProfile";
 import { ProfileHeader } from "../components/ProfileHeader";
 import { ProfileTabs } from "../components/ProfileTabs";
@@ -19,7 +20,6 @@ import { EditProfileSheet } from "../components/EditProfileSheet";
 import { DishListTile } from "@features/dishlist";
 import { RecipeTile } from "@features/recipe";
 import { ProfileEmptyState } from "../components/ProfileEmptyState";
-
 import { theme } from "@styles/theme";
 import { typography } from "@styles/typography";
 
@@ -28,6 +28,9 @@ type Props = NativeStackScreenProps<RootStackParamList, "Profile">;
 export default function ProfileScreen({ navigation, route }: Props) {
   const { userId } = route.params;
   const [showEditSheet, setShowEditSheet] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
+
+  const { signOut } = useAuth();
 
   const pagerRef = useRef<PagerView>(null);
 
@@ -64,8 +67,21 @@ export default function ProfileScreen({ navigation, route }: Props) {
   };
 
   const handleMenuPress = () => {
-    // TODO: Implement menu functionality
-    console.log("Menu pressed");
+    setShowMenu((prev) => !prev);
+  };
+
+  const handleCloseMenu = () => {
+    setShowMenu(false);
+  };
+
+  const handleSettingsPress = () => {
+    // TODO: Navigate to settings screen when implemented
+    console.log("Settings pressed");
+  };
+
+  const handleLogout = async () => {
+    await signOut();
+    // Navigation will auto-redirect to Login screen via MainNavigator
   };
 
   // Handle tab press - programmatically change page
@@ -83,14 +99,15 @@ export default function ProfileScreen({ navigation, route }: Props) {
   };
 
   // Dynamic search placeholder based on active tab
-  const searchPlaceholder = activeTab === "DishLists" 
-    ? "Search DishLists..." 
-    : "Search recipes, tags, ingredients...";
+  const searchPlaceholder =
+    activeTab === "DishLists"
+      ? "Search DishLists..."
+      : "Search recipes, tags, ingredients...";
 
   // Get empty state message based on search and tab
   const getEmptyMessage = (isRecipeTab: boolean) => {
     if (searchQuery.trim()) {
-      return isRecipeTab 
+      return isRecipeTab
         ? `No recipes found for "${searchQuery}"`
         : `No DishLists found for "${searchQuery}"`;
     }
@@ -162,10 +179,9 @@ export default function ProfileScreen({ navigation, route }: Props) {
       {isSearchActive && searchQuery.trim() && (
         <View style={styles.searchInfo}>
           <Text style={styles.searchInfoText}>
-            {activeTab === "DishLists" 
+            {activeTab === "DishLists"
               ? `${dishlists.length} of ${allDishListsCount} DishLists`
-              : `${recipes.length} of ${allRecipesCount} recipes`
-            }
+              : `${recipes.length} of ${allRecipesCount} recipes`}
           </Text>
         </View>
       )}
@@ -227,6 +243,16 @@ export default function ProfileScreen({ navigation, route }: Props) {
           onClose={() => setShowEditSheet(false)}
           onSave={handleEditComplete}
           currentUser={user}
+        />
+      )}
+
+      {/* Profile Menu Dropdown */}
+      {user?.isOwnProfile && (
+        <ProfileMenu
+          visible={showMenu}
+          onClose={handleCloseMenu}
+          onSettingsPress={handleSettingsPress}
+          onLogoutPress={handleLogout}
         />
       )}
     </View>

@@ -1,3 +1,5 @@
+import type { RecipeItem } from '@features/recipe/types';
+
 export interface UserProfile {
   uid: string;
   email: string;
@@ -43,7 +45,8 @@ export interface ProfileRecipe {
   cookTime?: number;
   servings?: number;
   tags?: string[];
-  ingredients?: string[];
+  ingredients?: RecipeItem[];
+  instructions?: RecipeItem[];
   creatorId: string;
   creator: {
     uid: string;
