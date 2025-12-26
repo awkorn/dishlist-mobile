@@ -95,15 +95,21 @@ export default function NotificationsScreen() {
       // Navigate based on notification type
       switch (notification.type) {
         case "DISHLIST_SHARED": {
-          const data = parseNotificationData<DishListSharedData>(notification.data);
+          const data = parseNotificationData<DishListSharedData>(
+            notification.data
+          );
           if (data?.dishListId) {
-            navigation.navigate("DishListDetail", { dishListId: data.dishListId });
+            navigation.navigate("DishListDetail", {
+              dishListId: data.dishListId,
+            });
           }
           break;
         }
 
         case "RECIPE_SHARED": {
-          const data = parseNotificationData<RecipeSharedData>(notification.data);
+          const data = parseNotificationData<RecipeSharedData>(
+            notification.data
+          );
           if (data?.recipeId) {
             navigation.navigate("RecipeDetail", { recipeId: data.recipeId });
           }
@@ -111,7 +117,9 @@ export default function NotificationsScreen() {
         }
 
         case "RECIPE_ADDED": {
-          const data = parseNotificationData<RecipeAddedData>(notification.data);
+          const data = parseNotificationData<RecipeAddedData>(
+            notification.data
+          );
           if (data?.recipeId) {
             navigation.navigate("RecipeDetail", { recipeId: data.recipeId });
           }
@@ -128,7 +136,9 @@ export default function NotificationsScreen() {
       try {
         const result = await handleAcceptInvitation(notificationId);
         if (result?.dishListId) {
-          navigation.navigate("DishListDetail", { dishListId: result.dishListId });
+          navigation.navigate("DishListDetail", {
+            dishListId: result.dishListId,
+          });
         }
       } catch (error) {
         // Error handled in hook
@@ -139,7 +149,15 @@ export default function NotificationsScreen() {
 
   // Render individual notification
   const renderItem = useCallback(
-    ({ item, index, section }: { item: Notification; index: number; section: SectionData }) => (
+    ({
+      item,
+      index,
+      section,
+    }: {
+      item: Notification;
+      index: number;
+      section: SectionData;
+    }) => (
       <NotificationItem
         notification={item}
         onDelete={handleDelete}
@@ -151,7 +169,14 @@ export default function NotificationsScreen() {
         showDivider={index < section.data.length - 1}
       />
     ),
-    [handleDelete, handleNotificationPress, handleAccept, handleDeclineInvitation, isAccepting, isDeclining]
+    [
+      handleDelete,
+      handleNotificationPress,
+      handleAccept,
+      handleDeclineInvitation,
+      isAccepting,
+      isDeclining,
+    ]
   );
 
   // Render section header
@@ -186,10 +211,7 @@ export default function NotificationsScreen() {
         <View style={styles.header}>
           <Text style={styles.title}>Notifications</Text>
           <TouchableOpacity
-            style={[
-              styles.clearAllButton,
-              !hasNotifications && styles.clearAllButtonDisabled,
-            ]}
+            style={[styles.clearAllButton]}
             onPress={handleClearAll}
             disabled={!hasNotifications || isClearing}
           >
@@ -259,20 +281,16 @@ const styles = StyleSheet.create({
     color: theme.colors.textPrimary,
   },
   clearAllButton: {
-    backgroundColor: theme.colors.primary[500],
     paddingVertical: theme.spacing.sm,
     paddingHorizontal: theme.spacing.md,
     borderRadius: theme.borderRadius.sm,
     minWidth: 80,
     alignItems: "center",
   },
-  clearAllButtonDisabled: {
-    backgroundColor: theme.colors.neutral[300],
-  },
   clearAllText: {
     ...typography.button,
-    fontSize: 14,
-    color: "#FFFFFF",
+    fontSize: 16,
+    color: theme.colors.primary[500],
   },
   clearAllTextDisabled: {
     color: theme.colors.neutral[500],
