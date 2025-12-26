@@ -1,10 +1,16 @@
-import React, { useRef, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
-import { Swipeable } from 'react-native-gesture-handler';
-import { CheckSquare, Square, Trash2 } from 'lucide-react-native';
-import { theme } from '@styles/theme';
-import { typography } from '@styles/typography';
-import type { GroceryItem } from '../types';
+import React, { useRef, useEffect } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+} from "react-native";
+import { Swipeable } from "react-native-gesture-handler";
+import { CheckSquare, Square, Trash2 } from "lucide-react-native";
+import { theme } from "@styles/theme";
+import { typography } from "@styles/typography";
+import type { GroceryItem } from "../types";
 
 interface GroceryItemRowProps {
   item: GroceryItem;
@@ -17,6 +23,8 @@ interface GroceryItemRowProps {
   onSaveEdit: (id: string, newText: string) => void;
   onCancelEdit: () => void;
   showDivider?: boolean;
+  isFirst?: boolean;
+  isLast?: boolean;
 }
 
 export function GroceryItemRow({
@@ -30,6 +38,8 @@ export function GroceryItemRow({
   onSaveEdit,
   onCancelEdit,
   showDivider = true,
+  isFirst = false,
+  isLast = false,
 }: GroceryItemRowProps) {
   const inputRef = useRef<TextInput>(null);
 
@@ -69,7 +79,13 @@ export function GroceryItemRow({
         overshootRight={false}
         enabled={!isEditing}
       >
-        <View style={styles.itemContainer}>
+        <View
+          style={[
+            styles.itemContainer,
+            isFirst && styles.firstItem,
+            isLast && styles.lastItem,
+          ]}
+        >
           <TouchableOpacity
             style={styles.itemCheckbox}
             onPress={() => onToggle(item.id)}
@@ -102,7 +118,10 @@ export function GroceryItemRow({
               testID={`text-${item.id}`}
             >
               <Text
-                style={[styles.itemText, item.checked && styles.itemTextChecked]}
+                style={[
+                  styles.itemText,
+                  item.checked && styles.itemTextChecked,
+                ]}
                 numberOfLines={2}
               >
                 {item.text}
@@ -118,8 +137,8 @@ export function GroceryItemRow({
 
 const styles = StyleSheet.create({
   itemContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingVertical: theme.spacing.md,
     paddingHorizontal: theme.spacing.xl,
     backgroundColor: theme.colors.surface,
@@ -135,8 +154,16 @@ const styles = StyleSheet.create({
     ...typography.body,
     color: theme.colors.neutral[800],
   },
+  firstItem: {
+    borderTopLeftRadius: theme.borderRadius.lg,
+    borderTopRightRadius: theme.borderRadius.lg,
+  },
+  lastItem: {
+    borderBottomLeftRadius: theme.borderRadius.lg,
+    borderBottomRightRadius: theme.borderRadius.lg,
+  },
   itemTextChecked: {
-    textDecorationLine: 'line-through',
+    textDecorationLine: "line-through",
     color: theme.colors.neutral[500],
   },
   itemInput: {
@@ -152,9 +179,9 @@ const styles = StyleSheet.create({
   },
   deleteButton: {
     backgroundColor: theme.colors.error,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     width: 80,
-    height: '100%',
+    height: "100%",
   },
 });

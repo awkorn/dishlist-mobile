@@ -148,6 +148,8 @@ export default function GroceryListScreen() {
               onChangeText={setEditingText}
               onSubmit={handleDoneEditing}
               onBlur={handleBlur}
+              isFirst={true}
+              isLast={items.length === 0}
             />
             {items.length > 0 && <View style={styles.divider} />}
           </>
@@ -166,6 +168,8 @@ export default function GroceryListScreen() {
             onSaveEdit={saveEditedItem}
             onCancelEdit={cancelEditing}
             showDivider={index < items.length - 1}
+            isFirst={index === 0 && !isAddingItem}
+            isLast={index === items.length - 1}
           />
         ))}
       </ScrollView>

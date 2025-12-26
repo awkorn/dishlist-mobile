@@ -1,8 +1,8 @@
-import React, { useRef, useEffect } from 'react';
-import { View, TextInput, StyleSheet } from 'react-native';
-import { Square } from 'lucide-react-native';
-import { theme } from '@styles/theme';
-import { typography } from '@styles/typography';
+import React, { useRef, useEffect } from "react";
+import { View, TextInput, StyleSheet } from "react-native";
+import { Square } from "lucide-react-native";
+import { theme } from "@styles/theme";
+import { typography } from "@styles/typography";
 
 interface GroceryInputRowProps {
   value: string;
@@ -10,6 +10,8 @@ interface GroceryInputRowProps {
   onSubmit: () => void;
   onBlur: () => void;
   autoFocus?: boolean;
+  isFirst?: boolean;
+  isLast?: boolean;
 }
 
 export function GroceryInputRow({
@@ -18,6 +20,8 @@ export function GroceryInputRow({
   onSubmit,
   onBlur,
   autoFocus = true,
+  isFirst = false,
+  isLast = false,
 }: GroceryInputRowProps) {
   const inputRef = useRef<TextInput>(null);
 
@@ -29,7 +33,13 @@ export function GroceryInputRow({
   }, [autoFocus]);
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        isFirst && styles.firstItem,
+        isLast && styles.lastItem,
+      ]}
+    >
       <View style={styles.checkbox}>
         <Square size={24} color={theme.colors.neutral[300]} />
       </View>
@@ -52,8 +62,8 @@ export function GroceryInputRow({
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingVertical: theme.spacing.lg,
     paddingHorizontal: theme.spacing.xl,
     backgroundColor: theme.colors.surface,
@@ -68,5 +78,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: theme.colors.neutral[800],
     paddingVertical: 0,
+  },
+  firstItem: {
+    borderTopLeftRadius: theme.borderRadius.lg,
+    borderTopRightRadius: theme.borderRadius.lg,
+  },
+  lastItem: {
+    borderBottomLeftRadius: theme.borderRadius.lg,
+    borderBottomRightRadius: theme.borderRadius.lg,
   },
 });
