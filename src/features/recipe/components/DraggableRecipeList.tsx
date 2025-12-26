@@ -496,8 +496,7 @@ const styles = StyleSheet.create({
     paddingVertical: theme.spacing.xs,
     paddingHorizontal: theme.spacing.sm,
     borderRadius: theme.borderRadius.lg,
-    borderWidth: 1,
-    borderColor: theme.colors.primary[500],
+    backgroundColor: theme.colors.primary[50]
   },
   addSubsectionText: {
     ...typography.button,
@@ -511,8 +510,7 @@ const styles = StyleSheet.create({
     paddingVertical: theme.spacing.xs,
     paddingHorizontal: theme.spacing.md,
     borderRadius: theme.borderRadius.lg,
-    borderWidth: 1,
-    borderColor: theme.colors.primary[500],
+    backgroundColor: theme.colors.primary[50],
   },
   reorderButtonActive: {
     backgroundColor: theme.colors.primary[500],
