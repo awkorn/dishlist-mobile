@@ -88,7 +88,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surface,
     borderRadius: theme.borderRadius.md,
     paddingVertical: theme.spacing.sm,
-    minWidth: 160,
+    minWidth: 200,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
