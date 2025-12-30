@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   Alert,
   Image,
+  Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
@@ -51,6 +52,7 @@ import {
   isHeader,
   isItem,
 } from "../types";
+import * as Haptics from "expo-haptics";
 import { ShareModal } from "@features/share";
 
 type Props = NativeStackScreenProps<RootStackParamList, "RecipeDetail">;
@@ -80,9 +82,34 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
     useRecipeDetail({ recipeId });
 
   // Recipe progress (ingredients/steps checked)
-  const { progress, toggleIngredient, toggleStep } = useRecipeProgress({
+  const {
+    progress,
+    toggleIngredient,
+    toggleStep,
+    resetIngredients,
+    resetSteps,
+  } = useRecipeProgress({
     recipeId,
   });
+
+  // Check if any items are checked
+  const hasCheckedIngredients = progress.checkedIngredients.size > 0;
+  const hasCheckedSteps = progress.completedSteps.size > 0;
+
+  // Reset handlers with haptic feedback
+  const handleResetIngredients = useCallback(() => {
+    if (Platform.OS === "ios") {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    resetIngredients();
+  }, [resetIngredients]);
+
+  const handleResetSteps = useCallback(() => {
+    if (Platform.OS === "ios") {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    resetSteps();
+  }, [resetSteps]);
 
   // Load DishList for permissions if dishListId is provided
   const { data: dishList } = useQuery({
@@ -328,7 +355,23 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
 
           {/* Ingredients */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Ingredients</Text>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Ingredients</Text>
+              <TouchableOpacity
+                onPress={handleResetIngredients}
+                disabled={!hasCheckedIngredients}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <Text
+                  style={[
+                    styles.resetLink,
+                    !hasCheckedIngredients && styles.resetLinkDisabled,
+                  ]}
+                >
+                  Reset
+                </Text>
+              </TouchableOpacity>
+            </View>
             {convertLegacyToStructured(recipe.ingredients || []).map(
               (item, i) => {
                 if (item.type === "header") {
@@ -369,7 +412,23 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
 
           {/* Instructions */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Instructions</Text>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Instructions</Text>
+              <TouchableOpacity
+                onPress={handleResetSteps}
+                disabled={!hasCheckedSteps}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <Text
+                  style={[
+                    styles.resetLink,
+                    !hasCheckedSteps && styles.resetLinkDisabled,
+                  ]}
+                >
+                  Reset
+                </Text>
+              </TouchableOpacity>
+            </View>
             {(() => {
               const items = convertLegacyToStructured(
                 recipe.instructions || []
@@ -596,7 +655,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     ...typography.heading3,
     color: theme.colors.textPrimary,
-    marginBottom: theme.spacing.lg,
+    marginBottom: 0,
   },
   ingredientRow: {
     flexDirection: "row",
@@ -625,6 +684,20 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     paddingVertical: theme.spacing.md,
     gap: theme.spacing.md,
+  },
+  sectionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: theme.spacing.lg,
+  },
+  resetLink: {
+    ...typography.body,
+    fontSize: 14,
+    color: theme.colors.primary[500],
+  },
+  resetLinkDisabled: {
+    color: theme.colors.neutral[400],
   },
   stepNumber: {
     width: 28,
