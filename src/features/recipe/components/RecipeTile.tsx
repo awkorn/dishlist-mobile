@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   View,
   Text,
@@ -6,19 +6,19 @@ import {
   StyleSheet,
   Image,
   Dimensions,
-} from 'react-native';
-import { Clock, Users } from 'lucide-react-native';
-import { typography } from '@styles/typography';
-import { theme } from '@styles/theme';
-import { ComponentErrorBoundary } from '@providers/ErrorBoundary';
-import type { Recipe } from '../types';
+} from "react-native";
+import { Clock, CookingPot } from "lucide-react-native";
+import { typography } from "@styles/typography";
+import { theme } from "@styles/theme";
+import { ComponentErrorBoundary } from "@providers/ErrorBoundary";
+import type { Recipe } from "../types";
 
 interface RecipeTileProps {
   recipe: Recipe;
   onPress?: () => void;
 }
 
-const { width } = Dimensions.get('window');
+const { width } = Dimensions.get("window");
 const tileWidth = (width - theme.spacing.xl * 2 - theme.spacing.lg) / 2;
 
 function RecipeTileContent({ recipe, onPress }: RecipeTileProps) {
@@ -48,7 +48,7 @@ function RecipeTileContent({ recipe, onPress }: RecipeTileProps) {
           )}
           {recipe.servings && recipe.servings > 0 && (
             <View style={styles.metaItem}>
-              <Users size={12} color={theme.colors.neutral[500]} />
+              <CookingPot size={12} color={theme.colors.neutral[500]} />
               <Text style={styles.metaText}>{recipe.servings}</Text>
             </View>
           )}
@@ -78,20 +78,20 @@ const styles = StyleSheet.create({
     width: tileWidth,
     backgroundColor: theme.colors.surface,
     borderRadius: theme.borderRadius.lg,
-    overflow: 'hidden',
+    overflow: "hidden",
     ...theme.shadows.sm,
   },
   image: {
-    width: '100%',
+    width: "100%",
     height: tileWidth * 0.75,
     backgroundColor: theme.colors.neutral[200],
   },
   placeholderImage: {
-    width: '100%',
+    width: "100%",
     height: tileWidth * 0.75,
     backgroundColor: theme.colors.neutral[100],
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   placeholderEmoji: {
     fontSize: 32,
@@ -106,13 +106,13 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.xs,
   },
   metaRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: theme.spacing.md,
   },
   metaItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: theme.spacing.xs,
   },
   metaText: {
@@ -120,8 +120,8 @@ const styles = StyleSheet.create({
     color: theme.colors.neutral[500],
   },
   errorContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     height: tileWidth * 0.75 + 60,
   },
   errorText: {
