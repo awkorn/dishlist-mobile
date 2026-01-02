@@ -17,7 +17,12 @@ interface SearchSectionProps {
   isEmpty?: boolean;
 }
 
-export function SearchSection({ title, onSeeAll, children, isEmpty }: SearchSectionProps) {
+export function SearchSection({
+  title,
+  onSeeAll,
+  children,
+  isEmpty,
+}: SearchSectionProps) {
   if (isEmpty) {
     return null;
   }
@@ -67,5 +72,6 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: theme.spacing.xl,
+    paddingBottom: theme.spacing.sm,
   },
 });

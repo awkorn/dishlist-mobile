@@ -46,6 +46,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: theme.spacing.lg,
     paddingBottom: theme.spacing.md,
+    marginBottom: theme.spacing.sm,
   },
   tab: {
     paddingHorizontal: theme.spacing["2xl"],

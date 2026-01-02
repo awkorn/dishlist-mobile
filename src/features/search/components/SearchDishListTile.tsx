@@ -1,10 +1,5 @@
 import React from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-} from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { Eye, Heart, Users } from "lucide-react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -22,7 +17,11 @@ interface SearchDishListTileProps {
   compact?: boolean;
 }
 
-export function SearchDishListTile({ dishList, onPress, compact = false }: SearchDishListTileProps) {
+export function SearchDishListTile({
+  dishList,
+  onPress,
+  compact = false,
+}: SearchDishListTileProps) {
   const navigation = useNavigation<NavigationProp>();
 
   const handlePress = () => {
@@ -33,9 +32,12 @@ export function SearchDishListTile({ dishList, onPress, compact = false }: Searc
     }
   };
 
-  const ownerName = [dishList.owner?.firstName, dishList.owner?.lastName]
-    .filter(Boolean)
-    .join(" ") || dishList.owner?.username || "Unknown";
+  const ownerName =
+    [dishList.owner?.firstName, dishList.owner?.lastName]
+      .filter(Boolean)
+      .join(" ") ||
+    dishList.owner?.username ||
+    "Unknown";
 
   const getBadges = () => {
     const badges = [];
@@ -84,8 +86,12 @@ export function SearchDishListTile({ dishList, onPress, compact = false }: Searc
         </Text>
 
         <Text style={styles.stats}>
-          {dishList.recipeCount} {dishList.recipeCount === 1 ? "Recipe" : "Recipes"}
-          {dishList.followerCount > 0 && ` • ${dishList.followerCount} ${dishList.followerCount === 1 ? "Follower" : "Followers"}`}
+          {dishList.recipeCount}{" "}
+          {dishList.recipeCount === 1 ? "Recipe" : "Recipes"}
+          {dishList.followerCount > 0 &&
+            ` • ${dishList.followerCount} ${
+              dishList.followerCount === 1 ? "Follower" : "Followers"
+            }`}
         </Text>
 
         {/* Badges */}
@@ -142,6 +148,7 @@ const styles = StyleSheet.create({
   badges: {
     flexDirection: "row",
     gap: theme.spacing.xs,
+    minHeight: 22,
   },
   badge: {
     padding: theme.spacing.xs,
