@@ -34,8 +34,8 @@ describe("useRecipeDetail", () => {
     const mockRecipe = {
       id: "recipe-1",
       title: "Test Recipe",
-      ingredients: ["ingredient 1"],
-      instructions: ["step 1"],
+      ingredients: [{ type: "item" as const, text: "ingredient 1" }],
+      instructions: [{ type: "item" as const, text: "step 1" }],
       creatorId: "user-1",
       creator: { uid: "user-1", username: "testuser" },
       createdAt: "2024-01-01",
@@ -94,8 +94,8 @@ describe("useRecipeDetail", () => {
     const mockRecipe = {
       id: "recipe-1",
       title: "Test Recipe",
-      ingredients: ["ingredient 1"],
-      instructions: ["step 1"],
+      ingredients: [{ type: "item" as const, text: "ingredient 1" }],
+      instructions: [{ type: "item" as const, text: "step 1" }],
       creatorId: "user-1",
       creator: { uid: "user-1" },
       createdAt: "2024-01-01",

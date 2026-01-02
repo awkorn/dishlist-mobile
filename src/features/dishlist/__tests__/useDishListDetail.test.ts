@@ -37,6 +37,7 @@ describe("useDishListDetail", () => {
     isPinned: false,
     recipeCount: 2,
     followerCount: 10,
+    collaboratorCount: 0,
     isOwner: true,
     isCollaborator: false,
     isFollowing: false,

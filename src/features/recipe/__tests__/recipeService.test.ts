@@ -22,8 +22,8 @@ describe('recipeService', () => {
       const mockRecipe = {
         id: 'recipe-1',
         title: 'Test Recipe',
-        ingredients: ['ingredient 1'],
-        instructions: ['step 1'],
+        ingredients: [{ type: 'item' as const, text: 'ingredient 1' }],
+        instructions: [{ type: 'item' as const, text: 'step 1' }],
         creatorId: 'user-1',
         creator: { uid: 'user-1', username: 'testuser' },
         createdAt: '2024-01-01',
@@ -49,8 +49,14 @@ describe('recipeService', () => {
     it('should create a new recipe', async () => {
       const createData = {
         title: 'New Recipe',
-        ingredients: ['flour', 'sugar'],
-        instructions: ['mix', 'bake'],
+        ingredients: [
+          { type: 'item' as const, text: 'flour' },
+          { type: 'item' as const, text: 'sugar' }
+        ],
+        instructions: [
+          { type: 'item' as const, text: 'mix' },
+          { type: 'item' as const, text: 'bake' }
+        ],
         dishListId: 'dishlist-1',
       };
 
@@ -76,8 +82,8 @@ describe('recipeService', () => {
     it('should update an existing recipe', async () => {
       const updateData = {
         title: 'Updated Recipe',
-        ingredients: ['new ingredient'],
-        instructions: ['new step'],
+        ingredients: [{ type: 'item' as const, text: 'new ingredient' }],
+        instructions: [{ type: 'item' as const, text: 'new step' }],
       };
 
       const mockRecipe = {
