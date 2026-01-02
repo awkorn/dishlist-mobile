@@ -15,7 +15,8 @@ export const queryKeys = {
     all: ["users"] as const,
     me: () => [...queryKeys.users.all, "me"] as const,
     profile: (id: string) => [...queryKeys.users.all, "profile", id] as const,
-    mutuals: (search?: string) => [...queryKeys.users.all, "mutuals", search] as const, 
+    mutuals: (search?: string) =>
+      [...queryKeys.users.all, "mutuals", search] as const,
   },
   notifications: {
     all: ["notifications"] as const,
@@ -24,5 +25,10 @@ export const queryKeys = {
   grocery: {
     all: ["grocery"] as const,
     list: () => [...queryKeys.grocery.all, "list"] as const,
+  },
+  search: {
+    all: ["search"] as const,
+    results: (query: string, tab: string) =>
+      [...queryKeys.search.all, "results", query, tab] as const,
   },
 } as const;

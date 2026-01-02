@@ -10,6 +10,7 @@ import { View, Text, StyleSheet } from "react-native";
 import { theme } from "../styles/theme";
 import { DishListsScreen } from "@features/dishlist";
 import { GroceryListScreen } from "@features/grocery";
+import { SearchScreen } from "@features/search";
 import {
   NotificationsScreen,
   NotificationBadge,
@@ -25,7 +26,6 @@ const PlaceholderScreen = ({ title }: { title: string }) => (
   </View>
 );
 
-const SearchScreen = () => <PlaceholderScreen title="Search" />;
 const BuilderScreen = () => <PlaceholderScreen title="Recipe Builder" />;
 
 // Wrapper component for notification icon with badge
