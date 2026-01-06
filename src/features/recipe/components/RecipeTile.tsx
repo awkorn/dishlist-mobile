@@ -11,13 +11,21 @@ import { Clock, CookingPot } from "lucide-react-native";
 import { typography } from "@styles/typography";
 import { theme } from "@styles/theme";
 import { ComponentErrorBoundary } from "@providers/ErrorBoundary";
-import type { Recipe } from "../types";
 
 interface RecipeTileProps {
-  recipe: Recipe;
+  recipe: RecipeTileData;
   onPress?: () => void;
   /** Compact size for discovery mode (viewing others' profiles) */
   compact?: boolean;
+}
+
+interface RecipeTileData {
+  id: string;
+  title: string;
+  imageUrl?: string;
+  prepTime?: number;
+  cookTime?: number;
+  servings?: number;
 }
 
 const { width } = Dimensions.get("window");
