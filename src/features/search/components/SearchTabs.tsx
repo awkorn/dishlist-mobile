@@ -58,7 +58,7 @@ const styles = StyleSheet.create({
   },
   tabText: {
     ...typography.body,
-    fontSize: 13,
+    fontSize: 14,
     color: theme.colors.neutral[500],
   },
   activeTabText: {

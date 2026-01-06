@@ -336,12 +336,6 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
                 </View>
               )}
             </View>
-            <Text style={styles.creatorText}>
-              By{" "}
-              {recipe.creator.firstName + " " + recipe.creator.lastName ||
-                recipe.creator.username ||
-                "Unknown"}{" "}
-            </Text>
           </View>
 
           {/* Cook Mode Button */}
@@ -629,10 +623,6 @@ const styles = StyleSheet.create({
   metaText: {
     ...typography.body,
     color: theme.colors.neutral[600],
-  },
-  creatorText: {
-    ...typography.caption,
-    color: theme.colors.neutral[500],
   },
   cookModeButton: {
     flexDirection: "row",

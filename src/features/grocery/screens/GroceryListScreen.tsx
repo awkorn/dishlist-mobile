@@ -193,7 +193,7 @@ const styles = StyleSheet.create({
   title: {
     ...typography.heading2,
     color: theme.colors.textPrimary,
-    marginBottom: theme.spacing.md,
+    marginBottom: theme.spacing.sm,
   },
   headerButtons: {
     flexDirection: "row",
@@ -220,7 +220,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    marginTop: theme.spacing.xs,
     paddingTop: theme.spacing.sm,
     paddingHorizontal: theme.spacing.md,
   },

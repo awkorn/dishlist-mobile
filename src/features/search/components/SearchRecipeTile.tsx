@@ -35,10 +35,6 @@ export function SearchRecipeTile({ recipe, onPress, compact = false }: SearchRec
   };
 
   const totalTime = (recipe.prepTime || 0) + (recipe.cookTime || 0);
-  const creatorName = [recipe.creator?.firstName, recipe.creator?.lastName]
-    .filter(Boolean)
-    .join(" ") || recipe.creator?.username || "Unknown";
-
   const tileStyle = compact ? styles.containerCompact : styles.container;
   const imageStyle = compact ? styles.imageCompact : styles.image;
 
@@ -57,10 +53,6 @@ export function SearchRecipeTile({ recipe, onPress, compact = false }: SearchRec
       <View style={styles.content}>
         <Text style={styles.title} numberOfLines={compact ? 1 : 2}>
           {recipe.title}
-        </Text>
-
-        <Text style={styles.creator} numberOfLines={1}>
-          By {creatorName}
         </Text>
 
         <View style={styles.metaRow}>
@@ -128,12 +120,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: theme.colors.textPrimary,
     marginBottom: 2,
-  },
-  creator: {
-    ...typography.caption,
-    fontSize: 11,
-    color: theme.colors.neutral[500],
-    marginBottom: theme.spacing.xs,
   },
   metaRow: {
     flexDirection: "row",
