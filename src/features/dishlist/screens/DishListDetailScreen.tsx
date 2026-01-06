@@ -37,6 +37,7 @@ import { ShareModal } from "@features/share";
 import { InviteCollaboratorModal } from "@features/invite";
 import { Users } from "lucide-react-native";
 import { CollaboratorsModal } from "@features/invite";
+import { AnimatedSearchInput } from "@components/ui";
 import {
   useDishListDetail,
   useTogglePinDishList,
@@ -247,22 +248,13 @@ export default function DishListDetailScreen({
             >
               <ChevronLeft size={24} color={theme.colors.neutral[700]} />
             </TouchableOpacity>
-
-            <View style={styles.searchContainer}>
-              <Search
-                size={20}
-                color={theme.colors.neutral[500]}
-                style={styles.searchIcon}
-              />
-              <TextInput
-                style={styles.searchInput}
-                placeholder="Search Recipes..."
-                value={searchQuery}
-                onChangeText={setSearchQuery}
-                returnKeyType="search"
-                clearButtonMode="while-editing"
-              />
-            </View>
+            <AnimatedSearchInput
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              prefix="Search"
+              keywords={["recipes", "ingredients", "tags"]}
+              clearButtonMode="while-editing"
+            />
           </View>
 
           <View style={styles.titleRow}>
@@ -475,24 +467,6 @@ const styles = StyleSheet.create({
   backButton: {
     padding: theme.spacing.xs,
     marginRight: theme.spacing.sm,
-  },
-  searchContainer: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.borderRadius.md,
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
-  },
-  searchIcon: {
-    marginRight: theme.spacing.md,
-  },
-  searchInput: {
-    flex: 1,
-    ...typography.body,
-    color: theme.colors.neutral[800],
-    padding: 0,
   },
   titleRow: {
     flexDirection: "row",

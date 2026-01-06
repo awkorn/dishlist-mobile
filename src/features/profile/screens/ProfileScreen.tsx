@@ -101,8 +101,8 @@ export default function ProfileScreen({ navigation, route }: Props) {
   // Dynamic search placeholder based on active tab
   const searchPlaceholder =
     activeTab === "DishLists"
-      ? "Search DishLists..."
-      : "Search recipes, tags, ingredients...";
+      ? "Search DishLists"
+      : "Search recipes, tags, ingredients";
 
   // Get empty state message based on search and tab
   const getEmptyMessage = (isRecipeTab: boolean) => {
