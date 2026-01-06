@@ -198,7 +198,9 @@ export default function ProfileScreen({ navigation, route }: Props) {
         <View style={styles.page} key="0">
           <FlatList
             data={dishlists}
-            renderItem={({ item }) => <DishListTile dishList={item} />}
+            renderItem={({ item }) => (
+              <DishListTile dishList={item} compact={!user.isOwnProfile} />
+            )}
             keyExtractor={(item) => item.id}
             numColumns={2}
             columnWrapperStyle={styles.row}
@@ -218,6 +220,7 @@ export default function ProfileScreen({ navigation, route }: Props) {
             renderItem={({ item }) => (
               <RecipeTile
                 recipe={item}
+                compact={!user.isOwnProfile}
                 onPress={() =>
                   navigation.navigate("RecipeDetail", { recipeId: item.id })
                 }
