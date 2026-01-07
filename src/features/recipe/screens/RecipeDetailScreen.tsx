@@ -21,7 +21,7 @@ import {
   Trash2,
   Clock,
   Share,
-  CookingPot,
+  Users,
 } from "lucide-react-native";
 import { useQuery } from "@tanstack/react-query";
 import { typography } from "@styles/typography";
@@ -328,7 +328,7 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
               )}
               {recipe.servings && recipe.servings > 0 && (
                 <View style={styles.metaItem}>
-                  <CookingPot size={16} color={theme.colors.neutral[500]} />
+                  <Users size={16} color={theme.colors.neutral[500]} />
                   <Text style={styles.metaText}>
                     {recipe.servings}{" "}
                     {recipe.servings === 1 ? "serving" : "servings"}

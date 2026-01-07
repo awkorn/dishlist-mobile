@@ -1,6 +1,6 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import { Eye, Heart, Users } from "lucide-react-native";
+import { Eye, Heart, Handshake } from "lucide-react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { theme } from "@styles/theme";
@@ -55,7 +55,7 @@ export function SearchDishListTile({
     if (dishList.isCollaborator) {
       badges.push({
         type: "collaborator",
-        icon: Users,
+        icon: Handshake,
         color: theme.colors.success,
       });
     }

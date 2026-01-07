@@ -7,7 +7,7 @@ import {
   ActivityIndicator,
   FlatList,
 } from 'react-native';
-import { Check, Crown, Users } from 'lucide-react-native';
+import { Check, Crown, Handshake } from 'lucide-react-native';
 import { useQuery } from '@tanstack/react-query';
 import { theme } from '@styles/theme';
 import { typography } from '@styles/typography';
@@ -89,7 +89,7 @@ export default function AddToDishListModal({
             </Text>
             <View style={styles.badges}>
               {item.isOwner && <Crown size={14} color={theme.colors.warning} />}
-              {item.isCollaborator && <Users size={14} color={theme.colors.success} />}
+              {item.isCollaborator && <Handshake size={14} color={theme.colors.success} />}
             </View>
           </View>
           <Text style={styles.dishListMeta}>

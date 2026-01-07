@@ -209,7 +209,7 @@ const styles = StyleSheet.create({
   },
   inputError: {
     borderColor: theme.colors.error,
-    borderWidth: 2,
+    borderWidth: 1,
   },
   loginButton: {
     marginTop: theme.spacing.sm,

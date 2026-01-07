@@ -1,12 +1,6 @@
 import React from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  Image,
-} from "react-native";
-import { Clock, CookingPot } from "lucide-react-native";
+import { View, Text, TouchableOpacity, StyleSheet, Image } from "react-native";
+import { Clock, Users } from "lucide-react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { theme } from "@styles/theme";
@@ -23,7 +17,11 @@ interface SearchRecipeTileProps {
   compact?: boolean;
 }
 
-export function SearchRecipeTile({ recipe, onPress, compact = false }: SearchRecipeTileProps) {
+export function SearchRecipeTile({
+  recipe,
+  onPress,
+  compact = false,
+}: SearchRecipeTileProps) {
   const navigation = useNavigation<NavigationProp>();
 
   const handlePress = () => {
@@ -64,7 +62,7 @@ export function SearchRecipeTile({ recipe, onPress, compact = false }: SearchRec
           )}
           {recipe.servings && recipe.servings > 0 && (
             <View style={styles.metaItem}>
-              <CookingPot size={10} color={theme.colors.neutral[500]} />
+              <Users size={10} color={theme.colors.neutral[500]} />
               <Text style={styles.metaText}>{recipe.servings}</Text>
             </View>
           )}

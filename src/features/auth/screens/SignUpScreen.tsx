@@ -280,7 +280,7 @@ const styles = StyleSheet.create({
   },
   inputError: {
     borderColor: theme.colors.error,
-    borderWidth: 2,
+    borderWidth: 1,
   },
   signUpButton: {
     marginTop: theme.spacing.sm,

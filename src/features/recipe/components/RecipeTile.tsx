@@ -7,7 +7,7 @@ import {
   Image,
   Dimensions,
 } from "react-native";
-import { Clock, CookingPot } from "lucide-react-native";
+import { Clock, Users } from "lucide-react-native";
 import { typography } from "@styles/typography";
 import { theme } from "@styles/theme";
 import { ComponentErrorBoundary } from "@providers/ErrorBoundary";
@@ -65,7 +65,7 @@ function RecipeTileContent({ recipe, onPress, compact = false }: RecipeTileProps
           )}
           {recipe.servings && recipe.servings > 0 && (
             <View style={styles.metaItem}>
-              <CookingPot size={compact ? 10 : 12} color={theme.colors.neutral[500]} />
+              <Users size={compact ? 10 : 12} color={theme.colors.neutral[500]} />
               <Text style={compact ? styles.metaTextCompact : styles.metaText}>
                 {recipe.servings}
               </Text>

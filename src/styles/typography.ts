@@ -24,7 +24,7 @@ export const typography = {
   },
   heading2: {
     fontFamily: 'Bricolage-Bold',
-    fontSize: 36,
+    fontSize: 32,
     lineHeight: 38,
   },
   heading3: {

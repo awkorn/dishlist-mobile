@@ -6,7 +6,7 @@ import {
   StyleSheet,
   Dimensions,
 } from "react-native";
-import { Eye, Lock, Crown, Users, Heart, Pin } from "lucide-react-native";
+import { Eye, Lock, Crown, Handshake, Heart, Pin } from "lucide-react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { typography } from "@styles/typography";
@@ -56,7 +56,7 @@ function DishListTileContent({ dishList, onPress, compact = false }: DishListTil
       if (dishList.isCollaborator) {
         badges.push({
           type: "collaborator",
-          icon: Users,
+          icon: Handshake,
           color: theme.colors.success,
         });
       }
@@ -83,7 +83,7 @@ function DishListTileContent({ dishList, onPress, compact = false }: DishListTil
       } else if (dishList.isCollaborator) {
         badges.push({
           type: "collaborator",
-          icon: Users,
+          icon: Handshake,
           color: theme.colors.success,
         });
       } else if (dishList.isFollowing) {

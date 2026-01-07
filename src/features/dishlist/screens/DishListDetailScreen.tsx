@@ -24,6 +24,7 @@ import {
   UserMinus,
   Camera,
   Share,
+  Handshake
 } from "lucide-react-native";
 import { typography } from "@styles/typography";
 import { theme } from "@styles/theme";
@@ -35,7 +36,6 @@ import { ImportRecipeModal } from "@features/recipe/components";
 import type { ImportRecipeResponse } from "@features/recipe/types";
 import { ShareModal } from "@features/share";
 import { InviteCollaboratorModal } from "@features/invite";
-import { Users } from "lucide-react-native";
 import { CollaboratorsModal } from "@features/invite";
 import { AnimatedSearchInput } from "@components/ui";
 import {
@@ -301,7 +301,7 @@ export default function DishListDetailScreen({
                     style={styles.collaboratorButton}
                     onPress={() => setShowCollaboratorsModal(true)}
                   >
-                    <Users size={14} color={theme.colors.primary[600]} />
+                    <Handshake size={14} color={theme.colors.primary[600]} />
                     <Text style={styles.collaboratorText}>
                       {dishList.collaboratorCount + 1} Collaborators
                     </Text>
