@@ -19,9 +19,7 @@ import {
   Edit3,
   ShoppingCart,
   Trash2,
-  Clock,
   Share,
-  Users,
 } from "lucide-react-native";
 import { useQuery } from "@tanstack/react-query";
 import { typography } from "@styles/typography";
@@ -320,19 +318,28 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
           {/* Meta Info */}
           <View style={styles.metaSection}>
             <View style={styles.metaRow}>
+              {recipe.prepTime && recipe.prepTime > 0 && (
+                <View style={styles.metaItem}>
+                  <Text style={styles.metaLabel}>Prep Time</Text>
+                  <Text style={styles.metaValue}>{recipe.prepTime} min</Text>
+                </View>
+              )}
+              {recipe.cookTime && recipe.cookTime > 0 && (
+                <View style={styles.metaItem}>
+                  <Text style={styles.metaLabel}>Cook Time</Text>
+                  <Text style={styles.metaValue}>{recipe.cookTime} min</Text>
+                </View>
+              )}
               {totalTime > 0 && (
                 <View style={styles.metaItem}>
-                  <Clock size={16} color={theme.colors.neutral[500]} />
-                  <Text style={styles.metaText}>{totalTime} min</Text>
+                  <Text style={styles.metaLabel}>Total Time</Text>
+                  <Text style={styles.metaValue}>{totalTime} min</Text>
                 </View>
               )}
               {recipe.servings && recipe.servings > 0 && (
                 <View style={styles.metaItem}>
-                  <Users size={16} color={theme.colors.neutral[500]} />
-                  <Text style={styles.metaText}>
-                    {recipe.servings}{" "}
-                    {recipe.servings === 1 ? "serving" : "servings"}
-                  </Text>
+                  <Text style={styles.metaLabel}>Servings</Text>
+                  <Text style={styles.metaValue}>{recipe.servings}</Text>
                 </View>
               )}
             </View>
@@ -611,18 +618,25 @@ const styles = StyleSheet.create({
   },
   metaRow: {
     flexDirection: "row",
-    alignItems: "center",
-    gap: theme.spacing.xl,
-    marginBottom: theme.spacing.sm,
+    justifyContent: "space-around",
+    alignItems: "flex-start",
   },
   metaItem: {
-    flexDirection: "row",
     alignItems: "center",
-    gap: theme.spacing.xs,
+    minWidth: 70,
   },
-  metaText: {
+  metaLabel: {
+    ...typography.caption,
+    color: theme.colors.neutral[500],
+    marginTop: theme.spacing.xs,
+    textAlign: "center",
+  },
+  metaValue: {
     ...typography.body,
-    color: theme.colors.neutral[600],
+    fontWeight: "600",
+    color: theme.colors.neutral[700],
+    marginTop: theme.spacing.xs,
+    textAlign: "center",
   },
   cookModeButton: {
     flexDirection: "row",
