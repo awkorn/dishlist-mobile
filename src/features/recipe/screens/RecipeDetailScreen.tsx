@@ -154,7 +154,7 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
 
     const opts: ActionSheetOption[] = [
       {
-        title: "Add to Another DishList",
+        title: "Add to DishList",
         icon: Plus,
         onPress: () => setShowAddToDishListModal(true),
       },
