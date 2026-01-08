@@ -269,7 +269,8 @@ const styles = StyleSheet.create({
     borderRadius: theme.borderRadius.md,
     paddingHorizontal: theme.spacing.md,
     marginHorizontal: theme.spacing.xl,
-    marginVertical: theme.spacing.sm,
+    marginTop: theme.spacing.sm,
+    marginBottom: theme.spacing["2xl"],
     height: 40,
   },
   searchInput: {
@@ -312,14 +313,12 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 0,
     right: 0,
-    width: 24,
-    height: 24,
+    width: 20,
+    height: 20,
     borderRadius: 12,
     backgroundColor: theme.colors.primary[500],
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 2,
-    borderColor: theme.colors.background,
   },
   userName: {
     ...typography.caption,
@@ -379,7 +378,9 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.neutral[200],
   },
   sendButton: {
+    height: 48,
     marginTop: theme.spacing.sm,
+    marginBottom: theme.spacing.xl,
   },
 });
 
