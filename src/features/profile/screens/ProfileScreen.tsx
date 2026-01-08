@@ -164,7 +164,7 @@ export default function ProfileScreen({ navigation, route }: Props) {
         displayName={displayName}
         onBackPress={handleBack}
         onEditPress={user.isOwnProfile ? handleEditProfile : undefined}
-        onMenuPress={handleMenuPress}
+        onMenuPress={user.isOwnProfile ? handleMenuPress : undefined}
         isSearchActive={isSearchActive}
         searchQuery={searchQuery}
         onSearchToggle={toggleSearch}

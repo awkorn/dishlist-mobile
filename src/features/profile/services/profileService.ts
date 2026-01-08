@@ -17,4 +17,18 @@ export const profileService = {
     const response = await api.put<{ user: UserProfile }>('/users/me', data);
     return response.data;
   },
+
+  /**
+   * Follow a user
+   */
+  async followUser(userId: string): Promise<void> {
+    await api.post(`/users/${userId}/follow`);
+  },
+
+  /**
+   * Unfollow a user
+   */
+  async unfollowUser(userId: string): Promise<void> {
+    await api.delete(`/users/${userId}/follow`);
+  },
 };

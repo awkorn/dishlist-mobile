@@ -18,6 +18,7 @@ import { theme } from "@styles/theme";
 import { typography } from "@styles/typography";
 import { InlineSearchInput } from "@components/ui";
 import type { UserProfile } from "../types";
+import { FollowButton } from "./FollowButton";
 
 const AVATAR_SIZE = 100;
 
@@ -105,10 +106,14 @@ export function ProfileHeader({
                   <UserPen size={22} color={theme.colors.neutral[700]} />
                 </TouchableOpacity>
               )}
-
-              <TouchableOpacity onPress={onMenuPress} style={styles.iconBtn}>
-                <EllipsisVertical size={22} color={theme.colors.neutral[700]} />
-              </TouchableOpacity>
+              {onMenuPress && (
+                <TouchableOpacity onPress={onMenuPress} style={styles.iconBtn}>
+                  <EllipsisVertical
+                    size={24}
+                    color={theme.colors.neutral[700]}
+                  />
+                </TouchableOpacity>
+              )}
             </Animated.View>
           )}
         </View>
@@ -134,7 +139,6 @@ export function ProfileHeader({
             )}
           </View>
 
-          {/* Followers / Following (unchanged) */}
           <View style={styles.statsSection}>
             <View style={styles.stat}>
               <Text style={styles.statNumber}>{user.followerCount}</Text>
@@ -148,6 +152,16 @@ export function ProfileHeader({
         </View>
 
         {user.bio && <Text style={styles.bio}>{user.bio}</Text>}
+
+        {/* Follow Button - absolutely positioned above stats */}
+        {!user.isOwnProfile && (
+          <View style={styles.followButtonAbsolute}>
+            <FollowButton
+              userId={user.uid}
+              isFollowing={user.isFollowing ?? false}
+            />
+          </View>
+        )}
       </View>
     </View>
   );
@@ -228,12 +242,17 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   statNumber: {
-    ...typography.heading3,
-    color: theme.colors.neutral[900],
+    ...typography.subtitle,
+    color: theme.colors.neutral[700],
   },
   statLabel: {
     ...typography.caption,
     color: theme.colors.neutral[500],
+  },
+  followButtonAbsolute: {
+    position: "absolute",
+    top: 10,
+    right: 20,
   },
   bio: {
     ...typography.body,
