@@ -2,38 +2,32 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Alert } from 'react-native';
 import { profileService } from '../services/profileService';
 import { PROFILE_QUERY_KEY } from './useProfile';
-import type { ProfileData } from '../types';
+import type { ProfileData, FollowStatus } from '../types';
 
 interface UseFollowUserOptions {
   userId: string;
-  isFollowing: boolean;
 }
 
-export function useFollowUser({ userId, isFollowing }: UseFollowUserOptions) {
+export function useFollowUser({ userId }: UseFollowUserOptions) {
   const queryClient = useQueryClient();
   const profileQueryKey = [PROFILE_QUERY_KEY, userId];
 
-  return useMutation({
-    mutationFn: () =>
-      isFollowing
-        ? profileService.unfollowUser(userId)
-        : profileService.followUser(userId),
+  // Follow mutation (send request)
+  const followMutation = useMutation({
+    mutationFn: () => profileService.followUser(userId),
 
     onMutate: async () => {
-      // Cancel outgoing refetches
       await queryClient.cancelQueries({ queryKey: profileQueryKey });
-
-      // Snapshot previous value
       const previousData = queryClient.getQueryData<ProfileData>(profileQueryKey);
 
-      // Optimistically update
+      // Optimistically update to pending
       if (previousData) {
         queryClient.setQueryData<ProfileData>(profileQueryKey, {
           ...previousData,
           user: {
             ...previousData.user,
-            isFollowing: !isFollowing,
-            followerCount: previousData.user.followerCount + (isFollowing ? -1 : 1),
+            followStatus: 'PENDING',
+            isFollowing: false,
           },
         });
       }
@@ -42,7 +36,49 @@ export function useFollowUser({ userId, isFollowing }: UseFollowUserOptions) {
     },
 
     onError: (error: any, _, context) => {
-      // Rollback on error
+      if (context?.previousData) {
+        queryClient.setQueryData(profileQueryKey, context.previousData);
+      }
+      Alert.alert(
+        'Error',
+        error?.response?.data?.error || 'Failed to send follow request'
+      );
+    },
+
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: profileQueryKey });
+    },
+  });
+
+  // Unfollow/Cancel mutation
+  const unfollowMutation = useMutation({
+    mutationFn: () => profileService.unfollowUser(userId),
+
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: profileQueryKey });
+      const previousData = queryClient.getQueryData<ProfileData>(profileQueryKey);
+
+      if (previousData) {
+        const wasAccepted = previousData.user.followStatus === 'ACCEPTED';
+        
+        queryClient.setQueryData<ProfileData>(profileQueryKey, {
+          ...previousData,
+          user: {
+            ...previousData.user,
+            followStatus: 'NONE',
+            isFollowing: false,
+            // Only decrement if was actually following
+            followerCount: wasAccepted 
+              ? Math.max(0, previousData.user.followerCount - 1)
+              : previousData.user.followerCount,
+          },
+        });
+      }
+
+      return { previousData };
+    },
+
+    onError: (error: any, _, context) => {
       if (context?.previousData) {
         queryClient.setQueryData(profileQueryKey, context.previousData);
       }
@@ -53,8 +89,13 @@ export function useFollowUser({ userId, isFollowing }: UseFollowUserOptions) {
     },
 
     onSettled: () => {
-      // Refetch to ensure consistency
       queryClient.invalidateQueries({ queryKey: profileQueryKey });
     },
   });
+
+  return {
+    follow: followMutation.mutate,
+    unfollow: unfollowMutation.mutate,
+    isPending: followMutation.isPending || unfollowMutation.isPending,
+  };
 }

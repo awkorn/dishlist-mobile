@@ -130,7 +130,6 @@ export function ProfileHeader({
             </View>
           )}
         </View>
-
         <View style={styles.infoRow}>
           <View style={styles.nameSection}>
             <Text style={styles.displayName}>{displayName}</Text>
@@ -150,15 +149,13 @@ export function ProfileHeader({
             </View>
           </View>
         </View>
-
         {user.bio && <Text style={styles.bio}>{user.bio}</Text>}
-
         {/* Follow Button - absolutely positioned above stats */}
         {!user.isOwnProfile && (
           <View style={styles.followButtonAbsolute}>
             <FollowButton
               userId={user.uid}
-              isFollowing={user.isFollowing ?? false}
+              followStatus={user.followStatus ?? "NONE"}
             />
           </View>
         )}

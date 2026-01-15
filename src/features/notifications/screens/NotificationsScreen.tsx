@@ -76,6 +76,10 @@ export default function NotificationsScreen() {
     isAccepting,
     isDeclining,
     isClearing,
+    handleAcceptFollow,
+    handleDeclineFollow,
+    isAcceptingFollow,
+    isDecliningFollow,
   } = useNotifications();
 
   // Build sections for SectionList
@@ -162,10 +166,14 @@ export default function NotificationsScreen() {
         notification={item}
         onDelete={handleDelete}
         onPress={handleNotificationPress}
-        onAccept={handleAccept}
-        onDecline={handleDeclineInvitation}
+        onAccept={handleAccept} 
+        onDecline={handleDeclineInvitation} 
+        onAcceptFollow={handleAcceptFollow} 
+        onDeclineFollow={handleDeclineFollow} 
         isAccepting={isAccepting}
         isDeclining={isDeclining}
+        isAcceptingFollow={isAcceptingFollow} 
+        isDecliningFollow={isDecliningFollow}
         showDivider={index < section.data.length - 1}
       />
     ),
@@ -174,8 +182,12 @@ export default function NotificationsScreen() {
       handleNotificationPress,
       handleAccept,
       handleDeclineInvitation,
+      handleAcceptFollow,
+      handleDeclineFollow,
       isAccepting,
       isDeclining,
+      isAcceptingFollow,
+      isDecliningFollow,
     ]
   );
 

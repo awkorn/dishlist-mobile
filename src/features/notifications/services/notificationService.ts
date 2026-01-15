@@ -84,4 +84,28 @@ export const notificationService = {
       `/notifications/${notificationId}/decline-invitation`
     );
   },
+
+  /**
+   * Accept a follow request
+   */
+  async acceptFollowRequest(
+    notificationId: string
+  ): Promise<{ success: boolean }> {
+    const response = await api.post<{ success: boolean }>(
+      `/notifications/${notificationId}/accept-follow`
+    );
+    return response.data;
+  },
+
+  /**
+   * Decline a follow request (silent)
+   */
+  async declineFollowRequest(
+    notificationId: string
+  ): Promise<{ success: boolean }> {
+    const response = await api.post<{ success: boolean }>(
+      `/notifications/${notificationId}/decline-follow`
+    );
+    return response.data;
+  },
 };

@@ -5,14 +5,14 @@ import {
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
+  Image,
 } from "react-native";
 import { Swipeable } from "react-native-gesture-handler";
-import { Trash2, ChevronRight } from "lucide-react-native";
+import { Trash2, ChevronRight, User } from "lucide-react-native";
 import { theme } from "@styles/theme";
 import { typography } from "@styles/typography";
 import type {
   Notification,
-  NotificationType,
   DishListInvitationData,
   DishListSharedData,
   RecipeSharedData,
@@ -24,10 +24,14 @@ interface NotificationItemProps {
   notification: Notification;
   onDelete: (id: string) => void;
   onPress?: (notification: Notification) => void;
-  onAccept?: (id: string) => void;
-  onDecline?: (id: string) => void;
+  onAccept?: (id: string) => void;           
+  onDecline?: (id: string) => void;      
+  onAcceptFollow?: (id: string) => void;     
+  onDeclineFollow?: (id: string) => void;   
   isAccepting?: boolean;
   isDeclining?: boolean;
+  isAcceptingFollow?: boolean;               
+  isDecliningFollow?: boolean;               
   showDivider?: boolean;
 }
 
@@ -67,6 +71,12 @@ function buildNotificationMessage(notification: Notification): string {
     case "USER_FOLLOWED":
       return `${senderName} started following you`;
 
+    case "FOLLOW_REQUEST":
+      return `${senderName} wants to follow you`;
+
+    case "FOLLOW_ACCEPTED":
+      return `${senderName} accepted your follow request`;
+
     case "DISHLIST_INVITATION": {
       const data = parseNotificationData<DishListInvitationData>(notification.data);
       return `${senderName} invited you to collaborate on DishList "${data?.dishListTitle || message}"`;
@@ -103,24 +113,46 @@ function buildNotificationMessage(notification: Notification): string {
   }
 }
 
+/**
+ * Check if notification type is actionable (has Accept/Decline)
+ */
+function isActionableNotification(type: string): boolean {
+  return type === "DISHLIST_INVITATION" || type === "FOLLOW_REQUEST";
+}
+
+/**
+ * Check if notification should show avatar
+ */
+function shouldShowAvatar(type: string): boolean {
+  return type === "FOLLOW_REQUEST" || type === "FOLLOW_ACCEPTED";
+}
+
 export function NotificationItem({
   notification,
   onDelete,
   onPress,
   onAccept,
   onDecline,
+  onAcceptFollow,
+  onDeclineFollow,
   isAccepting = false,
   isDeclining = false,
+  isAcceptingFollow = false,
+  isDecliningFollow = false,
   showDivider = true,
 }: NotificationItemProps) {
   const swipeableRef = useRef<Swipeable>(null);
 
   const isInvitation = notification.type === "DISHLIST_INVITATION";
+  const isFollowRequest = notification.type === "FOLLOW_REQUEST";
+  const isActionable = isActionableNotification(notification.type);
   const isNavigable = isNavigableNotification(notification.type);
-  const isActionInProgress = isAccepting || isDeclining;
+  const showAvatar = shouldShowAvatar(notification.type);
+  
+  const isActionInProgress = isAccepting || isDeclining || isAcceptingFollow || isDecliningFollow;
 
   const handlePress = () => {
-    if (isNavigable && onPress) {
+    if (isNavigable && onPress && !isActionable) {
       onPress(notification);
     }
   };
@@ -131,13 +163,17 @@ export function NotificationItem({
   };
 
   const handleAccept = () => {
-    if (onAccept) {
+    if (isFollowRequest && onAcceptFollow) {
+      onAcceptFollow(notification.id);
+    } else if (onAccept) {
       onAccept(notification.id);
     }
   };
 
   const handleDecline = () => {
-    if (onDecline) {
+    if (isFollowRequest && onDeclineFollow) {
+      onDeclineFollow(notification.id);
+    } else if (onDecline) {
       onDecline(notification.id);
     }
   };
@@ -154,9 +190,14 @@ export function NotificationItem({
 
   const message = buildNotificationMessage(notification);
   const timeAgo = formatRelativeTime(notification.createdAt);
+  const avatarUrl = notification.sender?.avatarUrl;
 
   // Determine if the row should be tappable
-  const isTappable = isNavigable && !isInvitation;
+  const isTappable = isNavigable && !isActionable;
+
+  // Determine which loading states to show
+  const currentlyAccepting = isFollowRequest ? isAcceptingFollow : isAccepting;
+  const currentlyDeclining = isFollowRequest ? isDecliningFollow : isDeclining;
 
   const ContentWrapper = isTappable ? TouchableOpacity : View;
   const contentProps = isTappable
@@ -178,20 +219,36 @@ export function NotificationItem({
           ]}
           {...contentProps}
         >
+          {/* Avatar for follow requests/accepted */}
+          {showAvatar && (
+            <View style={styles.avatarContainer}>
+              {avatarUrl ? (
+                <Image source={{ uri: avatarUrl }} style={styles.avatar} />
+              ) : (
+                <View style={styles.avatarPlaceholder}>
+                  <User size={20} color={theme.colors.neutral[400]} />
+                </View>
+              )}
+            </View>
+          )}
+
           <View style={styles.content}>
             <Text style={styles.message}>{message}</Text>
             <Text style={styles.time}>{timeAgo}</Text>
 
-            {/* Invitation action buttons */}
-            {isInvitation && (
+            {/* Action buttons for invitations and follow requests */}
+            {isActionable && (
               <View style={styles.actionButtons}>
                 <TouchableOpacity
                   style={[styles.actionButton, styles.declineButton]}
                   onPress={handleDecline}
                   disabled={isActionInProgress}
                 >
-                  {isDeclining ? (
-                    <ActivityIndicator size="small" color={theme.colors.neutral[600]} />
+                  {currentlyDeclining ? (
+                    <ActivityIndicator
+                      size="small"
+                      color={theme.colors.neutral[600]}
+                    />
                   ) : (
                     <Text style={styles.declineButtonText}>Decline</Text>
                   )}
@@ -202,7 +259,7 @@ export function NotificationItem({
                   onPress={handleAccept}
                   disabled={isActionInProgress}
                 >
-                  {isAccepting ? (
+                  {currentlyAccepting ? (
                     <ActivityIndicator size="small" color="#FFFFFF" />
                   ) : (
                     <Text style={styles.acceptButtonText}>Accept</Text>
@@ -213,7 +270,7 @@ export function NotificationItem({
           </View>
 
           {/* Navigation arrow for clickable notifications */}
-          {isNavigable && !isInvitation && (
+          {isNavigable && !isActionable && (
             <View style={styles.arrow}>
               <ChevronRight size={20} color={theme.colors.neutral[400]} />
             </View>
@@ -228,7 +285,7 @@ export function NotificationItem({
 const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
     paddingVertical: theme.spacing.md,
     paddingHorizontal: theme.spacing.lg,
     backgroundColor: theme.colors.surface,
@@ -237,6 +294,24 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.primary[50],
     borderLeftWidth: 3,
     borderLeftColor: theme.colors.primary[500],
+  },
+  avatarContainer: {
+    marginRight: theme.spacing.md,
+    marginTop: 2,
+  },
+  avatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: theme.colors.neutral[200],
+  },
+  avatarPlaceholder: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: theme.colors.neutral[100],
+    justifyContent: "center",
+    alignItems: "center",
   },
   content: {
     flex: 1,

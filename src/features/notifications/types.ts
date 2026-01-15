@@ -7,7 +7,21 @@ export type NotificationType =
   | "COLLABORATION_ACCEPTED"
   | "COLLABORATION_DECLINED"
   | "USER_FOLLOWED"
+  | "FOLLOW_REQUEST"
+  | "FOLLOW_ACCEPTED"
   | "SYSTEM_UPDATE";
+
+export interface FollowRequestData {
+  odUserId: string;
+  followerName: string;
+  avatarUrl: string | null;
+}
+
+export interface FollowAcceptedData {
+  userId: string;
+  userName: string;
+  avatarUrl: string | null;
+}
 
 export interface NotificationSender {
   uid: string;
@@ -27,7 +41,13 @@ export interface Notification {
   createdAt: string;
   senderId: string | null;
   receiverId: string;
-  sender: NotificationSender | null;
+  sender?: {
+    uid: string;
+    username: string | null;
+    firstName: string | null;
+    lastName: string | null;
+    avatarUrl: string | null;
+  } | null;
 }
 
 // Parsed data types for each notification type
@@ -94,6 +114,8 @@ export type NotificationData =
   | DishListFollowedData
   | CollaborationAcceptedData
   | UserFollowedData
+  | FollowRequestData
+  | FollowAcceptedData
   | SystemUpdateData;
 
 // API Response types
@@ -131,16 +153,16 @@ export interface GroupedNotifications {
 
 // Helper to check if notification is actionable (has Accept/Decline buttons)
 export const isActionableNotification = (type: NotificationType): boolean => {
-  return type === "DISHLIST_INVITATION";
+  return type === "DISHLIST_INVITATION" || type === "FOLLOW_REQUEST";
 };
 
 // Helper to check if notification is navigable (can tap to go somewhere)
 export const isNavigableNotification = (type: NotificationType): boolean => {
-  return [
-    "DISHLIST_SHARED",
-    "RECIPE_SHARED",
-    "RECIPE_ADDED",
-  ].includes(type);
+  return ["DISHLIST_SHARED", "RECIPE_SHARED", "RECIPE_ADDED"].includes(type);
+};
+
+export const showsAvatarNotification = (type: NotificationType): boolean => {
+  return type === "FOLLOW_REQUEST" || type === "FOLLOW_ACCEPTED";
 };
 
 // Helper to parse notification data safely

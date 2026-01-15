@@ -178,10 +178,7 @@ export function useNotifications() {
         (old) => old?.map((n) => ({ ...n, isRead: true })) ?? []
       );
 
-      queryClient.setQueryData<number>(
-        queryKeys.notifications.unread(),
-        0
-      );
+      queryClient.setQueryData<number>(queryKeys.notifications.unread(), 0);
 
       return { previousNotifications };
     },
@@ -267,15 +264,9 @@ export function useNotifications() {
       );
 
       // Optimistically clear all
-      queryClient.setQueryData<Notification[]>(
-        queryKeys.notifications.all,
-        []
-      );
+      queryClient.setQueryData<Notification[]>(queryKeys.notifications.all, []);
 
-      queryClient.setQueryData<number>(
-        queryKeys.notifications.unread(),
-        0
-      );
+      queryClient.setQueryData<number>(queryKeys.notifications.unread(), 0);
 
       return { previousNotifications };
     },
@@ -307,7 +298,7 @@ export function useNotifications() {
         queryKeys.notifications.all,
         (old) => old?.filter((n) => n.id !== notificationId) ?? []
       );
-      
+
       // Invalidate dishlist queries to show new collaboration
       queryClient.invalidateQueries({
         queryKey: queryKeys.dishLists.all,
@@ -416,6 +407,97 @@ export function useNotifications() {
     [declineInvitationMutation]
   );
 
+  // Accept follow request mutation
+  const acceptFollowMutation = useMutation({
+    mutationFn: notificationService.acceptFollowRequest,
+    onMutate: async (notificationId) => {
+      await queryClient.cancelQueries({
+        queryKey: queryKeys.notifications.all,
+      });
+
+      const previousNotifications = queryClient.getQueryData<Notification[]>(
+        queryKeys.notifications.all
+      );
+
+      // Optimistically remove the notification
+      queryClient.setQueryData<Notification[]>(
+        queryKeys.notifications.all,
+        (old) => old?.filter((n) => n.id !== notificationId) ?? []
+      );
+
+      return { previousNotifications };
+    },
+    onError: (_err, _id, context) => {
+      if (context?.previousNotifications) {
+        queryClient.setQueryData(
+          queryKeys.notifications.all,
+          context.previousNotifications
+        );
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.notifications.all,
+      });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.notifications.unread(),
+      });
+    },
+  });
+
+  // Decline follow request mutation
+  const declineFollowMutation = useMutation({
+    mutationFn: notificationService.declineFollowRequest,
+    onMutate: async (notificationId) => {
+      await queryClient.cancelQueries({
+        queryKey: queryKeys.notifications.all,
+      });
+
+      const previousNotifications = queryClient.getQueryData<Notification[]>(
+        queryKeys.notifications.all
+      );
+
+      // Optimistically remove the notification
+      queryClient.setQueryData<Notification[]>(
+        queryKeys.notifications.all,
+        (old) => old?.filter((n) => n.id !== notificationId) ?? []
+      );
+
+      return { previousNotifications };
+    },
+    onError: (_err, _id, context) => {
+      if (context?.previousNotifications) {
+        queryClient.setQueryData(
+          queryKeys.notifications.all,
+          context.previousNotifications
+        );
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.notifications.all,
+      });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.notifications.unread(),
+      });
+    },
+  });
+
+  // Add handlers
+  const handleAcceptFollow = useCallback(
+    (notificationId: string) => {
+      return acceptFollowMutation.mutateAsync(notificationId);
+    },
+    [acceptFollowMutation]
+  );
+
+  const handleDeclineFollow = useCallback(
+    (notificationId: string) => {
+      declineFollowMutation.mutate(notificationId);
+    },
+    [declineFollowMutation]
+  );
+
   return {
     // Data
     notifications,
@@ -437,10 +519,14 @@ export function useNotifications() {
     handleClearAll,
     handleAcceptInvitation,
     handleDeclineInvitation,
+    handleAcceptFollow,
+    handleDeclineFollow,
 
     // Mutation states (for UI feedback)
     isAccepting: acceptInvitationMutation.isPending,
     isDeclining: declineInvitationMutation.isPending,
     isClearing: deleteAllMutation.isPending,
+    isAcceptingFollow: acceptFollowMutation.isPending,
+    isDecliningFollow: declineFollowMutation.isPending,
   };
 }

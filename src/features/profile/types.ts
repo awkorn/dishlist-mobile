@@ -12,6 +12,7 @@ export interface UserProfile {
   followingCount: number;
   isFollowing?: boolean;
   isOwnProfile: boolean;
+  followStatus: FollowStatus;
 }
 
 export interface ProfileDishList {
@@ -83,3 +84,4 @@ export interface EditProfileState {
 }
 
 export type ProfileTab = 'DishLists' | 'Recipes';
+export type FollowStatus = "NONE" | "PENDING" | "ACCEPTED";
