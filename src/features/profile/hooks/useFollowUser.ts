@@ -2,7 +2,8 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Alert } from 'react-native';
 import { profileService } from '../services/profileService';
 import { PROFILE_QUERY_KEY } from './useProfile';
-import type { ProfileData, FollowStatus } from '../types';
+import { invalidateFollowRelatedCaches } from '@lib/cacheInvalidation';
+import type { ProfileData } from '../types';
 
 interface UseFollowUserOptions {
   userId: string;
@@ -46,7 +47,7 @@ export function useFollowUser({ userId }: UseFollowUserOptions) {
     },
 
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: profileQueryKey });
+      invalidateFollowRelatedCaches(queryClient, userId);
     },
   });
 
@@ -89,7 +90,7 @@ export function useFollowUser({ userId }: UseFollowUserOptions) {
     },
 
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: profileQueryKey });
+      invalidateFollowRelatedCaches(queryClient, userId);
     },
   });
 
