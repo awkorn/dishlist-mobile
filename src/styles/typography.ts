@@ -23,8 +23,8 @@ export const typography = {
     lineHeight: 56,
   },
   heading2: {
-    fontFamily: 'Bricolage-Bold',
-    fontSize: 32,
+    fontFamily: 'GeneralSans-SemiBold',
+    fontSize: 36,
     lineHeight: 38,
   },
   heading3: {

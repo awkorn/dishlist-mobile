@@ -462,7 +462,7 @@ const styles = StyleSheet.create({
   topRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: theme.spacing["3xl"],
+    marginBottom: theme.spacing.xl,
   },
   backButton: {
     padding: theme.spacing.xs,
@@ -476,7 +476,6 @@ const styles = StyleSheet.create({
     ...typography.heading2,
     fontSize: 32,
     color: theme.colors.textPrimary,
-    marginBottom: theme.spacing.sm,
   },
   infoRow: {
     flexDirection: "row",
