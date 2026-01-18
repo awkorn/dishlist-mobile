@@ -3,7 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  TextInput,
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
@@ -13,7 +12,6 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
   ChevronLeft,
-  Search,
   MoreHorizontal,
   Pin,
   PinOff,
@@ -24,7 +22,8 @@ import {
   UserMinus,
   Camera,
   Share,
-  Handshake
+  Lock, 
+  Eye
 } from "lucide-react-native";
 import { typography } from "@styles/typography";
 import { theme } from "@styles/theme";
@@ -35,7 +34,7 @@ import { DishListDetailScreenProps } from "@app-types/navigation";
 import { ImportRecipeModal } from "@features/recipe/components";
 import type { ImportRecipeResponse } from "@features/recipe/types";
 import { ShareModal } from "@features/share";
-import { InviteCollaboratorModal } from "@features/invite";
+import { InviteCollaboratorModal, CollaboratorPreview } from "@features/invite";
 import { CollaboratorsModal } from "@features/invite";
 import { AnimatedSearchInput } from "@components/ui";
 import {
@@ -265,17 +264,11 @@ export default function DishListDetailScreen({
 
               <View style={styles.infoRow}>
                 <View style={styles.infoItem}>
-                  <Text
-                    style={[
-                      styles.infoText,
-                      {
-                        color:
-                          dishList.visibility === "PRIVATE" ? "red" : "green",
-                      },
-                    ]}
-                  >
-                    ●
-                  </Text>
+                  {dishList.visibility === "PUBLIC" ? (
+                    <Eye size={14} color={theme.colors.neutral[900]} />
+                  ) : (
+                    <Lock size={14} color={theme.colors.neutral[900]} />
+                  )}
                   <Text style={[styles.infoText, { marginLeft: 4 }]}>
                     {dishList.visibility === "PUBLIC" ? "Public" : "Private"}
                   </Text>
@@ -293,20 +286,12 @@ export default function DishListDetailScreen({
                   </Text>
                 )}
               </View>
-
               <View style={styles.collabRow}>
-                {/* Collaborator count - only show if there are collaborators other than owner */}
-                {dishList.collaboratorCount > 0 && (
-                  <TouchableOpacity
-                    style={styles.collaboratorButton}
-                    onPress={() => setShowCollaboratorsModal(true)}
-                  >
-                    <Handshake size={14} color={theme.colors.primary[600]} />
-                    <Text style={styles.collaboratorText}>
-                      {dishList.collaboratorCount + 1} Collaborators
-                    </Text>
-                  </TouchableOpacity>
-                )}
+                <CollaboratorPreview
+                  owner={dishList.owner}
+                  collaboratorCount={dishList.collaboratorCount}
+                  onPress={() => setShowCollaboratorsModal(true)}
+                />
               </View>
             </View>
 
