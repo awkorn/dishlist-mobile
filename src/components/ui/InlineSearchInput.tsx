@@ -81,7 +81,7 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: theme.colors.neutral[100],
+    backgroundColor: theme.colors.neutral[50],
     borderRadius: theme.borderRadius.md,
     paddingHorizontal: 10,
     height: 40,

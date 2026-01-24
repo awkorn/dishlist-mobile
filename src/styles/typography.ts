@@ -18,37 +18,37 @@ export const typography = {
   
   // Text styles
   heading1: {
-    fontFamily: 'Bricolage-Bold',
+    fontFamily: 'PlayfairDisplay-SemiBold',
     fontSize: 48,
     lineHeight: 56,
   },
   heading2: {
-    fontFamily: 'GeneralSans-SemiBold',
+    fontFamily: 'PlayfairDisplay-SemiBold',
     fontSize: 36,
     lineHeight: 38,
   },
   heading3: {
-    fontFamily: 'Bricolage-Bold',
+    fontFamily: 'SourceSerif4-SemiBold',
     fontSize: 24,
     lineHeight: 32,
   },
   subtitle: {
-    fontFamily: 'Bricolage-SemiBold',
+    fontFamily: 'SourceSerif4-Medium',
     fontSize: 21,
     lineHeight: 24,
   },
   body: {
-    fontFamily: 'Myanmar Sans Pro',
+    fontFamily: 'Lato-Regular',
     fontSize: 16,
     lineHeight: 20,
   },
   button: {
-    fontFamily: 'Bricolage-SemiBold',
+    fontFamily: 'Lato-SemiBold',
     fontSize: 16,
     lineHeight: 20,
   },
   caption: {
-    fontFamily: 'Bricolage-Regular',
+    fontFamily: 'Lato-Regular',
     fontSize: 14,
     lineHeight: 20,
   },

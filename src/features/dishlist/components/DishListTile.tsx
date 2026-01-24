@@ -175,12 +175,11 @@ const styles = StyleSheet.create({
     ...typography.subtitle,
     color: theme.colors.textPrimary,
     marginBottom: theme.spacing.xs,
-    minHeight: 48,
   },
   recipeCount: {
     ...typography.body,
     color: theme.colors.neutral[500],
-    marginBottom: theme.spacing.md,
+    marginBottom: theme.spacing.xl,
   },
 
   // Compact size (others' profiles - discovery mode)

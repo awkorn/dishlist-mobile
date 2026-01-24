@@ -458,8 +458,8 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
   },
   headerTitle: {
-    ...typography.heading2,
-    fontSize: 32,
+    ...typography.heading3,
+    fontSize: 28,
     color: theme.colors.textPrimary,
   },
   infoRow: {

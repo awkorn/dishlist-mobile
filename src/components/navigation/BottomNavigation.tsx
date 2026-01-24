@@ -6,7 +6,6 @@ import {
   ShoppingCart,
   Search,
   PlusSquare,
-  User,
 } from "lucide-react-native";
 import { theme } from "../../styles/theme";
 

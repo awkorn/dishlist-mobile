@@ -84,7 +84,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: theme.colors.neutral[100],
+    backgroundColor: theme.colors.neutral[50],
     justifyContent: "center",
     alignItems: "center",
   },
@@ -103,7 +103,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   badge: {
-    backgroundColor: theme.colors.neutral[100],
+    backgroundColor: theme.colors.neutral[50],
     paddingHorizontal: theme.spacing.sm,
     paddingVertical: theme.spacing.xs,
     borderRadius: theme.borderRadius.sm,

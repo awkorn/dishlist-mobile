@@ -604,7 +604,7 @@ const styles = StyleSheet.create({
   heroPlaceholder: {
     width: "100%",
     height: 250,
-    backgroundColor: theme.colors.neutral[100],
+    backgroundColor: theme.colors.neutral[50],
     justifyContent: "center",
     alignItems: "center",
   },
@@ -642,7 +642,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: theme.colors.primary[500],
+    backgroundColor: theme.colors.primary[600],
     marginHorizontal: theme.spacing.xl,
     marginTop: theme.spacing.xl,
     padding: theme.spacing.lg,

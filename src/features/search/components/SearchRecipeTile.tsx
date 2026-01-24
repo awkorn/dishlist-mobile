@@ -103,7 +103,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.neutral[200],
   },
   placeholderImage: {
-    backgroundColor: theme.colors.neutral[100],
+    backgroundColor: theme.colors.neutral[50],
     justifyContent: "center",
     alignItems: "center",
   },

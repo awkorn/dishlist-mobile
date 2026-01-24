@@ -109,7 +109,7 @@ const styles = StyleSheet.create({
   placeholderImage: {
     width: "100%",
     height: tileWidth * 0.75,
-    backgroundColor: theme.colors.neutral[100],
+    backgroundColor: theme.colors.neutral[50],
     justifyContent: "center",
     alignItems: "center",
   },
@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
     padding: theme.spacing.md,
   },
   title: {
-    ...typography.subtitle,
+    ...typography.body,
     fontSize: 14,
     color: theme.colors.textPrimary,
     marginBottom: theme.spacing.xs,
@@ -151,7 +151,7 @@ const styles = StyleSheet.create({
     padding: theme.spacing.sm,
   },
   titleCompact: {
-    ...typography.subtitle,
+    ...typography.body,
     fontSize: 13,
     color: theme.colors.textPrimary,
     marginBottom: 2,

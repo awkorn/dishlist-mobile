@@ -190,7 +190,7 @@ export default function DishListsScreen() {
           {refreshing && (
             <ActivityIndicator
               size="small"
-              color="#2563eb"
+              color="#8FA79B"
               style={styles.headerLoader}
             />
           )}
@@ -198,7 +198,7 @@ export default function DishListsScreen() {
             style={styles.addButton}
             onPress={handleCreateDishList}
           >
-            <Plus size={24} color="#2563eb" />
+            <Plus size={24} color="#8FA79B" />
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.profileButton}
@@ -326,10 +326,10 @@ const styles = StyleSheet.create({
   tab: { paddingHorizontal: 14, paddingVertical: theme.spacing.sm },
   activeTab: {
     borderBottomWidth: 2,
-    borderBottomColor: theme.colors.secondary[50],
+    borderBottomColor: theme.colors.primary[600],
   },
   tabText: { ...typography.body, color: theme.colors.neutral[500] },
-  activeTabText: { color: theme.colors.secondary[50], fontWeight: "600" },
+  activeTabText: { color: theme.colors.primary[600], fontWeight: "600" },
   pager: {
     flex: 1,
   },

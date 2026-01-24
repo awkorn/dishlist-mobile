@@ -48,7 +48,7 @@ const styles = StyleSheet.create({
   },
   activeTab: {
     borderBottomWidth: 2,
-    borderBottomColor: theme.colors.secondary[50],
+    borderBottomColor: theme.colors.primary[600],
     marginHorizontal: 10,
   },
   tabText: {
@@ -57,7 +57,7 @@ const styles = StyleSheet.create({
     color: theme.colors.neutral[500],
   },
   activeTabText: {
-    color: theme.colors.secondary[50],
+    color: theme.colors.primary[600],
     fontWeight: '600',
   },
 });

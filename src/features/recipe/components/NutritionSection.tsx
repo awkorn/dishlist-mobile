@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing['3xl'],
   },
   sectionTitle: {
-    ...typography.subtitle,
+    ...typography.heading3,
     color: theme.colors.textPrimary,
     marginBottom: theme.spacing.lg,
   },
@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: theme.colors.primary[500],
+    backgroundColor: theme.colors.primary[600],
     padding: theme.spacing.lg,
     borderRadius: theme.borderRadius.md,
     gap: theme.spacing.sm,
