@@ -174,7 +174,7 @@ const styles = StyleSheet.create({
   title: {
     ...typography.subtitle,
     color: theme.colors.textPrimary,
-    marginBottom: theme.spacing.xs,
+    marginBottom: theme.spacing.sm,
   },
   recipeCount: {
     ...typography.body,

@@ -28,27 +28,27 @@ export const typography = {
     lineHeight: 38,
   },
   heading3: {
-    fontFamily: 'SourceSerif4-SemiBold',
+    fontFamily: 'Bricolage-Regular',
     fontSize: 24,
     lineHeight: 32,
   },
   subtitle: {
-    fontFamily: 'SourceSerif4-Medium',
+    fontFamily: 'Bricolage-Regular',
     fontSize: 21,
     lineHeight: 24,
   },
   body: {
-    fontFamily: 'Lato-Regular',
+    fontFamily: 'Inter-Regular',
     fontSize: 16,
     lineHeight: 20,
   },
   button: {
-    fontFamily: 'Lato-SemiBold',
+    fontFamily: 'Inter-Medium',
     fontSize: 16,
     lineHeight: 20,
   },
   caption: {
-    fontFamily: 'Lato-Regular',
+    fontFamily: 'Inter-Regular',
     fontSize: 14,
     lineHeight: 20,
   },
