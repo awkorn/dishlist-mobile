@@ -103,7 +103,7 @@ const styles = StyleSheet.create({
     width: AVATAR_SIZE - 4,
     height: AVATAR_SIZE - 4,
     borderRadius: (AVATAR_SIZE - 4) / 2,
-    backgroundColor: theme.colors.surface,
+    backgroundColor: theme.colors.neutral[200],
     justifyContent: 'center',
     alignItems: 'center',
   },

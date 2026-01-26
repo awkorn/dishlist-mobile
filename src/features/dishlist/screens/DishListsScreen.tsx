@@ -190,7 +190,7 @@ export default function DishListsScreen() {
           {refreshing && (
             <ActivityIndicator
               size="small"
-              color="#8FA79B"
+              color="#2563eb"
               style={styles.headerLoader}
             />
           )}
@@ -198,7 +198,7 @@ export default function DishListsScreen() {
             style={styles.addButton}
             onPress={handleCreateDishList}
           >
-            <Plus size={24} color="#8FA79B" />
+            <Plus size={24} color="#2563eb" />
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.profileButton}

@@ -200,8 +200,6 @@ const styles = StyleSheet.create({
     height: AVATAR_SIZE,
     borderRadius: AVATAR_SIZE / 2,
     backgroundColor: theme.colors.neutral[200],
-    borderWidth: 3,
-    borderColor: theme.colors.background,
   },
   avatarPlaceholder: {
     width: AVATAR_SIZE,

@@ -34,7 +34,7 @@ export const typography = {
   },
   subtitle: {
     fontFamily: 'Bricolage-Regular',
-    fontSize: 21,
+    fontSize: 19,
     lineHeight: 24,
   },
   body: {

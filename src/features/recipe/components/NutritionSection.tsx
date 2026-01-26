@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: theme.colors.primary[600],
+    backgroundColor: theme.colors.primary[500],
     padding: theme.spacing.lg,
     borderRadius: theme.borderRadius.md,
     gap: theme.spacing.sm,

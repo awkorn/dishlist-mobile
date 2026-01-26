@@ -151,9 +151,9 @@ export function CollaboratorsModal({
                   disabled={isRemoving}
                 >
                   {isRemoving ? (
-                    <ActivityIndicator size="small" color={theme.colors.error[500]} />
+                    <ActivityIndicator size="small" color={theme.colors.error} />
                   ) : (
-                    <Trash2 size={18} color={theme.colors.error[500]} />
+                    <Trash2 size={18} color={theme.colors.error} />
                   )}
                 </TouchableOpacity>
               )}
@@ -352,7 +352,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: theme.colors.surface,
+    backgroundColor: theme.colors.neutral[200],
     justifyContent: 'center',
     alignItems: 'center',
   },
