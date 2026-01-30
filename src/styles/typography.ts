@@ -1,9 +1,9 @@
 export const typography = {
   // Font families
-  primary: 'Bricolage-Regular',
-  primarySemiBold: 'Bricolage-SemiBold',
-  primaryBold: 'Bricolage-Bold',
-  
+  primary: "Bricolage-Regular",
+  primarySemiBold: "Bricolage-SemiBold",
+  primaryBold: "Bricolage-Bold",
+
   // Font sizes
   sizes: {
     xs: 12,
@@ -11,44 +11,49 @@ export const typography = {
     base: 16,
     lg: 18,
     xl: 20,
-    '2xl': 24,
-    '3xl': 30,
-    '4xl': 36,
+    "2xl": 24,
+    "3xl": 30,
+    "4xl": 36,
   },
-  
+
   // Text styles
   heading1: {
-    fontFamily: 'PlayfairDisplay-SemiBold',
+    fontFamily: "PlayfairDisplay-SemiBold",
     fontSize: 48,
     lineHeight: 56,
   },
   heading2: {
-    fontFamily: 'PlayfairDisplay-SemiBold',
+    fontFamily: "PlayfairDisplay-SemiBold",
     fontSize: 36,
     lineHeight: 38,
   },
   heading3: {
-    fontFamily: 'Bricolage-Regular',
+    fontFamily: "Inter-Medium",
     fontSize: 24,
     lineHeight: 32,
   },
+  heading4: {
+    fontFamily: "Inter-SemiBold",
+    fontSize: 30,
+    lineHeight: 36,
+  },
   subtitle: {
-    fontFamily: 'Bricolage-Regular',
+    fontFamily: "Inter-Regular",
     fontSize: 19,
     lineHeight: 24,
   },
   body: {
-    fontFamily: 'Inter-Regular',
+    fontFamily: "Inter-Regular",
     fontSize: 16,
     lineHeight: 20,
   },
   button: {
-    fontFamily: 'Inter-Medium',
+    fontFamily: "Inter-Medium",
     fontSize: 16,
     lineHeight: 20,
   },
   caption: {
-    fontFamily: 'Inter-Regular',
+    fontFamily: "Inter-Regular",
     fontSize: 14,
     lineHeight: 20,
   },

@@ -260,7 +260,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   title: {
-    ...typography.heading2,
+    ...typography.heading4,
     color: theme.colors.textPrimary,
     textAlign: 'center',
     marginBottom: theme.spacing['4xl'],
