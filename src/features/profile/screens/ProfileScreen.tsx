@@ -61,6 +61,11 @@ export default function ProfileScreen({ navigation, route }: Props) {
     setShowEditSheet(true);
   };
 
+  const handleShareProfile = () => {
+    // TODO: Implement share functionality
+    console.log("Share profile pressed");
+  };
+
   const handleEditComplete = () => {
     setShowEditSheet(false);
     refetch();
@@ -164,7 +169,8 @@ export default function ProfileScreen({ navigation, route }: Props) {
         displayName={displayName}
         onBackPress={handleBack}
         onEditPress={user.isOwnProfile ? handleEditProfile : undefined}
-        onMenuPress={user.isOwnProfile ? handleMenuPress : undefined}
+        onSharePress={user.isOwnProfile ? handleShareProfile : undefined}
+        onMenuPress={handleMenuPress}
         isSearchActive={isSearchActive}
         searchQuery={searchQuery}
         onSearchToggle={toggleSearch}
@@ -330,7 +336,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   listContent: {
-    padding: theme.spacing.xl,
+    paddingHorizontal: theme.spacing.xl,
     paddingBottom: theme.spacing.xl + 20,
   },
   row: {

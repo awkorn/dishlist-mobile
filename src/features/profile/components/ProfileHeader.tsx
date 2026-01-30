@@ -10,7 +10,6 @@ import {
 import {
   MoveLeft,
   Search,
-  UserPen,
   EllipsisVertical,
   User as UserIcon,
 } from "lucide-react-native";
@@ -27,6 +26,7 @@ interface ProfileHeaderProps {
   displayName: string;
   onBackPress: () => void;
   onEditPress?: () => void;
+  onSharePress?: () => void;
   onMenuPress?: () => void;
 
   isSearchActive: boolean;
@@ -41,6 +41,7 @@ export function ProfileHeader({
   displayName,
   onBackPress,
   onEditPress,
+  onSharePress,
   onMenuPress,
   isSearchActive,
   searchQuery,
@@ -101,17 +102,10 @@ export function ProfileHeader({
                 <Search size={22} color={theme.colors.neutral[700]} />
               </TouchableOpacity>
 
-              {user.isOwnProfile && onEditPress && (
-                <TouchableOpacity onPress={onEditPress} style={styles.iconBtn}>
-                  <UserPen size={22} color={theme.colors.neutral[700]} />
-                </TouchableOpacity>
-              )}
-              {onMenuPress && (
+              {/* Only show menu for own profile */}
+              {user.isOwnProfile && (
                 <TouchableOpacity onPress={onMenuPress} style={styles.iconBtn}>
-                  <EllipsisVertical
-                    size={24}
-                    color={theme.colors.neutral[700]}
-                  />
+                  <EllipsisVertical size={22} color={theme.colors.neutral[700]} />
                 </TouchableOpacity>
               )}
             </Animated.View>
@@ -130,6 +124,7 @@ export function ProfileHeader({
             </View>
           )}
         </View>
+
         <View style={styles.infoRow}>
           <View style={styles.nameSection}>
             <Text style={styles.displayName}>{displayName}</Text>
@@ -149,13 +144,36 @@ export function ProfileHeader({
             </View>
           </View>
         </View>
+
         {user.bio && <Text style={styles.bio}>{user.bio}</Text>}
-        {/* Follow Button - absolutely positioned above stats */}
-        {!user.isOwnProfile && (
-          <View style={styles.followButtonAbsolute}>
+
+        {/* Action Buttons Row */}
+        {user.isOwnProfile ? (
+          // Own profile: Edit + Share buttons
+          <View style={styles.actionButtonsRow}>
+            <TouchableOpacity
+              style={styles.actionButton}
+              onPress={onEditPress}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.actionButtonText}>Edit Profile</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.actionButton}
+              onPress={onSharePress}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.actionButtonText}>Share Profile</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          // Other user's profile: Full-width follow button
+          <View style={styles.followButtonRow}>
             <FollowButton
               userId={user.uid}
               followStatus={user.followStatus ?? "NONE"}
+              fullWidth
             />
           </View>
         )}
@@ -200,6 +218,8 @@ const styles = StyleSheet.create({
     height: AVATAR_SIZE,
     borderRadius: AVATAR_SIZE / 2,
     backgroundColor: theme.colors.neutral[200],
+    borderWidth: 3,
+    borderColor: theme.colors.background,
   },
   avatarPlaceholder: {
     width: AVATAR_SIZE,
@@ -244,14 +264,34 @@ const styles = StyleSheet.create({
     ...typography.caption,
     color: theme.colors.neutral[500],
   },
-  followButtonAbsolute: {
-    position: "absolute",
-    top: 10,
-    right: 20,
-  },
   bio: {
     ...typography.body,
     color: theme.colors.neutral[700],
     marginTop: 8,
+  },
+  // Action buttons for own profile
+  actionButtonsRow: {
+    flexDirection: "row",
+    gap: 12,
+    marginTop: 16,
+  },
+  actionButton: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    backgroundColor: theme.colors.primary[500],
+    paddingVertical: 10,
+    borderRadius: theme.borderRadius.md,
+  },
+  actionButtonText: {
+    ...typography.button,
+    fontSize: 14,
+    color: theme.colors.neutral[50],
+  },
+  // Follow button row for other profiles
+  followButtonRow: {
+    marginTop: 16,
   },
 });

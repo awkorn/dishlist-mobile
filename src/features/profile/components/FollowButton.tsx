@@ -14,17 +14,16 @@ import type { FollowStatus } from "../types";
 interface FollowButtonProps {
   userId: string;
   followStatus: FollowStatus;
+  fullWidth?: boolean;
 }
 
-export function FollowButton({ userId, followStatus }: FollowButtonProps) {
+export function FollowButton({ userId, followStatus, fullWidth = false }: FollowButtonProps) {
   const { follow, unfollow, isPending } = useFollowUser({ userId });
 
   const handlePress = () => {
     if (followStatus === "NONE") {
-      // Send follow request
       follow();
     } else if (followStatus === "PENDING") {
-      // Cancel pending request
       Alert.alert(
         "Cancel Request",
         "Do you want to cancel your follow request?",
@@ -38,7 +37,6 @@ export function FollowButton({ userId, followStatus }: FollowButtonProps) {
         ]
       );
     } else {
-      // Unfollow
       Alert.alert(
         "Unfollow",
         "Are you sure you want to unfollow this user?",
@@ -93,7 +91,11 @@ export function FollowButton({ userId, followStatus }: FollowButtonProps) {
 
   return (
     <TouchableOpacity
-      style={[styles.button, getButtonStyle()]}
+      style={[
+        styles.button,
+        getButtonStyle(),
+        fullWidth && styles.fullWidth,
+      ]}
       onPress={handlePress}
       disabled={isPending}
       activeOpacity={0.7}
@@ -120,6 +122,10 @@ const styles = StyleSheet.create({
     gap: theme.spacing.xs,
     minWidth: 110,
     minHeight: 36,
+  },
+  fullWidth: {
+    width: "100%",
+    paddingVertical: 12,
   },
   followButton: {
     backgroundColor: theme.colors.primary[500],
