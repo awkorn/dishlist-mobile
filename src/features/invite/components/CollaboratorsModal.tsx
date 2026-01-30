@@ -289,7 +289,7 @@ export function CollaboratorsModal({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.surface,
   },
   header: {
     flexDirection: 'row',
@@ -352,7 +352,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: theme.colors.neutral[200],
+    backgroundColor: theme.colors.neutral[100],
     justifyContent: 'center',
     alignItems: 'center',
   },

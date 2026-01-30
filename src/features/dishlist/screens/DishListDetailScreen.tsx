@@ -22,8 +22,8 @@ import {
   UserMinus,
   Camera,
   Share,
-  Lock, 
-  Eye
+  Lock,
+  Eye,
 } from "lucide-react-native";
 import { typography } from "@styles/typography";
 import { theme } from "@styles/theme";
@@ -83,7 +83,7 @@ export default function DishListDetailScreen({
         importWarnings: response.warnings,
       });
     },
-    [navigation, dishListId]
+    [navigation, dishListId],
   );
 
   const actionSheetOptions: ActionSheetOption[] = useMemo(() => {
@@ -103,7 +103,7 @@ export default function DishListDetailScreen({
           title: "Import Recipe",
           icon: Camera,
           onPress: () => setShowImportModal(true),
-        }
+        },
       );
     }
 
@@ -146,7 +146,7 @@ export default function DishListDetailScreen({
             setShowActionSheet(false);
             setTimeout(() => setShowInviteModal(true), 300);
           },
-        }
+        },
       );
     }
 
@@ -195,7 +195,7 @@ export default function DishListDetailScreen({
                   });
                 },
               },
-            ]
+            ],
           );
         },
       });
@@ -263,29 +263,31 @@ export default function DishListDetailScreen({
               </Text>
 
               <View style={styles.infoRow}>
-                <View style={styles.infoItem}>
-                  {dishList.visibility === "PUBLIC" ? (
-                    <Eye size={14} color={theme.colors.neutral[900]} />
-                  ) : (
-                    <Lock size={14} color={theme.colors.neutral[900]} />
-                  )}
-                  <Text style={[styles.infoText, { marginLeft: 4 }]}>
-                    {dishList.visibility === "PUBLIC" ? "Public" : "Private"}
-                  </Text>
-                </View>
+                <Text style={styles.infoText}>
+                  {dishList.visibility === "PUBLIC" ? "Public" : "Private"}
+                </Text>
+
+                <Text style={styles.infoDot}>•</Text>
 
                 <Text style={styles.infoText}>
                   {dishList.recipeCount}{" "}
                   {dishList.recipeCount === 1 ? "Recipe" : "Recipes"}
                 </Text>
 
-                {dishList.visibility === "PUBLIC" && (
-                  <Text style={styles.infoText}>
-                    {dishList.followerCount}{" "}
-                    {dishList.followerCount === 1 ? "Follower" : "Followers"}
-                  </Text>
-                )}
+                {dishList.visibility === "PUBLIC" &&
+                  dishList.followerCount > 0 && (
+                    <>
+                      <Text style={styles.infoDot}>•</Text>
+                      <Text style={styles.infoText}>
+                        {dishList.followerCount}{" "}
+                        {dishList.followerCount === 1
+                          ? "Follower"
+                          : "Followers"}
+                      </Text>
+                    </>
+                  )}
               </View>
+
               <View style={styles.collabRow}>
                 <CollaboratorPreview
                   owner={dishList.owner}
@@ -465,17 +467,18 @@ const styles = StyleSheet.create({
   infoRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: theme.spacing.md,
+    gap: theme.spacing.xs,
     marginBottom: theme.spacing.sm,
     marginTop: theme.spacing.sm,
-  },
-  infoItem: {
-    flexDirection: "row",
-    alignItems: "center",
   },
   infoText: {
     ...typography.body,
     color: theme.colors.neutral[600],
+    fontSize: 15,
+  },
+  infoDot: {
+    ...typography.caption,
+    color: theme.colors.neutral[500],
   },
   menuButton: {
     padding: theme.spacing.xs,
