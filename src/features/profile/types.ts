@@ -83,5 +83,18 @@ export interface EditProfileState {
   isUploading: boolean;
 }
 
+export interface FollowListUser {
+  uid: string;
+  username?: string;
+  firstName?: string;
+  lastName?: string;
+  avatarUrl?: string;
+  followStatus?: FollowStatus; 
+}
+
+export interface FollowListResponse {
+  users: FollowListUser[];
+}
+
 export type ProfileTab = 'DishLists' | 'Recipes';
 export type FollowStatus = "NONE" | "PENDING" | "ACCEPTED";

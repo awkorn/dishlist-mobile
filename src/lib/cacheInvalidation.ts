@@ -1,6 +1,10 @@
-import { QueryClient } from '@tanstack/react-query';
-import { queryKeys } from './queryKeys';
-import { PROFILE_QUERY_KEY } from '@features/profile/hooks/useProfile';
+import { QueryClient } from "@tanstack/react-query";
+import { queryKeys } from "./queryKeys";
+import { PROFILE_QUERY_KEY } from "@features/profile/hooks/useProfile";
+import {
+  FOLLOWERS_QUERY_KEY,
+  FOLLOWING_QUERY_KEY,
+} from "@features/profile/hooks/useFollowList";
 
 /**
  * Centralized cache invalidation helpers
@@ -13,13 +17,17 @@ import { PROFILE_QUERY_KEY } from '@features/profile/hooks/useProfile';
  */
 export function invalidateFollowRelatedCaches(
   queryClient: QueryClient,
-  userId: string
+  userId: string,
 ) {
   // User's profile
   queryClient.invalidateQueries({ queryKey: [PROFILE_QUERY_KEY, userId] });
-  
-  // All search results (may contain this user with stale follow status)
+
+  // All search results
   queryClient.invalidateQueries({ queryKey: queryKeys.search.all });
+
+  // Followers/following lists (any user's lists might be affected)
+  queryClient.invalidateQueries({ queryKey: [FOLLOWERS_QUERY_KEY] });
+  queryClient.invalidateQueries({ queryKey: [FOLLOWING_QUERY_KEY] });
 }
 
 /**
@@ -37,9 +45,11 @@ export function invalidateCurrentUserCaches(queryClient: QueryClient) {
  */
 export function invalidateDishListRelatedCaches(
   queryClient: QueryClient,
-  dishListId: string
+  dishListId: string,
 ) {
-  queryClient.invalidateQueries({ queryKey: queryKeys.dishLists.detail(dishListId) });
+  queryClient.invalidateQueries({
+    queryKey: queryKeys.dishLists.detail(dishListId),
+  });
   queryClient.invalidateQueries({ queryKey: queryKeys.dishLists.all });
   queryClient.invalidateQueries({ queryKey: queryKeys.search.all });
 }

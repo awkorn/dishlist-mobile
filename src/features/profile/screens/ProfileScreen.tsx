@@ -103,6 +103,26 @@ export default function ProfileScreen({ navigation, route }: Props) {
     setActiveTab(newTab);
   };
 
+  const handleFollowersPress = () => {
+    if (user) {
+      navigation.navigate("FollowersFollowing", {
+        userId,
+        initialTab: "followers",
+        displayName,
+      });
+    }
+  };
+
+  const handleFollowingPress = () => {
+    if (user) {
+      navigation.navigate("FollowersFollowing", {
+        userId,
+        initialTab: "following",
+        displayName,
+      });
+    }
+  };
+
   // Dynamic search placeholder based on active tab
   const searchPlaceholder =
     activeTab === "DishLists"
@@ -176,6 +196,8 @@ export default function ProfileScreen({ navigation, route }: Props) {
         onSearchToggle={toggleSearch}
         onSearchChange={setSearchQuery}
         searchPlaceholder={searchPlaceholder}
+        onFollowersPress={handleFollowersPress}
+        onFollowingPress={handleFollowingPress}
       />
 
       {/* Tabs */}

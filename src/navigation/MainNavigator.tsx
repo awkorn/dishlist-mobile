@@ -11,6 +11,7 @@ import {
 } from "@features/dishlist";
 import { AddRecipeScreen, RecipeDetailScreen } from "@features/recipe";
 import { InviteLandingScreen } from "@features/invite";
+import { FollowersFollowingScreen } from "@features/profile";
 import TabNavigator from "./TabNavigator";
 import { RootStackParamList } from "@app-types/navigation";
 
@@ -74,6 +75,11 @@ export default function MainNavigator() {
           <Stack.Screen
             name="Profile"
             component={ProfileScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="FollowersFollowing"
+            component={FollowersFollowingScreen}
             options={{ headerShown: false }}
           />
           <Stack.Screen

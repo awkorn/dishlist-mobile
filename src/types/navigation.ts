@@ -47,6 +47,11 @@ export type RootStackParamList = {
   InviteLanding: {
     token: string;
   };
+  FollowersFollowing: {
+    userId: string;
+    initialTab: "followers" | "following";
+    displayName?: string;
+  };
 };
 
 export type DishListDetailScreenProps = NativeStackScreenProps<

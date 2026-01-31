@@ -28,7 +28,8 @@ interface ProfileHeaderProps {
   onEditPress?: () => void;
   onSharePress?: () => void;
   onMenuPress?: () => void;
-
+  onFollowersPress?: () => void;
+  onFollowingPress?: () => void;
   isSearchActive: boolean;
   searchQuery: string;
   onSearchToggle: () => void;
@@ -43,6 +44,8 @@ export function ProfileHeader({
   onEditPress,
   onSharePress,
   onMenuPress,
+  onFollowersPress,
+  onFollowingPress,
   isSearchActive,
   searchQuery,
   onSearchToggle,
@@ -105,7 +108,10 @@ export function ProfileHeader({
               {/* Only show menu for own profile */}
               {user.isOwnProfile && (
                 <TouchableOpacity onPress={onMenuPress} style={styles.iconBtn}>
-                  <EllipsisVertical size={22} color={theme.colors.neutral[700]} />
+                  <EllipsisVertical
+                    size={22}
+                    color={theme.colors.neutral[700]}
+                  />
                 </TouchableOpacity>
               )}
             </Animated.View>
@@ -134,14 +140,22 @@ export function ProfileHeader({
           </View>
 
           <View style={styles.statsSection}>
-            <View style={styles.stat}>
+            <TouchableOpacity
+              style={styles.stat}
+              onPress={onFollowersPress}
+              activeOpacity={0.7}
+            >
               <Text style={styles.statNumber}>{user.followerCount}</Text>
               <Text style={styles.statLabel}>Followers</Text>
-            </View>
-            <View style={styles.stat}>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.stat}
+              onPress={onFollowingPress}
+              activeOpacity={0.7}
+            >
               <Text style={styles.statNumber}>{user.followingCount}</Text>
               <Text style={styles.statLabel}>Following</Text>
-            </View>
+            </TouchableOpacity>
           </View>
         </View>
 

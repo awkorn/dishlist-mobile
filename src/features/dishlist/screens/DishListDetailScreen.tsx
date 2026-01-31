@@ -461,14 +461,13 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     ...typography.heading3,
-    fontSize: 28,
     color: theme.colors.textPrimary,
   },
   infoRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: theme.spacing.xs,
-    marginBottom: theme.spacing.sm,
+    marginBottom: theme.spacing.xs,
     marginTop: theme.spacing.sm,
   },
   infoText: {
