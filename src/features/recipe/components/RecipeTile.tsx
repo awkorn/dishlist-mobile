@@ -15,8 +15,6 @@ import { ComponentErrorBoundary } from "@providers/ErrorBoundary";
 interface RecipeTileProps {
   recipe: RecipeTileData;
   onPress?: () => void;
-  /** Compact size for discovery mode (viewing others' profiles) */
-  compact?: boolean;
 }
 
 interface RecipeTileData {
@@ -29,46 +27,37 @@ interface RecipeTileData {
 }
 
 const { width } = Dimensions.get("window");
-const tileWidth = (width - theme.spacing.xl * 2 - theme.spacing.lg) / 2;
-const COMPACT_WIDTH = 160;
+const TILE_WIDTH = (width - theme.spacing.xl * 2 - theme.spacing.lg) / 2;
 
-function RecipeTileContent({ recipe, onPress, compact = false }: RecipeTileProps) {
+function RecipeTileContent({ recipe, onPress }: RecipeTileProps) {
   const totalTime = (recipe.prepTime || 0) + (recipe.cookTime || 0);
-  
-  const containerStyle = compact ? styles.containerCompact : styles.container;
-  const imageStyle = compact ? styles.imageCompact : styles.image;
-  const placeholderStyle = compact ? styles.placeholderImageCompact : styles.placeholderImage;
 
   return (
-    <TouchableOpacity style={containerStyle} onPress={onPress}>
+    <TouchableOpacity style={styles.container} onPress={onPress}>
       {recipe.imageUrl ? (
-        <Image source={{ uri: recipe.imageUrl }} style={imageStyle} />
+        <Image source={{ uri: recipe.imageUrl }} style={styles.image} />
       ) : (
-        <View style={placeholderStyle}>
-          <Text style={styles.placeholderEmoji}>{compact ? "🍽️" : "🍽️"}</Text>
+        <View style={styles.placeholderImage}>
+          <Text style={styles.placeholderEmoji}>🍽️</Text>
         </View>
       )}
 
-      <View style={compact ? styles.contentCompact : styles.content}>
-        <Text style={compact ? styles.titleCompact : styles.title} numberOfLines={2}>
+      <View style={styles.content}>
+        <Text style={styles.title} numberOfLines={2}>
           {recipe.title}
         </Text>
 
         <View style={styles.metaRow}>
           {totalTime > 0 && (
             <View style={styles.metaItem}>
-              <Clock size={compact ? 10 : 12} color={theme.colors.neutral[500]} />
-              <Text style={compact ? styles.metaTextCompact : styles.metaText}>
-                {totalTime} min
-              </Text>
+              <Clock size={12} color={theme.colors.neutral[500]} />
+              <Text style={styles.metaText}>{totalTime} min</Text>
             </View>
           )}
           {recipe.servings && recipe.servings > 0 && (
             <View style={styles.metaItem}>
-              <Users size={compact ? 10 : 12} color={theme.colors.neutral[500]} />
-              <Text style={compact ? styles.metaTextCompact : styles.metaText}>
-                {recipe.servings}
-              </Text>
+              <Users size={12} color={theme.colors.neutral[500]} />
+              <Text style={styles.metaText}>{recipe.servings}</Text>
             </View>
           )}
         </View>
@@ -82,7 +71,7 @@ export default function RecipeTile(props: RecipeTileProps) {
     <ComponentErrorBoundary
       componentName="RecipeTile"
       fallback={
-        <View style={[props.compact ? styles.containerCompact : styles.container, styles.errorContainer]}>
+        <View style={[styles.container, styles.errorContainer]}>
           <Text style={styles.errorText}>Unable to load recipe</Text>
         </View>
       }
@@ -93,9 +82,8 @@ export default function RecipeTile(props: RecipeTileProps) {
 }
 
 const styles = StyleSheet.create({
-  // Full size (own profile)
   container: {
-    width: tileWidth,
+    width: TILE_WIDTH,
     backgroundColor: theme.colors.surface,
     borderRadius: theme.borderRadius.lg,
     overflow: "hidden",
@@ -103,15 +91,18 @@ const styles = StyleSheet.create({
   },
   image: {
     width: "100%",
-    height: tileWidth * 0.75,
+    height: TILE_WIDTH * 0.75,
     backgroundColor: theme.colors.neutral[200],
   },
   placeholderImage: {
     width: "100%",
-    height: tileWidth * 0.75,
+    height: TILE_WIDTH * 0.75,
     backgroundColor: theme.colors.neutral[50],
     justifyContent: "center",
     alignItems: "center",
+  },
+  placeholderEmoji: {
+    fontSize: 32,
   },
   content: {
     padding: theme.spacing.md,
@@ -121,50 +112,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: theme.colors.textPrimary,
     marginBottom: theme.spacing.xs,
-  },
-  metaText: {
-    ...typography.caption,
-    color: theme.colors.neutral[500],
-  },
-
-  // Compact size (others' profiles - discovery mode)
-  containerCompact: {
-    width: COMPACT_WIDTH,
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.borderRadius.lg,
-    overflow: "hidden",
-    ...theme.shadows.sm,
-  },
-  imageCompact: {
-    width: "100%",
-    height: COMPACT_WIDTH * 0.7,
-    backgroundColor: theme.colors.neutral[200],
-  },
-  placeholderImageCompact: {
-    width: "100%",
-    height: COMPACT_WIDTH * 0.7,
-    backgroundColor: theme.colors.neutral[100],
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  contentCompact: {
-    padding: theme.spacing.sm,
-  },
-  titleCompact: {
-    ...typography.body,
-    fontSize: 13,
-    color: theme.colors.textPrimary,
-    marginBottom: 2,
-  },
-  metaTextCompact: {
-    ...typography.caption,
-    fontSize: 10,
-    color: theme.colors.neutral[500],
-  },
-
-  // Shared styles
-  placeholderEmoji: {
-    fontSize: 32,
   },
   metaRow: {
     flexDirection: "row",
@@ -176,10 +123,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: theme.spacing.xs,
   },
+  metaText: {
+    ...typography.caption,
+    color: theme.colors.neutral[500],
+  },
   errorContainer: {
     justifyContent: "center",
     alignItems: "center",
-    height: tileWidth * 0.75 + 60,
+    height: TILE_WIDTH * 0.75 + 60,
   },
   errorText: {
     ...typography.caption,

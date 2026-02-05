@@ -31,7 +31,7 @@ import type { SearchTab, SearchUser, SearchRecipe, SearchDishList } from "../typ
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 const { width } = Dimensions.get("window");
-const GRID_TILE_WIDTH = (width - theme.spacing.xl * 2 - theme.spacing.lg) / 2;
+const TILE_WIDTH = (width - theme.spacing.xl * 2 - theme.spacing.lg) / 2;
 
 export default function SearchScreen() {
   const navigation = useNavigation<NavigationProp>();
@@ -123,8 +123,10 @@ export default function SearchScreen() {
           onSeeAll={recipes.length > 0 ? handleSeeAllRecipes : undefined}
           isEmpty={recipes.length === 0}
         >
-          {recipes.slice(0, 10).map((recipe) => (
-            <SearchRecipeTile key={recipe.id} recipe={recipe} compact />
+          {recipes.slice(0, 5).map((recipe) => (
+            <View key={recipe.id} style={styles.horizontalTile}>
+              <SearchRecipeTile recipe={recipe} />
+            </View>
           ))}
         </SearchSection>
 
@@ -134,8 +136,10 @@ export default function SearchScreen() {
           onSeeAll={dishLists.length > 0 ? handleSeeAllDishLists : undefined}
           isEmpty={dishLists.length === 0}
         >
-          {dishLists.slice(0, 10).map((dishList) => (
-            <SearchDishListTile key={dishList.id} dishList={dishList} compact />
+          {dishLists.slice(0, 5).map((dishList) => (
+            <View key={dishList.id} style={styles.horizontalTile}>
+              <SearchDishListTile dishList={dishList} />
+            </View>
           ))}
         </SearchSection>
       </ScrollView>
@@ -210,11 +214,7 @@ export default function SearchScreen() {
       <FlatList<SearchRecipe>
         data={recipes}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <View style={styles.gridTile}>
-            <SearchRecipeTile recipe={item} />
-          </View>
-        )}
+        renderItem={({ item }) => <SearchRecipeTile recipe={item} />}
         numColumns={2}
         columnWrapperStyle={styles.gridRow}
         contentContainerStyle={styles.gridContent}
@@ -258,11 +258,7 @@ export default function SearchScreen() {
       <FlatList<SearchDishList>
         data={dishLists}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <View style={styles.gridTile}>
-            <SearchDishListTile dishList={item} />
-          </View>
-        )}
+        renderItem={({ item }) => <SearchDishListTile dishList={item} />}
         numColumns={2}
         columnWrapperStyle={styles.gridRow}
         contentContainerStyle={styles.gridContent}
@@ -395,16 +391,17 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginBottom: theme.spacing.lg,
   },
-  gridTile: {
-    width: GRID_TILE_WIDTH,
-  },
-  footerLoader: {
-    paddingVertical: theme.spacing.xl,
+  // Horizontal scroll item spacing for ALL tab
+  horizontalTile: {
+    marginRight: theme.spacing.md,
   },
   horizontalUserItem: {
     width: 200,
     marginRight: theme.spacing.sm,
     backgroundColor: theme.colors.surface,
     borderRadius: theme.borderRadius.md,
+  },
+  footerLoader: {
+    paddingVertical: theme.spacing.xl,
   },
 });

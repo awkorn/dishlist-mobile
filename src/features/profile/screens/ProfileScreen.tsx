@@ -18,7 +18,7 @@ import { ProfileHeader } from "../components/ProfileHeader";
 import { ProfileTabs } from "../components/ProfileTabs";
 import { EditProfileSheet } from "../components/EditProfileSheet";
 import { DishListTile } from "@features/dishlist";
-import { RecipeTile } from "@features/recipe";
+import RecipeTile from "@features/recipe/components/RecipeTile";
 import { ProfileEmptyState } from "../components/ProfileEmptyState";
 import { theme } from "@styles/theme";
 import { typography } from "@styles/typography";
@@ -226,9 +226,7 @@ export default function ProfileScreen({ navigation, route }: Props) {
         <View style={styles.page} key="0">
           <FlatList
             data={dishlists}
-            renderItem={({ item }) => (
-              <DishListTile dishList={item} compact={!user.isOwnProfile} />
-            )}
+            renderItem={({ item }) => <DishListTile dishList={item} />}
             keyExtractor={(item) => item.id}
             numColumns={2}
             columnWrapperStyle={styles.row}
@@ -248,7 +246,6 @@ export default function ProfileScreen({ navigation, route }: Props) {
             renderItem={({ item }) => (
               <RecipeTile
                 recipe={item}
-                compact={!user.isOwnProfile}
                 onPress={() =>
                   navigation.navigate("RecipeDetail", { recipeId: item.id })
                 }

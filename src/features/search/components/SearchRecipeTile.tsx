@@ -1,5 +1,12 @@
 import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Image } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Image,
+  Dimensions,
+} from "react-native";
 import { Clock, Users } from "lucide-react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -13,15 +20,12 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 interface SearchRecipeTileProps {
   recipe: SearchRecipe;
   onPress?: () => void;
-  /** Compact size for horizontal scroll in ALL tab */
-  compact?: boolean;
 }
 
-export function SearchRecipeTile({
-  recipe,
-  onPress,
-  compact = false,
-}: SearchRecipeTileProps) {
+const { width } = Dimensions.get("window");
+const TILE_WIDTH = (width - theme.spacing.xl * 2 - theme.spacing.lg) / 2;
+
+export function SearchRecipeTile({ recipe, onPress }: SearchRecipeTileProps) {
   const navigation = useNavigation<NavigationProp>();
 
   const handlePress = () => {
@@ -33,36 +37,32 @@ export function SearchRecipeTile({
   };
 
   const totalTime = (recipe.prepTime || 0) + (recipe.cookTime || 0);
-  const tileStyle = compact ? styles.containerCompact : styles.container;
-  const imageStyle = compact ? styles.imageCompact : styles.image;
 
   return (
-    <TouchableOpacity style={tileStyle} onPress={handlePress}>
-      {/* Image */}
+    <TouchableOpacity style={styles.container} onPress={handlePress}>
       {recipe.imageUrl ? (
-        <Image source={{ uri: recipe.imageUrl }} style={imageStyle} />
+        <Image source={{ uri: recipe.imageUrl }} style={styles.image} />
       ) : (
-        <View style={[imageStyle, styles.placeholderImage]}>
+        <View style={[styles.image, styles.placeholderImage]}>
           <Text style={styles.placeholderEmoji}>🍽️</Text>
         </View>
       )}
 
-      {/* Content */}
       <View style={styles.content}>
-        <Text style={styles.title} numberOfLines={compact ? 1 : 2}>
+        <Text style={styles.title} numberOfLines={2}>
           {recipe.title}
         </Text>
 
         <View style={styles.metaRow}>
           {totalTime > 0 && (
             <View style={styles.metaItem}>
-              <Clock size={10} color={theme.colors.neutral[500]} />
+              <Clock size={12} color={theme.colors.neutral[500]} />
               <Text style={styles.metaText}>{totalTime} min</Text>
             </View>
           )}
           {recipe.servings && recipe.servings > 0 && (
             <View style={styles.metaItem}>
-              <Users size={10} color={theme.colors.neutral[500]} />
+              <Users size={12} color={theme.colors.neutral[500]} />
               <Text style={styles.metaText}>{recipe.servings}</Text>
             </View>
           )}
@@ -72,10 +72,6 @@ export function SearchRecipeTile({
   );
 }
 
-// Standard tile width (same as existing RecipeTile)
-const TILE_WIDTH = 160;
-const COMPACT_WIDTH = 140;
-
 const styles = StyleSheet.create({
   container: {
     width: TILE_WIDTH,
@@ -84,22 +80,9 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     ...theme.shadows.sm,
   },
-  containerCompact: {
-    width: COMPACT_WIDTH,
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.borderRadius.md,
-    overflow: "hidden",
-    ...theme.shadows.sm,
-    marginRight: theme.spacing.md,
-  },
   image: {
     width: "100%",
-    height: TILE_WIDTH * 0.7,
-    backgroundColor: theme.colors.neutral[200],
-  },
-  imageCompact: {
-    width: "100%",
-    height: COMPACT_WIDTH * 0.65,
+    height: TILE_WIDTH * 0.75,
     backgroundColor: theme.colors.neutral[200],
   },
   placeholderImage: {
@@ -108,30 +91,29 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   placeholderEmoji: {
-    fontSize: 28,
+    fontSize: 32,
   },
   content: {
-    padding: theme.spacing.sm,
+    padding: theme.spacing.md,
   },
   title: {
-    ...typography.subtitle,
-    fontSize: 13,
+    ...typography.body,
+    fontSize: 14,
     color: theme.colors.textPrimary,
-    marginBottom: 2,
+    marginBottom: theme.spacing.xs,
   },
   metaRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: theme.spacing.sm,
+    gap: theme.spacing.md,
   },
   metaItem: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 3,
+    gap: theme.spacing.xs,
   },
   metaText: {
     ...typography.caption,
-    fontSize: 10,
     color: theme.colors.neutral[500],
   },
 });

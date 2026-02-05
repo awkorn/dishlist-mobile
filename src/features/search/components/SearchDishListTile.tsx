@@ -1,5 +1,11 @@
 import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Dimensions,
+} from "react-native";
 import { Eye, Heart, Handshake } from "lucide-react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -13,15 +19,12 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 interface SearchDishListTileProps {
   dishList: SearchDishList;
   onPress?: () => void;
-  /** Compact size for horizontal scroll in ALL tab */
-  compact?: boolean;
 }
 
-export function SearchDishListTile({
-  dishList,
-  onPress,
-  compact = false,
-}: SearchDishListTileProps) {
+const { width } = Dimensions.get("window");
+const TILE_WIDTH = (width - theme.spacing.xl * 2 - theme.spacing.lg) / 2;
+
+export function SearchDishListTile({ dishList, onPress }: SearchDishListTileProps) {
   const navigation = useNavigation<NavigationProp>();
 
   const handlePress = () => {
@@ -42,7 +45,6 @@ export function SearchDishListTile({
   const getBadges = () => {
     const badges = [];
 
-    // Following badge
     if (dishList.isFollowing) {
       badges.push({
         type: "following",
@@ -51,7 +53,6 @@ export function SearchDishListTile({
       });
     }
 
-    // Collaborator badge
     if (dishList.isCollaborator) {
       badges.push({
         type: "collaborator",
@@ -60,7 +61,6 @@ export function SearchDishListTile({
       });
     }
 
-    // Public badge
     if (dishList.visibility === "PUBLIC") {
       badges.push({
         type: "public",
@@ -72,12 +72,10 @@ export function SearchDishListTile({
     return badges;
   };
 
-  const tileStyle = compact ? styles.containerCompact : styles.container;
-
   return (
-    <TouchableOpacity style={tileStyle} onPress={handlePress}>
+    <TouchableOpacity style={styles.container} onPress={handlePress}>
       <View style={styles.content}>
-        <Text style={styles.title} numberOfLines={compact ? 1 : 2}>
+        <Text style={styles.title} numberOfLines={2}>
           {dishList.title}
         </Text>
 
@@ -94,7 +92,6 @@ export function SearchDishListTile({
             }`}
         </Text>
 
-        {/* Badges */}
         <View style={styles.badges}>
           {getBadges().map((badge) => (
             <View key={badge.type} style={styles.badge}>
@@ -107,9 +104,6 @@ export function SearchDishListTile({
   );
 }
 
-const TILE_WIDTH = 160;
-const COMPACT_WIDTH = 150;
-
 const styles = StyleSheet.create({
   container: {
     width: TILE_WIDTH,
@@ -117,31 +111,21 @@ const styles = StyleSheet.create({
     borderRadius: theme.borderRadius.md,
     ...theme.shadows.sm,
   },
-  containerCompact: {
-    width: COMPACT_WIDTH,
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.borderRadius.md,
-    ...theme.shadows.sm,
-    marginRight: theme.spacing.md,
-  },
   content: {
-    padding: theme.spacing.md,
+    padding: theme.spacing.lg,
   },
   title: {
     ...typography.subtitle,
-    fontSize: 14,
     color: theme.colors.textPrimary,
     marginBottom: theme.spacing.xs,
   },
   owner: {
     ...typography.caption,
-    fontSize: 12,
     color: theme.colors.neutral[600],
     marginBottom: theme.spacing.xs,
   },
   stats: {
     ...typography.caption,
-    fontSize: 11,
     color: theme.colors.neutral[500],
     marginBottom: theme.spacing.sm,
   },
