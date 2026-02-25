@@ -21,6 +21,7 @@
     "@react-navigation/bottom-tabs": "^7.4.7",
     "@react-navigation/native": "^7.1.17",
     "@react-navigation/native-stack": "^7.3.26",
+    "@supabase/supabase-js": "^2.97.0",
     "@tanstack/react-query": "^5.87.1",
     "@testing-library/jest-native": "^5.4.3",
     "@testing-library/react-native": "^13.3.3",
