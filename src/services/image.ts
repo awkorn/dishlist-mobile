@@ -1,17 +1,12 @@
 import { createClient } from '@supabase/supabase-js';
 import { auth } from '@services/firebase';
+import * as FileSystem from 'expo-file-system';
 
 const supabase = createClient(
   process.env.EXPO_PUBLIC_SUPABASE_URL!,
   process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!
 );
 
-/**
- * Upload an image to Supabase Storage
- * @param uri - Local file URI
- * @param folder - Storage bucket ('recipes' | 'avatars')
- * @returns Public URL of the uploaded image
- */
 export const uploadImage = async (uri: string, folder: string): Promise<string> => {
   const user = auth.currentUser;
 
@@ -24,14 +19,20 @@ export const uploadImage = async (uri: string, folder: string): Promise<string> 
     ? `${user.uid}/${timestamp}.jpg`
     : `${timestamp}.jpg`;
 
-  // Convert URI to blob
-  const response = await fetch(uri);
-  const blob = await response.blob();
+  // Use same approach as useImportRecipe
+  const file = new FileSystem.File(uri);
+  const base64 = await file.base64();
 
-  // Upload to Supabase
+  // Convert base64 to ArrayBuffer
+  const binaryString = atob(base64);
+  const bytes = new Uint8Array(binaryString.length);
+  for (let i = 0; i < binaryString.length; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+
   const { error } = await supabase.storage
     .from(folder)
-    .upload(filename, blob, {
+    .upload(filename, bytes.buffer, {
       contentType: 'image/jpeg',
       upsert: true,
     });
@@ -41,7 +42,6 @@ export const uploadImage = async (uri: string, folder: string): Promise<string> 
     throw new Error(error.message);
   }
 
-  // Get public URL
   const { data } = supabase.storage
     .from(folder)
     .getPublicUrl(filename);
