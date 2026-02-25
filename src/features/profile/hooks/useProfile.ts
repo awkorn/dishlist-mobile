@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { profileService } from "../services/profileService";
 import { searchRecipes, searchDishLists } from "@utils/recipeSearch";
 import type { ProfileTab, ProfileDishList, ProfileRecipe } from "../types";
@@ -13,13 +13,37 @@ export function useProfile(userId: string) {
 
   const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: [PROFILE_QUERY_KEY, userId],
-    queryFn: () => profileService.getUserProfile(userId),
+    queryFn: () => profileService.getUserProfile(userId, { includeRecipes: false }),
     enabled: !!userId,
+  });
+
+  const {
+    data: recipePages,
+    isLoading: isRecipesLoading,
+    isFetching: isRecipesFetching,
+    isFetchingNextPage: isFetchingNextRecipes,
+    hasNextPage: hasMoreRecipes,
+    fetchNextPage: fetchNextRecipes,
+    refetch: refetchRecipes,
+  } = useInfiniteQuery({
+    queryKey: [PROFILE_QUERY_KEY, userId, "recipes"],
+    queryFn: ({ pageParam }) =>
+      profileService.getUserRecipes(userId, { limit: 24, offset: pageParam as number }),
+    initialPageParam: 0,
+    getNextPageParam: (lastPage) => {
+      if (!lastPage.recipesMeta?.hasMore) return undefined;
+      return (lastPage.recipesMeta.offset ?? 0) + (lastPage.recipesMeta.limit ?? 24);
+    },
+    enabled: !!userId && activeTab === "Recipes",
+    staleTime: 3 * 60 * 1000,
   });
 
   const user = data?.user ?? null;
   const dishlists = data?.dishlists ?? [];
-  const recipes = data?.recipes ?? [];
+  const recipes = useMemo(
+    () => recipePages?.pages.flatMap((page) => page.recipes) ?? [],
+    [recipePages]
+  );
 
   // Filter dishlists based on search query
   const filteredDishLists = useMemo(() => {
@@ -82,11 +106,17 @@ export function useProfile(userId: string) {
 
     // Loading state
     isLoading,
+    isRecipesLoading,
+    isRecipesFetching,
+    isFetchingNextRecipes,
+    hasMoreRecipes: !!hasMoreRecipes,
     isError,
     error,
 
     // Actions
     refetch,
+    refetchRecipes,
+    fetchNextRecipes,
     setActiveTab: handleTabChange,
     setSearchQuery: handleSearchChange,
     toggleSearch: handleSearchToggle,

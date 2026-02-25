@@ -3,11 +3,63 @@ import type { ProfileData, UpdateProfileData, UserProfile, FollowListResponse } 
 
 export const profileService = {
   /**
+   * Fetch the currently authenticated user's lightweight profile
+   */
+  async getCurrentUserProfile(): Promise<{ user: UserProfile }> {
+    const response = await api.get<{ user: UserProfile }>("/users/me");
+    return response.data;
+  },
+
+  /**
    * Fetch a user's profile by ID
    */
-  async getUserProfile(userId: string): Promise<ProfileData> {
-    const response = await api.get<ProfileData>(`/users/${userId}`);
+  async getUserProfile(
+    userId: string,
+    options?: {
+      includeRecipes?: boolean;
+      includeDishlists?: boolean;
+      recipesLimit?: number;
+      recipesOffset?: number;
+    }
+  ): Promise<ProfileData> {
+    const params = new URLSearchParams();
+    if (options?.includeRecipes !== undefined) {
+      params.set("includeRecipes", String(options.includeRecipes));
+    }
+    if (options?.includeDishlists !== undefined) {
+      params.set("includeDishlists", String(options.includeDishlists));
+    }
+    if (options?.recipesLimit !== undefined) {
+      params.set("recipesLimit", String(options.recipesLimit));
+    }
+    if (options?.recipesOffset !== undefined) {
+      params.set("recipesOffset", String(options.recipesOffset));
+    }
+
+    const query = params.toString();
+    const response = await api.get<ProfileData>(
+      `/users/${userId}${query ? `?${query}` : ""}`
+    );
     return response.data;
+  },
+
+  /**
+   * Fetch only recipes for a user profile (paginated)
+   */
+  async getUserRecipes(
+    userId: string,
+    options?: { limit?: number; offset?: number }
+  ) {
+    const response = await profileService.getUserProfile(userId, {
+      includeRecipes: true,
+      includeDishlists: false,
+      recipesLimit: options?.limit ?? 24,
+      recipesOffset: options?.offset ?? 0,
+    });
+    return {
+      recipes: response.recipes,
+      recipesMeta: response.recipesMeta,
+    };
   },
 
   /**

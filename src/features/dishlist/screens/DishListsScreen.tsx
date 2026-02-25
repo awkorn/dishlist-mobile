@@ -24,7 +24,7 @@ import { QueryErrorBoundary } from "@providers/ErrorBoundary";
 import { queryKeys } from "@lib/queryKeys";
 import { profileService } from "@features/profile/services/profileService";
 import { RootStackParamList } from "@app-types/navigation";
-import { useDishLists, usePrefetchDishLists } from "../hooks";
+import { useDishLists } from "../hooks";
 import {
   DishListGrid,
   DishListEmptyState,
@@ -38,8 +38,7 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 export default function DishListsScreen() {
   const navigation = useNavigation<NavigationProp>();
-  const { user } = useAuth();
-  const { prefetchDishLists } = usePrefetchDishLists();
+  const { user, userProfile } = useAuth();
   const pagerRef = useRef<PagerView>(null);
 
   const [activeTab, setActiveTab] = useState(0);
@@ -52,11 +51,6 @@ export default function DishListsScreen() {
 
   const { dishLists, isLoading, isError, isFetching, dataUpdatedAt, refetch } =
     useDishLists({ tab: currentTabKey, searchQuery });
-
-  // Prefetch on mount
-  useEffect(() => {
-    prefetchDishLists();
-  }, [prefetchDishLists]);
 
   // Network listener
   useEffect(() => {
@@ -79,9 +73,9 @@ export default function DishListsScreen() {
   }, [isOnline, refetch]);
 
   // User profile for avatar
-  const { data: userProfile } = useQuery({
-    queryKey: queryKeys.users.profile(user?.uid || ""),
-    queryFn: () => profileService.getUserProfile(user!.uid),
+  const { data: currentUserProfile } = useQuery({
+    queryKey: queryKeys.users.me(),
+    queryFn: profileService.getCurrentUserProfile,
     enabled: !!user?.uid,
     staleTime: 10 * 60 * 1000,
   });
@@ -204,9 +198,11 @@ export default function DishListsScreen() {
             style={styles.profileButton}
             onPress={handleProfilePress}
           >
-            {userProfile?.user?.avatarUrl ? (
+            {(userProfile?.avatarUrl || currentUserProfile?.user?.avatarUrl) ? (
               <Image
-                source={{ uri: userProfile.user.avatarUrl }}
+                source={{
+                  uri: userProfile?.avatarUrl || currentUserProfile?.user?.avatarUrl,
+                }}
                 style={styles.profileAvatar}
               />
             ) : (

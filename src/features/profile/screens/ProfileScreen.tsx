@@ -45,8 +45,14 @@ export default function ProfileScreen({ navigation, route }: Props) {
     searchQuery,
     isSearchActive,
     isLoading,
+    isRecipesLoading,
+    isRecipesFetching,
+    isFetchingNextRecipes,
+    hasMoreRecipes,
     isError,
     refetch,
+    refetchRecipes,
+    fetchNextRecipes,
     setActiveTab,
     setSearchQuery,
     toggleSearch,
@@ -69,6 +75,7 @@ export default function ProfileScreen({ navigation, route }: Props) {
   const handleEditComplete = () => {
     setShowEditSheet(false);
     refetch();
+    refetchRecipes();
   };
 
   const handleMenuPress = () => {
@@ -121,6 +128,11 @@ export default function ProfileScreen({ navigation, route }: Props) {
         displayName,
       });
     }
+  };
+
+  const handleLoadMoreRecipes = () => {
+    if (!hasMoreRecipes || isFetchingNextRecipes) return;
+    fetchNextRecipes();
   };
 
   // Dynamic search placeholder based on active tab
@@ -257,8 +269,23 @@ export default function ProfileScreen({ navigation, route }: Props) {
             contentContainerStyle={styles.listContent}
             ItemSeparatorComponent={() => <View style={styles.separator} />}
             ListEmptyComponent={
-              <ProfileEmptyState message={getEmptyMessage(true)} />
+              isRecipesLoading || isRecipesFetching ? (
+                <View style={styles.tabLoadingContainer}>
+                  <ActivityIndicator size="small" color={theme.colors.primary[500]} />
+                </View>
+              ) : (
+                <ProfileEmptyState message={getEmptyMessage(true)} />
+              )
             }
+            ListFooterComponent={
+              isFetchingNextRecipes ? (
+                <View style={styles.tabLoadingContainer}>
+                  <ActivityIndicator size="small" color={theme.colors.primary[500]} />
+                </View>
+              ) : null
+            }
+            onEndReached={handleLoadMoreRecipes}
+            onEndReachedThreshold={0.4}
             showsVerticalScrollIndicator={false}
           />
         </View>
@@ -317,6 +344,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
+  },
+  tabLoadingContainer: {
+    paddingVertical: 24,
+    alignItems: "center",
+    justifyContent: "center",
   },
   errorTitle: {
     ...typography.heading3,

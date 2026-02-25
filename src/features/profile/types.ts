@@ -63,6 +63,12 @@ export interface ProfileData {
   user: UserProfile;
   dishlists: ProfileDishList[];
   recipes: ProfileRecipe[];
+  recipesMeta?: {
+    included: boolean;
+    limit: number;
+    offset: number;
+    hasMore: boolean;
+  };
 }
 
 export interface UpdateProfileData {

@@ -41,6 +41,7 @@ describe('useEditProfile', () => {
     followerCount: 10,
     followingCount: 5,
     isOwnProfile: true,
+    followStatus: 'NONE',
   };
 
   const mockOnSuccess = jest.fn();
