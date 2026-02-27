@@ -28,7 +28,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   title: {
-    ...typography.heading3,
+    ...typography.subtitle,
     color: theme.colors.neutral[700],
     marginBottom: theme.spacing.sm,
     textAlign: 'center',

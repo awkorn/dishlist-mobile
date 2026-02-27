@@ -496,7 +496,7 @@ const styles = StyleSheet.create({
     paddingVertical: theme.spacing["4xl"],
   },
   emptyTitle: {
-    ...typography.heading3,
+    ...typography.subtitle,
     color: theme.colors.neutral[900],
     marginBottom: theme.spacing.sm,
   },

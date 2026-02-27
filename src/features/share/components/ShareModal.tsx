@@ -332,7 +332,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.spacing.xl,
   },
   emptyTitle: {
-    ...typography.heading3,
+    ...typography.subtitle,
     color: theme.colors.neutral[800],
     marginBottom: theme.spacing.sm,
     textAlign: "center",

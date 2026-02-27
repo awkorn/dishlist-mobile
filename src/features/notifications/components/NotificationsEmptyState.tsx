@@ -23,7 +23,7 @@ const styles = StyleSheet.create({
     paddingVertical: theme.spacing["3xl"],
   },
   title: {
-    ...typography.heading3,
+    ...typography.subtitle,
     color: theme.colors.textPrimary,
     marginBottom: theme.spacing.sm,
   },

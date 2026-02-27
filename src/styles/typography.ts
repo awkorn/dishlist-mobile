@@ -38,7 +38,7 @@ export const typography = {
     lineHeight: 36,
   },
   subtitle: {
-    fontFamily: "Inter-Regular",
+    fontFamily: "Inter-Medium",
     fontSize: 19,
     lineHeight: 24,
   },
