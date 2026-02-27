@@ -87,8 +87,7 @@ export default function ProfileScreen({ navigation, route }: Props) {
   };
 
   const handleSettingsPress = () => {
-    // TODO: Navigate to settings screen when implemented
-    console.log("Settings pressed");
+    navigation.navigate("Settings");
   };
 
   const handleLogout = async () => {

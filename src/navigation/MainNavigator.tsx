@@ -4,6 +4,7 @@ import { useAuth } from "@providers/AuthProvider/AuthContext";
 import { View, ActivityIndicator, StyleSheet } from "react-native";
 import { LoginScreen, SignUpScreen } from "@features/auth";
 import { ProfileScreen } from "@features/profile";
+import { SettingsScreen } from "@features/settings";
 import {
   DishListsScreen,
   DishListDetailScreen,
@@ -75,6 +76,11 @@ export default function MainNavigator() {
           <Stack.Screen
             name="Profile"
             component={ProfileScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="Settings"
+            component={SettingsScreen}
             options={{ headerShown: false }}
           />
           <Stack.Screen

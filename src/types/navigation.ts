@@ -44,6 +44,7 @@ export type RootStackParamList = {
     dishListId?: string;
   };
   Profile: { userId: string };
+  Settings: undefined;
   InviteLanding: {
     token: string;
   };
