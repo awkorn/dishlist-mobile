@@ -1,10 +1,5 @@
-import {
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  signOut as firebaseSignOut,
-  User as FirebaseUser,
-} from "firebase/auth";
-import { auth } from "@services/firebase";
+import { supabase } from "@services/supabase";
+import { User as SupabaseUser } from "@supabase/supabase-js";
 import type { AuthResult } from "../types";
 
 export const signInWithEmail = async (
@@ -12,18 +7,18 @@ export const signInWithEmail = async (
   password: string
 ): Promise<AuthResult> => {
   try {
-    const userCredential = await signInWithEmailAndPassword(
-      auth,
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
-      password
-    );
-    return { user: userCredential.user, error: null };
+      password,
+    });
+
+    if (error) {
+      return { user: null, error: error.message };
+    }
+
+    return { user: data.user, error: null };
   } catch (error: any) {
-    console.log("Firebase signIn error:", { message: error.message });
-    return {
-      user: null,
-      error: error.code || error.message,
-    };
+    return { user: null, error: error.message };
   }
 };
 
@@ -32,28 +27,49 @@ export const signUpWithEmail = async (
   password: string
 ): Promise<AuthResult> => {
   try {
-    const userCredential = await createUserWithEmailAndPassword(
-      auth,
+    const { data, error } = await supabase.auth.signUp({
       email,
-      password
-    );
-    return { user: userCredential.user, error: null };
+      password,
+    });
+
+    if (error) {
+      return { user: null, error: error.message };
+    }
+
+    return { user: data.user, error: null };
   } catch (error: any) {
-    console.log("Firebase signUp error:", { message: error.message });
-    return {
-      user: null,
-      error: error.code || error.message,
-    };
+    return { user: null, error: error.message };
   }
 };
 
 export const signOut = async (): Promise<{ error: string | null }> => {
   try {
-    await firebaseSignOut(auth);
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      return { error: error.message };
+    }
     return { error: null };
   } catch (error: any) {
     return { error: error.message };
   }
 };
 
-export const getCurrentUser = (): FirebaseUser | null => auth.currentUser;
+export const resetPassword = async (
+  email: string
+): Promise<{ error: string | null }> => {
+  try {
+    const { error } = await supabase.auth.resetPasswordForEmail(email);
+    if (error) {
+      return { error: error.message };
+    }
+    return { error: null };
+  } catch (error: any) {
+    return { error: error.message };
+  }
+};
+
+export const getCurrentUser = (): SupabaseUser | null => {
+  // Note: This is synchronous but may return stale data.
+  // Prefer supabase.auth.getUser() for fresh data.
+  return null; // Use getSession/getUser async methods instead
+};

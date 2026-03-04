@@ -99,7 +99,7 @@ export default function SignUpScreen({ navigation }: SignUpScreenProps) {
       });
 
       if (result.error) {
-        const errorInfo = getAuthErrorMessage({ code: result.error });
+        const errorInfo = getAuthErrorMessage(result.error);
         setError(errorInfo);
       }
     } catch (err) {

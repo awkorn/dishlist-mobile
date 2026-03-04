@@ -1,3 +1,5 @@
+import type { User as SupabaseUser } from "@supabase/supabase-js";
+
 export interface AuthCredentials {
   email: string;
   password: string;
@@ -10,19 +12,23 @@ export interface SignUpData extends AuthCredentials {
 }
 
 export interface AuthResult {
-  user: import('firebase/auth').User | null;
+  user: SupabaseUser | null;
   error: string | null;
 }
 
 export interface AuthContextType {
-  user: import('firebase/auth').User | null;
-  userProfile: import('@app-types').User | null;
+  user: SupabaseUser | null;
+  userProfile: import("@app-types").User | null;
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<{ error: string | null }>;
+  signIn: (
+    email: string,
+    password: string
+  ) => Promise<{ error: string | null }>;
   signUp: (
     email: string,
     password: string,
-    userData: Partial<import('@app-types').User>
+    userData: Partial<import("@app-types").User>
   ) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
+  resetPassword: (email: string) => Promise<{ error: string | null }>;
 }

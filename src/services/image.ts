@@ -1,14 +1,9 @@
-import { createClient } from '@supabase/supabase-js';
-import { auth } from '@services/firebase';
+import { supabase } from '@services/supabase';
 import * as FileSystem from 'expo-file-system';
 
-const supabase = createClient(
-  process.env.EXPO_PUBLIC_SUPABASE_URL!,
-  process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!
-);
-
 export const uploadImage = async (uri: string, folder: string): Promise<string> => {
-  const user = auth.currentUser;
+
+  const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
     throw new Error('User must be authenticated to upload images');
@@ -16,7 +11,7 @@ export const uploadImage = async (uri: string, folder: string): Promise<string> 
 
   const timestamp = Date.now();
   const filename = folder === 'avatars'
-    ? `${user.uid}/${timestamp}.jpg`
+    ? `${user.id}/${timestamp}.jpg`
     : `${timestamp}.jpg`;
 
   // Use same approach as useImportRecipe

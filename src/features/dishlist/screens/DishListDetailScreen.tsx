@@ -422,7 +422,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.spacing.xl,
   },
   errorTitle: {
-    ...typography.heading3,
+    ...typography.subtitle,
     color: theme.colors.neutral[900],
     marginBottom: theme.spacing.sm,
   },

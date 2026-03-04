@@ -30,7 +30,7 @@ export function DishListEmptyState({
           ? `No DishLists match "${searchQuery}"`
           : isMyDishListsTab
           ? 'Tap the + button to create your first DishList'
-          : `You don't have any ${activeTab.toLowerCase()} yet`}
+          : `You don't have any in ${activeTab.toLowerCase()} yet`}
       </Text>
 
       {!hasSearchQuery && isMyDishListsTab && onCreatePress && (
@@ -52,7 +52,7 @@ const styles = StyleSheet.create({
     paddingVertical: theme.spacing["4xl"],
   },
   title: {
-    ...typography.heading3,
+    ...typography.subtitle,
     color: theme.colors.neutral[900],
     marginBottom: theme.spacing.sm,
     textAlign: 'center',

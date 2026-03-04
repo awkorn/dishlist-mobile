@@ -1,5 +1,5 @@
 // ============================================================================
-// Firebase Auth Error Mapping
+// Supabase Auth Error Mapping
 // ============================================================================
 
 interface ErrorMapping {
@@ -8,50 +8,35 @@ interface ErrorMapping {
 }
 
 const authErrorMap: Record<string, ErrorMapping> = {
-  'auth/invalid-email': {
-    message: 'Please enter a valid email address',
+  "Invalid login credentials": {
+    message: "Email or password is incorrect",
+    action: "Please check your credentials and try again",
   },
-  'auth/user-disabled': {
-    message: 'This account has been disabled',
-    action: 'Contact support for help',
+  "Email not confirmed": {
+    message: "Please verify your email address",
+    action: "Check your inbox for a verification link",
   },
-  'auth/user-not-found': {
-    message: 'No account found with this email',
-    action: 'Check your email or sign up',
+  "User already registered": {
+    message: "An account with this email already exists",
+    action: "Try logging in instead",
   },
-  'auth/wrong-password': {
-    message: 'Incorrect password',
-    action: 'Try again or reset your password',
+  "Password should be at least 6 characters": {
+    message: "Password is too weak",
+    action: "Use at least 6 characters",
   },
-  'auth/invalid-credential': {
-    message: 'Email or password is incorrect',
-    action: 'Please check your credentials and try again',
+  "Email rate limit exceeded": {
+    message: "Too many attempts",
+    action: "Please try again later",
   },
-  'auth/too-many-requests': {
-    message: 'Too many failed attempts',
-    action: 'Please try again later or reset your password',
+  "For security purposes, you can only request this once every 60 seconds": {
+    message: "Please wait before trying again",
+    action: "Try again in 60 seconds",
   },
-  'auth/email-already-in-use': {
-    message: 'An account with this email already exists',
-    action: 'Try logging in instead',
-  },
-  'auth/weak-password': {
-    message: 'Password is too weak',
-    action: 'Use at least 6 characters',
-  },
-  'auth/operation-not-allowed': {
-    message: 'Email/password sign-in is not enabled',
-    action: 'Contact support',
-  },
-  'auth/network-request-failed': {
-    message: 'Connection error',
-    action: 'Check your internet connection and try again',
-  },
-  'auth/timeout': {
-    message: 'Request timed out',
-    action: 'Please try again',
+  "Unable to validate email address: invalid format": {
+    message: "Please enter a valid email address",
   },
 };
+
 
 // ============================================================================
 // API Error Mapping
@@ -100,25 +85,35 @@ const apiErrorMap: Record<number, ErrorMapping> = {
 // Error Extraction Functions
 // ============================================================================
 
-export function getAuthErrorMessage(error: any): ErrorMapping {
-  const code = error?.code || '';
+/**
+ * Get a user-friendly error message from a Supabase auth error.
+ * Supabase returns error messages as strings (not codes like Firebase).
+ */
+export const getAuthErrorMessage = (
+  error: { code?: string; message?: string } | string
+): ErrorMapping => {
+  const errorMessage = typeof error === "string"
+    ? error
+    : error.message || error.code || "";
 
-  if (authErrorMap[code]) {
-    return authErrorMap[code];
+  // Check for exact match first
+  if (authErrorMap[errorMessage]) {
+    return authErrorMap[errorMessage];
   }
 
-  if (error?.message?.includes('network') || error?.message?.includes('connection')) {
-    return {
-      message: 'Connection error',
-      action: 'Check your internet and try again',
-    };
+  // Check for partial matches (Supabase error messages can vary slightly)
+  for (const [key, mapping] of Object.entries(authErrorMap)) {
+    if (errorMessage.toLowerCase().includes(key.toLowerCase())) {
+      return mapping;
+    }
   }
 
+  // Fallback
   return {
-    message: 'Something went wrong',
-    action: 'Please try again',
+    message: "Something went wrong",
+    action: "Please try again",
   };
-}
+};
 
 export function getApiErrorMessage(error: any): ErrorMapping {
   if (error?.response?.data?.error) {
@@ -146,15 +141,14 @@ export function getApiErrorMessage(error: any): ErrorMapping {
 }
 
 export function getErrorMessage(error: any): string {
-  const authError = getAuthErrorMessage(error);
-  const apiError = getApiErrorMessage(error);
-
-  if (error?.code?.startsWith('auth/')) {
+  if (typeof error === "string" || error?.code?.startsWith("auth")) {
+    const authError = getAuthErrorMessage(error);
     return authError.action
       ? `${authError.message}. ${authError.action}`
       : authError.message;
   }
 
+  const apiError = getApiErrorMessage(error);
   return apiError.action
     ? `${apiError.message}. ${apiError.action}`
     : apiError.message;

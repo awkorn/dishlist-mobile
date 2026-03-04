@@ -76,7 +76,7 @@ export default function DishListsScreen() {
   const { data: currentUserProfile } = useQuery({
     queryKey: queryKeys.users.me(),
     queryFn: profileService.getCurrentUserProfile,
-    enabled: !!user?.uid,
+    enabled: !!user?.id,
     staleTime: 10 * 60 * 1000,
   });
 
@@ -91,10 +91,10 @@ export default function DishListsScreen() {
   }, [navigation]);
 
   const handleProfilePress = useCallback(() => {
-    if (user?.uid) {
-      navigation.navigate("Profile", { userId: user.uid });
+    if (user?.id) {
+      navigation.navigate("Profile", { userId: user.id });
     }
-  }, [navigation, user?.uid]);
+  }, [navigation, user?.id]);
 
   const handleTabPress = useCallback((index: number) => {
     setActiveTab(index);

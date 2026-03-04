@@ -1,7 +1,6 @@
 import axios from "axios";
-import { auth } from "@services/firebase";
+import { supabase } from "@services/supabase";
 
-// TODO : Update the API base URL
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:3000";
 
 const api = axios.create({
@@ -10,11 +9,12 @@ const api = axios.create({
 });
 
 api.interceptors.request.use(async (config) => {
-  const user = auth.currentUser;
-  if (user) {
-    const token = await user.getIdToken();
-    config.headers.Authorization = `Bearer ${token}`;
+  const { data: { session } } = await supabase.auth.getSession();
+  
+  if (session?.access_token) {
+    config.headers.Authorization = `Bearer ${session.access_token}`;
   }
+  
   return config;
 });
 

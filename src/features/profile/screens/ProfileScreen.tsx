@@ -350,7 +350,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   errorTitle: {
-    ...typography.heading3,
+    ...typography.subtitle,
     color: theme.colors.neutral[900],
     marginBottom: 8,
   },

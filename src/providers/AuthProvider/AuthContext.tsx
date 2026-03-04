@@ -1,21 +1,30 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
-import { auth } from '@services/firebase';
-import { User } from '@app-types';
-import { signInWithEmail, signUpWithEmail, signOut as authSignOut } from '@features/auth/services';
-import api from '@services/api';
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { User as SupabaseUser, Session } from "@supabase/supabase-js";
+import { supabase } from "@services/supabase";
+import { User } from "@app-types";
+import {
+  signInWithEmail,
+  signUpWithEmail,
+  signOut as authSignOut,
+  resetPassword as authResetPassword,
+} from "@features/auth/services";
+import api from "@services/api";
 
 interface AuthContextType {
-  user: FirebaseUser | null;
+  user: SupabaseUser | null;
   userProfile: User | null;
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<{ error: string | null }>;
+  signIn: (
+    email: string,
+    password: string
+  ) => Promise<{ error: string | null }>;
   signUp: (
     email: string,
     password: string,
     userData: Partial<User>
   ) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
+  resetPassword: (email: string) => Promise<{ error: string | null }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -23,29 +32,48 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth must be used within AuthProvider');
+    throw new Error("useAuth must be used within AuthProvider");
   }
   return context;
 };
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<FirebaseUser | null>(null);
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
+  const [user, setUser] = useState<SupabaseUser | null>(null);
   const [userProfile, setUserProfile] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      setUser(firebaseUser);
-      setLoading(false);
+    // 1. Check for existing session on mount
+    const initSession = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
-      if (firebaseUser) {
-        console.log('User authenticated:', firebaseUser.email);
-      } else {
+      if (session?.user) {
+        setUser(session.user);
+        console.log("User authenticated:", session.user.email);
+      }
+      setLoading(false);
+    };
+
+    initSession();
+
+    // 2. Listen for auth state changes (sign in, sign out, token refresh)
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+
+      if (!session?.user) {
         setUserProfile(null);
       }
     });
 
-    return unsubscribe;
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signIn = async (email: string, password: string) => {
@@ -57,13 +85,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (result.user) {
         try {
-          const response = await api.post('/users/register', {
+          const response = await api.post("/users/register", {
             email: result.user.email,
           });
           setUserProfile(response.data.user);
         } catch (apiError: any) {
           console.log(
-            'Backend registration error:',
+            "Backend registration error:",
             apiError.response?.data || apiError.message
           );
         }
@@ -75,29 +103,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const signUp = async (email: string, password: string, userData: Partial<User>) => {
+  const signUp = async (
+    email: string,
+    password: string,
+    userData: Partial<User>
+  ) => {
     try {
       const result = await signUpWithEmail(email, password);
       if (result.error) {
         return { error: result.error };
       }
 
-      console.log('Firebase signup success, calling backend...');
+      console.log("Supabase signup success, calling backend...");
 
       if (result.user) {
         try {
-          const response = await api.post('/users/register', {
+          const response = await api.post("/users/register", {
             email: result.user.email,
             ...userData,
           });
           setUserProfile(response.data.user);
         } catch (apiError: any) {
           console.log(
-            'Backend registration error:',
+            "Backend registration error:",
             apiError.response?.data || apiError.message
           );
           return {
-            error: 'Account created but profile setup failed. Please try logging in.',
+            error:
+              "Account created but profile setup failed. Please try logging in.",
           };
         }
       }
@@ -112,6 +145,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await authSignOut();
   };
 
+  const resetPassword = async (email: string) => {
+    return authResetPassword(email);
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -121,6 +158,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         signIn,
         signUp,
         signOut,
+        resetPassword,
       }}
     >
       {children}

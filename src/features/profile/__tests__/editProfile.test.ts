@@ -2,6 +2,7 @@ import { renderHook, act, waitFor } from '@testing-library/react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Alert } from 'react-native';
 import React from 'react';
+import * as ImagePicker from 'expo-image-picker';
 import { useEditProfile } from '../hooks/useEditProfile';
 import { profileService } from '../services/profileService';
 import { uploadImage } from '@services/image';
@@ -14,6 +15,13 @@ jest.mock('../services/profileService', () => ({
 
 jest.mock('@services/image', () => ({
   uploadImage: jest.fn(),
+}));
+
+jest.mock('expo-image-picker', () => ({
+  requestCameraPermissionsAsync: jest.fn(),
+  requestMediaLibraryPermissionsAsync: jest.fn(),
+  launchCameraAsync: jest.fn(),
+  launchImageLibraryAsync: jest.fn(),
 }));
 
 jest.spyOn(Alert, 'alert');
@@ -154,33 +162,46 @@ describe('useEditProfile', () => {
     );
   });
 
-  it('uploads image when avatar is changed to local file', async () => {
-    (uploadImage as jest.Mock).mockResolvedValueOnce('https://firebase.com/new-avatar.jpg');
+  it('uploads image and saves with Supabase URL when avatar is a local file', async () => {
+    const localImageUri = 'file:///local/image.jpg';
+    const uploadedUrl = 'https://example.supabase.co/storage/v1/object/public/avatars/new-avatar.jpg';
+
+    (ImagePicker.requestMediaLibraryPermissionsAsync as jest.Mock).mockResolvedValueOnce({ granted: true });
+    (ImagePicker.launchImageLibraryAsync as jest.Mock).mockResolvedValueOnce({
+      canceled: false,
+      assets: [{ uri: localImageUri }],
+    });
+    (uploadImage as jest.Mock).mockResolvedValueOnce(uploadedUrl);
     (profileService.updateProfile as jest.Mock).mockResolvedValueOnce({ user: mockCurrentUser });
 
-    const userWithoutAvatar = { ...mockCurrentUser, avatarUrl: undefined };
-
     const { result } = renderHook(
-      () => useEditProfile({ currentUser: userWithoutAvatar, onSuccess: mockOnSuccess }),
+      () => useEditProfile({ currentUser: mockCurrentUser, onSuccess: mockOnSuccess }),
       { wrapper: createWrapper() }
     );
 
-    // Simulate selecting a local image
+    // Open image options and select "Choose from Library"
     act(() => {
-      result.current.formState.avatarUri = 'file:///local/image.jpg';
-      result.current.formState.avatarChanged = true;
+      result.current.showImageOptions();
     });
 
-    // Re-render to pick up the changes (simulate what would happen in real component)
-    const { result: result2 } = renderHook(
-      () => useEditProfile({ currentUser: userWithoutAvatar, onSuccess: mockOnSuccess }),
-      { wrapper: createWrapper() }
-    );
+    const alertButtons = (Alert.alert as jest.Mock).mock.calls[0][2];
+    const chooseFromLibrary = alertButtons.find((b: any) => b.text === 'Choose from Library');
 
-    // Direct state manipulation for testing
     await act(async () => {
-      // This would normally come from the image picker
+      await chooseFromLibrary.onPress();
     });
+
+    expect(result.current.formState.avatarUri).toBe(localImageUri);
+    expect(result.current.formState.avatarChanged).toBe(true);
+
+    await act(async () => {
+      await result.current.handleSave();
+    });
+
+    expect(uploadImage).toHaveBeenCalledWith(localImageUri, 'avatars');
+    expect(profileService.updateProfile).toHaveBeenCalledWith(
+      expect.objectContaining({ avatarUrl: uploadedUrl })
+    );
   });
 
   it('calls onSuccess after successful save', async () => {

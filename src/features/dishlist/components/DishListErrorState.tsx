@@ -33,7 +33,7 @@ const styles = StyleSheet.create({
     paddingVertical: theme.spacing["2xl"],
   },
   title: {
-    ...typography.heading3,
+    ...typography.subtitle,
     color: theme.colors.neutral[900],
     marginBottom: theme.spacing.sm,
     textAlign: 'center',

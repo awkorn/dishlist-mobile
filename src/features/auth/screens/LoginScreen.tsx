@@ -24,7 +24,7 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<{ message: string; action?: string } | null>(null);
-  const { signIn } = useAuth();
+  const { signIn, resetPassword } = useAuth();
 
   const handleLogin = async () => {
     setError(null);
@@ -51,7 +51,7 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
       const result = await signIn(email, password);
 
       if (result.error) {
-        const errorInfo = getAuthErrorMessage({ code: result.error });
+        const errorInfo = getAuthErrorMessage(result.error);
         setError(errorInfo);
       }
     } catch (err) {
@@ -64,9 +64,35 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
     }
   };
 
-  const handleForgotPassword = () => {
-    // TODO: Implement forgot password flow
-    console.log('Forgot password for:', email);
+  const handleForgotPassword = async () => {
+    if (!email.trim()) {
+      setError({
+        message: "Enter your email first",
+        action: "Type your email above, then tap forgot password",
+      });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const result = await resetPassword(email.trim());
+      if (result.error) {
+        const errorInfo = getAuthErrorMessage(result.error);
+        setError(errorInfo);
+      } else {
+        setError({
+          message: "Password reset email sent",
+          action: "Check your inbox for a reset link",
+        });
+      }
+    } catch (err) {
+      setError({
+        message: "Something went wrong",
+        action: "Please try again",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
