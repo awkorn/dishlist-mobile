@@ -108,3 +108,44 @@ export const changePassword = async (
     return { error: error.message };
   }
 };
+
+export const changeEmail = async (
+  password: string,
+  newEmail: string
+): Promise<{ error: string | null }> => {
+  try {
+    // Step 1: Re-authenticate to verify identity
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user?.email) {
+      return { error: "No authenticated user found" };
+    }
+
+    if (user.email.toLowerCase() === newEmail.toLowerCase()) {
+      return { error: "New email must be different from your current email" };
+    }
+
+    const { error: reAuthError } = await supabase.auth.signInWithPassword({
+      email: user.email,
+      password,
+    });
+
+    if (reAuthError) {
+      return { error: "Password is incorrect" };
+    }
+
+    // Step 2: Request email change — Supabase sends confirmation to new email
+    const { error: updateError } = await supabase.auth.updateUser({
+      email: newEmail,
+    });
+
+    if (updateError) {
+      return { error: updateError.message };
+    }
+
+    return { error: null };
+  } catch (error: any) {
+    return { error: error.message };
+  }
+};

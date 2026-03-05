@@ -151,10 +151,7 @@ export default function SettingsScreen({ navigation }: Props) {
             icon={<Mail size={18} color={theme.colors.neutral[600]} />}
             label="Email"
             rightText={user?.email ?? ""}
-            onPress={() => {
-              // TODO: Navigate to change email screen
-              console.log("Change email");
-            }}
+            onPress={() => navigation.navigate("ChangeEmail")}
           />
           <SettingsRow
             icon={<Lock size={18} color={theme.colors.neutral[600]} />}

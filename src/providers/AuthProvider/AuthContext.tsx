@@ -63,11 +63,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     // 2. Listen for auth state changes (sign in, sign out, token refresh)
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setUser(session?.user ?? null);
 
       if (!session?.user) {
         setUserProfile(null);
+      }
+
+      // Sync email to backend if it changed (e.g. after email confirmation)
+      if (_event === "USER_UPDATED" && session?.user?.email) {
+        try {
+          await api.patch("/users/me", { email: session.user.email });
+        } catch (err) {
+          console.error("Failed to sync email to backend:", err);
+        }
       }
     });
 
