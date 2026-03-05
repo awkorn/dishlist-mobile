@@ -15,6 +15,7 @@ import { InviteLandingScreen } from "@features/invite";
 import { FollowersFollowingScreen } from "@features/profile";
 import TabNavigator from "./TabNavigator";
 import { RootStackParamList } from "@app-types/navigation";
+import { ChangePasswordScreen } from "@features/settings";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -83,6 +84,7 @@ export default function MainNavigator() {
             component={SettingsScreen}
             options={{ headerShown: false }}
           />
+          <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />
           <Stack.Screen
             name="FollowersFollowing"
             component={FollowersFollowingScreen}

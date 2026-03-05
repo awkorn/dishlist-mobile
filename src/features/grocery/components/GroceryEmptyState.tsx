@@ -29,7 +29,7 @@ const styles = StyleSheet.create({
   },
   title: {
     ...typography.subtitle,
-    color: theme.colors.neutral[700],
+    color: theme.colors.textPrimary,
     marginBottom: theme.spacing.sm,
     textAlign: 'center',
   },

@@ -494,10 +494,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     paddingVertical: theme.spacing["4xl"],
+    marginTop: theme.spacing["4xl"],
   },
   emptyTitle: {
     ...typography.subtitle,
-    color: theme.colors.neutral[900],
+    color: theme.colors.textPrimary,
     marginBottom: theme.spacing.sm,
   },
   emptyText: {

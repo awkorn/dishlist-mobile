@@ -30,6 +30,7 @@ import {
   Scale,
 } from "lucide-react-native";
 import { useAuth } from "@providers/AuthProvider/AuthContext";
+import { api } from "@services/api";
 import { SettingsSection, SettingsRow } from "../components";
 import { theme } from "@styles/theme";
 import { typography } from "@styles/typography";
@@ -51,6 +52,7 @@ const SUPPORT_EMAIL = "support@dishlist.app";
 export default function SettingsScreen({ navigation }: Props) {
   const { signOut, user } = useAuth();
   const [pushEnabled, setPushEnabled] = useState(true);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const appVersion =
     Constants.expoConfig?.version ?? Constants.manifest?.version ?? "1.0.0";
@@ -73,6 +75,8 @@ export default function SettingsScreen({ navigation }: Props) {
   }, [signOut]);
 
   const handleDeleteAccount = useCallback(() => {
+    if (isDeleting) return;
+
     Alert.alert(
       "Delete Account",
       "This will permanently delete your account and all your data. This action cannot be undone.",
@@ -81,14 +85,23 @@ export default function SettingsScreen({ navigation }: Props) {
         {
           text: "Delete Account",
           style: "destructive",
-          onPress: () => {
-            // TODO: Implement account deletion API call
-            console.log("Delete account confirmed");
+          onPress: async () => {
+            setIsDeleting(true);
+            try {
+              await api.delete("/users/me");
+              await signOut();
+            } catch (error: any) {
+              const message =
+                error?.response?.data?.error || "Failed to delete account. Please try again.";
+              Alert.alert("Error", message);
+            } finally {
+              setIsDeleting(false);
+            }
           },
         },
       ]
     );
-  }, []);
+  }, [isDeleting, signOut]);
 
   const handleContactSupport = useCallback(() => {
     const subject = encodeURIComponent("DishList Support Request");
@@ -146,10 +159,7 @@ export default function SettingsScreen({ navigation }: Props) {
           <SettingsRow
             icon={<Lock size={18} color={theme.colors.neutral[600]} />}
             label="Change Password"
-            onPress={() => {
-              // TODO: Navigate to change password screen
-              console.log("Change password");
-            }}
+            onPress={() => navigation.navigate("ChangePassword")}
           />
           <SettingsRow
             icon={<LinkIcon size={18} color={theme.colors.neutral[600]} />}

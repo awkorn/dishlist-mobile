@@ -10,6 +10,7 @@ export type RootStackParamList = {
   SearchTab: undefined;
   BuilderTab: undefined;
   ProfileScreen: undefined;
+  ChangePassword: undefined;
 
   CreateDishList:
     | {

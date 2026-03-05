@@ -73,3 +73,38 @@ export const getCurrentUser = (): SupabaseUser | null => {
   // Prefer supabase.auth.getUser() for fresh data.
   return null; // Use getSession/getUser async methods instead
 };
+
+export const changePassword = async (
+  currentPassword: string,
+  newPassword: string
+): Promise<{ error: string | null }> => {
+  try {
+    // Step 1: Re-authenticate to verify current password
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user?.email) {
+      return { error: "No authenticated user found" };
+    }
+
+    const { error: reAuthError } = await supabase.auth.signInWithPassword({
+      email: user.email,
+      password: currentPassword,
+    });
+
+    if (reAuthError) {
+      return { error: "Current password is incorrect" };
+    }
+
+    // Step 2: Update to new password
+    const { error: updateError } = await supabase.auth.updateUser({
+      password: newPassword,
+    });
+
+    if (updateError) {
+      return { error: updateError.message };
+    }
+
+    return { error: null };
+  } catch (error: any) {
+    return { error: error.message };
+  }
+};
