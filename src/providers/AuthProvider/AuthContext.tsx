@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { User as SupabaseUser, Session } from "@supabase/supabase-js";
+import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@services/supabase";
 import { User } from "@app-types";
 import {
@@ -9,6 +10,7 @@ import {
   resetPassword as authResetPassword,
 } from "@features/auth/services";
 import api from "@services/api";
+import { queryKeys } from "@lib/queryKeys";
 
 interface AuthContextType {
   user: SupabaseUser | null;
@@ -40,6 +42,7 @@ export const useAuth = () => {
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
+  const queryClient = useQueryClient();
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [userProfile, setUserProfile] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -98,6 +101,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             email: result.user.email,
           });
           setUserProfile(response.data.user);
+          queryClient.invalidateQueries({ queryKey: queryKeys.dishLists.all });
         } catch (apiError: any) {
           console.log(
             "Backend registration error:",
@@ -132,6 +136,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             ...userData,
           });
           setUserProfile(response.data.user);
+          queryClient.invalidateQueries({ queryKey: queryKeys.dishLists.all });
         } catch (apiError: any) {
           console.log(
             "Backend registration error:",

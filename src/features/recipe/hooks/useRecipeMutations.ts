@@ -3,6 +3,8 @@ import { Alert } from 'react-native';
 import { recipeService } from '../services';
 import { queryKeys } from '@lib/queryKeys';
 import type { Recipe, CreateRecipeData, UpdateRecipeData } from '../types';
+import type { DishListDetail, DishListRecipe } from '@features/dishlist/types';
+import { dishlistService } from '@features/dishlist/services';
 
 const RECIPE_QUERY_KEY = 'recipe';
 
@@ -15,11 +17,39 @@ export function useCreateRecipe() {
   return useMutation({
     mutationFn: (data: CreateRecipeData) => recipeService.createRecipe(data),
 
-    onSuccess: (_, variables) => {
-      // Invalidate dishlist detail to refresh recipe list
-      queryClient.invalidateQueries({ 
-        queryKey: queryKeys.dishLists.detail(variables.dishListId) 
+    onSuccess: (newRecipe, variables) => {
+      // Directly add recipe to dishlist detail cache for instant UI update
+      queryClient.setQueryData<DishListDetail>(
+        queryKeys.dishLists.detail(variables.dishListId),
+        (old) => {
+          if (!old) return old;
+          const dishListRecipe: DishListRecipe = {
+            id: newRecipe.id,
+            title: newRecipe.title,
+            description: newRecipe.description,
+            imageUrl: newRecipe.imageUrl,
+            prepTime: newRecipe.prepTime,
+            cookTime: newRecipe.cookTime,
+            servings: newRecipe.servings,
+            tags: newRecipe.tags,
+            creatorId: newRecipe.creatorId,
+            creator: newRecipe.creator,
+            createdAt: newRecipe.createdAt,
+            updatedAt: newRecipe.updatedAt,
+          };
+          return {
+            ...old,
+            recipes: [...old.recipes, dishListRecipe],
+            recipeCount: old.recipeCount + 1,
+          };
+        }
+      );
+      // Eagerly fetch detail data for when cache didn't exist yet (e.g. Recipe Builder flow)
+      queryClient.prefetchQuery({
+        queryKey: queryKeys.dishLists.detail(variables.dishListId),
+        queryFn: () => dishlistService.getDishListDetail(variables.dishListId),
       });
+      // Background invalidation for list views
       queryClient.invalidateQueries({ queryKey: queryKeys.dishLists.all });
     },
 
@@ -115,7 +145,37 @@ export function useAddRecipeToDishList() {
     },
 
     onSuccess: (_, variables) => {
-      // Invalidate affected queries
+      // Try to update dishlist detail cache from cached recipe data
+      const cachedRecipe = queryClient.getQueryData<Recipe>([RECIPE_QUERY_KEY, variables.recipeId]);
+      if (cachedRecipe) {
+        queryClient.setQueryData<DishListDetail>(
+          queryKeys.dishLists.detail(variables.dishListId),
+          (old) => {
+            if (!old) return old;
+            if (old.recipes.some(r => r.id === cachedRecipe.id)) return old;
+            const dishListRecipe: DishListRecipe = {
+              id: cachedRecipe.id,
+              title: cachedRecipe.title,
+              description: cachedRecipe.description,
+              imageUrl: cachedRecipe.imageUrl,
+              prepTime: cachedRecipe.prepTime,
+              cookTime: cachedRecipe.cookTime,
+              servings: cachedRecipe.servings,
+              tags: cachedRecipe.tags,
+              creatorId: cachedRecipe.creatorId,
+              creator: cachedRecipe.creator,
+              createdAt: cachedRecipe.createdAt,
+              updatedAt: cachedRecipe.updatedAt,
+            };
+            return {
+              ...old,
+              recipes: [...old.recipes, dishListRecipe],
+              recipeCount: old.recipeCount + 1,
+            };
+          }
+        );
+      }
+      // Background invalidation for full consistency
       queryClient.invalidateQueries({
         queryKey: queryKeys.dishLists.detail(variables.dishListId),
       });
