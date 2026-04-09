@@ -257,8 +257,7 @@ const styles = StyleSheet.create({
     paddingVertical: theme.spacing.xl,
   },
   title: {
-    ...typography.heading3,
-    fontSize: 28,
+    ...typography.heading4,
     color: theme.colors.textPrimary,
   },
   chatArea: {

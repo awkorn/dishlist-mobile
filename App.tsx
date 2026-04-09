@@ -11,6 +11,12 @@ import NetInfo from "@react-native-community/netinfo";
 import { GlobalErrorBoundary } from "./src/providers/ErrorBoundary";
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { linking } from '@navigation/linking';
+import { usePushNotifications } from '@features/notifications';
+
+function PushNotificationHandler() {
+  usePushNotifications();
+  return null;
+}
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -68,6 +74,7 @@ export default function App() {
           <SafeAreaProvider>
             <AuthProvider>
               <NavigationContainer linking={linking}>
+                <PushNotificationHandler />
                 <MainNavigator />
                 <StatusBar style="auto" />
               </NavigationContainer>

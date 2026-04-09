@@ -30,6 +30,7 @@ import {
   Scale,
 } from "lucide-react-native";
 import { useAuth } from "@providers/AuthProvider/AuthContext";
+import { usePushNotifications } from "@features/notifications";
 import { api } from "@services/api";
 import { SettingsSection, SettingsRow } from "../components";
 import { theme } from "@styles/theme";
@@ -51,7 +52,7 @@ const SUPPORT_EMAIL = "support@dishlist.app";
 
 export default function SettingsScreen({ navigation }: Props) {
   const { signOut, user } = useAuth();
-  const [pushEnabled, setPushEnabled] = useState(true);
+  const { pushEnabled, togglePush } = usePushNotifications();
   const [isDeleting, setIsDeleting] = useState(false);
 
   const appVersion =
@@ -119,10 +120,12 @@ export default function SettingsScreen({ navigation }: Props) {
     Linking.openURL(URLS.APP_STORE);
   }, []);
 
-  const handlePushToggle = useCallback((value: boolean) => {
-    setPushEnabled(value);
-    // TODO: Register/unregister push token with backend
-  }, []);
+  const handlePushToggle = useCallback(
+    (value: boolean) => {
+      togglePush(value);
+    },
+    [togglePush]
+  );
 
   // ── Render ────────────────────────────────────────────────
 

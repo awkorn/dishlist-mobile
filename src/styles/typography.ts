@@ -28,7 +28,7 @@ export const typography = {
     lineHeight: 38,
   },
   heading3: {
-    fontFamily: "Inter-Medium",
+    fontFamily: "Manrope-SemiBold",
     fontSize: 24,
     lineHeight: 32,
   },
