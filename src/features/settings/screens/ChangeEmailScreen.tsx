@@ -35,6 +35,7 @@ export default function ChangeEmailScreen({ navigation }: Props) {
   const [submitted, setSubmitted] = useState(false);
 
   const emailRef = useRef<TextInput>(null);
+  const passwordRef = useRef<TextInput>(null);
 
   const isValidEmail = EMAIL_REGEX.test(newEmail.trim());
   const isSameEmail =
@@ -173,7 +174,7 @@ export default function ChangeEmailScreen({ navigation }: Props) {
                 autoComplete="email"
                 editable={!loading}
                 returnKeyType="next"
-                onSubmitEditing={() => {}}
+                onSubmitEditing={() => passwordRef.current?.focus()}
               />
               <View style={styles.iconRight}>
                 <Mail size={20} color={theme.colors.neutral[400]} />
@@ -193,6 +194,7 @@ export default function ChangeEmailScreen({ navigation }: Props) {
             <Text style={styles.label}>Confirm Password</Text>
             <View style={styles.inputWrapper}>
               <TextInput
+                ref={passwordRef}
                 style={styles.input}
                 value={password}
                 onChangeText={(text) => {

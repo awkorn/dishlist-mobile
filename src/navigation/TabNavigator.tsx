@@ -4,13 +4,13 @@ import {
   BookOpen,
   ShoppingCart,
   Search,
-  PlusSquare,
+  ChefHat,
 } from "lucide-react-native";
-import { View, Text, StyleSheet } from "react-native";
 import { theme } from "../styles/theme";
 import { DishListsScreen } from "@features/dishlist";
 import { GroceryListScreen } from "@features/grocery";
 import { SearchScreen } from "@features/search";
+import { RecipeBuilderScreen } from "@features/builder";
 import {
   NotificationsScreen,
   NotificationBadge,
@@ -18,15 +18,6 @@ import {
 } from "@features/notifications";
 
 const Tab = createBottomTabNavigator();
-
-// Placeholder screens for tabs we haven't built yet
-const PlaceholderScreen = ({ title }: { title: string }) => (
-  <View style={styles.placeholderContainer}>
-    <Text style={styles.placeholderText}>{title} - Coming Soon!</Text>
-  </View>
-);
-
-const BuilderScreen = () => <PlaceholderScreen title="Recipe Builder" />;
 
 // Wrapper component for notification icon with badge
 function NotificationTabIcon({ color, size }: { color: string; size: number }) {
@@ -82,10 +73,10 @@ export default function TabNavigator() {
       />
       <Tab.Screen
         name="BuilderTab"
-        component={BuilderScreen}
+        component={RecipeBuilderScreen}
         options={{
           tabBarIcon: ({ color, size }) => (
-            <PlusSquare size={size} color={color} />
+            <ChefHat size={size} color={color} />
           ),
         }}
       />
@@ -101,16 +92,3 @@ export default function TabNavigator() {
     </Tab.Navigator>
   );
 }
-
-const styles = StyleSheet.create({
-  placeholderContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#f5f5f5",
-  },
-  placeholderText: {
-    fontSize: 18,
-    fontWeight: "600",
-  },
-});
