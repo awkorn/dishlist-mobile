@@ -474,19 +474,17 @@ export default function AddRecipeScreen({ route, navigation }: Props) {
               <Text style={styles.sectionTitle}>Tags (Optional)</Text>
               <TagInput tags={tags} onTagsChange={setTags} />
             </View>
+
+            {/* Save Button */}
+            <Button
+              title={isEditMode ? "Update Recipe" : "Add Recipe"}
+              onPress={handleSave}
+              loading={isLoading}
+              disabled={isLoading}
+              style={styles.saveButton}
+            />
           </ScrollView>
         </View>
-
-        {/* Footer */}
-        <SafeAreaView edges={["bottom"]} style={styles.footer}>
-          <Button
-            title={isEditMode ? "Update Recipe" : "Add Recipe"}
-            onPress={handleSave}
-            loading={isLoading}
-            disabled={isLoading}
-            style={styles.saveButton}
-          />
-        </SafeAreaView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -653,13 +651,10 @@ const styles = StyleSheet.create({
     color: theme.colors.neutral[400],
     marginTop: theme.spacing.sm,
   },
-  footer: {
-    paddingHorizontal: theme.spacing.xl,
-    paddingVertical: theme.spacing.xl,
-  },
   saveButton: {
     width: "100%",
     paddingVertical: theme.spacing.lg,
+    marginBottom: theme.spacing.xl,
   },
   warningBanner: {
     backgroundColor: theme.colors.warning + "15",
