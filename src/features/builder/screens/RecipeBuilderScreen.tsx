@@ -233,128 +233,65 @@ function MessageBubble({ message, onRecipePress }: MessageBubbleProps) {
   );
 }
 
-// ─── Salad Bowl Loader ─────────────────────────────────────────────
-const INGREDIENTS = ["🥬", "🍅", "🥕", "🥑", "🌽", "🧅"];
+// ─── Pulsing Dots Loader ──────────────────────────────────────────
+const DOT_COLORS = [
+  theme.colors.primary[500],
+  theme.colors.primary[600],
+  theme.colors.primary[500],
+];
 
 function SaladBowlLoader() {
-  const spin = useRef(new Animated.Value(0)).current;
-  const bounce = useRef(new Animated.Value(0)).current;
-  const ingredientAnims = useRef(
-    INGREDIENTS.map(() => new Animated.Value(0))
-  ).current;
+  const dotAnims = useRef(DOT_COLORS.map(() => new Animated.Value(0))).current;
 
   useEffect(() => {
-    // Bowl wobble
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(spin, {
-          toValue: 1,
-          duration: 600,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }),
-        Animated.timing(spin, {
-          toValue: -1,
-          duration: 600,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }),
-        Animated.timing(spin, {
-          toValue: 0,
-          duration: 600,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }),
-      ])
-    ).start();
-
-    // Ingredients float up and down
-    ingredientAnims.forEach((anim, i) => {
+    dotAnims.forEach((anim, i) => {
       Animated.loop(
         Animated.sequence([
-          Animated.delay(i * 150),
+          Animated.delay(i * 200),
           Animated.timing(anim, {
             toValue: 1,
-            duration: 500,
-            easing: Easing.out(Easing.ease),
+            duration: 400,
+            easing: Easing.inOut(Easing.ease),
             useNativeDriver: true,
           }),
           Animated.timing(anim, {
             toValue: 0,
-            duration: 500,
-            easing: Easing.in(Easing.ease),
+            duration: 400,
+            easing: Easing.inOut(Easing.ease),
             useNativeDriver: true,
           }),
         ])
       ).start();
     });
-
-    // Bowl bounce
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(bounce, {
-          toValue: -6,
-          duration: 400,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }),
-        Animated.timing(bounce, {
-          toValue: 0,
-          duration: 400,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }),
-      ])
-    ).start();
   }, []);
-
-  const rotate = spin.interpolate({
-    inputRange: [-1, 0, 1],
-    outputRange: ["-12deg", "0deg", "12deg"],
-  });
 
   return (
     <View style={loaderStyles.wrapper}>
-      {/* Floating ingredients */}
-      <View style={loaderStyles.ingredientsRing}>
-        {INGREDIENTS.map((emoji, i) => {
-          const angle = (i / INGREDIENTS.length) * 2 * Math.PI - Math.PI / 2;
-          const radius = 48;
-          const x = Math.cos(angle) * radius;
-          const y = Math.sin(angle) * radius;
-          const translateY = ingredientAnims[i].interpolate({
+      <View style={loaderStyles.dotsRow}>
+        {DOT_COLORS.map((color, i) => {
+          const scale = dotAnims[i].interpolate({
             inputRange: [0, 1],
-            outputRange: [0, -18],
+            outputRange: [1, 1.4],
+          });
+          const opacity = dotAnims[i].interpolate({
+            inputRange: [0, 1],
+            outputRange: [0.4, 1],
           });
           return (
-            <Animated.Text
+            <Animated.View
               key={i}
               style={[
-                loaderStyles.ingredient,
+                loaderStyles.dot,
                 {
-                  transform: [
-                    { translateX: x },
-                    { translateY: Animated.add(y, translateY) },
-                  ],
+                  backgroundColor: color,
+                  transform: [{ scale }],
+                  opacity,
                 },
               ]}
-            >
-              {emoji}
-            </Animated.Text>
+            />
           );
         })}
       </View>
-
-      {/* Bowl */}
-      <Animated.View
-        style={[
-          loaderStyles.bowl,
-          { transform: [{ rotate }, { translateY: bounce }] },
-        ]}
-      >
-        <Text style={loaderStyles.bowlEmoji}>🥗</Text>
-      </Animated.View>
-
       <Text style={loaderStyles.label}>Finding recipes...</Text>
     </View>
   );
@@ -366,23 +303,15 @@ const loaderStyles = StyleSheet.create({
     justifyContent: "center",
     paddingVertical: theme.spacing["4xl"],
   },
-  ingredientsRing: {
-    width: 120,
-    height: 120,
+  dotsRow: {
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    marginBottom: -40,
+    gap: 12,
   },
-  ingredient: {
-    position: "absolute",
-    fontSize: 24,
-  },
-  bowl: {
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  bowlEmoji: {
-    fontSize: 64,
+  dot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
   },
   label: {
     ...typography.caption,
