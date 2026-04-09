@@ -47,12 +47,6 @@ export function GeneratedRecipeCard({
           {recipe.title}
         </Text>
 
-        {recipe.description ? (
-          <Text style={styles.description} numberOfLines={2}>
-            {recipe.description}
-          </Text>
-        ) : null}
-
         <View style={styles.metaRow}>
           {totalTime > 0 && (
             <View style={styles.metaItem}>
@@ -112,13 +106,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: theme.colors.textPrimary,
     marginBottom: 4,
-  },
-  description: {
-    ...typography.caption,
-    fontSize: 12,
-    color: theme.colors.neutral[500],
-    marginBottom: 6,
-    lineHeight: 16,
   },
   metaRow: {
     flexDirection: "row",

@@ -69,7 +69,8 @@ export function BuilderChatInput({
 const styles = StyleSheet.create({
   container: {
     paddingHorizontal: theme.spacing.xl,
-    paddingVertical: theme.spacing.md,
+    paddingBottom: theme.spacing.md,
+    paddingTop: theme.spacing.xs,
     backgroundColor: theme.colors.background,
   },
   inputRow: {

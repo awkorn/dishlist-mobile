@@ -54,7 +54,7 @@ export function useRecipeBuilder(): UseRecipeBuilderReturn {
         const assistantMessage: BuilderMessage = {
           id: generateId(),
           role: "assistant",
-          content: response.message,
+          content: "",
           recipes: response.recipes,
           timestamp: Date.now(),
         };

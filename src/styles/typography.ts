@@ -28,19 +28,22 @@ export const typography = {
     lineHeight: 38,
   },
   heading3: {
-    fontFamily: "Manrope-SemiBold",
+    fontFamily: "Inter-SemiBold",
     fontSize: 24,
     lineHeight: 32,
+    letterSpacing: -0.5,
   },
   heading4: {
     fontFamily: "Inter-SemiBold",
     fontSize: 30,
     lineHeight: 36,
+    letterSpacing: -0.5,
   },
   subtitle: {
     fontFamily: "Inter-Medium",
     fontSize: 19,
     lineHeight: 24,
+    letterSpacing: -0.5,
   },
   body: {
     fontFamily: "Inter-Regular",

@@ -12,7 +12,6 @@ export interface BuilderMessage {
 // ─── Generated Recipe (ephemeral, not saved to DB) ──────────────────
 export interface GeneratedRecipe {
   title: string;
-  description: string;
   prepTime: number | null;
   cookTime: number | null;
   servings: number | null;
@@ -29,7 +28,6 @@ export interface GenerateRecipesRequest {
 }
 
 export interface GenerateRecipesResponse {
-  message: string;
   recipes: GeneratedRecipe[];
   assistantContent: string;
 }

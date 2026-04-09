@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import {
   View,
   Text,
@@ -7,6 +7,8 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
+  Animated,
+  Easing,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { theme } from "@styles/theme";
@@ -18,7 +20,6 @@ import {
   GeneratedRecipeCard,
   GeneratedRecipeDetailSheet,
   PreferencesButton,
-  GeneratingSkeletonCards,
   SelectDishListModal,
   CARD_GAP,
 } from "../components";
@@ -158,15 +159,10 @@ export default function RecipeBuilderScreen() {
             ))
           )}
 
-          {/* Loading skeleton */}
+          {/* Loading animation */}
           {isGenerating && (
-            <View style={styles.assistantBubble}>
-              <Text style={styles.generatingText}>
-                Generating recipes...
-              </Text>
-              <View style={styles.skeletonContainer}>
-                <GeneratingSkeletonCards />
-              </View>
+            <View style={styles.loadingContainer}>
+              <SaladBowlLoader />
             </View>
           )}
 
@@ -221,9 +217,6 @@ function MessageBubble({ message, onRecipePress }: MessageBubbleProps) {
 
   return (
     <View style={styles.assistantBubble}>
-      {/* AI message text */}
-      <Text style={styles.assistantText}>{message.content}</Text>
-
       {/* Recipe cards grid - 2 per row */}
       {message.recipes && message.recipes.length > 0 && (
         <View style={styles.recipesGrid}>
@@ -239,6 +232,165 @@ function MessageBubble({ message, onRecipePress }: MessageBubbleProps) {
     </View>
   );
 }
+
+// ─── Salad Bowl Loader ─────────────────────────────────────────────
+const INGREDIENTS = ["🥬", "🍅", "🥕", "🥑", "🌽", "🧅"];
+
+function SaladBowlLoader() {
+  const spin = useRef(new Animated.Value(0)).current;
+  const bounce = useRef(new Animated.Value(0)).current;
+  const ingredientAnims = useRef(
+    INGREDIENTS.map(() => new Animated.Value(0))
+  ).current;
+
+  useEffect(() => {
+    // Bowl wobble
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(spin, {
+          toValue: 1,
+          duration: 600,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(spin, {
+          toValue: -1,
+          duration: 600,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(spin, {
+          toValue: 0,
+          duration: 600,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+
+    // Ingredients float up and down
+    ingredientAnims.forEach((anim, i) => {
+      Animated.loop(
+        Animated.sequence([
+          Animated.delay(i * 150),
+          Animated.timing(anim, {
+            toValue: 1,
+            duration: 500,
+            easing: Easing.out(Easing.ease),
+            useNativeDriver: true,
+          }),
+          Animated.timing(anim, {
+            toValue: 0,
+            duration: 500,
+            easing: Easing.in(Easing.ease),
+            useNativeDriver: true,
+          }),
+        ])
+      ).start();
+    });
+
+    // Bowl bounce
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(bounce, {
+          toValue: -6,
+          duration: 400,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(bounce, {
+          toValue: 0,
+          duration: 400,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  }, []);
+
+  const rotate = spin.interpolate({
+    inputRange: [-1, 0, 1],
+    outputRange: ["-12deg", "0deg", "12deg"],
+  });
+
+  return (
+    <View style={loaderStyles.wrapper}>
+      {/* Floating ingredients */}
+      <View style={loaderStyles.ingredientsRing}>
+        {INGREDIENTS.map((emoji, i) => {
+          const angle = (i / INGREDIENTS.length) * 2 * Math.PI - Math.PI / 2;
+          const radius = 48;
+          const x = Math.cos(angle) * radius;
+          const y = Math.sin(angle) * radius;
+          const translateY = ingredientAnims[i].interpolate({
+            inputRange: [0, 1],
+            outputRange: [0, -18],
+          });
+          return (
+            <Animated.Text
+              key={i}
+              style={[
+                loaderStyles.ingredient,
+                {
+                  transform: [
+                    { translateX: x },
+                    { translateY: Animated.add(y, translateY) },
+                  ],
+                },
+              ]}
+            >
+              {emoji}
+            </Animated.Text>
+          );
+        })}
+      </View>
+
+      {/* Bowl */}
+      <Animated.View
+        style={[
+          loaderStyles.bowl,
+          { transform: [{ rotate }, { translateY: bounce }] },
+        ]}
+      >
+        <Text style={loaderStyles.bowlEmoji}>🥗</Text>
+      </Animated.View>
+
+      <Text style={loaderStyles.label}>Finding recipes...</Text>
+    </View>
+  );
+}
+
+const loaderStyles = StyleSheet.create({
+  wrapper: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: theme.spacing["4xl"],
+  },
+  ingredientsRing: {
+    width: 120,
+    height: 120,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: -40,
+  },
+  ingredient: {
+    position: "absolute",
+    fontSize: 24,
+  },
+  bowl: {
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  bowlEmoji: {
+    fontSize: 64,
+  },
+  label: {
+    ...typography.caption,
+    color: theme.colors.neutral[500],
+    marginTop: theme.spacing.lg,
+    fontStyle: "italic",
+  },
+});
 
 // ─── Styles ─────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
@@ -313,14 +465,10 @@ const styles = StyleSheet.create({
     gap: CARD_GAP,
   },
   // Loading
-  generatingText: {
-    ...typography.caption,
-    color: theme.colors.neutral[500],
-    marginBottom: theme.spacing.md,
-    fontStyle: "italic",
-  },
-  skeletonContainer: {
-    width: "100%",
+  loadingContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: theme.spacing.xl,
   },
   // Error
   errorContainer: {

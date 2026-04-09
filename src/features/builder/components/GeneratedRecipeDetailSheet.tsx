@@ -62,11 +62,6 @@ export function GeneratedRecipeDetailSheet({
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          {/* Description */}
-          {recipe.description ? (
-            <Text style={styles.description}>{recipe.description}</Text>
-          ) : null}
-
           {/* Quick Stats */}
           <View style={styles.statsRow}>
             {recipe.prepTime != null && recipe.prepTime > 0 && (
@@ -203,11 +198,6 @@ const styles = StyleSheet.create({
   scrollContent: {
     padding: theme.spacing.xl,
     paddingBottom: theme.spacing["4xl"],
-  },
-  description: {
-    ...typography.body,
-    color: theme.colors.neutral[600],
-    marginBottom: theme.spacing.lg,
   },
   statsRow: {
     flexDirection: "row",
