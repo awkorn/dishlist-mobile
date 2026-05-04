@@ -21,6 +21,7 @@ interface RecipeTileData {
   id: string;
   title: string;
   imageUrl?: string;
+  imageUrls?: string[];
   prepTime?: number;
   cookTime?: number;
   servings?: number;
@@ -31,11 +32,12 @@ const TILE_WIDTH = (width - theme.spacing.xl * 2 - theme.spacing.lg) / 2;
 
 function RecipeTileContent({ recipe, onPress }: RecipeTileProps) {
   const totalTime = (recipe.prepTime || 0) + (recipe.cookTime || 0);
+  const coverImageUrl = recipe.imageUrls?.[0] || recipe.imageUrl;
 
   return (
     <TouchableOpacity style={styles.container} onPress={onPress}>
-      {recipe.imageUrl ? (
-        <Image source={{ uri: recipe.imageUrl }} style={styles.image} />
+      {coverImageUrl ? (
+        <Image source={{ uri: coverImageUrl }} style={styles.image} />
       ) : (
         <View style={styles.placeholderImage}>
           <Text style={styles.placeholderEmoji}>🍽️</Text>

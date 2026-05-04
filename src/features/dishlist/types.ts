@@ -27,6 +27,7 @@ export interface DishListRecipe {
   title: string;
   description?: string;
   imageUrl?: string;
+  imageUrls?: string[];
   prepTime?: number;
   cookTime?: number;
   servings?: number;

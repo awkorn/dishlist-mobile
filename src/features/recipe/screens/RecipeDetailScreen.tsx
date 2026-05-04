@@ -1,14 +1,15 @@
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useMemo, useRef } from "react";
 import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
   TouchableOpacity,
   ActivityIndicator,
   Alert,
   Image,
   Platform,
+  Animated,
+  Dimensions,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
@@ -43,17 +44,15 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "@app-types/navigation";
 import { useAddGroceryItems } from "@features/grocery/hooks";
 import type { RecipeItem } from "../types";
-import {
-  convertLegacyToStructured,
-  extractItemTexts,
-  getStepNumber,
-  isHeader,
-  isItem,
-} from "../types";
+import { convertLegacyToStructured, extractItemTexts } from "../types";
 import * as Haptics from "expo-haptics";
 import { ShareModal } from "@features/share";
 
 type Props = NativeStackScreenProps<RootStackParamList, "RecipeDetail">;
+
+const HEADER_REVEAL_DISTANCE = 76;
+const DEFAULT_METADATA_BOTTOM = 380;
+const SCREEN_WIDTH = Dimensions.get("window").width;
 
 // Helper to get display step number (excluding headers)
 function getDisplayStepNumber(items: RecipeItem[], index: number): number {
@@ -74,6 +73,10 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
   const [showCookMode, setShowCookMode] = useState(false);
   const [showAddToDishListModal, setShowAddToDishListModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [topMetadataBottom, setTopMetadataBottom] = useState(
+    DEFAULT_METADATA_BOTTOM,
+  );
+  const scrollY = useRef(new Animated.Value(0)).current;
 
   // Recipe data
   const { recipe, isLoading, isError, refetch, updateNutritionCache } =
@@ -140,11 +143,11 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
           onPress: () => {
             removeRecipeMutation.mutate(
               { dishListId, recipeId },
-              { onSuccess: () => navigation.goBack() }
+              { onSuccess: () => navigation.goBack() },
             );
           },
         },
-      ]
+      ],
     );
   }, [dishListId, recipeId, removeRecipeMutation, navigation]);
 
@@ -181,7 +184,7 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
         const unchecked = items
           .filter(
             (item, i) =>
-              item.type === "item" && !progress.checkedIngredients.has(i)
+              item.type === "item" && !progress.checkedIngredients.has(i),
           )
           .map((item) => item.text)
           .filter((text) => text.trim());
@@ -189,7 +192,7 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
         if (unchecked.length === 0) {
           Alert.alert(
             "No Ingredients to Add",
-            "All ingredients have already been checked off."
+            "All ingredients have already been checked off.",
           );
           return;
         }
@@ -200,14 +203,14 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
               "Added to Grocery List",
               `${unchecked.length} ${
                 unchecked.length === 1 ? "ingredient" : "ingredients"
-              } added to your grocery list.`
+              } added to your grocery list.`,
             );
           },
         });
       },
     });
 
-    const isOwner = recipe.creator.uid === user?.uid;
+    const isOwner = recipe.creator.uid === user?.id;
     if (isOwner) {
       opts.splice(1, 0, {
         title: "Edit Recipe",
@@ -243,8 +246,28 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
 
   const totalTime = useMemo(
     () => (recipe ? (recipe.prepTime || 0) + (recipe.cookTime || 0) : 0),
-    [recipe]
+    [recipe],
   );
+  const recipeImages = useMemo(() => {
+    if (!recipe) return [];
+    if (recipe.imageUrls?.length) return recipe.imageUrls;
+    return recipe.imageUrl ? [recipe.imageUrl] : [];
+  }, [recipe]);
+  const [activePhotoIndex, setActivePhotoIndex] = useState(0);
+
+  const compactHeaderRevealStart = Math.max(
+    0,
+    topMetadataBottom - HEADER_REVEAL_DISTANCE,
+  );
+  const compactHeaderRevealEnd = Math.max(
+    compactHeaderRevealStart + 1,
+    topMetadataBottom,
+  );
+  const headerDividerOpacity = scrollY.interpolate({
+    inputRange: [compactHeaderRevealStart, compactHeaderRevealEnd],
+    outputRange: [0, 1],
+    extrapolate: "clamp",
+  });
 
   // Loading state
   if (isLoading) {
@@ -290,33 +313,93 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
           >
             <ChevronLeft size={24} color={theme.colors.neutral[700]} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle} numberOfLines={1}>
-            {recipe.title}
-          </Text>
+          <View style={styles.headerTitleWrap} pointerEvents="none">
+            <Text style={styles.headerTitle} numberOfLines={1}>
+              {recipe.title}
+            </Text>
+          </View>
           <TouchableOpacity
             onPress={() => setShowActionSheet(true)}
             style={styles.headerButton}
           >
             <MoreHorizontal size={24} color={theme.colors.neutral[700]} />
           </TouchableOpacity>
+          <Animated.View
+            pointerEvents="none"
+            style={[styles.headerDivider, { opacity: headerDividerOpacity }]}
+          />
         </View>
 
-        <ScrollView
+        <Animated.ScrollView
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
+          scrollEventThrottle={16}
+          onScroll={Animated.event(
+            [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+            { useNativeDriver: true },
+          )}
         >
-          {/* Hero Image */}
-          {recipe.imageUrl ? (
-            <Image source={{ uri: recipe.imageUrl }} style={styles.heroImage} />
-          ) : (
-            <View style={styles.heroPlaceholder}>
-              <Text style={styles.heroEmoji}>🍽️</Text>
+          {/* Photo Gallery */}
+          {recipeImages.length > 0 && (
+            <View style={styles.gallerySection}>
+              <Animated.ScrollView
+                horizontal
+                pagingEnabled
+                showsHorizontalScrollIndicator={false}
+                onMomentumScrollEnd={(event) => {
+                  const nextIndex = Math.round(
+                    event.nativeEvent.contentOffset.x / SCREEN_WIDTH,
+                  );
+                  setActivePhotoIndex(
+                    Math.max(0, Math.min(nextIndex, recipeImages.length - 1)),
+                  );
+                }}
+              >
+                {recipeImages.map((imageUrl, index) => (
+                  <View key={`${imageUrl}-${index}`} style={styles.galleryPage}>
+                    <Image
+                      source={{ uri: imageUrl }}
+                      style={styles.galleryImage}
+                    />
+                    <View style={styles.galleryCountPill}>
+                      <Text style={styles.galleryCountText}>
+                        {index + 1}/{recipeImages.length}
+                      </Text>
+                    </View>
+                  </View>
+                ))}
+              </Animated.ScrollView>
+              {recipeImages.length > 1 && (
+                <View style={styles.galleryDots}>
+                  {recipeImages.map((_, index) => (
+                    <View
+                      key={index}
+                      style={[
+                        styles.galleryDot,
+                        activePhotoIndex === index && styles.galleryDotActive,
+                      ]}
+                    />
+                  ))}
+                </View>
+              )}
             </View>
           )}
 
           {/* Meta Info */}
-          <View style={styles.metaSection}>
+          <View
+            style={[
+              styles.metaSection,
+              recipeImages.length === 0 && styles.metaSectionNoGallery,
+            ]}
+            onLayout={(event) => {
+              const { y, height } = event.nativeEvent.layout;
+              const nextBottom = Math.ceil(y + height);
+              setTopMetadataBottom((current) =>
+                Math.abs(current - nextBottom) > 1 ? nextBottom : current,
+              );
+            }}
+          >
             <View style={styles.metaRow}>
               {recipe.prepTime && recipe.prepTime > 0 && (
                 <View style={styles.metaItem}>
@@ -353,6 +436,13 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
             <PlayCircle size={20} color="white" />
             <Text style={styles.cookModeButtonText}>Cook Mode</Text>
           </TouchableOpacity>
+
+          {/* Recipe Description */}
+          {recipe.description ? (
+            <View style={styles.recipeIntro}>
+              <Text style={styles.recipeDescription}>{recipe.description}</Text>
+            </View>
+          ) : null}
 
           {/* Ingredients */}
           <View style={styles.section}>
@@ -407,7 +497,7 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
                     </Text>
                   </TouchableOpacity>
                 );
-              }
+              },
             )}
           </View>
 
@@ -432,7 +522,7 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
             </View>
             {(() => {
               const items = convertLegacyToStructured(
-                recipe.instructions || []
+                recipe.instructions || [],
               );
               return items.map((item, i) => {
                 if (item.type === "header") {
@@ -481,7 +571,7 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
             <NutritionSection
               nutrition={recipe.nutrition}
               ingredients={extractItemTexts(
-                convertLegacyToStructured(recipe.ingredients || [])
+                convertLegacyToStructured(recipe.ingredients || []),
               )}
               servings={recipe.servings || 1}
               recipeId={recipe.id}
@@ -495,7 +585,7 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
               <TagDisplay tags={recipe.tags} />
             </View>
           )}
-        </ScrollView>
+        </Animated.ScrollView>
 
         <ActionSheet
           visible={showActionSheet}
@@ -579,16 +669,29 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: theme.spacing.xl,
     paddingVertical: theme.spacing.lg,
+    backgroundColor: theme.colors.background,
   },
   headerButton: {
     padding: theme.spacing.xs,
+    zIndex: 1,
+  },
+  headerTitleWrap: {
+    flex: 1,
+    marginHorizontal: theme.spacing.md,
   },
   headerTitle: {
     ...typography.subtitle,
-    flex: 1,
+    fontFamily: "Inter-SemiBold",
     textAlign: "center",
-    marginHorizontal: theme.spacing.md,
     color: theme.colors.textPrimary,
+  },
+  headerDivider: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: theme.colors.neutral[300],
   },
   scrollView: {
     flex: 1,
@@ -596,25 +699,68 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: theme.spacing["4xl"],
   },
-  heroImage: {
-    width: "100%",
-    height: 250,
-    backgroundColor: theme.colors.neutral[200],
+  gallerySection: {
+    paddingTop: theme.spacing.sm,
+    paddingBottom: theme.spacing.lg,
   },
-  heroPlaceholder: {
-    width: "100%",
-    height: 250,
-    backgroundColor: theme.colors.neutral[50],
-    justifyContent: "center",
+  galleryPage: {
+    width: SCREEN_WIDTH,
     alignItems: "center",
   },
-  heroEmoji: {
-    fontSize: 64,
+  galleryImage: {
+    width: SCREEN_WIDTH - theme.spacing["4xl"] * 2,
+    height: 190,
+    borderRadius: theme.borderRadius.md,
+    backgroundColor: theme.colors.neutral[200],
+  },
+  galleryCountPill: {
+    position: "absolute",
+    right: theme.spacing["4xl"] + theme.spacing.sm,
+    bottom: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.sm,
+    paddingVertical: 4,
+    borderRadius: 999,
+    backgroundColor: "rgba(0, 0, 0, 0.45)",
+  },
+  galleryCountText: {
+    ...typography.caption,
+    color: "white",
+    fontWeight: "700",
+  },
+  galleryDots: {
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: 5,
+    marginTop: theme.spacing.md,
+  },
+  galleryDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: theme.colors.neutral[300],
+  },
+  galleryDotActive: {
+    backgroundColor: theme.colors.primary[500],
+  },
+  recipeIntro: {
+    paddingHorizontal: theme.spacing.xl,
+    paddingTop: theme.spacing.xl,
+    paddingBottom: theme.spacing.lg,
+  },
+  recipeDescription: {
+    ...typography.body,
+    color: theme.colors.neutral[700],
+    lineHeight: 24,
   },
   metaSection: {
-    padding: theme.spacing.xl,
+    paddingHorizontal: theme.spacing.xl,
+    paddingTop: theme.spacing.sm,
+    paddingBottom: theme.spacing.xl,
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.neutral[200],
+  },
+  metaSectionNoGallery: {
+    paddingTop: theme.spacing.md,
   },
   metaRow: {
     flexDirection: "row",

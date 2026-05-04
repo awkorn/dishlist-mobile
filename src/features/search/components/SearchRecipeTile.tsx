@@ -37,11 +37,12 @@ export function SearchRecipeTile({ recipe, onPress }: SearchRecipeTileProps) {
   };
 
   const totalTime = (recipe.prepTime || 0) + (recipe.cookTime || 0);
+  const coverImageUrl = recipe.imageUrls?.[0] || recipe.imageUrl;
 
   return (
     <TouchableOpacity style={styles.container} onPress={handlePress}>
-      {recipe.imageUrl ? (
-        <Image source={{ uri: recipe.imageUrl }} style={styles.image} />
+      {coverImageUrl ? (
+        <Image source={{ uri: coverImageUrl }} style={styles.image} />
       ) : (
         <View style={[styles.image, styles.placeholderImage]}>
           <Text style={styles.placeholderEmoji}>🍽️</Text>

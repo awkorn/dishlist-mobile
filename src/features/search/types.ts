@@ -24,6 +24,7 @@ export interface SearchRecipe {
   title: string;
   description: string | null;
   imageUrl: string | null;
+  imageUrls: string[];
   prepTime: number | null;
   cookTime: number | null;
   servings: number | null;

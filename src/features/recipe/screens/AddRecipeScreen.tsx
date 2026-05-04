@@ -12,7 +12,7 @@ import {
   Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { ChevronLeft, X, Camera, AlertCircle } from "lucide-react-native";
+import { ChevronLeft, X, Camera, AlertCircle, Plus } from "lucide-react-native";
 import * as ImagePicker from "expo-image-picker";
 import { theme } from "@styles/theme";
 import { typography } from "@styles/typography";
@@ -31,6 +31,9 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "@app-types/navigation";
 
 type Props = NativeStackScreenProps<RootStackParamList, "AddRecipe">;
+const MAX_RECIPE_PHOTOS = 4;
+
+const isRemoteImageUri = (uri: string) => /^https?:\/\//i.test(uri);
 
 interface TimeInputProps {
   label: string;
@@ -98,16 +101,16 @@ export default function AddRecipeScreen({ route, navigation }: Props) {
 
   // Form state
   const [title, setTitle] = useState(
-    editRecipe?.title || importedRecipe?.title || ""
+    editRecipe?.title || importedRecipe?.title || "",
   );
   const [prepTime, setPrepTime] = useState(
-    editRecipe?.prepTime || importedRecipe?.prepTime || 0
+    editRecipe?.prepTime || importedRecipe?.prepTime || 0,
   );
   const [cookTime, setCookTime] = useState(
-    editRecipe?.cookTime || importedRecipe?.cookTime || 0
+    editRecipe?.cookTime || importedRecipe?.cookTime || 0,
   );
   const [servings, setServings] = useState(
-    editRecipe?.servings || importedRecipe?.servings || 0
+    editRecipe?.servings || importedRecipe?.servings || 0,
   );
 
   const [ingredients, setIngredients] = useState<RecipeItem[]>(() => {
@@ -130,17 +133,20 @@ export default function AddRecipeScreen({ route, navigation }: Props) {
     return [{ type: "item", text: "" }];
   });
 
-  const [imageUri, setImageUri] = useState<string | null>(
-    editRecipe?.imageUrl || null
-  );
-  const [imageChanged, setImageChanged] = useState(false);
+  const [imageUris, setImageUris] = useState<string[]>(() => {
+    if (editRecipe?.imageUrls?.length) {
+      return editRecipe.imageUrls.slice(0, MAX_RECIPE_PHOTOS);
+    }
+    return editRecipe?.imageUrl ? [editRecipe.imageUrl] : [];
+  });
+  const [imagesChanged, setImagesChanged] = useState(false);
   const [imageUploading, setImageUploading] = useState(false);
   const [calculatedNutrition, setCalculatedNutrition] =
     useState<NutritionInfo | null>(editRecipe?.nutrition || null);
   const [originalIngredients] = useState<RecipeItem[]>(() =>
     editRecipe?.ingredients
       ? convertLegacyToStructured(editRecipe.ingredients)
-      : []
+      : [],
   );
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [warningsDismissed, setWarningsDismissed] = useState(false);
@@ -158,7 +164,15 @@ export default function AddRecipeScreen({ route, navigation }: Props) {
 
   // Image handling
   const pickImage = async () => {
-    Alert.alert("Select Image", "Choose how you want to add an image", [
+    if (imageUris.length >= MAX_RECIPE_PHOTOS) {
+      Alert.alert(
+        "Photo Limit",
+        `You can add up to ${MAX_RECIPE_PHOTOS} photos per recipe.`,
+      );
+      return;
+    }
+
+    Alert.alert("Add Photos", "Choose how you want to add photos", [
       { text: "Cancel", style: "cancel" },
       { text: "Camera", onPress: openCamera },
       { text: "Photo Library", onPress: openImagePicker },
@@ -166,12 +180,14 @@ export default function AddRecipeScreen({ route, navigation }: Props) {
   };
 
   const openCamera = async () => {
+    if (imageUris.length >= MAX_RECIPE_PHOTOS) return;
+
     const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
 
     if (!permissionResult.granted) {
       Alert.alert(
         "Permission Required",
-        "Camera permission is needed to take photos."
+        "Camera permission is needed to take photos.",
       );
       return;
     }
@@ -184,34 +200,47 @@ export default function AddRecipeScreen({ route, navigation }: Props) {
     });
 
     if (!result.canceled && result.assets[0]) {
-      setImageUri(result.assets[0].uri);
-      setImageChanged(true);
+      setImageUris((current) =>
+        [...current, result.assets[0].uri].slice(0, MAX_RECIPE_PHOTOS),
+      );
+      setImagesChanged(true);
     }
   };
 
   const openImagePicker = async () => {
+    const remainingSlots = MAX_RECIPE_PHOTOS - imageUris.length;
+    if (remainingSlots <= 0) return;
+
     const permissionResult =
       await ImagePicker.requestMediaLibraryPermissionsAsync();
 
     if (!permissionResult.granted) {
       Alert.alert(
         "Permission Required",
-        "Photo library access is needed to select images."
+        "Photo library access is needed to select images.",
       );
       return;
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ["images"],
-      allowsEditing: true,
-      aspect: [4, 3],
+      allowsMultipleSelection: true,
+      selectionLimit: remainingSlots,
       quality: 0.8,
     });
 
-    if (!result.canceled && result.assets[0]) {
-      setImageUri(result.assets[0].uri);
-      setImageChanged(true);
+    if (!result.canceled && result.assets.length > 0) {
+      const selectedUris = result.assets.map((asset) => asset.uri);
+      setImageUris((current) =>
+        [...current, ...selectedUris].slice(0, MAX_RECIPE_PHOTOS),
+      );
+      setImagesChanged(true);
     }
+  };
+
+  const removeImage = (index: number) => {
+    setImageUris((current) => current.filter((_, i) => i !== index));
+    setImagesChanged(true);
   };
 
   // Validation
@@ -239,14 +268,20 @@ export default function AddRecipeScreen({ route, navigation }: Props) {
     if (!validateForm()) return;
 
     try {
-      let finalImageUrl = isEditMode ? editRecipe?.imageUrl : null;
+      let finalImageUrls = imageUris;
 
-      // Upload image if changed
-      if (imageChanged && imageUri) {
+      // Upload newly selected local photos if changed.
+      if (imagesChanged && imageUris.length > 0) {
         setImageUploading(true);
-        finalImageUrl = await uploadImage(imageUri, "recipes");
+        finalImageUrls = await Promise.all(
+          imageUris.map((uri) =>
+            isRemoteImageUri(uri) ? uri : uploadImage(uri, "recipes"),
+          ),
+        );
         setImageUploading(false);
       }
+
+      const finalImageUrl = finalImageUrls[0] || null;
 
       const validIngredients = cleanEmptyItems(ingredients);
       const validInstructions = cleanEmptyItems(instructions);
@@ -262,6 +297,7 @@ export default function AddRecipeScreen({ route, navigation }: Props) {
         cookTime: cookTime > 0 ? cookTime : undefined,
         servings: servings > 0 ? servings : undefined,
         imageUrl: finalImageUrl,
+        imageUrls: finalImageUrls,
         nutrition: nutritionData || undefined,
         tags: tags,
       };
@@ -291,7 +327,7 @@ export default function AddRecipeScreen({ route, navigation }: Props) {
       title.trim() !== (editRecipe?.title || "") ||
       ingredients.some((item) => item.text.trim()) ||
       instructions.some((item) => item.text.trim()) ||
-      imageChanged;
+      imagesChanged;
 
     if (hasChanges) {
       Alert.alert(
@@ -304,7 +340,7 @@ export default function AddRecipeScreen({ route, navigation }: Props) {
             style: "destructive",
             onPress: () => navigation.goBack(),
           },
-        ]
+        ],
       );
     } else {
       navigation.goBack();
@@ -361,8 +397,8 @@ export default function AddRecipeScreen({ route, navigation }: Props) {
               {isEditMode
                 ? "Edit Recipe"
                 : isImportMode
-                ? "Review Imported Recipe"
-                : "Add Recipe"}
+                  ? "Review Imported Recipe"
+                  : "Add Recipe"}
             </Text>
             <View style={styles.headerSpacer} />
           </View>
@@ -448,25 +484,46 @@ export default function AddRecipeScreen({ route, navigation }: Props) {
               onNutritionCalculated={setCalculatedNutrition}
             />
 
-            {/* Recipe Image */}
+            {/* Recipe Images */}
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Recipe Image</Text>
-              <TouchableOpacity
-                style={styles.imagePickerButton}
-                onPress={pickImage}
-              >
-                {imageUri ? (
-                  <Image
-                    source={{ uri: imageUri }}
-                    style={styles.selectedImage}
-                  />
-                ) : (
-                  <View style={styles.imagePlaceholder}>
-                    <Camera size={32} color={theme.colors.neutral[400]} />
-                    <Text style={styles.imagePickerText}>Add Photo</Text>
+              <View style={styles.photoSectionHeader}>
+                <Text style={[styles.sectionTitle, styles.photoSectionTitle]}>
+                  Recipe Photos
+                </Text>
+                <Text style={styles.photoCount}>
+                  {imageUris.length}/{MAX_RECIPE_PHOTOS}
+                </Text>
+              </View>
+              <View style={styles.photoGrid}>
+                {imageUris.map((uri, index) => (
+                  <View key={`${uri}-${index}`} style={styles.photoTile}>
+                    <Image source={{ uri }} style={styles.selectedImage} />
+                    <TouchableOpacity
+                      style={styles.removePhotoButton}
+                      onPress={() => removeImage(index)}
+                      accessibilityLabel={`Remove photo ${index + 1}`}
+                    >
+                      <X size={14} color="white" />
+                    </TouchableOpacity>
+                    <View style={styles.photoIndexPill}>
+                      <Text style={styles.photoIndexText}>{index + 1}</Text>
+                    </View>
                   </View>
+                ))}
+                {imageUris.length < MAX_RECIPE_PHOTOS && (
+                  <TouchableOpacity
+                    style={[styles.photoTile, styles.addPhotoTile]}
+                    onPress={pickImage}
+                  >
+                    {imageUris.length === 0 ? (
+                      <Camera size={32} color={theme.colors.neutral[400]} />
+                    ) : (
+                      <Plus size={28} color={theme.colors.primary[500]} />
+                    )}
+                    <Text style={styles.imagePickerText}>Add Photo</Text>
+                  </TouchableOpacity>
                 )}
-              </TouchableOpacity>
+              </View>
             </View>
 
             {/* Tags */}
@@ -628,23 +685,66 @@ const styles = StyleSheet.create({
     ...typography.caption,
     color: theme.colors.warning,
   },
-  imagePickerButton: {
-    width: "100%",
-    height: 200,
+  photoSectionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: theme.spacing.lg,
+  },
+  photoCount: {
+    ...typography.caption,
+    color: theme.colors.neutral[500],
+  },
+  photoSectionTitle: {
+    marginBottom: 0,
+  },
+  photoGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: theme.spacing.md,
+  },
+  photoTile: {
+    width: "47%",
+    aspectRatio: 4 / 3,
     borderRadius: theme.borderRadius.md,
     overflow: "hidden",
     borderWidth: 1,
     borderColor: theme.colors.neutral[200],
+    backgroundColor: theme.colors.neutral[100],
+  },
+  addPhotoTile: {
+    justifyContent: "center",
+    alignItems: "center",
+    borderStyle: "dashed",
   },
   selectedImage: {
     width: "100%",
     height: "100%",
   },
-  imagePlaceholder: {
-    flex: 1,
+  removePhotoButton: {
+    position: "absolute",
+    top: theme.spacing.sm,
+    right: theme.spacing.sm,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: "rgba(0, 0, 0, 0.55)",
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: theme.colors.neutral[100],
+  },
+  photoIndexPill: {
+    position: "absolute",
+    left: theme.spacing.sm,
+    bottom: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.sm,
+    paddingVertical: 2,
+    borderRadius: 999,
+    backgroundColor: "rgba(0, 0, 0, 0.55)",
+  },
+  photoIndexText: {
+    ...typography.caption,
+    color: "white",
+    fontWeight: "700",
   },
   imagePickerText: {
     ...typography.body,
