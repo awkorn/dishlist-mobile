@@ -279,7 +279,7 @@ const styles = StyleSheet.create({
     paddingVertical: theme.spacing.lg,
   },
   title: {
-    ...typography.heading2,
+    ...typography.heading4,
     color: theme.colors.textPrimary,
   },
   headerActions: { flexDirection: "row", alignItems: "center" },

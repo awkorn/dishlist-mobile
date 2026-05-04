@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback, useEffect } from "react";
+import React, { useState, useRef, useCallback } from "react";
 import {
   View,
   Text,
@@ -7,8 +7,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
-  Animated,
-  Easing,
+  ActivityIndicator,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { theme } from "@styles/theme";
@@ -159,10 +158,14 @@ export default function RecipeBuilderScreen() {
             ))
           )}
 
-          {/* Loading animation */}
+          {/* Loading state */}
           {isGenerating && (
             <View style={styles.loadingContainer}>
-              <SaladBowlLoader />
+              <ActivityIndicator
+                size="large"
+                color={theme.colors.primary[500]}
+              />
+              <Text style={styles.loadingText}>Loading recipes...</Text>
             </View>
           )}
 
@@ -232,94 +235,6 @@ function MessageBubble({ message, onRecipePress }: MessageBubbleProps) {
     </View>
   );
 }
-
-// ─── Pulsing Dots Loader ──────────────────────────────────────────
-const DOT_COLORS = [
-  theme.colors.primary[500],
-  theme.colors.primary[600],
-  theme.colors.primary[500],
-];
-
-function SaladBowlLoader() {
-  const dotAnims = useRef(DOT_COLORS.map(() => new Animated.Value(0))).current;
-
-  useEffect(() => {
-    dotAnims.forEach((anim, i) => {
-      Animated.loop(
-        Animated.sequence([
-          Animated.delay(i * 200),
-          Animated.timing(anim, {
-            toValue: 1,
-            duration: 400,
-            easing: Easing.inOut(Easing.ease),
-            useNativeDriver: true,
-          }),
-          Animated.timing(anim, {
-            toValue: 0,
-            duration: 400,
-            easing: Easing.inOut(Easing.ease),
-            useNativeDriver: true,
-          }),
-        ])
-      ).start();
-    });
-  }, []);
-
-  return (
-    <View style={loaderStyles.wrapper}>
-      <View style={loaderStyles.dotsRow}>
-        {DOT_COLORS.map((color, i) => {
-          const scale = dotAnims[i].interpolate({
-            inputRange: [0, 1],
-            outputRange: [1, 1.4],
-          });
-          const opacity = dotAnims[i].interpolate({
-            inputRange: [0, 1],
-            outputRange: [0.4, 1],
-          });
-          return (
-            <Animated.View
-              key={i}
-              style={[
-                loaderStyles.dot,
-                {
-                  backgroundColor: color,
-                  transform: [{ scale }],
-                  opacity,
-                },
-              ]}
-            />
-          );
-        })}
-      </View>
-      <Text style={loaderStyles.label}>Finding recipes...</Text>
-    </View>
-  );
-}
-
-const loaderStyles = StyleSheet.create({
-  wrapper: {
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: theme.spacing["4xl"],
-  },
-  dotsRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-  },
-  dot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-  },
-  label: {
-    ...typography.caption,
-    color: theme.colors.neutral[500],
-    marginTop: theme.spacing.lg,
-    fontStyle: "italic",
-  },
-});
 
 // ─── Styles ─────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
@@ -398,6 +313,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: theme.spacing.xl,
+    gap: theme.spacing.md,
+  },
+  loadingText: {
+    ...typography.body,
+    color: theme.colors.neutral[600],
   },
   // Error
   errorContainer: {
