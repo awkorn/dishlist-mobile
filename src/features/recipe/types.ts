@@ -119,6 +119,7 @@ export interface Recipe {
   imageUrl?: string;
   imageUrls?: string[];
   nutrition?: NutritionInfo | null;
+  notes?: string[];
   tags?: string[];
   isShareable?: boolean;
   creatorId: string;
@@ -143,6 +144,7 @@ export interface CreateRecipeData {
   imageUrl?: string | null;
   imageUrls?: string[];
   nutrition?: NutritionInfo;
+  notes?: string[];
   tags?: string[];
   dishListId: string;
 }
@@ -158,6 +160,7 @@ export interface UpdateRecipeData {
   imageUrl?: string | null;
   imageUrls?: string[];
   nutrition?: NutritionInfo;
+  notes?: string[];
   tags?: string[];
 }
 

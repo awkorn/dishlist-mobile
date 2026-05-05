@@ -151,6 +151,9 @@ export default function AddRecipeScreen({ route, navigation }: Props) {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [warningsDismissed, setWarningsDismissed] = useState(false);
   const [tags, setTags] = useState<string[]>(editRecipe?.tags || []);
+  const [notes, setNotes] = useState<string[]>(() =>
+    editRecipe?.notes?.length ? editRecipe.notes : [""],
+  );
 
   // Mutations
   const createRecipeMutation = useCreateRecipe();
@@ -285,6 +288,7 @@ export default function AddRecipeScreen({ route, navigation }: Props) {
 
       const validIngredients = cleanEmptyItems(ingredients);
       const validInstructions = cleanEmptyItems(instructions);
+      const validNotes = notes.map((note) => note.trim()).filter(Boolean);
 
       // Clear nutrition if ingredients changed
       const nutritionData = ingredientsChanged ? null : calculatedNutrition;
@@ -299,6 +303,7 @@ export default function AddRecipeScreen({ route, navigation }: Props) {
         imageUrl: finalImageUrl,
         imageUrls: finalImageUrls,
         nutrition: nutritionData || undefined,
+        notes: validNotes,
         tags: tags,
       };
 
@@ -327,6 +332,7 @@ export default function AddRecipeScreen({ route, navigation }: Props) {
       title.trim() !== (editRecipe?.title || "") ||
       ingredients.some((item) => item.text.trim()) ||
       instructions.some((item) => item.text.trim()) ||
+      notes.some((note) => note.trim()) ||
       imagesChanged;
 
     if (hasChanges) {
@@ -483,6 +489,51 @@ export default function AddRecipeScreen({ route, navigation }: Props) {
               servings={servings}
               onNutritionCalculated={setCalculatedNutrition}
             />
+
+            {/* Notes */}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Notes (Optional)</Text>
+              {notes.map((note, index) => (
+                <View key={index} style={styles.noteInputRow}>
+                  <TextInput
+                    style={styles.noteInput}
+                    placeholder={`Note ${index + 1}`}
+                    placeholderTextColor={theme.colors.neutral[400]}
+                    value={note}
+                    onChangeText={(text) =>
+                      setNotes((current) =>
+                        current.map((currentNote, currentIndex) =>
+                          currentIndex === index ? text : currentNote,
+                        ),
+                      )
+                    }
+                    multiline
+                    textAlignVertical="top"
+                  />
+                  <TouchableOpacity
+                    style={styles.removeButton}
+                    onPress={() =>
+                      setNotes((current) =>
+                        current.length === 1
+                          ? [""]
+                          : current.filter(
+                              (_, currentIndex) => currentIndex !== index,
+                            ),
+                      )
+                    }
+                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                  >
+                    <X size={16} color={theme.colors.error} />
+                  </TouchableOpacity>
+                </View>
+              ))}
+              <TouchableOpacity
+                style={styles.addButton}
+                onPress={() => setNotes((current) => [...current, ""])}
+              >
+                <Text style={styles.addButtonText}>Add Note</Text>
+              </TouchableOpacity>
+            </View>
 
             {/* Recipe Images */}
             <View style={styles.section}>
@@ -659,6 +710,23 @@ const styles = StyleSheet.create({
   instructionInput: {
     minHeight: 60,
     textAlignVertical: "top",
+  },
+  noteInputRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    marginBottom: theme.spacing.md,
+    gap: theme.spacing.sm,
+  },
+  noteInput: {
+    ...typography.body,
+    flex: 1,
+    minHeight: 72,
+    padding: theme.spacing.md,
+    borderWidth: 1,
+    borderColor: theme.colors.neutral[200],
+    borderRadius: theme.borderRadius.md,
+    backgroundColor: theme.colors.surface,
+    color: theme.colors.neutral[800],
   },
   removeButton: {
     padding: theme.spacing.sm,

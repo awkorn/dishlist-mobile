@@ -253,6 +253,10 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
     if (recipe.imageUrls?.length) return recipe.imageUrls;
     return recipe.imageUrl ? [recipe.imageUrl] : [];
   }, [recipe]);
+  const recipeNotes = useMemo(
+    () => recipe?.notes?.map((note) => note.trim()).filter(Boolean) || [],
+    [recipe],
+  );
   const [activePhotoIndex, setActivePhotoIndex] = useState(0);
 
   const compactHeaderRevealStart = Math.max(
@@ -579,6 +583,21 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
             />
           </View>
 
+          {/* Notes */}
+          {recipeNotes.length > 0 && (
+            <View style={styles.section}>
+              <Text style={[styles.sectionTitle, styles.notesTitle]}>
+                Notes
+              </Text>
+              {recipeNotes.map((note, index) => (
+                <View key={index} style={styles.noteRow}>
+                  <Text style={styles.noteBullet}>•</Text>
+                  <Text style={styles.noteText}>{note}</Text>
+                </View>
+              ))}
+            </View>
+          )}
+
           {/* Tags */}
           {recipe.tags && recipe.tags.length > 0 && (
             <View style={styles.section}>
@@ -887,5 +906,25 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: theme.colors.primary[600],
     fontWeight: "600",
+  },
+  notesTitle: {
+    marginBottom: theme.spacing.lg,
+  },
+  noteRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: theme.spacing.sm,
+    marginBottom: theme.spacing.md,
+  },
+  noteBullet: {
+    ...typography.body,
+    color: theme.colors.primary[500],
+    lineHeight: 24,
+  },
+  noteText: {
+    ...typography.body,
+    color: theme.colors.neutral[800],
+    flex: 1,
+    lineHeight: 24,
   },
 });
