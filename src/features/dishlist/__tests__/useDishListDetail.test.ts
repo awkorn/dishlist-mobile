@@ -4,7 +4,11 @@ import React from "react";
 import { useDishListDetail } from "../hooks/useDishListDetail";
 import { dishlistService } from "../services/dishListService";
 
-jest.mock("../services/dishlistService");
+jest.mock("../services/dishListService", () => ({
+  dishlistService: {
+    getDishListDetail: jest.fn(),
+  },
+}));
 
 const mockDishlistService = dishlistService as jest.Mocked<
   typeof dishlistService

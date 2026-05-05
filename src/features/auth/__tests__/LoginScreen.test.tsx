@@ -78,7 +78,7 @@ describe('LoginScreen', () => {
   });
 
   it('displays error message on failed login', async () => {
-    mockSignIn.mockResolvedValueOnce({ error: 'auth/wrong-password' });
+    mockSignIn.mockResolvedValueOnce({ error: 'Invalid login credentials' });
 
     const { getByPlaceholderText, getByText } = renderLoginScreen();
 
@@ -87,7 +87,7 @@ describe('LoginScreen', () => {
     fireEvent.press(getByText('Login'));
 
     await waitFor(() => {
-      expect(getByText('Incorrect password')).toBeTruthy();
+      expect(getByText('Email or password is incorrect')).toBeTruthy();
     });
   });
 

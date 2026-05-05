@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { recipeProgressStorage } from "../services";
+import { recipeProgressStorage } from "../services/recipeProgressStorage";
 import type { RecipeProgress } from "../types";
 
 interface UseRecipeProgressOptions {

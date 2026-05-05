@@ -6,7 +6,7 @@ A React Native app for sharing and organizing recipes.
 - React Native (Expo)
 - TypeScript
 - React Navigation
-- Firebase Auth + Storage
+- Supabase Auth + Storage
 - Axios for API calls
 
 ## Quick Start

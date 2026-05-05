@@ -200,7 +200,8 @@ describe('useEditProfile', () => {
 
     expect(uploadImage).toHaveBeenCalledWith(localImageUri, 'avatars');
     expect(profileService.updateProfile).toHaveBeenCalledWith(
-      expect.objectContaining({ avatarUrl: uploadedUrl })
+      expect.objectContaining({ avatarUrl: uploadedUrl }),
+      expect.anything()
     );
   });
 

@@ -366,11 +366,6 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
                       source={{ uri: imageUrl }}
                       style={styles.galleryImage}
                     />
-                    <View style={styles.galleryCountPill}>
-                      <Text style={styles.galleryCountText}>
-                        {index + 1}/{recipeImages.length}
-                      </Text>
-                    </View>
                   </View>
                 ))}
               </Animated.ScrollView>
@@ -731,20 +726,6 @@ const styles = StyleSheet.create({
     height: 190,
     borderRadius: theme.borderRadius.md,
     backgroundColor: theme.colors.neutral[200],
-  },
-  galleryCountPill: {
-    position: "absolute",
-    right: theme.spacing["4xl"] + theme.spacing.sm,
-    bottom: theme.spacing.sm,
-    paddingHorizontal: theme.spacing.sm,
-    paddingVertical: 4,
-    borderRadius: 999,
-    backgroundColor: "rgba(0, 0, 0, 0.45)",
-  },
-  galleryCountText: {
-    ...typography.caption,
-    color: "white",
-    fontWeight: "700",
   },
   galleryDots: {
     flexDirection: "row",

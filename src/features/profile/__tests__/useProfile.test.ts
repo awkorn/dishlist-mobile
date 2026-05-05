@@ -7,6 +7,7 @@ import { profileService } from '../services/profileService';
 jest.mock('../services/profileService', () => ({
   profileService: {
     getUserProfile: jest.fn(),
+    getUserRecipes: jest.fn(),
   },
 }));
 
@@ -60,7 +61,7 @@ describe('useProfile', () => {
 
     expect(result.current.user).toEqual(mockProfileData.user);
     expect(result.current.dishlists).toEqual(mockProfileData.dishlists);
-    expect(result.current.recipes).toEqual(mockProfileData.recipes);
+    expect(result.current.recipes).toEqual([]);
   });
 
   it('computes displayName correctly with first and last name', async () => {

@@ -1,5 +1,10 @@
 import '@testing-library/jest-native/extend-expect';
 
+process.env.EXPO_PUBLIC_SUPABASE_URL =
+  process.env.EXPO_PUBLIC_SUPABASE_URL || 'https://example.supabase.co';
+process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY =
+  process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || 'test-anon-key';
+
 // Silence console during tests (optional, remove if you want logs)
 global.console = {
   ...console,
@@ -35,14 +40,6 @@ jest.mock('expo-image-picker', () => ({
   requestMediaLibraryPermissionsAsync: jest.fn(() => 
     Promise.resolve({ granted: true })
   ),
-}));
-
-// Mock Firebase
-jest.mock('./src/services/firebase', () => ({
-  auth: {
-    currentUser: { uid: 'test-user-id', getIdToken: jest.fn(() => 'mock-token') },
-  },
-  default: {},
 }));
 
 // Mock NetInfo
