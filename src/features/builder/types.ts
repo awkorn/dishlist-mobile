@@ -32,20 +32,23 @@ export interface GenerateRecipesResponse {
   assistantContent: string;
 }
 
-// ─── Preferences (static for now, will be user-configurable) ────────
+// ─── Preferences ────────────────────────────────────────────────────
 export const DEFAULT_PREFERENCES: string[] = [];
 
 export const AVAILABLE_PREFERENCES = [
   "Vegetarian",
   "Vegan",
-  "Gluten-Free",
-  "Dairy-Free",
-  "Keto",
-  "High Protein",
-  "Low Carb",
-  "Nut-Free",
   "Paleo",
-  "Quick (under 30 min)",
+  "Keto",
+  "High protein",
+  "Low calorie",
+  "Low carb",
+  "Avoid gluten",
+  "Avoid dairy",
+  "Avoid soy",
+  "Avoid peanuts",
+  "Avoid tree nuts",
+  "Avoid shellfish",
 ] as const;
 
 export type PreferenceOption = (typeof AVAILABLE_PREFERENCES)[number];

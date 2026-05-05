@@ -8,7 +8,9 @@ import {
   Platform,
   Alert,
   ActivityIndicator,
+  TouchableOpacity,
 } from "react-native";
+import { RefreshCcw, SquarePen } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { theme } from "@styles/theme";
 import { typography } from "@styles/typography";
@@ -19,6 +21,7 @@ import {
   GeneratedRecipeCard,
   GeneratedRecipeDetailSheet,
   PreferencesButton,
+  PreferencesModal,
   SelectDishListModal,
   CARD_GAP,
 } from "../components";
@@ -33,8 +36,10 @@ export default function RecipeBuilderScreen() {
     isGenerating,
     error,
     sendPrompt,
+    regenerateRecipes,
     clearChat,
     preferences,
+    setPreferences,
   } = useRecipeBuilder();
 
   const [selectedRecipe, setSelectedRecipe] = useState<GeneratedRecipe | null>(
@@ -45,6 +50,7 @@ export default function RecipeBuilderScreen() {
   const [recipeToSave, setRecipeToSave] = useState<GeneratedRecipe | null>(
     null
   );
+  const [showPreferences, setShowPreferences] = useState(false);
 
   const createRecipeMutation = useCreateRecipe();
 
@@ -58,6 +64,25 @@ export default function RecipeBuilderScreen() {
     },
     [sendPrompt]
   );
+
+  const scrollToBottom = useCallback(() => {
+    setTimeout(() => {
+      scrollRef.current?.scrollToEnd({ animated: true });
+    }, 300);
+  }, []);
+
+  const handleRegenerate = useCallback(async () => {
+    await regenerateRecipes();
+    scrollToBottom();
+  }, [regenerateRecipes, scrollToBottom]);
+
+  const handleNewChat = useCallback(() => {
+    clearChat();
+    setSelectedRecipe(null);
+    setShowDetail(false);
+    setShowDishListPicker(false);
+    setRecipeToSave(null);
+  }, [clearChat]);
 
   const handleRecipePress = useCallback((recipe: GeneratedRecipe) => {
     setSelectedRecipe(recipe);
@@ -98,15 +123,11 @@ export default function RecipeBuilderScreen() {
   );
 
   const handlePreferencesPress = () => {
-    // Static for now — will open preferences modal in Phase 2
-    Alert.alert(
-      "Preferences",
-      "Dietary preferences coming soon! You'll be able to set preferences like Vegan, High Protein, Gluten-Free, and more.",
-      [{ text: "OK" }]
-    );
+    setShowPreferences(true);
   };
 
   const hasMessages = messages.length > 0;
+  const latestRecipeMessageId = getLatestRecipeMessageId(messages);
 
   return (
     <KeyboardAvoidingView
@@ -154,6 +175,10 @@ export default function RecipeBuilderScreen() {
                 key={message.id}
                 message={message}
                 onRecipePress={handleRecipePress}
+                onRegenerate={handleRegenerate}
+                onNewChat={handleNewChat}
+                showActions={message.id === latestRecipeMessageId}
+                actionsDisabled={isGenerating}
               />
             ))
           )}
@@ -179,6 +204,14 @@ export default function RecipeBuilderScreen() {
 
         {/* Input */}
         <BuilderChatInput onSend={handleSend} disabled={isGenerating} />
+
+        {/* Preferences */}
+        <PreferencesModal
+          visible={showPreferences}
+          selectedPreferences={preferences}
+          onClose={() => setShowPreferences(false)}
+          onSave={setPreferences}
+        />
 
         {/* Recipe Detail Sheet */}
         <GeneratedRecipeDetailSheet
@@ -207,9 +240,20 @@ export default function RecipeBuilderScreen() {
 interface MessageBubbleProps {
   message: BuilderMessage;
   onRecipePress: (recipe: GeneratedRecipe) => void;
+  onRegenerate: () => void;
+  onNewChat: () => void;
+  showActions: boolean;
+  actionsDisabled: boolean;
 }
 
-function MessageBubble({ message, onRecipePress }: MessageBubbleProps) {
+function MessageBubble({
+  message,
+  onRecipePress,
+  onRegenerate,
+  onNewChat,
+  showActions,
+  actionsDisabled,
+}: MessageBubbleProps) {
   if (message.role === "user") {
     return (
       <View style={styles.userBubble}>
@@ -232,8 +276,71 @@ function MessageBubble({ message, onRecipePress }: MessageBubbleProps) {
           ))}
         </View>
       )}
+      {showActions && (
+        <View style={styles.recipeActions}>
+          <TouchableOpacity
+            style={[
+              styles.recipeActionButton,
+              actionsDisabled && styles.recipeActionButtonDisabled,
+            ]}
+            onPress={onRegenerate}
+            disabled={actionsDisabled}
+            accessibilityRole="button"
+            accessibilityLabel="Regenerate recipes"
+            hitSlop={8}
+            activeOpacity={0.65}
+          >
+            <RefreshCcw
+              size={22}
+              color={
+                actionsDisabled
+                  ? theme.colors.neutral[400]
+                  : theme.colors.neutral[900]
+              }
+              strokeWidth={2}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.recipeActionButton,
+              actionsDisabled && styles.recipeActionButtonDisabled,
+            ]}
+            onPress={onNewChat}
+            disabled={actionsDisabled}
+            accessibilityRole="button"
+            accessibilityLabel="Start a new chat"
+            hitSlop={8}
+            activeOpacity={0.65}
+          >
+            <SquarePen
+              size={22}
+              color={
+                actionsDisabled
+                  ? theme.colors.neutral[400]
+                  : theme.colors.neutral[900]
+              }
+              strokeWidth={2}
+            />
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
   );
+}
+
+function getLatestRecipeMessageId(messages: BuilderMessage[]) {
+  for (let index = messages.length - 1; index >= 0; index -= 1) {
+    const message = messages[index];
+    if (
+      message.role === "assistant" &&
+      message.recipes &&
+      message.recipes.length > 0
+    ) {
+      return message.id;
+    }
+  }
+
+  return null;
 }
 
 // ─── Styles ─────────────────────────────────────────────────────────
@@ -307,6 +414,21 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: CARD_GAP,
+  },
+  recipeActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: theme.spacing.sm,
+    marginTop: theme.spacing.lg,
+  },
+  recipeActionButton: {
+    width: 26,
+    height: 26,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  recipeActionButtonDisabled: {
+    opacity: 0.5,
   },
   // Loading
   loadingContainer: {
