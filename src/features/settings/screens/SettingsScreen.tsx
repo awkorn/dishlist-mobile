@@ -39,16 +39,16 @@ import Constants from "expo-constants";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Settings">;
 
-// TODO: Replace with your actual URLs
+const SUPPORT_SITE_URL = "https://dishlists.app/";
+
 const URLS = {
-  TERMS: "https://dishlist.app/terms",
-  PRIVACY: "https://dishlist.app/privacy",
-  FAQ: "https://dishlist.app/faq",
+  SUPPORT: SUPPORT_SITE_URL,
+  TERMS: `${SUPPORT_SITE_URL}terms`,
+  PRIVACY: `${SUPPORT_SITE_URL}privacy`,
+  FAQ: SUPPORT_SITE_URL,
   // App Store URL - update with your actual app ID
   APP_STORE: "https://apps.apple.com/app/idYOUR_APP_ID",
 };
-
-const SUPPORT_EMAIL = "support@dishlist.app";
 
 export default function SettingsScreen({ navigation }: Props) {
   const { signOut, user } = useAuth();
@@ -103,14 +103,6 @@ export default function SettingsScreen({ navigation }: Props) {
       ]
     );
   }, [isDeleting, signOut]);
-
-  const handleContactSupport = useCallback(() => {
-    const subject = encodeURIComponent("DishList Support Request");
-    const body = encodeURIComponent(
-      `\n\n---\nApp Version: ${appVersion} (${buildNumber})\nUser: ${user?.email ?? "N/A"}`
-    );
-    Linking.openURL(`mailto:${SUPPORT_EMAIL}?subject=${subject}&body=${body}`);
-  }, [appVersion, buildNumber, user?.email]);
 
   const handleOpenURL = useCallback((url: string) => {
     Linking.openURL(url);
@@ -213,7 +205,8 @@ export default function SettingsScreen({ navigation }: Props) {
         <SettingsSection title="Support">
           <SettingsRow
             icon={<CircleHelp size={18} color={theme.colors.neutral[600]} />}
-            label="Help & FAQ"
+            label="Help & Support"
+            subtitle="dishlists.app"
             onPress={() => handleOpenURL(URLS.FAQ)}
           />
           <SettingsRow
@@ -221,12 +214,12 @@ export default function SettingsScreen({ navigation }: Props) {
               <MessageSquare size={18} color={theme.colors.neutral[600]} />
             }
             label="Contact Support"
-            onPress={handleContactSupport}
+            onPress={() => handleOpenURL(URLS.SUPPORT)}
           />
           <SettingsRow
             icon={<Flag size={18} color={theme.colors.neutral[600]} />}
             label="Report a Problem"
-            onPress={handleContactSupport}
+            onPress={() => handleOpenURL(URLS.SUPPORT)}
           />
           <SettingsRow
             icon={<Star size={18} color={theme.colors.neutral[600]} />}
