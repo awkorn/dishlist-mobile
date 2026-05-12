@@ -3,9 +3,10 @@ import { Alert } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { uploadImage } from "@services/image";
+import { queryKeys } from "@lib/queryKeys";
 import { profileService } from "../services/profileService";
 import { PROFILE_QUERY_KEY } from "./useProfile";
-import type { UserProfile, EditProfileState } from "../types";
+import type { UserProfile, EditProfileState, ProfileData } from "../types";
 
 interface UseEditProfileOptions {
   currentUser: UserProfile;
@@ -38,8 +39,25 @@ export function useEditProfile({
 
   const updateMutation = useMutation({
     mutationFn: profileService.updateProfile,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [PROFILE_QUERY_KEY] });
+    onSuccess: ({ user }) => {
+      queryClient.setQueryData<ProfileData>(
+        [PROFILE_QUERY_KEY, user.uid],
+        (previousData) =>
+          previousData
+            ? {
+                ...previousData,
+                user: {
+                  ...previousData.user,
+                  ...user,
+                },
+              }
+            : previousData
+      );
+      queryClient.setQueryData(queryKeys.users.me(), { user });
+      queryClient.invalidateQueries({
+        queryKey: [PROFILE_QUERY_KEY, user.uid],
+      });
+      queryClient.invalidateQueries({ queryKey: queryKeys.users.me() });
       onSuccess?.();
     },
     onError: (error: any) => {

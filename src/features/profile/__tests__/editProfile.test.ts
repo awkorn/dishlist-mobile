@@ -6,6 +6,8 @@ import * as ImagePicker from 'expo-image-picker';
 import { useEditProfile } from '../hooks/useEditProfile';
 import { profileService } from '../services/profileService';
 import { uploadImage } from '@services/image';
+import { PROFILE_QUERY_KEY } from '../hooks/useProfile';
+import type { ProfileData } from '../types';
 
 jest.mock('../services/profileService', () => ({
   profileService: {
@@ -35,6 +37,19 @@ const createWrapper = () => {
   });
   return ({ children }: { children: React.ReactNode }) =>
     React.createElement(QueryClientProvider, { client: queryClient }, children);
+};
+
+const createWrapperWithClient = () => {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: { retry: false },
+      mutations: { retry: false },
+    },
+  });
+  const wrapper = ({ children }: { children: React.ReactNode }) =>
+    React.createElement(QueryClientProvider, { client: queryClient }, children);
+
+  return { wrapper, queryClient };
 };
 
 describe('useEditProfile', () => {
@@ -220,6 +235,36 @@ describe('useEditProfile', () => {
     await waitFor(() => {
       expect(mockOnSuccess).toHaveBeenCalled();
     });
+  });
+
+  it('updates cached profile data after successful save', async () => {
+    const { wrapper, queryClient } = createWrapperWithClient();
+    const updatedUser = { ...mockCurrentUser, bio: 'Fresh bio' };
+    const profileData: ProfileData = {
+      user: mockCurrentUser,
+      dishlists: [],
+      recipes: [],
+    };
+
+    queryClient.setQueryData([PROFILE_QUERY_KEY, mockCurrentUser.uid], profileData);
+    (profileService.updateProfile as jest.Mock).mockResolvedValueOnce({ user: updatedUser });
+
+    const { result } = renderHook(
+      () => useEditProfile({ currentUser: mockCurrentUser, onSuccess: mockOnSuccess }),
+      { wrapper }
+    );
+
+    act(() => {
+      result.current.setBio('Fresh bio');
+    });
+
+    await act(async () => {
+      await result.current.handleSave();
+    });
+
+    expect(
+      queryClient.getQueryData<ProfileData>([PROFILE_QUERY_KEY, mockCurrentUser.uid])?.user.bio
+    ).toBe('Fresh bio');
   });
 
   it('shows alert on save error', async () => {

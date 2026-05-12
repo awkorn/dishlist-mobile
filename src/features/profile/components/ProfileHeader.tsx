@@ -166,11 +166,15 @@ export function ProfileHeader({
           // Own profile: Edit + Share buttons
           <View style={styles.actionButtonsRow}>
             <TouchableOpacity
-              style={styles.actionButton}
+              style={[styles.actionButton, styles.editActionButton]}
               onPress={onEditPress}
               activeOpacity={0.7}
             >
-              <Text style={styles.actionButtonText}>Edit Profile</Text>
+              <Text
+                style={[styles.actionButtonText, styles.editActionButtonText]}
+              >
+                Edit Profile
+              </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -299,10 +303,18 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: theme.borderRadius.md,
   },
+  editActionButton: {
+    backgroundColor: theme.colors.surface,
+    borderWidth: 1,
+    borderColor: theme.colors.primary[500],
+  },
   actionButtonText: {
     ...typography.button,
     fontSize: 14,
     color: theme.colors.neutral[50],
+  },
+  editActionButtonText: {
+    color: theme.colors.primary[500],
   },
   // Follow button row for other profiles
   followButtonRow: {
