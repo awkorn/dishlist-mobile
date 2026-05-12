@@ -48,4 +48,11 @@ export const shareService = {
   generateRecipeLink(recipeId: string): string {
     return `dishlist://recipe/${recipeId}`;
   },
+
+  /**
+   * Generate a shareable deep link for a user profile
+   */
+  generateProfileLink(userId: string): string {
+    return `dishlist://profile/${userId}`;
+  },
 };

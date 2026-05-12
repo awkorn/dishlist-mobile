@@ -3,9 +3,10 @@ import { Alert, Share, Clipboard } from 'react-native';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { shareService } from '../services/shareService';
 import { queryKeys } from '@lib/queryKeys';
+import type { ShareType } from '../types';
 
 interface UseShareModalOptions {
-  shareType: 'dishlist' | 'recipe';
+  shareType: ShareType;
   contentId: string;
   contentTitle: string;
   onShareSuccess?: () => void;
@@ -19,6 +20,7 @@ export function useShareModal({
 }: UseShareModalOptions) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(new Set());
+  const supportsDirectShare = shareType !== 'profile';
 
   // Fetch mutuals
   const {
@@ -29,6 +31,7 @@ export function useShareModal({
     queryKey: queryKeys.users.mutuals(searchQuery),
     queryFn: () => shareService.getMutuals(searchQuery || undefined),
     staleTime: 30 * 1000,
+    enabled: supportsDirectShare,
   });
 
   // Filter mutuals based on search (client-side for responsiveness)
@@ -44,7 +47,11 @@ export function useShareModal({
   }, [mutuals, searchQuery]);
 
   // Dynamic labels based on share type
-  const contentTypeLabel = shareType === 'dishlist' ? 'DishList' : 'recipe';
+  const contentTypeLabel = shareType === 'dishlist'
+    ? 'DishList'
+    : shareType === 'recipe'
+      ? 'recipe'
+      : 'profile';
 
   // Share mutation - handles both DishList and Recipe
   const shareMutation = useMutation({
@@ -54,12 +61,16 @@ export function useShareModal({
           dishListId: contentId,
           recipientIds,
         });
-      } else {
+      }
+
+      if (shareType === 'recipe') {
         return shareService.shareRecipe({
           recipeId: contentId,
           recipientIds,
         });
       }
+
+      throw new Error('Profiles can only be shared by link or message.');
     },
     onSuccess: (data) => {
       Alert.alert(
@@ -95,17 +106,28 @@ export function useShareModal({
   }, []);
 
   const handleSendToSelected = useCallback(() => {
+    if (!supportsDirectShare) {
+      Alert.alert('Share by Link', 'Profiles can be shared by copying the link or sending a message.');
+      return;
+    }
+
     if (selectedUserIds.size === 0) {
       Alert.alert('No Recipients', 'Please select at least one person to share with.');
       return;
     }
     shareMutation.mutate(Array.from(selectedUserIds));
-  }, [selectedUserIds, shareMutation]);
+  }, [selectedUserIds, shareMutation, supportsDirectShare]);
 
   const shareLink = useMemo(() => {
-    return shareType === 'dishlist'
-      ? shareService.generateDishListLink(contentId)
-      : shareService.generateRecipeLink(contentId);
+    if (shareType === 'dishlist') {
+      return shareService.generateDishListLink(contentId);
+    }
+
+    if (shareType === 'recipe') {
+      return shareService.generateRecipeLink(contentId);
+    }
+
+    return shareService.generateProfileLink(contentId);
   }, [shareType, contentId]);
 
   // Dynamic share message based on content type
@@ -113,7 +135,9 @@ export function useShareModal({
     try {
       const message = shareType === 'dishlist'
         ? `Check out this DishList: ${contentTitle}\n${shareLink}`
-        : `Check out this recipe: ${contentTitle}\n${shareLink}`;
+        : shareType === 'recipe'
+          ? `Check out this recipe: ${contentTitle}\n${shareLink}`
+          : `Check out my DishList profile: ${contentTitle}\n${shareLink}`;
       
       await Share.share({
         message,
@@ -142,6 +166,7 @@ export function useShareModal({
     handleShareViaMessage,
     handleCopyLink,
     refetchMutuals,
+    supportsDirectShare,
     hasSelection: selectedUserIds.size > 0,
     selectionCount: selectedUserIds.size,
   };

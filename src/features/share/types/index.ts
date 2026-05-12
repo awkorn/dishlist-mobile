@@ -16,6 +16,8 @@ export interface ShareRecipeData {
   recipientIds: string[];
 }
 
+export type ShareType = 'dishlist' | 'recipe' | 'profile';
+
 export interface ShareResponse {
   success: boolean;
   notificationsSent: number;
@@ -24,7 +26,7 @@ export interface ShareResponse {
 export interface ShareModalProps {
   visible: boolean;
   onClose: () => void;
-  shareType: 'dishlist' | 'recipe';
+  shareType: ShareType;
   contentId: string;
   contentTitle: string;
 }

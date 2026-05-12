@@ -57,6 +57,7 @@ export function ShareModal({
     handleCopyLink,
     hasSelection,
     selectionCount,
+    supportsDirectShare,
   } = useShareModal({
     shareType,
     contentId,
@@ -163,33 +164,47 @@ export function ShareModal({
             <View style={styles.handle} />
           </View>
 
-          {/* Search Bar */}
-          <View style={styles.searchContainer}>
-            <Search size={20} color={theme.colors.neutral[400]} />
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Search"
-              placeholderTextColor={theme.colors.neutral[400]}
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              returnKeyType="search"
-              autoCorrect={false}
-              autoCapitalize="none"
-            />
-          </View>
+          {supportsDirectShare ? (
+            <>
+              {/* Search Bar */}
+              <View style={styles.searchContainer}>
+                <Search size={20} color={theme.colors.neutral[400]} />
+                <TextInput
+                  style={styles.searchInput}
+                  placeholder="Search"
+                  placeholderTextColor={theme.colors.neutral[400]}
+                  value={searchQuery}
+                  onChangeText={setSearchQuery}
+                  returnKeyType="search"
+                  autoCorrect={false}
+                  autoCapitalize="none"
+                />
+              </View>
 
-          {/* Mutuals Grid */}
-          <FlatList
-            data={filteredMutuals}
-            renderItem={renderUserItem}
-            keyExtractor={(item) => item.uid}
-            numColumns={GRID_COLUMNS}
-            columnWrapperStyle={styles.gridRow}
-            contentContainerStyle={styles.gridContent}
-            showsVerticalScrollIndicator={false}
-            ListEmptyComponent={renderEmptyState}
-            keyboardShouldPersistTaps="handled"
-          />
+              {/* Mutuals Grid */}
+              <FlatList
+                data={filteredMutuals}
+                renderItem={renderUserItem}
+                keyExtractor={(item) => item.uid}
+                numColumns={GRID_COLUMNS}
+                columnWrapperStyle={styles.gridRow}
+                contentContainerStyle={styles.gridContent}
+                showsVerticalScrollIndicator={false}
+                ListEmptyComponent={renderEmptyState}
+                keyboardShouldPersistTaps="handled"
+              />
+            </>
+          ) : (
+            <View style={styles.linkOnlyContent}>
+              <View style={styles.profileShareIcon}>
+                <UserIcon size={32} color={theme.colors.neutral[500]} />
+              </View>
+              <Text style={styles.linkOnlyTitle}>Share Profile</Text>
+              <Text style={styles.linkOnlySubtitle} numberOfLines={2}>
+                {contentTitle}
+              </Text>
+            </View>
+          )}
 
           {/* Bottom Action Buttons */}
           <View style={styles.bottomActions}>
@@ -215,7 +230,7 @@ export function ShareModal({
             </View>
 
             {/* Send Button - Only show when users are selected */}
-            {hasSelection && (
+            {supportsDirectShare && hasSelection && (
               <Button
                 title={`Send to ${selectionCount} ${
                   selectionCount === 1 ? "person" : "people"
@@ -338,6 +353,32 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   emptyText: {
+    ...typography.body,
+    color: theme.colors.neutral[500],
+    textAlign: "center",
+  },
+  linkOnlyContent: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: theme.spacing.xl,
+  },
+  profileShareIcon: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: theme.colors.neutral[100],
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: theme.spacing.lg,
+  },
+  linkOnlyTitle: {
+    ...typography.heading3,
+    color: theme.colors.neutral[900],
+    textAlign: "center",
+    marginBottom: theme.spacing.xs,
+  },
+  linkOnlySubtitle: {
     ...typography.body,
     color: theme.colors.neutral[500],
     textAlign: "center",

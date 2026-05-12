@@ -20,6 +20,7 @@ import { EditProfileSheet } from "../components/EditProfileSheet";
 import { DishListTile } from "@features/dishlist";
 import RecipeTile from "@features/recipe/components/RecipeTile";
 import { ProfileEmptyState } from "../components/ProfileEmptyState";
+import { ShareModal } from "@features/share";
 import { theme } from "@styles/theme";
 import { typography } from "@styles/typography";
 
@@ -29,6 +30,7 @@ export default function ProfileScreen({ navigation, route }: Props) {
   const { userId } = route.params;
   const [showEditSheet, setShowEditSheet] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
 
   const { signOut } = useAuth();
 
@@ -68,8 +70,7 @@ export default function ProfileScreen({ navigation, route }: Props) {
   };
 
   const handleShareProfile = () => {
-    // TODO: Implement share functionality
-    console.log("Share profile pressed");
+    setShowShareModal(true);
   };
 
   const handleEditComplete = () => {
@@ -307,6 +308,16 @@ export default function ProfileScreen({ navigation, route }: Props) {
           onClose={handleCloseMenu}
           onSettingsPress={handleSettingsPress}
           onLogoutPress={handleLogout}
+        />
+      )}
+
+      {user.isOwnProfile && (
+        <ShareModal
+          visible={showShareModal}
+          onClose={() => setShowShareModal(false)}
+          shareType="profile"
+          contentId={user.uid}
+          contentTitle={displayName}
         />
       )}
     </View>
