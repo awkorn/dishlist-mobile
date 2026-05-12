@@ -15,7 +15,6 @@ import type { RootStackParamList } from "@app-types/navigation";
 import {
   Mail,
   Lock,
-  Link as LinkIcon,
   LogOut,
   Trash2,
   Crown,
@@ -152,14 +151,6 @@ export default function SettingsScreen({ navigation }: Props) {
             icon={<Lock size={18} color={theme.colors.neutral[600]} />}
             label="Change Password"
             onPress={() => navigation.navigate("ChangePassword")}
-          />
-          <SettingsRow
-            icon={<LinkIcon size={18} color={theme.colors.neutral[600]} />}
-            label="Linked Accounts"
-            onPress={() => {
-              // TODO: Navigate to linked accounts screen
-              console.log("Linked accounts");
-            }}
           />
           <SettingsRow
             icon={<LogOut size={18} color={theme.colors.neutral[600]} />}
