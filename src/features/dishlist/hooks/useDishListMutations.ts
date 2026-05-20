@@ -55,14 +55,17 @@ export function useCreateDishList() {
       return { previousMyLists, previousAllLists };
     },
 
-    onError: (_error, _variables, context) => {
+    onError: (error: any, _variables, context) => {
       if (context?.previousMyLists) {
         queryClient.setQueryData(queryKeys.dishLists.list('my'), context.previousMyLists);
       }
       if (context?.previousAllLists) {
         queryClient.setQueryData(queryKeys.dishLists.list('all'), context.previousAllLists);
       }
-      Alert.alert('Error', 'Failed to create DishList. Please try again.');
+      Alert.alert(
+        'Error',
+        error?.response?.data?.error || 'Failed to create DishList. Please try again.'
+      );
     },
 
     onSuccess: (data) => {
@@ -122,7 +125,7 @@ export function useUpdateDishList() {
       return { previousDetail, previousAllLists, previousMyLists };
     },
 
-    onError: (_error, variables, context) => {
+    onError: (error: any, variables, context) => {
       if (context?.previousDetail) {
         queryClient.setQueryData(queryKeys.dishLists.detail(variables.dishListId), context.previousDetail);
       }
@@ -132,7 +135,10 @@ export function useUpdateDishList() {
       if (context?.previousMyLists) {
         queryClient.setQueryData(queryKeys.dishLists.list('my'), context.previousMyLists);
       }
-      Alert.alert('Error', 'Failed to update DishList. Please try again.');
+      Alert.alert(
+        'Error',
+        error?.response?.data?.error || 'Failed to update DishList. Please try again.'
+      );
     },
 
     onSuccess: (data, variables) => {

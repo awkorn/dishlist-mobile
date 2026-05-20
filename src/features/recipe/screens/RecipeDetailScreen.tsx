@@ -21,6 +21,7 @@ import {
   ShoppingCart,
   Trash2,
   Share,
+  Flag,
 } from "lucide-react-native";
 import { useQuery } from "@tanstack/react-query";
 import { typography } from "@styles/typography";
@@ -47,6 +48,7 @@ import type { RecipeItem } from "../types";
 import { convertLegacyToStructured, extractItemTexts } from "../types";
 import * as Haptics from "expo-haptics";
 import { ShareModal } from "@features/share";
+import { submitReport } from "@services/reports";
 
 type Props = NativeStackScreenProps<RootStackParamList, "RecipeDetail">;
 
@@ -151,6 +153,36 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
     );
   }, [dishListId, recipeId, removeRecipeMutation, navigation]);
 
+  const handleReportRecipe = useCallback(() => {
+    Alert.alert(
+      "Report Recipe",
+      "Reports are sent to DishList for review.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Report",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await submitReport({
+                targetType: "RECIPE",
+                targetId: recipeId,
+                reason: "INAPPROPRIATE",
+              });
+              Alert.alert("Report Submitted", "Thanks. We'll review it soon.");
+            } catch (error: any) {
+              Alert.alert(
+                "Error",
+                error?.response?.data?.error ||
+                  "Failed to submit report. Please try again."
+              );
+            }
+          },
+        },
+      ]
+    );
+  }, [recipeId]);
+
   // Action sheet options
   const actionSheetOptions: ActionSheetOption[] = useMemo(() => {
     if (!recipe) return [];
@@ -233,6 +265,15 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
       });
     }
 
+    if (!isOwner) {
+      opts.push({
+        title: "Report Recipe",
+        icon: Flag,
+        destructive: true,
+        onPress: handleReportRecipe,
+      });
+    }
+
     return opts;
   }, [
     recipe,
@@ -240,6 +281,7 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
     navigation,
     canRemoveFromDishList,
     handleRemoveFromDishList,
+    handleReportRecipe,
     user,
     addToGroceryMutation,
   ]);

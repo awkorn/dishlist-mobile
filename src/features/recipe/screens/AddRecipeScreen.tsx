@@ -323,6 +323,12 @@ export default function AddRecipeScreen({ route, navigation }: Props) {
     } catch (error) {
       setImageUploading(false);
       console.error("Save recipe error:", error);
+      if ((error as any)?.config?.url === "/uploads/image") {
+        const message =
+          (error as any)?.response?.data?.error ||
+          "Failed to upload image. Please try another photo.";
+        Alert.alert("Error", message);
+      }
     }
   };
 

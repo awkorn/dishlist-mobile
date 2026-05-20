@@ -22,8 +22,7 @@ import {
   UserMinus,
   Camera,
   Share,
-  Lock,
-  Eye,
+  Flag,
 } from "lucide-react-native";
 import { typography } from "@styles/typography";
 import { theme } from "@styles/theme";
@@ -43,6 +42,7 @@ import {
   useToggleFollowDishList,
   useDeleteDishList,
 } from "../hooks";
+import { submitReport } from "@services/reports";
 
 export default function DishListDetailScreen({
   route,
@@ -85,6 +85,36 @@ export default function DishListDetailScreen({
     },
     [navigation, dishListId],
   );
+
+  const handleReportDishList = useCallback(() => {
+    Alert.alert(
+      "Report DishList",
+      "Reports are sent to DishList for review.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Report",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await submitReport({
+                targetType: "DISHLIST",
+                targetId: dishListId,
+                reason: "INAPPROPRIATE",
+              });
+              Alert.alert("Report Submitted", "Thanks. We'll review it soon.");
+            } catch (error: any) {
+              Alert.alert(
+                "Error",
+                error?.response?.data?.error ||
+                  "Failed to submit report. Please try again."
+              );
+            }
+          },
+        },
+      ]
+    );
+  }, [dishListId]);
 
   const actionSheetOptions: ActionSheetOption[] = useMemo(() => {
     if (!dishList) return [];
@@ -172,6 +202,13 @@ export default function DishListDetailScreen({
             isFollowing: !dishList.isFollowing,
           }),
       });
+
+      options.push({
+        title: "Report DishList",
+        icon: Flag,
+        destructive: true,
+        onPress: handleReportDishList,
+      });
     }
 
     // Delete - owner only, destructive
@@ -201,7 +238,14 @@ export default function DishListDetailScreen({
       });
     }
     return options;
-  }, [dishList, navigation, pinMutation, deleteMutation, dishListId]);
+  }, [
+    dishList,
+    navigation,
+    pinMutation,
+    deleteMutation,
+    dishListId,
+    handleReportDishList,
+  ]);
 
   // Loading state
   if (isLoading && !dishList) {

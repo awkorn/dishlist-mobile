@@ -7,7 +7,7 @@ import {
   TouchableWithoutFeedback,
   Modal,
 } from "react-native";
-import { Ban, Settings, LogOut } from "lucide-react-native";
+import { Ban, Flag, Settings, LogOut } from "lucide-react-native";
 import { theme } from "@styles/theme";
 import { typography } from "@styles/typography";
 
@@ -17,6 +17,7 @@ interface ProfileMenuProps {
   onSettingsPress?: () => void;
   onLogoutPress?: () => void;
   onBlockPress?: () => void;
+  onReportPress?: () => void;
 }
 
 export function ProfileMenu({
@@ -25,6 +26,7 @@ export function ProfileMenu({
   onSettingsPress,
   onLogoutPress,
   onBlockPress,
+  onReportPress,
 }: ProfileMenuProps) {
   if (!visible) return null;
 
@@ -53,8 +55,23 @@ export function ProfileMenu({
                 </TouchableOpacity>
               )}
 
-              {onSettingsPress && (onLogoutPress || onBlockPress) && (
+              {onSettingsPress &&
+                (onLogoutPress || onBlockPress || onReportPress) && (
                 <View style={styles.divider} />
+              )}
+
+              {onReportPress && (
+                <TouchableOpacity
+                  style={styles.menuItem}
+                  onPress={() => {
+                    onReportPress();
+                    onClose();
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <Flag size={20} color={theme.colors.neutral[700]} />
+                  <Text style={styles.menuItemText}>Report User</Text>
+                </TouchableOpacity>
               )}
 
               {onBlockPress && (

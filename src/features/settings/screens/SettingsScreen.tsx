@@ -39,9 +39,11 @@ import Constants from "expo-constants";
 type Props = NativeStackScreenProps<RootStackParamList, "Settings">;
 
 const SUPPORT_SITE_URL = "https://dishlists.app/";
+const SUPPORT_EMAIL = "support@dishlists.app";
 
 const URLS = {
   SUPPORT: SUPPORT_SITE_URL,
+  SUPPORT_EMAIL: `mailto:${SUPPORT_EMAIL}`,
   TERMS: `${SUPPORT_SITE_URL}terms`,
   PRIVACY: `${SUPPORT_SITE_URL}privacy`,
   FAQ: SUPPORT_SITE_URL,
@@ -205,7 +207,8 @@ export default function SettingsScreen({ navigation }: Props) {
               <MessageSquare size={18} color={theme.colors.neutral[600]} />
             }
             label="Contact Support"
-            onPress={() => handleOpenURL(URLS.SUPPORT)}
+            subtitle={SUPPORT_EMAIL}
+            onPress={() => handleOpenURL(URLS.SUPPORT_EMAIL)}
           />
           <SettingsRow
             icon={<Flag size={18} color={theme.colors.neutral[600]} />}

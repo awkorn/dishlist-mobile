@@ -86,7 +86,7 @@ export function useUpdateRecipe() {
       return { previousRecipe, recipeId };
     },
 
-    onError: (error, variables, context) => {
+    onError: (error: any, variables, context) => {
       // Rollback on error
       if (context?.previousRecipe) {
         queryClient.setQueryData(
@@ -94,7 +94,10 @@ export function useUpdateRecipe() {
           context.previousRecipe
         );
       }
-      Alert.alert('Error', 'Failed to update recipe. Please try again.');
+      Alert.alert(
+        'Error',
+        error?.response?.data?.error || 'Failed to update recipe. Please try again.'
+      );
     },
 
     onSuccess: (data, variables) => {

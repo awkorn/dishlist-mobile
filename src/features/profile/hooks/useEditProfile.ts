@@ -204,8 +204,11 @@ export function useEditProfile({
       try {
         setFormState((prev) => ({ ...prev, isUploading: true }));
         finalAvatarUrl = await uploadImage(formState.avatarUri, "avatars");
-      } catch (error) {
-        Alert.alert("Error", "Failed to upload profile picture");
+      } catch (error: any) {
+        Alert.alert(
+          "Error",
+          error?.response?.data?.error || "Failed to upload profile picture"
+        );
         setFormState((prev) => ({ ...prev, isUploading: false }));
         return;
       }
