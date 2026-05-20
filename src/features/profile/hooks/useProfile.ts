@@ -38,7 +38,12 @@ export function useProfile(userId: string) {
     staleTime: 3 * 60 * 1000,
   });
 
-  const user = data?.user ?? null;
+  const user = data?.user
+    ? {
+        ...data.user,
+        blockStatus: data.user.blockStatus ?? "NONE",
+      }
+    : null;
   const dishlists = data?.dishlists ?? [];
   const recipes = useMemo(
     () => recipePages?.pages.flatMap((page) => page.recipes) ?? [],

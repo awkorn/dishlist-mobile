@@ -4,6 +4,8 @@ import { api } from '@services/api';
 jest.mock('@services/api', () => ({
   api: {
     get: jest.fn(),
+    post: jest.fn(),
+    delete: jest.fn(),
     put: jest.fn(),
   },
 }));
@@ -108,6 +110,32 @@ describe('profileService', () => {
       (api.put as jest.Mock).mockRejectedValueOnce(error);
 
       await expect(profileService.updateProfile({ username: 'taken' })).rejects.toEqual(error);
+    });
+  });
+
+  describe('blockUser', () => {
+    it('blocks a user successfully', async () => {
+      (api.post as jest.Mock).mockResolvedValueOnce({
+        data: { blockStatus: 'BLOCKED_BY_ME' },
+      });
+
+      const result = await profileService.blockUser('user-123');
+
+      expect(api.post).toHaveBeenCalledWith('/users/user-123/block');
+      expect(result).toEqual({ blockStatus: 'BLOCKED_BY_ME' });
+    });
+  });
+
+  describe('unblockUser', () => {
+    it('unblocks a user successfully', async () => {
+      (api.delete as jest.Mock).mockResolvedValueOnce({
+        data: { blockStatus: 'NONE' },
+      });
+
+      const result = await profileService.unblockUser('user-123');
+
+      expect(api.delete).toHaveBeenCalledWith('/users/user-123/block');
+      expect(result).toEqual({ blockStatus: 'NONE' });
     });
   });
 });

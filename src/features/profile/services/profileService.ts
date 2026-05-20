@@ -1,5 +1,5 @@
 import { api } from "@services/api";
-import type { ProfileData, UpdateProfileData, UserProfile, FollowListResponse } from '../types';
+import type { ProfileData, UpdateProfileData, UserProfile, FollowListResponse, BlockStatus } from '../types';
 
 export const profileService = {
   /**
@@ -82,6 +82,26 @@ export const profileService = {
    */
   async unfollowUser(userId: string): Promise<void> {
     await api.delete(`/users/${userId}/follow`);
+  },
+
+  /**
+   * Block a user
+   */
+  async blockUser(userId: string): Promise<{ blockStatus: BlockStatus }> {
+    const response = await api.post<{ blockStatus: BlockStatus }>(
+      `/users/${userId}/block`
+    );
+    return response.data;
+  },
+
+  /**
+   * Unblock a user
+   */
+  async unblockUser(userId: string): Promise<{ blockStatus: BlockStatus }> {
+    const response = await api.delete<{ blockStatus: BlockStatus }>(
+      `/users/${userId}/block`
+    );
+    return response.data;
   },
 
   /**

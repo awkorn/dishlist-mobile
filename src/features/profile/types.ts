@@ -2,7 +2,7 @@ import type { RecipeItem } from '@features/recipe/types';
 
 export interface UserProfile {
   uid: string;
-  email: string;
+  email?: string;
   username?: string;
   firstName?: string;
   lastName?: string;
@@ -13,6 +13,7 @@ export interface UserProfile {
   isFollowing?: boolean;
   isOwnProfile: boolean;
   followStatus: FollowStatus;
+  blockStatus?: BlockStatus;
 }
 
 export interface ProfileDishList {
@@ -104,3 +105,4 @@ export interface FollowListResponse {
 
 export type ProfileTab = 'DishLists' | 'Recipes';
 export type FollowStatus = "NONE" | "PENDING" | "ACCEPTED";
+export type BlockStatus = "NONE" | "BLOCKED_BY_ME" | "BLOCKED_ME" | "MUTUAL_BLOCK";

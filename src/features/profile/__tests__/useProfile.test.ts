@@ -34,6 +34,7 @@ describe('useProfile', () => {
       followerCount: 10,
       followingCount: 5,
       isOwnProfile: true,
+      blockStatus: 'NONE',
     },
     dishlists: [
       { id: 'dl-1', title: 'My Recipes', recipeCount: 3 },

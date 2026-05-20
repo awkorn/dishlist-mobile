@@ -6,14 +6,17 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   FlatList,
+  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import PagerView from "react-native-pager-view";
+import { MoveLeft } from "lucide-react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "@app-types/navigation";
 import { useAuth } from "@providers/AuthProvider/AuthContext";
 import { ProfileMenu } from "../components/ProfileMenu";
 import { useProfile } from "../hooks/useProfile";
+import { useBlockUser } from "../hooks/useBlockUser";
 import { ProfileHeader } from "../components/ProfileHeader";
 import { ProfileTabs } from "../components/ProfileTabs";
 import { EditProfileSheet } from "../components/EditProfileSheet";
@@ -60,6 +63,8 @@ export default function ProfileScreen({ navigation, route }: Props) {
     toggleSearch,
     closeSearch,
   } = useProfile(userId);
+  const { block, unblock, isPending: isBlockPending } = useBlockUser({ userId });
+  const isBlockedProfile = user?.blockStatus && user.blockStatus !== "NONE";
 
   const handleBack = () => {
     navigation.goBack();
@@ -94,6 +99,25 @@ export default function ProfileScreen({ navigation, route }: Props) {
   const handleLogout = async () => {
     await signOut();
     // Navigation will auto-redirect to Login screen via MainNavigator
+  };
+
+  const handleBlockUser = () => {
+    Alert.alert(
+      "Block User",
+      "This will remove direct follow and invite activity between you, hide profiles and content both ways, and prevent future follows, invites, and notifications.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Block",
+          style: "destructive",
+          onPress: () => block(),
+        },
+      ]
+    );
+  };
+
+  const handleUnblockUser = () => {
+    unblock();
   };
 
   // Handle tab press - programmatically change page
@@ -185,6 +209,49 @@ export default function ProfileScreen({ navigation, route }: Props) {
           >
             <Text style={styles.retryButtonText}>Try Again</Text>
           </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }
+
+  if (isBlockedProfile) {
+    const blockedByCurrentUser =
+      user.blockStatus === "BLOCKED_BY_ME" || user.blockStatus === "MUTUAL_BLOCK";
+
+    return (
+      <View style={styles.container}>
+        <SafeAreaView style={styles.safeArea} edges={["top"]} />
+        <View style={styles.blockedHeader}>
+          <TouchableOpacity onPress={handleBack} style={styles.blockedBackButton}>
+            <MoveLeft size={24} color={theme.colors.neutral[700]} />
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.blockedContent}>
+          <Text style={styles.blockedTitle}>
+            {blockedByCurrentUser
+              ? "You blocked this user"
+              : "This profile is unavailable"}
+          </Text>
+          <Text style={styles.blockedText}>
+            {blockedByCurrentUser
+              ? "They cannot follow, invite, notify, or interact with you."
+              : "You cannot view or interact with this profile."}
+          </Text>
+          {blockedByCurrentUser && (
+            <TouchableOpacity
+              style={[
+                styles.unblockButton,
+                isBlockPending && styles.unblockButtonDisabled,
+              ]}
+              onPress={handleUnblockUser}
+              disabled={isBlockPending}
+            >
+              <Text style={styles.unblockButtonText}>
+                {isBlockPending ? "Unblocking..." : "Unblock"}
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
     );
@@ -302,14 +369,13 @@ export default function ProfileScreen({ navigation, route }: Props) {
       )}
 
       {/* Profile Menu Dropdown */}
-      {user?.isOwnProfile && (
-        <ProfileMenu
-          visible={showMenu}
-          onClose={handleCloseMenu}
-          onSettingsPress={handleSettingsPress}
-          onLogoutPress={handleLogout}
-        />
-      )}
+      <ProfileMenu
+        visible={showMenu}
+        onClose={handleCloseMenu}
+        onSettingsPress={user.isOwnProfile ? handleSettingsPress : undefined}
+        onLogoutPress={user.isOwnProfile ? handleLogout : undefined}
+        onBlockPress={!user.isOwnProfile ? handleBlockUser : undefined}
+      />
 
       {user.isOwnProfile && (
         <ShareModal
@@ -338,6 +404,49 @@ const styles = StyleSheet.create({
   },
   loadingSafeArea: {
     backgroundColor: theme.colors.surface,
+  },
+  blockedHeader: {
+    backgroundColor: theme.colors.surface,
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 16,
+  },
+  blockedBackButton: {
+    alignSelf: "flex-start",
+    padding: 8,
+    borderRadius: 8,
+  },
+  blockedContent: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 32,
+  },
+  blockedTitle: {
+    ...typography.heading3,
+    color: theme.colors.neutral[900],
+    marginBottom: 8,
+    textAlign: "center",
+  },
+  blockedText: {
+    ...typography.body,
+    color: theme.colors.neutral[600],
+    textAlign: "center",
+    marginBottom: 20,
+  },
+  unblockButton: {
+    backgroundColor: theme.colors.primary[500],
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  unblockButtonDisabled: {
+    opacity: 0.6,
+  },
+  unblockButtonText: {
+    ...typography.body,
+    color: "white",
+    fontWeight: "600",
   },
   loadingContainer: {
     flex: 1,

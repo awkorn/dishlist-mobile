@@ -7,15 +7,16 @@ import {
   TouchableWithoutFeedback,
   Modal,
 } from "react-native";
-import { Settings, LogOut } from "lucide-react-native";
+import { Ban, Settings, LogOut } from "lucide-react-native";
 import { theme } from "@styles/theme";
 import { typography } from "@styles/typography";
 
 interface ProfileMenuProps {
   visible: boolean;
   onClose: () => void;
-  onSettingsPress: () => void;
-  onLogoutPress: () => void;
+  onSettingsPress?: () => void;
+  onLogoutPress?: () => void;
+  onBlockPress?: () => void;
 }
 
 export function ProfileMenu({
@@ -23,6 +24,7 @@ export function ProfileMenu({
   onClose,
   onSettingsPress,
   onLogoutPress,
+  onBlockPress,
 }: ProfileMenuProps) {
   if (!visible) return null;
 
@@ -37,36 +39,55 @@ export function ProfileMenu({
         <View style={styles.overlay}>
           <TouchableWithoutFeedback>
             <View style={styles.menu}>
-              {/* Settings */}
-              <TouchableOpacity
-                style={styles.menuItem}
-                onPress={() => {
-                  onSettingsPress();
-                  onClose();
-                }}
-                activeOpacity={0.7}
-              >
-                <Settings size={20} color={theme.colors.neutral[700]} />
-                <Text style={styles.menuItemText}>Settings</Text>
-              </TouchableOpacity>
+              {onSettingsPress && (
+                <TouchableOpacity
+                  style={styles.menuItem}
+                  onPress={() => {
+                    onSettingsPress();
+                    onClose();
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <Settings size={20} color={theme.colors.neutral[700]} />
+                  <Text style={styles.menuItemText}>Settings</Text>
+                </TouchableOpacity>
+              )}
 
-              {/* Divider */}
-              <View style={styles.divider} />
+              {onSettingsPress && (onLogoutPress || onBlockPress) && (
+                <View style={styles.divider} />
+              )}
 
-              {/* Logout */}
-              <TouchableOpacity
-                style={styles.menuItem}
-                onPress={() => {
-                  onLogoutPress();
-                  onClose();
-                }}
-                activeOpacity={0.7}
-              >
-                <LogOut size={20} color={theme.colors.error} />
-                <Text style={[styles.menuItemText, styles.logoutText]}>
-                  Logout
-                </Text>
-              </TouchableOpacity>
+              {onBlockPress && (
+                <TouchableOpacity
+                  style={styles.menuItem}
+                  onPress={() => {
+                    onBlockPress();
+                    onClose();
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <Ban size={20} color={theme.colors.error} />
+                  <Text style={[styles.menuItemText, styles.destructiveText]}>
+                    Block User
+                  </Text>
+                </TouchableOpacity>
+              )}
+
+              {onLogoutPress && (
+                <TouchableOpacity
+                  style={styles.menuItem}
+                  onPress={() => {
+                    onLogoutPress();
+                    onClose();
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <LogOut size={20} color={theme.colors.error} />
+                  <Text style={[styles.menuItemText, styles.destructiveText]}>
+                    Logout
+                  </Text>
+                </TouchableOpacity>
+              )}
             </View>
           </TouchableWithoutFeedback>
         </View>
@@ -107,7 +128,7 @@ const styles = StyleSheet.create({
     color: theme.colors.neutral[700],
     fontSize: 16,
   },
-  logoutText: {
+  destructiveText: {
     color: theme.colors.error,
   },
   divider: {

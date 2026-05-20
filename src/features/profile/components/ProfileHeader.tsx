@@ -105,8 +105,7 @@ export function ProfileHeader({
                 <Search size={22} color={theme.colors.neutral[700]} />
               </TouchableOpacity>
 
-              {/* Only show menu for own profile */}
-              {user.isOwnProfile && (
+              {onMenuPress && (
                 <TouchableOpacity onPress={onMenuPress} style={styles.iconBtn}>
                   <EllipsisVertical
                     size={22}
