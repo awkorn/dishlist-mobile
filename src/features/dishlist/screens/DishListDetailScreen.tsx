@@ -36,13 +36,13 @@ import { ShareModal } from "@features/share";
 import { InviteCollaboratorModal, CollaboratorPreview } from "@features/invite";
 import { CollaboratorsModal } from "@features/invite";
 import { AnimatedSearchInput } from "@components/ui";
+import { ReportContentModal } from "@components/moderation/ReportContentModal";
 import {
   useDishListDetail,
   useTogglePinDishList,
   useToggleFollowDishList,
   useDeleteDishList,
 } from "../hooks";
-import { submitReport } from "@services/reports";
 
 export default function DishListDetailScreen({
   route,
@@ -55,6 +55,7 @@ export default function DishListDetailScreen({
   const [showShareModal, setShowShareModal] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [showCollaboratorsModal, setShowCollaboratorsModal] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
 
   const {
     dishList,
@@ -85,36 +86,6 @@ export default function DishListDetailScreen({
     },
     [navigation, dishListId],
   );
-
-  const handleReportDishList = useCallback(() => {
-    Alert.alert(
-      "Report DishList",
-      "Reports are sent to DishList for review.",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Report",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              await submitReport({
-                targetType: "DISHLIST",
-                targetId: dishListId,
-                reason: "INAPPROPRIATE",
-              });
-              Alert.alert("Report Submitted", "Thanks. We'll review it soon.");
-            } catch (error: any) {
-              Alert.alert(
-                "Error",
-                error?.response?.data?.error ||
-                  "Failed to submit report. Please try again."
-              );
-            }
-          },
-        },
-      ]
-    );
-  }, [dishListId]);
 
   const actionSheetOptions: ActionSheetOption[] = useMemo(() => {
     if (!dishList) return [];
@@ -207,7 +178,7 @@ export default function DishListDetailScreen({
         title: "Report DishList",
         icon: Flag,
         destructive: true,
-        onPress: handleReportDishList,
+        onPress: () => setShowReportModal(true),
       });
     }
 
@@ -244,7 +215,6 @@ export default function DishListDetailScreen({
     pinMutation,
     deleteMutation,
     dishListId,
-    handleReportDishList,
   ]);
 
   // Loading state
@@ -437,6 +407,15 @@ export default function DishListDetailScreen({
             onClose={() => setShowCollaboratorsModal(false)}
             dishListId={dishListId}
             dishListTitle={dishList.title}
+          />
+        )}
+        {dishList && !dishList.isOwner && (
+          <ReportContentModal
+            visible={showReportModal}
+            onClose={() => setShowReportModal(false)}
+            targetType="DISHLIST"
+            targetId={dishListId}
+            targetLabel="DishList"
           />
         )}
       </SafeAreaView>

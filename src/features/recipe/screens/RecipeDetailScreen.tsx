@@ -48,7 +48,7 @@ import type { RecipeItem } from "../types";
 import { convertLegacyToStructured, extractItemTexts } from "../types";
 import * as Haptics from "expo-haptics";
 import { ShareModal } from "@features/share";
-import { submitReport } from "@services/reports";
+import { ReportContentModal } from "@components/moderation/ReportContentModal";
 
 type Props = NativeStackScreenProps<RootStackParamList, "RecipeDetail">;
 
@@ -75,6 +75,7 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
   const [showCookMode, setShowCookMode] = useState(false);
   const [showAddToDishListModal, setShowAddToDishListModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
   const [topMetadataBottom, setTopMetadataBottom] = useState(
     DEFAULT_METADATA_BOTTOM,
   );
@@ -152,36 +153,6 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
       ],
     );
   }, [dishListId, recipeId, removeRecipeMutation, navigation]);
-
-  const handleReportRecipe = useCallback(() => {
-    Alert.alert(
-      "Report Recipe",
-      "Reports are sent to DishList for review.",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Report",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              await submitReport({
-                targetType: "RECIPE",
-                targetId: recipeId,
-                reason: "INAPPROPRIATE",
-              });
-              Alert.alert("Report Submitted", "Thanks. We'll review it soon.");
-            } catch (error: any) {
-              Alert.alert(
-                "Error",
-                error?.response?.data?.error ||
-                  "Failed to submit report. Please try again."
-              );
-            }
-          },
-        },
-      ]
-    );
-  }, [recipeId]);
 
   // Action sheet options
   const actionSheetOptions: ActionSheetOption[] = useMemo(() => {
@@ -270,7 +241,7 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
         title: "Report Recipe",
         icon: Flag,
         destructive: true,
-        onPress: handleReportRecipe,
+        onPress: () => setShowReportModal(true),
       });
     }
 
@@ -281,7 +252,6 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
     navigation,
     canRemoveFromDishList,
     handleRemoveFromDishList,
-    handleReportRecipe,
     user,
     addToGroceryMutation,
   ]);
@@ -649,6 +619,16 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
           title="Recipe Options"
           options={actionSheetOptions}
         />
+
+        {recipe.creator.uid !== user?.id && (
+          <ReportContentModal
+            visible={showReportModal}
+            onClose={() => setShowReportModal(false)}
+            targetType="RECIPE"
+            targetId={recipeId}
+            targetLabel="recipe"
+          />
+        )}
 
         <CookModeModal
           visible={showCookMode}

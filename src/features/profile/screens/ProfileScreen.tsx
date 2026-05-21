@@ -24,7 +24,7 @@ import { DishListTile } from "@features/dishlist";
 import RecipeTile from "@features/recipe/components/RecipeTile";
 import { ProfileEmptyState } from "../components/ProfileEmptyState";
 import { ShareModal } from "@features/share";
-import { submitReport } from "@services/reports";
+import { ReportContentModal } from "@components/moderation/ReportContentModal";
 import { theme } from "@styles/theme";
 import { typography } from "@styles/typography";
 
@@ -35,6 +35,7 @@ export default function ProfileScreen({ navigation, route }: Props) {
   const [showEditSheet, setShowEditSheet] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
 
   const { signOut } = useAuth();
 
@@ -118,33 +119,7 @@ export default function ProfileScreen({ navigation, route }: Props) {
   };
 
   const handleReportUser = () => {
-    Alert.alert(
-      "Report User",
-      "Reports are sent to DishList for review. You can also block this user after reporting.",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Report",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              await submitReport({
-                targetType: "USER",
-                targetId: userId,
-                reason: "INAPPROPRIATE",
-              });
-              Alert.alert("Report Submitted", "Thanks. We'll review it soon.");
-            } catch (error: any) {
-              Alert.alert(
-                "Error",
-                error?.response?.data?.error ||
-                  "Failed to submit report. Please try again."
-              );
-            }
-          },
-        },
-      ]
-    );
+    setShowReportModal(true);
   };
 
   const handleUnblockUser = () => {
@@ -416,6 +391,16 @@ export default function ProfileScreen({ navigation, route }: Props) {
           shareType="profile"
           contentId={user.uid}
           contentTitle={displayName}
+        />
+      )}
+
+      {!user.isOwnProfile && (
+        <ReportContentModal
+          visible={showReportModal}
+          onClose={() => setShowReportModal(false)}
+          targetType="USER"
+          targetId={userId}
+          targetLabel="user"
         />
       )}
     </View>
