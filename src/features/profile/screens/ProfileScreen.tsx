@@ -27,6 +27,7 @@ import { ShareModal } from "@features/share";
 import { ReportContentModal } from "@components/moderation/ReportContentModal";
 import { theme } from "@styles/theme";
 import { typography } from "@styles/typography";
+import { getErrorMessage } from "@utils";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Profile">;
 
@@ -37,7 +38,7 @@ export default function ProfileScreen({ navigation, route }: Props) {
   const [showShareModal, setShowShareModal] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
 
-  const { signOut } = useAuth();
+  const { signOut, user: authUser } = useAuth();
 
   const pagerRef = useRef<PagerView>(null);
 
@@ -57,6 +58,7 @@ export default function ProfileScreen({ navigation, route }: Props) {
     isFetchingNextRecipes,
     hasMoreRecipes,
     isError,
+    error,
     refetch,
     refetchRecipes,
     fetchNextRecipes,
@@ -67,6 +69,15 @@ export default function ProfileScreen({ navigation, route }: Props) {
   } = useProfile(userId);
   const { block, unblock, isPending: isBlockPending } = useBlockUser({ userId });
   const isBlockedProfile = user?.blockStatus && user.blockStatus !== "NONE";
+
+  // Defense-in-depth: only treat this as the user's own profile if the backend
+  // says so AND the viewed profile's uid matches the logged-in Supabase user id.
+  // The backend sets UserProfile.uid to the Supabase auth id (JWT `sub`), so
+  // authUser.id === user.uid for one's own profile. authUser is always available
+  // (set on session restore), unlike userProfile. This guards against stale
+  // cached profile data (isOwnProfile: true) leaking across a logout/login.
+  const isOwnProfile =
+    !!user?.isOwnProfile && !!authUser?.id && authUser.id === user.uid;
 
   const handleBack = () => {
     navigation.goBack();
@@ -179,11 +190,11 @@ export default function ProfileScreen({ navigation, route }: Props) {
         : `No DishLists found for "${searchQuery}"`;
     }
     if (isRecipeTab) {
-      return user?.isOwnProfile
+      return isOwnProfile
         ? "You don't have any recipes yet"
         : "No recipes in public DishLists";
     }
-    return user?.isOwnProfile
+    return isOwnProfile
       ? "You don't have any public DishLists yet"
       : "No public DishLists";
   };
@@ -207,7 +218,7 @@ export default function ProfileScreen({ navigation, route }: Props) {
         <View style={styles.errorContainer}>
           <Text style={styles.errorTitle}>Unable to load profile</Text>
           <Text style={styles.errorText}>
-            Something went wrong. Please try again.
+            {getErrorMessage(error, "Something went wrong. Please try again.")}
           </Text>
           <TouchableOpacity
             style={styles.retryButton}
@@ -273,8 +284,8 @@ export default function ProfileScreen({ navigation, route }: Props) {
         user={user}
         displayName={displayName}
         onBackPress={handleBack}
-        onEditPress={user.isOwnProfile ? handleEditProfile : undefined}
-        onSharePress={user.isOwnProfile ? handleShareProfile : undefined}
+        onEditPress={isOwnProfile ? handleEditProfile : undefined}
+        onSharePress={isOwnProfile ? handleShareProfile : undefined}
         onMenuPress={handleMenuPress}
         isSearchActive={isSearchActive}
         searchQuery={searchQuery}
@@ -365,7 +376,7 @@ export default function ProfileScreen({ navigation, route }: Props) {
       </PagerView>
 
       {/* Edit Profile Sheet */}
-      {user.isOwnProfile && (
+      {isOwnProfile && (
         <EditProfileSheet
           visible={showEditSheet}
           onClose={() => setShowEditSheet(false)}
@@ -378,13 +389,13 @@ export default function ProfileScreen({ navigation, route }: Props) {
       <ProfileMenu
         visible={showMenu}
         onClose={handleCloseMenu}
-        onSettingsPress={user.isOwnProfile ? handleSettingsPress : undefined}
-        onLogoutPress={user.isOwnProfile ? handleLogout : undefined}
-        onReportPress={!user.isOwnProfile ? handleReportUser : undefined}
-        onBlockPress={!user.isOwnProfile ? handleBlockUser : undefined}
+        onSettingsPress={isOwnProfile ? handleSettingsPress : undefined}
+        onLogoutPress={isOwnProfile ? handleLogout : undefined}
+        onReportPress={!isOwnProfile ? handleReportUser : undefined}
+        onBlockPress={!isOwnProfile ? handleBlockUser : undefined}
       />
 
-      {user.isOwnProfile && (
+      {isOwnProfile && (
         <ShareModal
           visible={showShareModal}
           onClose={() => setShowShareModal(false)}
@@ -394,7 +405,7 @@ export default function ProfileScreen({ navigation, route }: Props) {
         />
       )}
 
-      {!user.isOwnProfile && (
+      {!isOwnProfile && (
         <ReportContentModal
           visible={showReportModal}
           onClose={() => setShowReportModal(false)}

@@ -1,4 +1,4 @@
-import { api } from "@services/api";
+import { api, AI_REQUEST_TIMEOUT } from "@services/api";
 import type {
   Recipe,
   CreateRecipeData,
@@ -67,7 +67,8 @@ export const recipeService = {
 
     const response = await api.post<ImportRecipeResponse>(
       "/recipes/import-from-images",
-      payload
+      payload,
+      { timeout: AI_REQUEST_TIMEOUT }
     );
 
     return response.data;

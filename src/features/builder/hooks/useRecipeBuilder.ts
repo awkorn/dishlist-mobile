@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef } from "react";
 import { builderService } from "../services";
+import { getErrorMessage } from "@utils";
 import type { BuilderMessage, GeneratedRecipe } from "../types";
 
 interface UseRecipeBuilderReturn {
@@ -72,10 +73,9 @@ export function useRecipeBuilder(): UseRecipeBuilderReturn {
           { role: "assistant", content: response.assistantContent }
         );
       } catch (err: any) {
-        const errorMessage =
-          err.response?.data?.error ||
-          "Failed to generate recipes. Please try again.";
-        setError(errorMessage);
+        setError(
+          getErrorMessage(err, "Failed to generate recipes. Please try again.")
+        );
 
         // Remove the user message on error so they can retry
         setMessages((prev) => prev.filter((m) => m.id !== userMessage.id));
@@ -146,10 +146,9 @@ export function useRecipeBuilder(): UseRecipeBuilderReturn {
         { role: "assistant", content: response.assistantContent },
       ];
     } catch (err: any) {
-      const errorMessage =
-        err.response?.data?.error ||
-        "Failed to generate recipes. Please try again.";
-      setError(errorMessage);
+      setError(
+        getErrorMessage(err, "Failed to generate recipes. Please try again.")
+      );
     } finally {
       setIsGenerating(false);
     }

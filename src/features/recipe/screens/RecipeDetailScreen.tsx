@@ -26,6 +26,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { typography } from "@styles/typography";
 import { theme } from "@styles/theme";
+import { getErrorMessage } from "@utils";
 import ActionSheet, { ActionSheetOption } from "@components/ui/ActionSheet";
 import { QueryErrorBoundary } from "@providers/ErrorBoundary";
 import { useAuth } from "@providers/AuthProvider/AuthContext";
@@ -82,7 +83,7 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
   const scrollY = useRef(new Animated.Value(0)).current;
 
   // Recipe data
-  const { recipe, isLoading, isError, refetch, updateNutritionCache } =
+  const { recipe, isLoading, isError, error, refetch, updateNutritionCache } =
     useRecipeDetail({ recipeId });
 
   // Recipe progress (ingredients/steps checked)
@@ -166,7 +167,6 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
       },
     ];
 
-    // Share Recipe - only if recipe is shareable (on a public DishList)
     if (recipe.isShareable) {
       opts.push({
         title: "Share Recipe",
@@ -303,6 +303,9 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
       <SafeAreaView style={styles.container}>
         <View style={styles.errorContainer}>
           <Text style={styles.errorTitle}>Unable to load recipe</Text>
+          <Text style={styles.errorText}>
+            {getErrorMessage(error, "Something went wrong. Please try again.")}
+          </Text>
           <TouchableOpacity
             style={styles.retryButton}
             onPress={() => refetch()}
@@ -686,6 +689,12 @@ const styles = StyleSheet.create({
   errorTitle: {
     ...typography.heading3,
     color: theme.colors.error,
+    marginBottom: theme.spacing.sm,
+    textAlign: "center",
+  },
+  errorText: {
+    ...typography.body,
+    color: theme.colors.neutral[500],
     marginBottom: theme.spacing.lg,
     textAlign: "center",
   },

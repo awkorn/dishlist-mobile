@@ -103,11 +103,10 @@ export default function ImportRecipeModal({
           {/* Instructions */}
           <View style={styles.instructionsCard}>
             <Text style={styles.instructionsTitle}>
-              📸 Add photos of your recipe
+              Add photos of your recipe
             </Text>
             <Text style={styles.instructionsText}>
               Take photos or select images of a recipe (cookbook, screenshot, handwritten).
-              Our AI will extract the title, ingredients, instructions, and more.
             </Text>
             <Text style={styles.instructionsNote}>
               Tip: For multi-page recipes, add up to 5 photos and we'll combine them.

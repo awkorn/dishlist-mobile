@@ -1,4 +1,4 @@
-import { api } from "@services/api";
+import { api, AI_REQUEST_TIMEOUT } from "@services/api";
 import type { GenerateRecipesRequest, GenerateRecipesResponse } from "../types";
 
 export const builderService = {
@@ -11,7 +11,8 @@ export const builderService = {
   ): Promise<GenerateRecipesResponse> {
     const response = await api.post<GenerateRecipesResponse>(
       "/builder/generate",
-      data
+      data,
+      { timeout: AI_REQUEST_TIMEOUT }
     );
     return response.data;
   },

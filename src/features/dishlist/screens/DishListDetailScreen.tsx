@@ -26,6 +26,7 @@ import {
 } from "lucide-react-native";
 import { typography } from "@styles/typography";
 import { theme } from "@styles/theme";
+import { getErrorMessage } from "@utils";
 import RecipeTile from "@features/recipe/components/RecipeTile";
 import ActionSheet, { ActionSheetOption } from "@components/ui/ActionSheet";
 import { QueryErrorBoundary } from "@providers/ErrorBoundary";
@@ -63,6 +64,7 @@ export default function DishListDetailScreen({
     isLoading,
     isFetching,
     isError,
+    error,
     isRefetching,
     refetch,
   } = useDishListDetail({ dishListId, searchQuery });
@@ -235,7 +237,7 @@ export default function DishListDetailScreen({
         <View style={styles.errorContainer}>
           <Text style={styles.errorTitle}>Unable to load DishList</Text>
           <Text style={styles.errorMessage}>
-            Check your connection and try again.
+            {getErrorMessage(error, "Check your connection and try again.")}
           </Text>
           <TouchableOpacity style={styles.retryButton} onPress={handleRefresh}>
             <Text style={styles.retryButtonText}>Try Again</Text>

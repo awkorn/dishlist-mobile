@@ -3,6 +3,7 @@ import * as ImagePicker from "expo-image-picker";
 import * as FileSystem from "expo-file-system";
 import { Alert } from "react-native";
 import { recipeService } from "../services";
+import { getErrorMessage } from "@utils";
 import type { ImageData, ImportRecipeResponse } from "../types";
 
 interface UseImportRecipeOptions {
@@ -207,7 +208,10 @@ export function useImportRecipe(
         onError?.(err);
         Alert.alert(
           "Error",
-          "Failed to extract recipe from images. Please try again."
+          getErrorMessage(
+            error,
+            "Failed to extract recipe from images. Please try again."
+          )
         );
         return null;
       } finally {

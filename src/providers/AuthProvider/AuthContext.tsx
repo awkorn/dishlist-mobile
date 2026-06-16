@@ -47,6 +47,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [userProfile, setUserProfile] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Fetch the backend user record for the current session and store it.
+  const loadUserProfile = async () => {
+    try {
+      const response = await api.get("/users/me");
+      setUserProfile(response.data.user);
+    } catch (err) {
+      console.error("Failed to load user profile:", err);
+    }
+  };
+
   useEffect(() => {
     // 1. Check for existing session on mount
     const initSession = async () => {
@@ -57,6 +67,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       if (session?.user) {
         setUser(session.user);
         console.log("User authenticated:", session.user.email);
+        // Restore userProfile too — getSession alone does not populate it,
+        // which would otherwise leave it null after every app reload.
+        // Fire-and-forget on purpose: app launch (and the routing/isOwnProfile
+        // checks) only depend on the local session, so we must NOT block the
+        // splash spinner on a network round-trip that could hang when offline.
+        void loadUserProfile();
       }
       setLoading(false);
     };
@@ -71,6 +87,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
       if (!session?.user) {
         setUserProfile(null);
+        // Wipe all cached data from the previous user so it can't leak
+        // into the next session (recipes, dishlists, isOwnProfile, etc.)
+        queryClient.clear();
+      }
+
+      // Keep userProfile in sync when a session is established outside of the
+      // explicit signIn/signUp flows (e.g. token refresh, multi-tab restore).
+      if (_event === "SIGNED_IN" && session?.user) {
+        await loadUserProfile();
       }
 
       // Sync email to backend if it changed (e.g. after email confirmation)
