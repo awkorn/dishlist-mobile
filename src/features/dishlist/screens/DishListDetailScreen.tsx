@@ -172,7 +172,7 @@ export default function DishListDetailScreen({
         onPress: () =>
           followMutation.mutate({
             dishListId,
-            isFollowing: !dishList.isFollowing,
+            isFollowing: dishList.isFollowing,
           }),
       });
 
@@ -215,6 +215,7 @@ export default function DishListDetailScreen({
     dishList,
     navigation,
     pinMutation,
+    followMutation,
     deleteMutation,
     dishListId,
   ]);
