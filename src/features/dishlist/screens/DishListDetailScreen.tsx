@@ -153,16 +153,18 @@ export default function DishListDetailScreen({
       );
     }
 
-    // Pin toggle - available to everyone
-    options.push({
-      title: dishList.isPinned ? "Unpin DishList" : "Pin DishList",
-      icon: dishList.isPinned ? PinOff : Pin,
-      onPress: () =>
-        pinMutation.mutate({
-          dishListId,
-          isPinned: dishList.isPinned,
-        }),
-    });
+    // Pin toggle - available for dishlists in the user's library
+    if (dishList.isOwner || dishList.isCollaborator || dishList.isFollowing) {
+      options.push({
+        title: dishList.isPinned ? "Unpin DishList" : "Pin DishList",
+        icon: dishList.isPinned ? PinOff : Pin,
+        onPress: () =>
+          pinMutation.mutate({
+            dishListId,
+            isPinned: dishList.isPinned,
+          }),
+      });
+    }
 
     // Follow toggle - only for non-owners
     if (!dishList.isOwner) {
