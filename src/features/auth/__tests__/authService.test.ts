@@ -3,6 +3,7 @@ import {
   signUpWithEmail,
   signOut,
   resetPassword,
+  updateRecoveredPassword,
 } from '../services/authService';
 
 // Mock Supabase client
@@ -10,6 +11,11 @@ const mockSignInWithPassword = jest.fn();
 const mockSignUp = jest.fn();
 const mockSignOut = jest.fn();
 const mockResetPasswordForEmail = jest.fn();
+const mockUpdateUser = jest.fn();
+
+jest.mock("expo-linking", () => ({
+  createURL: (path: string) => `dishlist://${path}`,
+}));
 
 jest.mock('@services/supabase', () => ({
   supabase: {
@@ -18,6 +24,7 @@ jest.mock('@services/supabase', () => ({
       signUp: (...args: any[]) => mockSignUp(...args),
       signOut: (...args: any[]) => mockSignOut(...args),
       resetPasswordForEmail: (...args: any[]) => mockResetPasswordForEmail(...args),
+      updateUser: (...args: any[]) => mockUpdateUser(...args),
     },
   },
 }));
@@ -67,16 +74,55 @@ describe('authService', () => {
   describe('signUpWithEmail', () => {
     it('returns user on successful sign up', async () => {
       const mockUser = { id: 'new-user-123', email: 'new@example.com' };
-      mockSignUp.mockResolvedValueOnce({ data: { user: mockUser }, error: null });
+      const mockSession = { access_token: "token" };
+      mockSignUp.mockResolvedValueOnce({
+        data: { user: mockUser, session: mockSession },
+        error: null,
+      });
 
-      const result = await signUpWithEmail('new@example.com', 'password123');
+      const result = await signUpWithEmail(
+        'new@example.com',
+        'password123',
+        {
+          username: "chef",
+          firstName: "New",
+          lastName: "User",
+        }
+      );
 
       expect(result.user).toEqual(mockUser);
+      expect(result.session).toEqual(mockSession);
       expect(result.error).toBeNull();
       expect(mockSignUp).toHaveBeenCalledWith({
         email: 'new@example.com',
         password: 'password123',
+        options: {
+          emailRedirectTo: "dishlist://login",
+          data: {
+            username: "chef",
+            firstName: "New",
+            lastName: "User",
+          },
+        },
       });
+    });
+
+    it("returns a null session when email confirmation is required", async () => {
+      const mockUser = { id: "pending-user", email: "pending@example.com" };
+      mockSignUp.mockResolvedValueOnce({
+        data: { user: mockUser, session: null },
+        error: null,
+      });
+
+      const result = await signUpWithEmail(
+        "pending@example.com",
+        "password123",
+        { username: "pending" }
+      );
+
+      expect(result.user).toEqual(mockUser);
+      expect(result.session).toBeNull();
+      expect(result.error).toBeNull();
     });
 
     it('returns error when email already exists', async () => {
@@ -85,7 +131,11 @@ describe('authService', () => {
         error: { message: 'User already registered' },
       });
 
-      const result = await signUpWithEmail('existing@example.com', 'password123');
+      const result = await signUpWithEmail(
+        'existing@example.com',
+        'password123',
+        {}
+      );
 
       expect(result.user).toBeNull();
       expect(result.error).toBe('User already registered');
@@ -97,7 +147,7 @@ describe('authService', () => {
         error: { message: 'Password should be at least 6 characters' },
       });
 
-      const result = await signUpWithEmail('test@example.com', '123');
+      const result = await signUpWithEmail('test@example.com', '123', {});
 
       expect(result.user).toBeNull();
       expect(result.error).toBe('Password should be at least 6 characters');
@@ -129,7 +179,10 @@ describe('authService', () => {
       const result = await resetPassword('test@example.com');
 
       expect(result.error).toBeNull();
-      expect(mockResetPasswordForEmail).toHaveBeenCalledWith('test@example.com');
+      expect(mockResetPasswordForEmail).toHaveBeenCalledWith(
+        'test@example.com',
+        { redirectTo: "dishlist://reset-password" }
+      );
     });
 
     it('returns error when reset fails', async () => {
@@ -140,6 +193,19 @@ describe('authService', () => {
       const result = await resetPassword('unknown@example.com');
 
       expect(result.error).toBe('Unable to send reset email');
+    });
+  });
+
+  describe("updateRecoveredPassword", () => {
+    it("updates the password for the recovery session", async () => {
+      mockUpdateUser.mockResolvedValueOnce({ error: null });
+
+      const result = await updateRecoveredPassword("new-password");
+
+      expect(result.error).toBeNull();
+      expect(mockUpdateUser).toHaveBeenCalledWith({
+        password: "new-password",
+      });
     });
   });
 });

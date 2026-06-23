@@ -37,6 +37,7 @@ export const linking: LinkingOptions<RootStackParamList> = {
       },
       Login: "login",
       SignUp: "signup",
+      ResetPassword: "reset-password",
     },
   },
 };

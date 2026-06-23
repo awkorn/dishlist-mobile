@@ -2,7 +2,11 @@ import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useAuth } from "@providers/AuthProvider/AuthContext";
 import { View, ActivityIndicator, StyleSheet } from "react-native";
-import { LoginScreen, SignUpScreen } from "@features/auth";
+import {
+  LoginScreen,
+  ResetPasswordScreen,
+  SignUpScreen,
+} from "@features/auth";
 import { ProfileScreen } from "@features/profile";
 import { SettingsScreen } from "@features/settings";
 import {
@@ -26,7 +30,7 @@ const LoadingScreen = () => (
 );
 
 export default function MainNavigator() {
-  const { user, loading } = useAuth();
+  const { user, loading, isPasswordRecovery } = useAuth();
 
   if (loading) {
     return <LoadingScreen />;
@@ -34,7 +38,9 @@ export default function MainNavigator() {
 
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      {user ? (
+      {isPasswordRecovery ? (
+        <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} />
+      ) : user ? (
         <Stack.Group>
           <Stack.Screen name="Home" component={TabNavigator} />
           <Stack.Screen

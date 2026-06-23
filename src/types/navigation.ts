@@ -4,6 +4,7 @@ import type { ImportedRecipeData } from "@features/recipe/types";
 export type RootStackParamList = {
   Login: undefined;
   SignUp: undefined;
+  ResetPassword: undefined;
   Home: undefined;
   DishListsTab: undefined;
   GroceryTab: undefined;

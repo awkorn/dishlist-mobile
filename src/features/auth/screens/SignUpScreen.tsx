@@ -5,6 +5,7 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
+  Alert,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { useAuth } from '@providers/AuthProvider/AuthContext';
@@ -101,6 +102,12 @@ export default function SignUpScreen({ navigation }: SignUpScreenProps) {
       if (result.error) {
         const errorInfo = getAuthErrorMessage(result.error);
         setError(errorInfo);
+      } else if (result.requiresEmailConfirmation) {
+        Alert.alert(
+          "Check your email",
+          "We sent you a confirmation link. Open it on this device to finish creating your account.",
+          [{ text: "OK", onPress: () => navigation.navigate("Login") }]
+        );
       }
     } catch (err) {
       setError({

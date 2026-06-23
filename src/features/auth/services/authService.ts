@@ -1,5 +1,7 @@
 import { supabase } from "@services/supabase";
 import { User as SupabaseUser } from "@supabase/supabase-js";
+import * as Linking from "expo-linking";
+import type { User } from "@app-types";
 import type { AuthResult } from "../types";
 
 export const signInWithEmail = async (
@@ -24,19 +26,28 @@ export const signInWithEmail = async (
 
 export const signUpWithEmail = async (
   email: string,
-  password: string
+  password: string,
+  userData: Partial<User>
 ): Promise<AuthResult> => {
   try {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
+      options: {
+        emailRedirectTo: Linking.createURL("login"),
+        data: {
+          username: userData.username,
+          firstName: userData.firstName,
+          lastName: userData.lastName,
+        },
+      },
     });
 
     if (error) {
       return { user: null, error: error.message };
     }
 
-    return { user: data.user, error: null };
+    return { user: data.user, session: data.session, error: null };
   } catch (error: any) {
     return { user: null, error: error.message };
   }
@@ -58,11 +69,24 @@ export const resetPassword = async (
   email: string
 ): Promise<{ error: string | null }> => {
   try {
-    const { error } = await supabase.auth.resetPasswordForEmail(email);
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: Linking.createURL("reset-password"),
+    });
     if (error) {
       return { error: error.message };
     }
     return { error: null };
+  } catch (error: any) {
+    return { error: error.message };
+  }
+};
+
+export const updateRecoveredPassword = async (
+  password: string
+): Promise<{ error: string | null }> => {
+  try {
+    const { error } = await supabase.auth.updateUser({ password });
+    return { error: error?.message ?? null };
   } catch (error: any) {
     return { error: error.message };
   }

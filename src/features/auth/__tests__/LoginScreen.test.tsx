@@ -5,9 +5,14 @@ import LoginScreen from '../screens/LoginScreen';
 
 // Mock the auth context
 const mockSignIn = jest.fn();
+const mockResetPassword = jest.fn();
+const mockClearAuthFlowError = jest.fn();
 jest.mock('@providers/AuthProvider/AuthContext', () => ({
   useAuth: () => ({
     signIn: mockSignIn,
+    resetPassword: mockResetPassword,
+    authFlowError: null,
+    clearAuthFlowError: mockClearAuthFlowError,
     user: null,
     loading: false,
   }),

@@ -24,10 +24,18 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<{ message: string; action?: string } | null>(null);
-  const { signIn, resetPassword } = useAuth();
+  const {
+    signIn,
+    resetPassword,
+    authFlowError,
+    clearAuthFlowError,
+  } = useAuth();
+  const displayedError =
+    error ?? (authFlowError ? { message: authFlowError } : null);
 
   const handleLogin = async () => {
     setError(null);
+    clearAuthFlowError();
 
     if (!email.trim()) {
       setError({
@@ -113,12 +121,12 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
           <Text style={styles.title}>DishList</Text>
         </View>
 
-        {error && (
+        {displayedError && (
           <InlineError
-            message={error.message}
-            action={error.message.includes('password') ? 'Reset Password' : undefined}
+            message={displayedError.message}
+            action={displayedError.message.includes('password') ? 'Reset Password' : undefined}
             onActionPress={
-              error.message.includes('password') ? handleForgotPassword : undefined
+              displayedError.message.includes('password') ? handleForgotPassword : undefined
             }
           />
         )}
@@ -135,6 +143,7 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
             onChangeText={(text) => {
               setEmail(text);
               setError(null);
+              clearAuthFlowError();
             }}
             keyboardType="email-address"
             autoCapitalize="none"
@@ -155,6 +164,7 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
             onChangeText={(text) => {
               setPassword(text);
               setError(null);
+              clearAuthFlowError();
             }}
             secureTextEntry
             autoComplete="password"

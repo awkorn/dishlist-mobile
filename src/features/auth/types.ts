@@ -1,4 +1,7 @@
-import type { User as SupabaseUser } from "@supabase/supabase-js";
+import type {
+  Session,
+  User as SupabaseUser,
+} from "@supabase/supabase-js";
 
 export interface AuthCredentials {
   email: string;
@@ -13,7 +16,13 @@ export interface SignUpData extends AuthCredentials {
 
 export interface AuthResult {
   user: SupabaseUser | null;
+  session?: Session | null;
   error: string | null;
+}
+
+export interface SignUpResult {
+  error: string | null;
+  requiresEmailConfirmation?: boolean;
 }
 
 export interface AuthContextType {
@@ -28,7 +37,14 @@ export interface AuthContextType {
     email: string,
     password: string,
     userData: Partial<import("@app-types").User>
-  ) => Promise<{ error: string | null }>;
+  ) => Promise<SignUpResult>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ error: string | null }>;
+  updateRecoveredPassword: (
+    password: string
+  ) => Promise<{ error: string | null }>;
+  isPasswordRecovery: boolean;
+  finishPasswordRecovery: () => void;
+  authFlowError: string | null;
+  clearAuthFlowError: () => void;
 }
