@@ -2,7 +2,12 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Alert } from 'react-native';
 import { queryKeys } from '@lib/queryKeys';
 import { dishlistService } from '../services';
-import type { DishList, CreateDishListData, UpdateDishListData } from '../types';
+import type {
+  DishList,
+  DishListDetail,
+  CreateDishListData,
+  UpdateDishListData,
+} from '../types';
 
 /**
  * Hook for creating a new DishList
@@ -140,7 +145,10 @@ export function useUpdateDishList() {
     },
 
     onSuccess: (data, variables) => {
-      queryClient.setQueryData(queryKeys.dishLists.detail(variables.dishListId), data);
+      queryClient.setQueryData<DishListDetail>(
+        queryKeys.dishLists.detail(variables.dishListId),
+        (current) => current ? { ...current, ...data } : current,
+      );
     },
 
     onSettled: () => {
