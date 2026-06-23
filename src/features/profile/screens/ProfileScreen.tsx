@@ -110,7 +110,10 @@ export default function ProfileScreen({ navigation, route }: Props) {
   };
 
   const handleLogout = async () => {
-    await signOut();
+    const result = await signOut();
+    if (result.error) {
+      Alert.alert("Unable to Sign Out", result.error);
+    }
     // Navigation will auto-redirect to Login screen via MainNavigator
   };
 

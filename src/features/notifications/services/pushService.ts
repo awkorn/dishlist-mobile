@@ -2,7 +2,11 @@ import * as Notifications from "expo-notifications";
 import * as Device from "expo-device";
 import Constants from "expo-constants";
 import { Platform } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { api } from "@services/api";
+
+export const PUSH_TOKEN_KEY = "@dishlist/pushToken";
+export const PUSH_ENABLED_KEY = "@dishlist/pushEnabled";
 
 // Configure how notifications are presented when the app is in the foreground
 Notifications.setNotificationHandler({
@@ -86,6 +90,19 @@ export async function enablePushNotifications(): Promise<string | null> {
  */
 export async function disablePushNotifications(token: string): Promise<void> {
   await unregisterTokenFromBackend(token);
+}
+
+/**
+ * Detach this physical device from the current account before ending the
+ * authenticated session. Keep the token locally if the request fails so the
+ * user can retry instead of silently continuing to receive private pushes.
+ */
+export async function unregisterCurrentDevicePushToken(): Promise<void> {
+  const token = await AsyncStorage.getItem(PUSH_TOKEN_KEY);
+  if (!token) return;
+
+  await disablePushNotifications(token);
+  await AsyncStorage.removeItem(PUSH_TOKEN_KEY);
 }
 
 /**

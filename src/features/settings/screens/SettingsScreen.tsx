@@ -31,6 +31,7 @@ import {
 import { useAuth } from "@providers/AuthProvider/AuthContext";
 import { usePushNotifications } from "@features/notifications";
 import { api } from "@services/api";
+import { supabase } from "@services/supabase";
 import { SettingsSection, SettingsRow } from "../components";
 import { theme } from "@styles/theme";
 import { typography } from "@styles/typography";
@@ -70,7 +71,10 @@ export default function SettingsScreen({ navigation }: Props) {
         text: "Sign Out",
         style: "destructive",
         onPress: async () => {
-          await signOut();
+          const result = await signOut();
+          if (result.error) {
+            Alert.alert("Unable to Sign Out", result.error);
+          }
         },
       },
     ]);
@@ -91,7 +95,13 @@ export default function SettingsScreen({ navigation }: Props) {
             setIsDeleting(true);
             try {
               await api.delete("/users/me");
-              await signOut();
+              const result = await signOut();
+              if (result.error) {
+                // The account is already deleted server-side, so always clear
+                // the local Supabase session even if push cleanup was raced by
+                // the deletion cascade.
+                await supabase.auth.signOut({ scope: "local" });
+              }
             } catch (error: any) {
               const message =
                 error?.response?.data?.error || "Failed to delete account. Please try again.";

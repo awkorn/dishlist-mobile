@@ -38,7 +38,7 @@ export interface AuthContextType {
     password: string,
     userData: Partial<import("@app-types").User>
   ) => Promise<SignUpResult>;
-  signOut: () => Promise<void>;
+  signOut: () => Promise<{ error: string | null }>;
   resetPassword: (email: string) => Promise<{ error: string | null }>;
   updateRecoveredPassword: (
     password: string

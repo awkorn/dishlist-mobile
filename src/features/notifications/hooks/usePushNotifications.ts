@@ -3,15 +3,15 @@ import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "@app-types/navigation";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useAuth } from "@providers/AuthProvider/AuthContext";
 import {
   enablePushNotifications,
   disablePushNotifications,
   addNotificationReceivedListener,
   addNotificationResponseListener,
+  PUSH_ENABLED_KEY,
+  PUSH_TOKEN_KEY,
 } from "../services/pushService";
-
-const PUSH_TOKEN_KEY = "@dishlist/pushToken";
-const PUSH_ENABLED_KEY = "@dishlist/pushEnabled";
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
@@ -22,6 +22,8 @@ type Nav = NativeStackNavigationProp<RootStackParamList>;
  * - Provides toggle controls for settings
  */
 export function usePushNotifications() {
+  const { user } = useAuth();
+  const userId = user?.id;
   const [pushEnabled, setPushEnabled] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const navigation = useNavigation<Nav>();
@@ -29,19 +31,49 @@ export function usePushNotifications() {
 
   // Restore saved preference on mount
   useEffect(() => {
-    AsyncStorage.getItem(PUSH_ENABLED_KEY).then((value) => {
-      const enabled = value === "true";
-      setPushEnabled(enabled);
-      setIsLoading(false);
+    let cancelled = false;
 
-      if (enabled) {
-        // Re-register silently (token may have changed)
-        enablePushNotifications().then((token) => {
-          if (token) tokenRef.current = token;
-        });
-      }
-    });
+    void Promise.all([
+      AsyncStorage.getItem(PUSH_ENABLED_KEY),
+      AsyncStorage.getItem(PUSH_TOKEN_KEY),
+    ])
+      .then(([enabledValue, token]) => {
+        if (cancelled) return;
+        setPushEnabled(enabledValue === "true");
+        tokenRef.current = token;
+      })
+      .catch((error) =>
+        console.error("Failed to restore push notification settings:", error)
+      )
+      .finally(() => {
+        if (!cancelled) setIsLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
+
+  // Register for whichever account is currently authenticated. This reruns
+  // when accounts change without requiring an app restart.
+  useEffect(() => {
+    if (isLoading || !userId || !pushEnabled) return;
+
+    let cancelled = false;
+    void enablePushNotifications()
+      .then(async (token) => {
+        if (cancelled || !token) return;
+        tokenRef.current = token;
+        await AsyncStorage.setItem(PUSH_TOKEN_KEY, token);
+      })
+      .catch((error) =>
+        console.error("Failed to register push notifications:", error)
+      );
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isLoading, pushEnabled, userId]);
 
   // Set up notification listeners
   useEffect(() => {

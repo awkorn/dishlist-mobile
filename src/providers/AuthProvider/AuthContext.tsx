@@ -21,6 +21,7 @@ import {
 import type { SignUpResult } from "@features/auth/types";
 import api from "@services/api";
 import { queryKeys } from "@lib/queryKeys";
+import { unregisterCurrentDevicePushToken } from "@features/notifications/services/pushService";
 
 interface AuthContextType {
   user: SupabaseUser | null;
@@ -35,7 +36,7 @@ interface AuthContextType {
     password: string,
     userData: Partial<User>
   ) => Promise<SignUpResult>;
-  signOut: () => Promise<void>;
+  signOut: () => Promise<{ error: string | null }>;
   resetPassword: (email: string) => Promise<{ error: string | null }>;
   updateRecoveredPassword: (
     password: string
@@ -334,7 +335,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const signOut = async () => {
-    await authSignOut();
+    try {
+      await unregisterCurrentDevicePushToken();
+    } catch (error) {
+      console.error("Failed to unregister push token during sign out:", error);
+      return {
+        error:
+          "Could not securely sign out. Check your connection and try again.",
+      };
+    }
+
+    const result = await authSignOut();
+    return result;
   };
 
   const resetPassword = async (email: string) => {
