@@ -193,7 +193,7 @@ export default function DishListDetailScreen({
         onPress: () => {
           Alert.alert(
             "Delete DishList",
-            `Are you sure you want to delete "${dishList.title}"? This will also delete all recipes that are only in this DishList.`,
+            `Are you sure you want to delete "${dishList.title}"? Recipes will not be deleted.`,
             [
               { text: "Cancel", style: "cancel" },
               {
