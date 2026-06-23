@@ -35,7 +35,6 @@ export interface InviteValidationResponse {
     dishList: {
       id: string;
       title: string;
-      description: string | null;
       visibility: 'PUBLIC' | 'PRIVATE';
     };
     inviter: {

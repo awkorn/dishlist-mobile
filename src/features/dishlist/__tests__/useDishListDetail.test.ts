@@ -35,7 +35,6 @@ describe("useDishListDetail", () => {
   const mockDishListDetail = {
     id: "1",
     title: "My Recipes",
-    description: "My favorite recipes",
     visibility: "PUBLIC" as const,
     isDefault: true,
     isPinned: false,

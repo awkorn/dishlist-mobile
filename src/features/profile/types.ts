@@ -19,7 +19,6 @@ export interface UserProfile {
 export interface ProfileDishList {
   id: string;
   title: string;
-  description?: string;
   visibility: 'PUBLIC' | 'PRIVATE';
   isDefault: boolean;
   isPinned: boolean;

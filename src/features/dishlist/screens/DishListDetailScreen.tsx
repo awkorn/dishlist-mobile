@@ -137,7 +137,6 @@ export default function DishListDetailScreen({
               dishListId,
               dishList: {
                 title: dishList.title,
-                description: dishList.description,
                 visibility: dishList.visibility,
               },
             }),

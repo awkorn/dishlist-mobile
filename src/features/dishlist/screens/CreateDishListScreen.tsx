@@ -23,7 +23,6 @@ interface CreateDishListScreenProps {
       dishListId?: string;
       dishList?: {
         title: string;
-        description?: string;
         visibility: "PUBLIC" | "PRIVATE";
       };
     };
@@ -39,7 +38,6 @@ export default function CreateDishListScreen({
   const isEditMode = !!dishListId;
 
   const [title, setTitle] = useState(dishList?.title || "");
-  const [description, setDescription] = useState(dishList?.description || "");
   const [visibility, setVisibility] = useState<"PUBLIC" | "PRIVATE">(
     dishList?.visibility || "PUBLIC"
   );
@@ -77,9 +75,8 @@ export default function CreateDishListScreen({
   const handleCancel = () => {
     const hasChanges = isEditMode
       ? title.trim() !== dishList?.title ||
-        description.trim() !== (dishList?.description || "") ||
         visibility !== dishList?.visibility
-      : title.trim() || description.trim();
+      : title.trim();
 
     if (hasChanges) {
       Alert.alert(
@@ -107,7 +104,6 @@ export default function CreateDishListScreen({
         {
           dishListId,
           title: title.trim(),
-          description: description.trim() || undefined,
           visibility,
         },
         {
@@ -118,7 +114,6 @@ export default function CreateDishListScreen({
       createMutation.mutate(
         {
           title: title.trim(),
-          description: description.trim() || undefined,
           visibility,
         },
         {
@@ -171,25 +166,6 @@ export default function CreateDishListScreen({
               <Text style={styles.errorText}>{titleError}</Text>
             ) : null}
             <Text style={styles.characterCount}>{title.length}/50</Text>
-          </View>
-
-          {/* Description Input */}
-          <View style={styles.inputSection}>
-            <Text style={styles.label}>Description</Text>
-            <TextInput
-              style={[styles.input, styles.textArea]}
-              placeholder="Add a description (optional)"
-              placeholderTextColor={theme.colors.neutral[400]}
-              value={description}
-              onChangeText={setDescription}
-              multiline
-              numberOfLines={3}
-              maxLength={200}
-              returnKeyType="done"
-              textAlignVertical="top"
-              editable={!isLoading}
-            />
-            <Text style={styles.characterCount}>{description.length}/200</Text>
           </View>
 
           {/* Visibility Selector */}
@@ -333,10 +309,6 @@ const styles = StyleSheet.create({
   },
   inputError: {
     borderColor: theme.colors.error,
-  },
-  textArea: {
-    minHeight: 100,
-    paddingTop: theme.spacing.md,
   },
   errorText: {
     ...typography.caption,

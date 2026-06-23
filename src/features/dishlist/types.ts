@@ -9,7 +9,6 @@ export interface DishListOwner {
 export interface DishList {
   id: string;
   title: string;
-  description?: string;
   visibility: 'PUBLIC' | 'PRIVATE';
   isDefault: boolean;
   isPinned: boolean;
@@ -47,13 +46,11 @@ export interface DishListDetail extends DishList {
 
 export interface CreateDishListData {
   title: string;
-  description?: string;
   visibility?: 'PUBLIC' | 'PRIVATE';
 }
 
 export interface UpdateDishListData {
   title: string;
-  description?: string;
   visibility: 'PUBLIC' | 'PRIVATE';
 }
 

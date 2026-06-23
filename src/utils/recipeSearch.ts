@@ -16,7 +16,6 @@ interface SearchableRecipe {
 interface SearchableDishList {
   id: string;
   title: string;
-  description?: string;
 }
 
 export interface SearchMatch {
@@ -96,7 +95,7 @@ export function searchRecipes<T extends SearchableRecipe>(
 }
 
 /**
- * Searches dishlists by title and description.
+ * Searches dishlists by title.
  *
  * @param dishLists - Array of dishlists to search
  * @param query - Search query string
@@ -116,9 +115,6 @@ export function searchDishLists<T extends SearchableDishList>(
   return dishLists.filter((dishList) => {
     return searchTerms.some((term) => {
       if (dishList.title.toLowerCase().includes(term)) {
-        return true;
-      }
-      if (dishList.description?.toLowerCase().includes(term)) {
         return true;
       }
       return false;

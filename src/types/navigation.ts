@@ -19,7 +19,6 @@ export type RootStackParamList = {
         dishListId?: string;
         dishList?: {
           title: string;
-          description?: string;
           visibility: "PUBLIC" | "PRIVATE";
         };
       }
@@ -31,7 +30,6 @@ export type RootStackParamList = {
     dishListId: string;
     dishList: {
       title: string;
-      description?: string;
       visibility: "PUBLIC" | "PRIVATE";
     };
   };

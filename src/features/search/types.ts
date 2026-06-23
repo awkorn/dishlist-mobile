@@ -42,7 +42,6 @@ export interface SearchRecipe {
 export interface SearchDishList {
   id: string;
   title: string;
-  description: string | null;
   visibility: "PUBLIC" | "PRIVATE";
   recipeCount: number;
   followerCount: number;

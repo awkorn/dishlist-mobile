@@ -187,9 +187,6 @@ export default function InviteLandingScreen({ route, navigation }: Props) {
             {'DishList: '}
             <Text style={styles.dishListTitle}>{invite.dishList.title}</Text>
           </Text>
-          {invite.dishList.description && (
-            <Text style={styles.description}>{invite.dishList.description}</Text>
-          )}
         </View>
 
         {/* Inviter Avatar */}
@@ -267,12 +264,6 @@ const styles = StyleSheet.create({
   dishListTitle: {
     ...typography.body,
     color: theme.colors.primary[600],
-  },
-  description: {
-    ...typography.caption,
-    color: theme.colors.neutral[500],
-    textAlign: 'center',
-    marginTop: theme.spacing.sm,
   },
   inviterContainer: {
     marginBottom: theme.spacing['3xl'],

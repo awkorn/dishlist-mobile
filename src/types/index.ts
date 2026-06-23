@@ -11,7 +11,6 @@ export interface User {
 export interface DishList {
   id: string;
   title: string;
-  description?: string;
   visibility: 'PUBLIC' | 'PRIVATE';
   isDefault: boolean;
   ownerId: string;

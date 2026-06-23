@@ -19,7 +19,6 @@ export function useCreateDishList() {
       const optimisticDishList: DishList = {
         id: `temp-${Date.now()}`,
         title: newDishList.title,
-        description: newDishList.description,
         visibility: newDishList.visibility || 'PUBLIC',
         isDefault: false,
         isPinned: false,
@@ -95,7 +94,7 @@ export function useUpdateDishList() {
     mutationFn: ({ dishListId, ...data }: { dishListId: string } & UpdateDishListData) =>
       dishlistService.updateDishList(dishListId, data),
 
-    onMutate: async ({ dishListId, title, description, visibility }) => {
+    onMutate: async ({ dishListId, title, visibility }) => {
       await queryClient.cancelQueries({ queryKey: queryKeys.dishLists.all });
 
       const previousDetail = queryClient.getQueryData(queryKeys.dishLists.detail(dishListId));
@@ -105,7 +104,6 @@ export function useUpdateDishList() {
       queryClient.setQueryData(queryKeys.dishLists.detail(dishListId), (old: any) => ({
         ...old,
         title,
-        description,
         visibility,
         updatedAt: new Date().toISOString(),
       }));
@@ -114,7 +112,7 @@ export function useUpdateDishList() {
         if (!lists) return lists;
         return lists.map((list) =>
           list.id === dishListId
-            ? { ...list, title, description, visibility, updatedAt: new Date().toISOString() }
+            ? { ...list, title, visibility, updatedAt: new Date().toISOString() }
             : list
         );
       };

@@ -70,28 +70,12 @@ describe('dishlistService', () => {
       expect(mockApi.post).toHaveBeenCalledWith('/dishlists', newDishList);
       expect(result).toEqual(mockResponse);
     });
-
-    it('should create dishlist with description', async () => {
-      const newDishList = {
-        title: 'New List',
-        description: 'A description',
-        visibility: 'PRIVATE' as const,
-      };
-      const mockResponse = { id: '3', ...newDishList };
-      mockApi.post.mockResolvedValueOnce({ data: { dishList: mockResponse } });
-
-      const result = await dishlistService.createDishList(newDishList);
-
-      expect(mockApi.post).toHaveBeenCalledWith('/dishlists', newDishList);
-      expect(result).toEqual(mockResponse);
-    });
   });
 
   describe('updateDishList', () => {
     it('should update an existing dishlist', async () => {
       const updateData = {
         title: 'Updated Title',
-        description: 'Updated description',
         visibility: 'PRIVATE' as const,
       };
       const mockResponse = { id: '1', ...updateData };
