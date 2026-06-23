@@ -122,6 +122,17 @@ export interface Recipe {
   notes?: string[];
   tags?: string[];
   isShareable?: boolean;
+  originalRecipeId?: string;
+  originalRecipe?: {
+    id: string;
+    title: string;
+    creator: {
+      uid: string;
+      username?: string;
+      firstName?: string;
+      lastName?: string;
+    };
+  } | null;
   creatorId: string;
   creator: {
     uid: string;
@@ -131,6 +142,14 @@ export interface Recipe {
   };
   createdAt: string;
   updatedAt: string;
+}
+
+export type AddRecipeToDishListMode = "LINKED" | "FORKED" | "REUSED_FORK";
+
+export interface AddRecipeToDishListResult {
+  message: string;
+  mode: AddRecipeToDishListMode;
+  recipe: Recipe;
 }
 
 export interface CreateRecipeData {

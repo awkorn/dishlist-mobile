@@ -106,13 +106,22 @@ describe('recipeService', () => {
 
   describe('addRecipeToDishList', () => {
     it('should add a recipe to a dishlist', async () => {
-      mockApi.post.mockResolvedValueOnce({ data: {} });
+      const response = {
+        message: 'Recipe saved successfully',
+        mode: 'FORKED' as const,
+        recipe: { id: 'fork-1', title: 'Pasta' },
+      };
+      mockApi.post.mockResolvedValueOnce({ data: response });
 
-      await recipeService.addRecipeToDishList('dishlist-1', 'recipe-1');
+      const result = await recipeService.addRecipeToDishList(
+        'dishlist-1',
+        'recipe-1',
+      );
 
       expect(mockApi.post).toHaveBeenCalledWith('/dishlists/dishlist-1/recipes', {
         recipeId: 'recipe-1',
       });
+      expect(result).toEqual(response);
     });
   });
 

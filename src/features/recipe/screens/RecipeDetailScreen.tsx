@@ -159,9 +159,10 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
   const actionSheetOptions: ActionSheetOption[] = useMemo(() => {
     if (!recipe) return [];
 
+    const isOwner = recipe.creator.uid === user?.id;
     const opts: ActionSheetOption[] = [
       {
-        title: "Add to DishList",
+        title: isOwner ? "Add to DishList" : "Save to DishList",
         icon: Plus,
         onPress: () => setShowAddToDishListModal(true),
       },
@@ -213,7 +214,6 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
       },
     });
 
-    const isOwner = recipe.creator.uid === user?.id;
     if (isOwner) {
       opts.splice(1, 0, {
         title: "Edit Recipe",
@@ -442,6 +442,17 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
             </View>
           </View>
 
+          {recipe.originalRecipe && (
+            <View style={styles.attribution}>
+              <Text style={styles.attributionText}>
+                Saved from “{recipe.originalRecipe.title}” by{" "}
+                {recipe.originalRecipe.creator.username
+                  ? `@${recipe.originalRecipe.creator.username}`
+                  : recipe.originalRecipe.creator.firstName || "another cook"}
+              </Text>
+            </View>
+          )}
+
           {/* Cook Mode Button */}
           <TouchableOpacity
             style={styles.cookModeButton}
@@ -650,6 +661,7 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
           onClose={() => setShowAddToDishListModal(false)}
           recipeId={recipeId}
           recipeTitle={recipe.title}
+          createsCopy={recipe.creator.uid !== user?.id}
         />
 
         {/* Share Modal */}
@@ -792,6 +804,15 @@ const styles = StyleSheet.create({
   },
   metaSectionNoGallery: {
     paddingTop: theme.spacing.md,
+  },
+  attribution: {
+    paddingHorizontal: theme.spacing.xl,
+    paddingTop: theme.spacing.lg,
+  },
+  attributionText: {
+    ...typography.caption,
+    color: theme.colors.neutral[600],
+    lineHeight: 18,
   },
   metaRow: {
     flexDirection: "row",

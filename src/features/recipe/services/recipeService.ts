@@ -5,6 +5,7 @@ import type {
   UpdateRecipeData,
   ImportRecipeResponse,
   ImageData,
+  AddRecipeToDishListResult,
 } from "../types";
 
 export const recipeService = {
@@ -38,8 +39,12 @@ export const recipeService = {
   async addRecipeToDishList(
     dishListId: string,
     recipeId: string
-  ): Promise<void> {
-    await api.post(`/dishlists/${dishListId}/recipes`, { recipeId });
+  ): Promise<AddRecipeToDishListResult> {
+    const response = await api.post<AddRecipeToDishListResult>(
+      `/dishlists/${dishListId}/recipes`,
+      { recipeId }
+    );
+    return response.data;
   },
 
   /**

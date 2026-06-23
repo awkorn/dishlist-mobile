@@ -23,6 +23,7 @@ interface AddToDishListModalProps {
   onClose: () => void;
   recipeId: string;
   recipeTitle: string;
+  createsCopy: boolean;
 }
 
 export default function AddToDishListModal({
@@ -30,6 +31,7 @@ export default function AddToDishListModal({
   onClose,
   recipeId,
   recipeTitle,
+  createsCopy,
 }: AddToDishListModalProps) {
   // Fetch user's owned/collaborated dishlists
   const { data: allDishLists = [], isLoading: loadingDishLists } = useQuery({
@@ -107,8 +109,18 @@ export default function AddToDishListModal({
   };
 
   return (
-    <Modal visible={visible} onClose={onClose} title="Add to DishList">
+    <Modal
+      visible={visible}
+      onClose={onClose}
+      title={createsCopy ? "Save to DishList" : "Add to DishList"}
+    >
       <View style={styles.container}>
+        {createsCopy && (
+          <Text style={styles.copyNotice}>
+            Saving “{recipeTitle}” creates your own copy. Future changes to the
+            original won’t affect it.
+          </Text>
+        )}
         {isLoading ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color={theme.colors.primary[500]} />
@@ -153,6 +165,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: theme.spacing['4xl'],
+  },
+  copyNotice: {
+    ...typography.caption,
+    color: theme.colors.neutral[600],
+    marginHorizontal: theme.spacing.xl,
+    marginTop: theme.spacing.lg,
+    lineHeight: 18,
   },
   loadingText: {
     ...typography.body,

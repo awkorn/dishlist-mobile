@@ -148,38 +148,41 @@ export function useAddRecipeToDishList() {
       Alert.alert('Error', message);
     },
 
-    onSuccess: (_, variables) => {
-      // Try to update dishlist detail cache from cached recipe data
-      const cachedRecipe = queryClient.getQueryData<Recipe>([RECIPE_QUERY_KEY, variables.recipeId]);
-      if (cachedRecipe) {
-        queryClient.setQueryData<DishListDetail>(
-          queryKeys.dishLists.detail(variables.dishListId),
-          (old) => {
-            if (!old) return old;
-            if (old.recipes.some(r => r.id === cachedRecipe.id)) return old;
-            const dishListRecipe: DishListRecipe = {
-              id: cachedRecipe.id,
-              title: cachedRecipe.title,
-              description: cachedRecipe.description,
-              imageUrl: cachedRecipe.imageUrl,
-              imageUrls: cachedRecipe.imageUrls,
-              prepTime: cachedRecipe.prepTime,
-              cookTime: cachedRecipe.cookTime,
-              servings: cachedRecipe.servings,
-              tags: cachedRecipe.tags,
-              creatorId: cachedRecipe.creatorId,
-              creator: cachedRecipe.creator,
-              createdAt: cachedRecipe.createdAt,
-              updatedAt: cachedRecipe.updatedAt,
-            };
-            return {
-              ...old,
-              recipes: [...old.recipes, dishListRecipe],
-              recipeCount: old.recipeCount + 1,
-            };
+    onSuccess: (result, variables) => {
+      const attachedRecipe = result.recipe;
+      queryClient.setQueryData(
+        [RECIPE_QUERY_KEY, attachedRecipe.id],
+        attachedRecipe,
+      );
+      queryClient.setQueryData<DishListDetail>(
+        queryKeys.dishLists.detail(variables.dishListId),
+        (old) => {
+          if (!old) return old;
+          if (old.recipes.some((recipe) => recipe.id === attachedRecipe.id)) {
+            return old;
           }
-        );
-      }
+          const dishListRecipe: DishListRecipe = {
+            id: attachedRecipe.id,
+            title: attachedRecipe.title,
+            description: attachedRecipe.description,
+            imageUrl: attachedRecipe.imageUrl,
+            imageUrls: attachedRecipe.imageUrls,
+            prepTime: attachedRecipe.prepTime,
+            cookTime: attachedRecipe.cookTime,
+            servings: attachedRecipe.servings,
+            tags: attachedRecipe.tags,
+            creatorId: attachedRecipe.creatorId,
+            creator: attachedRecipe.creator,
+            createdAt: attachedRecipe.createdAt,
+            updatedAt: attachedRecipe.updatedAt,
+          };
+          return {
+            ...old,
+            recipes: [...old.recipes, dishListRecipe],
+            recipeCount: old.recipeCount + 1,
+          };
+        }
+      );
       // Background invalidation for full consistency
       queryClient.invalidateQueries({
         queryKey: queryKeys.dishLists.detail(variables.dishListId),
