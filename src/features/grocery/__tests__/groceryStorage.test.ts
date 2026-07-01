@@ -198,6 +198,56 @@ describe('groceryStorage', () => {
     });
   });
 
+  describe('concurrent mutations', () => {
+    it('applies rapid mutations to the latest saved list', async () => {
+      let storedValue = JSON.stringify([
+        { id: '1', text: 'Milk', checked: false, addedAt: 123 },
+        { id: '2', text: 'Bread', checked: false, addedAt: 124 },
+      ]);
+
+      (AsyncStorage.getItem as jest.Mock).mockImplementation(
+        async () => storedValue
+      );
+      (AsyncStorage.setItem as jest.Mock).mockImplementation(
+        async (_key: string, value: string) => {
+          await Promise.resolve();
+          storedValue = value;
+        }
+      );
+
+      await Promise.all([
+        groceryStorage.toggleCheck(userId, '1'),
+        groceryStorage.deleteItem(userId, '2'),
+      ]);
+
+      expect(JSON.parse(storedValue)).toEqual([
+        { id: '1', text: 'Milk', checked: true, addedAt: 123 },
+      ]);
+    });
+
+    it('continues processing after an earlier mutation fails', async () => {
+      let storedValue = JSON.stringify([
+        { id: '1', text: 'Milk', checked: false, addedAt: 123 },
+      ]);
+
+      (AsyncStorage.getItem as jest.Mock).mockImplementation(
+        async () => storedValue
+      );
+      (AsyncStorage.setItem as jest.Mock)
+        .mockRejectedValueOnce(new Error('Storage error'))
+        .mockImplementationOnce(async (_key: string, value: string) => {
+          storedValue = value;
+        });
+
+      const failedToggle = groceryStorage.toggleCheck(userId, '1');
+      const queuedDelete = groceryStorage.deleteItem(userId, '1');
+
+      await expect(failedToggle).rejects.toThrow('Storage error');
+      await expect(queuedDelete).resolves.toEqual([]);
+      expect(JSON.parse(storedValue)).toEqual([]);
+    });
+  });
+
   describe('account isolation', () => {
     it('uses a different storage key for each user', async () => {
       (AsyncStorage.getItem as jest.Mock)

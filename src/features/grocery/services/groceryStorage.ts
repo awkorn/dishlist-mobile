@@ -3,6 +3,7 @@ import { STORAGE_KEYS } from '@lib/constants';
 import type { GroceryItem } from '../types';
 
 const GROCERY_LIST_KEY = STORAGE_KEYS.GROCERY_LIST;
+const mutationQueues = new Map<string, Promise<unknown>>();
 
 const getUserGroceryListKey = (userId: string) => {
   if (!userId) {
@@ -10,6 +11,24 @@ const getUserGroceryListKey = (userId: string) => {
   }
 
   return `${GROCERY_LIST_KEY}:${userId}`;
+};
+
+const enqueueMutation = <T>(
+  userId: string,
+  operation: () => Promise<T>
+): Promise<T> => {
+  getUserGroceryListKey(userId);
+
+  const previous = mutationQueues.get(userId) ?? Promise.resolve();
+  const result = previous.catch(() => undefined).then(operation);
+
+  mutationQueues.set(userId, result);
+
+  return result.finally(() => {
+    if (mutationQueues.get(userId) === result) {
+      mutationQueues.delete(userId);
+    }
+  });
 };
 
 export const groceryStorage = {
@@ -36,35 +55,41 @@ export const groceryStorage = {
   },
 
   async addItems(userId: string, texts: string[]): Promise<GroceryItem[]> {
-    const existing = await this.loadItems(userId);
-    const newItems: GroceryItem[] = texts
-      .filter((text) => text.trim().length > 0)
-      .map((text) => ({
-        id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        text: text.trim(),
-        checked: false,
-        addedAt: Date.now(),
-      }));
-    
-    const updated = [...newItems, ...existing];
-    await this.saveItems(userId, updated);
-    return updated;
+    return enqueueMutation(userId, async () => {
+      const existing = await this.loadItems(userId);
+      const newItems: GroceryItem[] = texts
+        .filter((text) => text.trim().length > 0)
+        .map((text) => ({
+          id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          text: text.trim(),
+          checked: false,
+          addedAt: Date.now(),
+        }));
+
+      const updated = [...newItems, ...existing];
+      await this.saveItems(userId, updated);
+      return updated;
+    });
   },
 
   async toggleCheck(userId: string, id: string): Promise<GroceryItem[]> {
-    const items = await this.loadItems(userId);
-    const updated = items.map((item) =>
-      item.id === id ? { ...item, checked: !item.checked } : item
-    );
-    await this.saveItems(userId, updated);
-    return updated;
+    return enqueueMutation(userId, async () => {
+      const items = await this.loadItems(userId);
+      const updated = items.map((item) =>
+        item.id === id ? { ...item, checked: !item.checked } : item
+      );
+      await this.saveItems(userId, updated);
+      return updated;
+    });
   },
 
   async deleteItem(userId: string, id: string): Promise<GroceryItem[]> {
-    const items = await this.loadItems(userId);
-    const updated = items.filter((item) => item.id !== id);
-    await this.saveItems(userId, updated);
-    return updated;
+    return enqueueMutation(userId, async () => {
+      const items = await this.loadItems(userId);
+      const updated = items.filter((item) => item.id !== id);
+      await this.saveItems(userId, updated);
+      return updated;
+    });
   },
 
   async updateItem(
@@ -72,37 +97,47 @@ export const groceryStorage = {
     id: string,
     newText: string
   ): Promise<GroceryItem[]> {
-    const items = await this.loadItems(userId);
-    const updated = items.map((item) =>
-      item.id === id ? { ...item, text: newText.trim() } : item
-    );
-    await this.saveItems(userId, updated);
-    return updated;
+    return enqueueMutation(userId, async () => {
+      const items = await this.loadItems(userId);
+      const updated = items.map((item) =>
+        item.id === id ? { ...item, text: newText.trim() } : item
+      );
+      await this.saveItems(userId, updated);
+      return updated;
+    });
   },
 
   async clearChecked(userId: string): Promise<GroceryItem[]> {
-    const items = await this.loadItems(userId);
-    const updated = items.filter((item) => !item.checked);
-    await this.saveItems(userId, updated);
-    return updated;
+    return enqueueMutation(userId, async () => {
+      const items = await this.loadItems(userId);
+      const updated = items.filter((item) => !item.checked);
+      await this.saveItems(userId, updated);
+      return updated;
+    });
   },
 
   async checkAll(userId: string): Promise<GroceryItem[]> {
-    const items = await this.loadItems(userId);
-    const updated = items.map((item) => ({ ...item, checked: true }));
-    await this.saveItems(userId, updated);
-    return updated;
+    return enqueueMutation(userId, async () => {
+      const items = await this.loadItems(userId);
+      const updated = items.map((item) => ({ ...item, checked: true }));
+      await this.saveItems(userId, updated);
+      return updated;
+    });
   },
 
   async uncheckAll(userId: string): Promise<GroceryItem[]> {
-    const items = await this.loadItems(userId);
-    const updated = items.map((item) => ({ ...item, checked: false }));
-    await this.saveItems(userId, updated);
-    return updated;
+    return enqueueMutation(userId, async () => {
+      const items = await this.loadItems(userId);
+      const updated = items.map((item) => ({ ...item, checked: false }));
+      await this.saveItems(userId, updated);
+      return updated;
+    });
   },
 
   async clearAll(userId: string): Promise<void> {
-    await AsyncStorage.removeItem(getUserGroceryListKey(userId));
+    return enqueueMutation(userId, () =>
+      AsyncStorage.removeItem(getUserGroceryListKey(userId))
+    );
   },
 
   async clearLegacyItems(): Promise<void> {
