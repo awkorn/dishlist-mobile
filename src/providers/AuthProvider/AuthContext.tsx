@@ -90,6 +90,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         const response = await api.get("/users/me");
         setUserProfile(response.data.user);
       } catch (err: any) {
+        if (
+          err?.response?.status === 403 &&
+          err?.response?.data?.code === "ACCOUNT_SUSPENDED"
+        ) {
+          await supabase.auth.signOut({ scope: "local" });
+          setUser(null);
+          setUserProfile(null);
+          setAuthFlowError(
+            "This account has been suspended. Contact DishList support if you believe this is a mistake."
+          );
+          return;
+        }
         // A confirmed signup may have a valid Supabase session before its
         // application profile exists. Finish provisioning from signed metadata.
         if (err?.response?.status === 404 && authUser) {
@@ -270,11 +282,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             "Backend registration error:",
             apiError.response?.data || apiError.message
           );
-          if (apiError.response?.status === 400) {
+          if (
+            apiError.response?.status === 400 ||
+            apiError.response?.data?.code === "ACCOUNT_SUSPENDED"
+          ) {
             await supabase.auth.signOut({ scope: "local" });
             return {
               error:
-                apiError.response?.data?.error ||
+                (apiError.response?.data?.code === "ACCOUNT_SUSPENDED"
+                  ? "This account has been suspended. Contact DishList support if you believe this is a mistake."
+                  : apiError.response?.data?.error) ||
                 "Account setup failed. Please sign up again.",
             };
           }

@@ -108,6 +108,9 @@ function buildNotificationMessage(notification: Notification): string {
     case "SYSTEM_UPDATE":
       return notification.title || "System update";
 
+    case "REPORT_RESOLVED":
+      return message;
+
     default:
       return notification.title;
   }

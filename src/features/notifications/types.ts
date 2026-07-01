@@ -9,6 +9,7 @@ export type NotificationType =
   | "USER_FOLLOWED"
   | "FOLLOW_REQUEST"
   | "FOLLOW_ACCEPTED"
+  | "REPORT_RESOLVED"
   | "SYSTEM_UPDATE";
 
 export interface FollowRequestData {
@@ -105,6 +106,11 @@ export interface SystemUpdateData {
   link?: string;
 }
 
+export interface ReportResolvedData {
+  reportId: string;
+  resolution: "REVIEWED" | "ACTIONED";
+}
+
 // Union type for all notification data
 export type NotificationData =
   | DishListInvitationData
@@ -116,6 +122,7 @@ export type NotificationData =
   | UserFollowedData
   | FollowRequestData
   | FollowAcceptedData
+  | ReportResolvedData
   | SystemUpdateData;
 
 // API Response types
