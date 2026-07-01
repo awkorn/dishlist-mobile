@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useRef } from 'react';
 import { Alert } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { groceryStorage } from '../services/groceryStorage';
@@ -21,6 +21,7 @@ export function useGroceryList() {
   const [isAddingItem, setIsAddingItem] = useState(false);
   const [editingText, setEditingText] = useState('');
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
+  const isSavingCurrentItem = useRef(false);
 
   // Query for fetching items
   const {
@@ -72,14 +73,21 @@ export function useGroceryList() {
     [deleteMutation]
   );
 
-  const saveCurrentItem = useCallback(async () => {
-    if (!editingText.trim()) return;
+  const saveCurrentItem = useCallback(async (): Promise<boolean> => {
+    if (!editingText.trim()) return true;
+    if (isSavingCurrentItem.current) return false;
 
-    addItemsMutation.mutate([editingText], {
-      onSuccess: () => {
-        setEditingText('');
-      },
-    });
+    isSavingCurrentItem.current = true;
+
+    try {
+      await addItemsMutation.mutateAsync([editingText]);
+      setEditingText('');
+      return true;
+    } catch {
+      return false;
+    } finally {
+      isSavingCurrentItem.current = false;
+    }
   }, [editingText, addItemsMutation]);
 
   const startEditing = useCallback((id: string, currentText: string) => {

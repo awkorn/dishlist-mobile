@@ -52,15 +52,18 @@ export default function GroceryListScreen() {
     }
 
     if (isAddingItem && editingText.trim()) {
-      await saveCurrentItem();
+      const didSave = await saveCurrentItem();
+      if (!didSave) return;
     }
     setIsAddingItem(true);
     setEditingText("");
   };
 
   const handleDoneEditing = async () => {
-    await saveCurrentItem();
-    setIsAddingItem(false);
+    const didSave = await saveCurrentItem();
+    if (didSave) {
+      setIsAddingItem(false);
+    }
   };
 
   const handleBlur = () => {

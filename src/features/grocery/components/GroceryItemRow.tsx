@@ -107,6 +107,7 @@ export function GroceryItemRow({
               onChangeText={onChangeEditingText}
               onSubmitEditing={handleSubmit}
               onBlur={handleBlur}
+              submitBehavior="submit"
               returnKeyType="done"
               autoCapitalize="sentences"
               testID={`edit-input-${item.id}`}

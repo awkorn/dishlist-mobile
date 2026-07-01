@@ -385,8 +385,9 @@ describe("useGroceryList", () => {
         result.current.setEditingText("Eggs");
       });
 
+      let didSave = false;
       await act(async () => {
-        await result.current.saveCurrentItem();
+        didSave = await result.current.saveCurrentItem();
       });
 
       await waitFor(() => {
@@ -394,6 +395,7 @@ describe("useGroceryList", () => {
           "Eggs",
         ]);
       });
+      expect(didSave).toBe(true);
     });
 
     it("clears editing text after successful save", async () => {
@@ -724,13 +726,16 @@ describe("useGroceryList", () => {
         result.current.setEditingText("Test");
       });
 
+      let didSave = false;
       await act(async () => {
-        await result.current.saveCurrentItem();
+        didSave = await result.current.saveCurrentItem();
       });
 
       await waitFor(() => {
         expect(Alert.alert).toHaveBeenCalledWith("Error", "Failed to add items");
       });
+      expect(didSave).toBe(false);
+      expect(result.current.editingText).toBe("Test");
     });
   });
 });
