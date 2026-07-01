@@ -3,25 +3,46 @@ import { Alert } from 'react-native';
 import { groceryStorage } from '../services/groceryStorage';
 import type { GroceryItem } from '../types';
 import { queryKeys } from '@lib/queryKeys';
+import { useAuth } from '@providers/AuthProvider/AuthContext';
+
+function useGroceryUser() {
+  const { user } = useAuth();
+  const userId = user?.id;
+
+  const requireUserId = () => {
+    if (!userId) {
+      throw new Error('You must be signed in to update grocery items');
+    }
+    return userId;
+  };
+
+  return {
+    requireUserId,
+    queryKey: queryKeys.grocery.list(userId ?? ''),
+  };
+}
 
 /**
  * Hook for adding items to grocery list
  */
 export function useAddGroceryItems() {
   const queryClient = useQueryClient();
+  const { requireUserId, queryKey } = useGroceryUser();
 
   return useMutation({
-    mutationFn: (texts: string[]) => groceryStorage.addItems(texts),
+    mutationFn: (texts: string[]) =>
+      groceryStorage.addItems(requireUserId(), texts),
 
     onMutate: async (texts) => {
+      requireUserId();
       // Cancel outgoing queries
-      await queryClient.cancelQueries({ queryKey: queryKeys.grocery.list() });
+      await queryClient.cancelQueries({ queryKey });
 
       // Snapshot previous value
-      const previousItems = queryClient.getQueryData<GroceryItem[]>(queryKeys.grocery.list());
+      const previousItems = queryClient.getQueryData<GroceryItem[]>(queryKey);
 
       // Optimistically add new items
-      queryClient.setQueryData<GroceryItem[]>(queryKeys.grocery.list(), (old = []) => {
+      queryClient.setQueryData<GroceryItem[]>(queryKey, (old = []) => {
         const newItems: GroceryItem[] = texts
           .filter((text) => text.trim().length > 0)
           .map((text) => ({
@@ -39,14 +60,14 @@ export function useAddGroceryItems() {
     onError: (_error, _variables, context) => {
       // Rollback on error
       if (context?.previousItems) {
-        queryClient.setQueryData(queryKeys.grocery.list(), context.previousItems);
+        queryClient.setQueryData(queryKey, context.previousItems);
       }
       Alert.alert('Error', 'Failed to add items');
     },
 
     onSuccess: (data) => {
       // Update with real server data (with real IDs from AsyncStorage)
-      queryClient.setQueryData(queryKeys.grocery.list(), data);
+      queryClient.setQueryData(queryKey, data);
     },
   });
 }
@@ -56,17 +77,20 @@ export function useAddGroceryItems() {
  */
 export function useToggleGroceryItem() {
   const queryClient = useQueryClient();
+  const { requireUserId, queryKey } = useGroceryUser();
 
   return useMutation({
-    mutationFn: (id: string) => groceryStorage.toggleCheck(id),
+    mutationFn: (id: string) =>
+      groceryStorage.toggleCheck(requireUserId(), id),
 
     onMutate: async (id) => {
-      await queryClient.cancelQueries({ queryKey: queryKeys.grocery.list() });
+      requireUserId();
+      await queryClient.cancelQueries({ queryKey });
 
-      const previousItems = queryClient.getQueryData<GroceryItem[]>(queryKeys.grocery.list());
+      const previousItems = queryClient.getQueryData<GroceryItem[]>(queryKey);
 
       // Optimistically toggle
-      queryClient.setQueryData<GroceryItem[]>(queryKeys.grocery.list(), (old = []) =>
+      queryClient.setQueryData<GroceryItem[]>(queryKey, (old = []) =>
         old.map((item) =>
           item.id === id ? { ...item, checked: !item.checked } : item
         )
@@ -77,13 +101,13 @@ export function useToggleGroceryItem() {
 
     onError: (_error, _variables, context) => {
       if (context?.previousItems) {
-        queryClient.setQueryData(queryKeys.grocery.list(), context.previousItems);
+        queryClient.setQueryData(queryKey, context.previousItems);
       }
       Alert.alert('Error', 'Failed to update item');
     },
 
     onSuccess: (data) => {
-      queryClient.setQueryData(queryKeys.grocery.list(), data);
+      queryClient.setQueryData(queryKey, data);
     },
   });
 }
@@ -93,17 +117,20 @@ export function useToggleGroceryItem() {
  */
 export function useDeleteGroceryItem() {
   const queryClient = useQueryClient();
+  const { requireUserId, queryKey } = useGroceryUser();
 
   return useMutation({
-    mutationFn: (id: string) => groceryStorage.deleteItem(id),
+    mutationFn: (id: string) =>
+      groceryStorage.deleteItem(requireUserId(), id),
 
     onMutate: async (id) => {
-      await queryClient.cancelQueries({ queryKey: queryKeys.grocery.list() });
+      requireUserId();
+      await queryClient.cancelQueries({ queryKey });
 
-      const previousItems = queryClient.getQueryData<GroceryItem[]>(queryKeys.grocery.list());
+      const previousItems = queryClient.getQueryData<GroceryItem[]>(queryKey);
 
       // Optimistically remove
-      queryClient.setQueryData<GroceryItem[]>(queryKeys.grocery.list(), (old = []) =>
+      queryClient.setQueryData<GroceryItem[]>(queryKey, (old = []) =>
         old.filter((item) => item.id !== id)
       );
 
@@ -112,13 +139,13 @@ export function useDeleteGroceryItem() {
 
     onError: (_error, _variables, context) => {
       if (context?.previousItems) {
-        queryClient.setQueryData(queryKeys.grocery.list(), context.previousItems);
+        queryClient.setQueryData(queryKey, context.previousItems);
       }
       Alert.alert('Error', 'Failed to delete item');
     },
 
     onSuccess: (data) => {
-      queryClient.setQueryData(queryKeys.grocery.list(), data);
+      queryClient.setQueryData(queryKey, data);
     },
   });
 }
@@ -128,18 +155,20 @@ export function useDeleteGroceryItem() {
  */
 export function useUpdateGroceryItem() {
   const queryClient = useQueryClient();
+  const { requireUserId, queryKey } = useGroceryUser();
 
   return useMutation({
     mutationFn: ({ id, text }: { id: string; text: string }) =>
-      groceryStorage.updateItem(id, text),
+      groceryStorage.updateItem(requireUserId(), id, text),
 
     onMutate: async ({ id, text }) => {
-      await queryClient.cancelQueries({ queryKey: queryKeys.grocery.list() });
+      requireUserId();
+      await queryClient.cancelQueries({ queryKey });
 
-      const previousItems = queryClient.getQueryData<GroceryItem[]>(queryKeys.grocery.list());
+      const previousItems = queryClient.getQueryData<GroceryItem[]>(queryKey);
 
       // Optimistically update
-      queryClient.setQueryData<GroceryItem[]>(queryKeys.grocery.list(), (old = []) =>
+      queryClient.setQueryData<GroceryItem[]>(queryKey, (old = []) =>
         old.map((item) =>
           item.id === id ? { ...item, text: text.trim() } : item
         )
@@ -150,13 +179,13 @@ export function useUpdateGroceryItem() {
 
     onError: (_error, _variables, context) => {
       if (context?.previousItems) {
-        queryClient.setQueryData(queryKeys.grocery.list(), context.previousItems);
+        queryClient.setQueryData(queryKey, context.previousItems);
       }
       Alert.alert('Error', 'Failed to update item');
     },
 
     onSuccess: (data) => {
-      queryClient.setQueryData(queryKeys.grocery.list(), data);
+      queryClient.setQueryData(queryKey, data);
     },
   });
 }
@@ -166,17 +195,19 @@ export function useUpdateGroceryItem() {
  */
 export function useClearCheckedGroceryItems() {
   const queryClient = useQueryClient();
+  const { requireUserId, queryKey } = useGroceryUser();
 
   return useMutation({
-    mutationFn: () => groceryStorage.clearChecked(),
+    mutationFn: () => groceryStorage.clearChecked(requireUserId()),
 
     onMutate: async () => {
-      await queryClient.cancelQueries({ queryKey: queryKeys.grocery.list() });
+      requireUserId();
+      await queryClient.cancelQueries({ queryKey });
 
-      const previousItems = queryClient.getQueryData<GroceryItem[]>(queryKeys.grocery.list());
+      const previousItems = queryClient.getQueryData<GroceryItem[]>(queryKey);
 
       // Optimistically remove checked items
-      queryClient.setQueryData<GroceryItem[]>(queryKeys.grocery.list(), (old = []) =>
+      queryClient.setQueryData<GroceryItem[]>(queryKey, (old = []) =>
         old.filter((item) => !item.checked)
       );
 
@@ -185,13 +216,13 @@ export function useClearCheckedGroceryItems() {
 
     onError: (_error, _variables, context) => {
       if (context?.previousItems) {
-        queryClient.setQueryData(queryKeys.grocery.list(), context.previousItems);
+        queryClient.setQueryData(queryKey, context.previousItems);
       }
       Alert.alert('Error', 'Failed to clear items');
     },
 
     onSuccess: (data) => {
-      queryClient.setQueryData(queryKeys.grocery.list(), data);
+      queryClient.setQueryData(queryKey, data);
     },
   });
 }
@@ -201,17 +232,19 @@ export function useClearCheckedGroceryItems() {
  */
 export function useCheckAllGroceryItems() {
   const queryClient = useQueryClient();
+  const { requireUserId, queryKey } = useGroceryUser();
 
   return useMutation({
-    mutationFn: () => groceryStorage.checkAll(),
+    mutationFn: () => groceryStorage.checkAll(requireUserId()),
 
     onMutate: async () => {
-      await queryClient.cancelQueries({ queryKey: queryKeys.grocery.list() });
+      requireUserId();
+      await queryClient.cancelQueries({ queryKey });
 
-      const previousItems = queryClient.getQueryData<GroceryItem[]>(queryKeys.grocery.list());
+      const previousItems = queryClient.getQueryData<GroceryItem[]>(queryKey);
 
       // Optimistically check all
-      queryClient.setQueryData<GroceryItem[]>(queryKeys.grocery.list(), (old = []) =>
+      queryClient.setQueryData<GroceryItem[]>(queryKey, (old = []) =>
         old.map((item) => ({ ...item, checked: true }))
       );
 
@@ -220,13 +253,13 @@ export function useCheckAllGroceryItems() {
 
     onError: (_error, _variables, context) => {
       if (context?.previousItems) {
-        queryClient.setQueryData(queryKeys.grocery.list(), context.previousItems);
+        queryClient.setQueryData(queryKey, context.previousItems);
       }
       Alert.alert('Error', 'Failed to check all items');
     },
 
     onSuccess: (data) => {
-      queryClient.setQueryData(queryKeys.grocery.list(), data);
+      queryClient.setQueryData(queryKey, data);
     },
   });
 }
@@ -236,17 +269,19 @@ export function useCheckAllGroceryItems() {
  */
 export function useUncheckAllGroceryItems() {
   const queryClient = useQueryClient();
+  const { requireUserId, queryKey } = useGroceryUser();
 
   return useMutation({
-    mutationFn: () => groceryStorage.uncheckAll(),
+    mutationFn: () => groceryStorage.uncheckAll(requireUserId()),
 
     onMutate: async () => {
-      await queryClient.cancelQueries({ queryKey: queryKeys.grocery.list() });
+      requireUserId();
+      await queryClient.cancelQueries({ queryKey });
 
-      const previousItems = queryClient.getQueryData<GroceryItem[]>(queryKeys.grocery.list());
+      const previousItems = queryClient.getQueryData<GroceryItem[]>(queryKey);
 
       // Optimistically uncheck all
-      queryClient.setQueryData<GroceryItem[]>(queryKeys.grocery.list(), (old = []) =>
+      queryClient.setQueryData<GroceryItem[]>(queryKey, (old = []) =>
         old.map((item) => ({ ...item, checked: false }))
       );
 
@@ -255,13 +290,13 @@ export function useUncheckAllGroceryItems() {
 
     onError: (_error, _variables, context) => {
       if (context?.previousItems) {
-        queryClient.setQueryData(queryKeys.grocery.list(), context.previousItems);
+        queryClient.setQueryData(queryKey, context.previousItems);
       }
       Alert.alert('Error', 'Failed to uncheck all items');
     },
 
     onSuccess: (data) => {
-      queryClient.setQueryData(queryKeys.grocery.list(), data);
+      queryClient.setQueryData(queryKey, data);
     },
   });
 }

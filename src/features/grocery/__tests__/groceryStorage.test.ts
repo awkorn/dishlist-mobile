@@ -5,9 +5,13 @@ import { groceryStorage } from '../services/groceryStorage';
 jest.mock('@react-native-async-storage/async-storage', () => ({
   getItem: jest.fn(),
   setItem: jest.fn(),
+  removeItem: jest.fn(),
 }));
 
 describe('groceryStorage', () => {
+  const userId = 'user-123';
+  const storageKey = `grocery_list:${userId}`;
+
   beforeEach(() => {
     jest.clearAllMocks();
   });
@@ -16,9 +20,10 @@ describe('groceryStorage', () => {
     it('returns empty array when no data exists', async () => {
       (AsyncStorage.getItem as jest.Mock).mockResolvedValueOnce(null);
 
-      const items = await groceryStorage.loadItems();
+      const items = await groceryStorage.loadItems(userId);
 
       expect(items).toEqual([]);
+      expect(AsyncStorage.getItem).toHaveBeenCalledWith(storageKey);
     });
 
     it('returns parsed items from storage', async () => {
@@ -30,7 +35,7 @@ describe('groceryStorage', () => {
         JSON.stringify(mockItems)
       );
 
-      const items = await groceryStorage.loadItems();
+      const items = await groceryStorage.loadItems(userId);
 
       expect(items).toEqual(mockItems);
     });
@@ -40,7 +45,7 @@ describe('groceryStorage', () => {
         new Error('Storage error')
       );
 
-      const items = await groceryStorage.loadItems();
+      const items = await groceryStorage.loadItems(userId);
 
       expect(items).toEqual([]);
     });
@@ -56,7 +61,7 @@ describe('groceryStorage', () => {
       );
       (AsyncStorage.setItem as jest.Mock).mockResolvedValueOnce(undefined);
 
-      const result = await groceryStorage.addItems(['New Item']);
+      const result = await groceryStorage.addItems(userId, ['New Item']);
 
       expect(result).toHaveLength(2);
       expect(result[0].text).toBe('New Item');
@@ -68,7 +73,12 @@ describe('groceryStorage', () => {
       (AsyncStorage.getItem as jest.Mock).mockResolvedValueOnce('[]');
       (AsyncStorage.setItem as jest.Mock).mockResolvedValueOnce(undefined);
 
-      const result = await groceryStorage.addItems(['Valid', '', '  ', 'Also Valid']);
+      const result = await groceryStorage.addItems(userId, [
+        'Valid',
+        '',
+        '  ',
+        'Also Valid',
+      ]);
 
       expect(result).toHaveLength(2);
       expect(result[0].text).toBe('Valid');
@@ -79,7 +89,7 @@ describe('groceryStorage', () => {
       (AsyncStorage.getItem as jest.Mock).mockResolvedValueOnce('[]');
       (AsyncStorage.setItem as jest.Mock).mockResolvedValueOnce(undefined);
 
-      const result = await groceryStorage.addItems(['  Trimmed  ']);
+      const result = await groceryStorage.addItems(userId, ['  Trimmed  ']);
 
       expect(result[0].text).toBe('Trimmed');
     });
@@ -95,7 +105,7 @@ describe('groceryStorage', () => {
       );
       (AsyncStorage.setItem as jest.Mock).mockResolvedValueOnce(undefined);
 
-      const result = await groceryStorage.toggleCheck('1');
+      const result = await groceryStorage.toggleCheck(userId, '1');
 
       expect(result[0].checked).toBe(true);
     });
@@ -110,7 +120,7 @@ describe('groceryStorage', () => {
       );
       (AsyncStorage.setItem as jest.Mock).mockResolvedValueOnce(undefined);
 
-      const result = await groceryStorage.toggleCheck('1');
+      const result = await groceryStorage.toggleCheck(userId, '1');
 
       expect(result[0].checked).toBe(true);
       expect(result[1].checked).toBe(true); // unchanged
@@ -128,7 +138,7 @@ describe('groceryStorage', () => {
       );
       (AsyncStorage.setItem as jest.Mock).mockResolvedValueOnce(undefined);
 
-      const result = await groceryStorage.deleteItem('1');
+      const result = await groceryStorage.deleteItem(userId, '1');
 
       expect(result).toHaveLength(1);
       expect(result[0].id).toBe('2');
@@ -147,7 +157,7 @@ describe('groceryStorage', () => {
       );
       (AsyncStorage.setItem as jest.Mock).mockResolvedValueOnce(undefined);
 
-      const result = await groceryStorage.clearChecked();
+      const result = await groceryStorage.clearChecked(userId);
 
       expect(result).toHaveLength(1);
       expect(result[0].text).toBe('Milk');
@@ -165,7 +175,7 @@ describe('groceryStorage', () => {
       );
       (AsyncStorage.setItem as jest.Mock).mockResolvedValueOnce(undefined);
 
-      const result = await groceryStorage.checkAll();
+      const result = await groceryStorage.checkAll(userId);
 
       expect(result.every((item) => item.checked)).toBe(true);
     });
@@ -182,9 +192,47 @@ describe('groceryStorage', () => {
       );
       (AsyncStorage.setItem as jest.Mock).mockResolvedValueOnce(undefined);
 
-      const result = await groceryStorage.uncheckAll();
+      const result = await groceryStorage.uncheckAll(userId);
 
       expect(result.every((item) => !item.checked)).toBe(true);
+    });
+  });
+
+  describe('account isolation', () => {
+    it('uses a different storage key for each user', async () => {
+      (AsyncStorage.getItem as jest.Mock)
+        .mockResolvedValueOnce('[]')
+        .mockResolvedValueOnce('[]');
+
+      await groceryStorage.loadItems('user-a');
+      await groceryStorage.loadItems('user-b');
+
+      expect(AsyncStorage.getItem).toHaveBeenNthCalledWith(
+        1,
+        'grocery_list:user-a'
+      );
+      expect(AsyncStorage.getItem).toHaveBeenNthCalledWith(
+        2,
+        'grocery_list:user-b'
+      );
+    });
+
+    it('clears only the specified user grocery list', async () => {
+      (AsyncStorage.removeItem as jest.Mock).mockResolvedValueOnce(undefined);
+
+      await groceryStorage.clearAll('user-a');
+
+      expect(AsyncStorage.removeItem).toHaveBeenCalledWith(
+        'grocery_list:user-a'
+      );
+    });
+
+    it('can remove the legacy unscoped grocery list', async () => {
+      (AsyncStorage.removeItem as jest.Mock).mockResolvedValueOnce(undefined);
+
+      await groceryStorage.clearLegacyItems();
+
+      expect(AsyncStorage.removeItem).toHaveBeenCalledWith('grocery_list');
     });
   });
 });

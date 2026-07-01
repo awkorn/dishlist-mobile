@@ -4,10 +4,18 @@ import type { GroceryItem } from '../types';
 
 const GROCERY_LIST_KEY = STORAGE_KEYS.GROCERY_LIST;
 
+const getUserGroceryListKey = (userId: string) => {
+  if (!userId) {
+    throw new Error('A user ID is required to access grocery items');
+  }
+
+  return `${GROCERY_LIST_KEY}:${userId}`;
+};
+
 export const groceryStorage = {
-  async loadItems(): Promise<GroceryItem[]> {
+  async loadItems(userId: string): Promise<GroceryItem[]> {
     try {
-      const data = await AsyncStorage.getItem(GROCERY_LIST_KEY);
+      const data = await AsyncStorage.getItem(getUserGroceryListKey(userId));
       return data ? JSON.parse(data) : [];
     } catch (error) {
       console.error('Failed to load grocery items:', error);
@@ -15,17 +23,20 @@ export const groceryStorage = {
     }
   },
 
-  async saveItems(items: GroceryItem[]): Promise<void> {
+  async saveItems(userId: string, items: GroceryItem[]): Promise<void> {
     try {
-      await AsyncStorage.setItem(GROCERY_LIST_KEY, JSON.stringify(items));
+      await AsyncStorage.setItem(
+        getUserGroceryListKey(userId),
+        JSON.stringify(items)
+      );
     } catch (error) {
       console.error('Failed to save grocery items:', error);
       throw error;
     }
   },
 
-  async addItems(texts: string[]): Promise<GroceryItem[]> {
-    const existing = await this.loadItems();
+  async addItems(userId: string, texts: string[]): Promise<GroceryItem[]> {
+    const existing = await this.loadItems(userId);
     const newItems: GroceryItem[] = texts
       .filter((text) => text.trim().length > 0)
       .map((text) => ({
@@ -36,57 +47,65 @@ export const groceryStorage = {
       }));
     
     const updated = [...newItems, ...existing];
-    await this.saveItems(updated);
+    await this.saveItems(userId, updated);
     return updated;
   },
 
-  async toggleCheck(id: string): Promise<GroceryItem[]> {
-    const items = await this.loadItems();
+  async toggleCheck(userId: string, id: string): Promise<GroceryItem[]> {
+    const items = await this.loadItems(userId);
     const updated = items.map((item) =>
       item.id === id ? { ...item, checked: !item.checked } : item
     );
-    await this.saveItems(updated);
+    await this.saveItems(userId, updated);
     return updated;
   },
 
-  async deleteItem(id: string): Promise<GroceryItem[]> {
-    const items = await this.loadItems();
+  async deleteItem(userId: string, id: string): Promise<GroceryItem[]> {
+    const items = await this.loadItems(userId);
     const updated = items.filter((item) => item.id !== id);
-    await this.saveItems(updated);
+    await this.saveItems(userId, updated);
     return updated;
   },
 
-  async updateItem(id: string, newText: string): Promise<GroceryItem[]> {
-    const items = await this.loadItems();
+  async updateItem(
+    userId: string,
+    id: string,
+    newText: string
+  ): Promise<GroceryItem[]> {
+    const items = await this.loadItems(userId);
     const updated = items.map((item) =>
       item.id === id ? { ...item, text: newText.trim() } : item
     );
-    await this.saveItems(updated);
+    await this.saveItems(userId, updated);
     return updated;
   },
 
-  async clearChecked(): Promise<GroceryItem[]> {
-    const items = await this.loadItems();
+  async clearChecked(userId: string): Promise<GroceryItem[]> {
+    const items = await this.loadItems(userId);
     const updated = items.filter((item) => !item.checked);
-    await this.saveItems(updated);
+    await this.saveItems(userId, updated);
     return updated;
   },
 
-  async checkAll(): Promise<GroceryItem[]> {
-    const items = await this.loadItems();
+  async checkAll(userId: string): Promise<GroceryItem[]> {
+    const items = await this.loadItems(userId);
     const updated = items.map((item) => ({ ...item, checked: true }));
-    await this.saveItems(updated);
+    await this.saveItems(userId, updated);
     return updated;
   },
 
-  async uncheckAll(): Promise<GroceryItem[]> {
-    const items = await this.loadItems();
+  async uncheckAll(userId: string): Promise<GroceryItem[]> {
+    const items = await this.loadItems(userId);
     const updated = items.map((item) => ({ ...item, checked: false }));
-    await this.saveItems(updated);
+    await this.saveItems(userId, updated);
     return updated;
   },
 
-  async clearAll(): Promise<void> {
-    await this.saveItems([]);
+  async clearAll(userId: string): Promise<void> {
+    await AsyncStorage.removeItem(getUserGroceryListKey(userId));
+  },
+
+  async clearLegacyItems(): Promise<void> {
+    await AsyncStorage.removeItem(GROCERY_LIST_KEY);
   },
 };

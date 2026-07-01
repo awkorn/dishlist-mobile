@@ -13,8 +13,11 @@ import {
 } from './useGroceryMutations';
 import { STALE_TIMES } from '@lib/constants';
 import { queryKeys } from '@lib/queryKeys';
+import { useAuth } from '@providers/AuthProvider/AuthContext';
 
 export function useGroceryList() {
+  const { user } = useAuth();
+  const userId = user?.id;
   const [isAddingItem, setIsAddingItem] = useState(false);
   const [editingText, setEditingText] = useState('');
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
@@ -25,8 +28,9 @@ export function useGroceryList() {
     isLoading,
     refetch,
   } = useQuery({
-    queryKey: queryKeys.grocery.list(),
-    queryFn: groceryStorage.loadItems,
+    queryKey: queryKeys.grocery.list(userId ?? ''),
+    queryFn: () => groceryStorage.loadItems(userId!),
+    enabled: !!userId,
     staleTime: STALE_TIMES.GROCERY,
     gcTime: 30 * 60 * 1000, // 30 minutes
   });

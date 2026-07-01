@@ -5,6 +5,14 @@ import { Alert } from "react-native";
 import { useGroceryList } from "../hooks/useGroceryList";
 import { groceryStorage } from "../services/groceryStorage";
 
+const mockUserId = "user-123";
+
+jest.mock("@providers/AuthProvider/AuthContext", () => ({
+  useAuth: () => ({
+    user: { id: mockUserId },
+  }),
+}));
+
 // Mock the groceryStorage service
 jest.mock("../services/groceryStorage", () => ({
   groceryStorage: {
@@ -166,7 +174,10 @@ describe("useGroceryList", () => {
       });
 
       await waitFor(() => {
-        expect(groceryStorage.toggleCheck).toHaveBeenCalledWith("1");
+        expect(groceryStorage.toggleCheck).toHaveBeenCalledWith(
+          mockUserId,
+          "1"
+        );
       });
     });
 
@@ -213,7 +224,10 @@ describe("useGroceryList", () => {
       });
 
       await waitFor(() => {
-        expect(groceryStorage.deleteItem).toHaveBeenCalledWith("1");
+        expect(groceryStorage.deleteItem).toHaveBeenCalledWith(
+          mockUserId,
+          "1"
+        );
       });
     });
 
@@ -336,7 +350,9 @@ describe("useGroceryList", () => {
       });
 
       await waitFor(() => {
-        expect(groceryStorage.addItems).toHaveBeenCalledWith(["Eggs"]);
+        expect(groceryStorage.addItems).toHaveBeenCalledWith(mockUserId, [
+          "Eggs",
+        ]);
       });
     });
 
@@ -410,7 +426,11 @@ describe("useGroceryList", () => {
       });
 
       await waitFor(() => {
-        expect(groceryStorage.updateItem).toHaveBeenCalledWith("1", "Updated Milk");
+        expect(groceryStorage.updateItem).toHaveBeenCalledWith(
+          mockUserId,
+          "1",
+          "Updated Milk"
+        );
       });
     });
 

@@ -36,6 +36,7 @@ import { SettingsSection, SettingsRow } from "../components";
 import { theme } from "@styles/theme";
 import { typography } from "@styles/typography";
 import Constants from "expo-constants";
+import { groceryStorage } from "@features/grocery/services";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Settings">;
 
@@ -95,6 +96,21 @@ export default function SettingsScreen({ navigation }: Props) {
             setIsDeleting(true);
             try {
               await api.delete("/users/me");
+              if (user?.id) {
+                try {
+                  await Promise.all([
+                    groceryStorage.clearAll(user.id),
+                    groceryStorage.clearLegacyItems(),
+                  ]);
+                } catch (storageError) {
+                  // The account-scoped key cannot be read by another user, but
+                  // still make a best-effort attempt to remove local remnants.
+                  console.error(
+                    "Failed to clear grocery data after account deletion:",
+                    storageError
+                  );
+                }
+              }
               const result = await signOut();
               if (result.error) {
                 // The account is already deleted server-side, so always clear
@@ -113,7 +129,7 @@ export default function SettingsScreen({ navigation }: Props) {
         },
       ]
     );
-  }, [isDeleting, signOut]);
+  }, [isDeleting, signOut, user?.id]);
 
   const handleOpenURL = useCallback((url: string) => {
     Linking.openURL(url);

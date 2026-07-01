@@ -24,7 +24,8 @@ export const queryKeys = {
   },
   grocery: {
     all: ["grocery"] as const,
-    list: () => [...queryKeys.grocery.all, "list"] as const,
+    list: (userId: string) =>
+      [...queryKeys.grocery.all, "list", userId] as const,
   },
   search: {
     all: ["search"] as const,
