@@ -92,6 +92,46 @@ describe("useGroceryList", () => {
 
       expect(result.current.items).toEqual([]);
     });
+
+    it("exposes a load error instead of treating it as an empty list", async () => {
+      (groceryStorage.loadItems as jest.Mock).mockRejectedValue(
+        new Error("Storage error")
+      );
+
+      const { result } = renderHook(() => useGroceryList(), {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => {
+        expect(result.current.isError).toBe(true);
+      });
+
+      expect(result.current.isLoading).toBe(false);
+      expect(result.current.items).toEqual([]);
+    });
+
+    it("can retry after a load error", async () => {
+      (groceryStorage.loadItems as jest.Mock)
+        .mockRejectedValueOnce(new Error("Storage error"))
+        .mockResolvedValueOnce(mockItems);
+
+      const { result } = renderHook(() => useGroceryList(), {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => {
+        expect(result.current.isError).toBe(true);
+      });
+
+      await act(async () => {
+        await result.current.refresh();
+      });
+
+      await waitFor(() => {
+        expect(result.current.isError).toBe(false);
+        expect(result.current.items).toEqual(mockItems);
+      });
+    });
   });
 
   describe("computed values", () => {

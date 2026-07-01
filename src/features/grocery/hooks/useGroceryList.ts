@@ -26,6 +26,8 @@ export function useGroceryList() {
   const {
     data: items = [],
     isLoading,
+    isError,
+    isFetching,
     refetch,
   } = useQuery({
     queryKey: queryKeys.grocery.list(userId ?? ''),
@@ -146,6 +148,8 @@ export function useGroceryList() {
     // Data
     items,
     isLoading,
+    isError,
+    isFetching,
     allChecked,
     checkedCount,
 

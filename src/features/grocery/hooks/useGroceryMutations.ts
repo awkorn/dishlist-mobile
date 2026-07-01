@@ -1,9 +1,27 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import {
+  type QueryClient,
+  useMutation,
+  useQueryClient,
+} from '@tanstack/react-query';
 import { Alert } from 'react-native';
 import { groceryStorage } from '../services/groceryStorage';
 import type { GroceryItem } from '../types';
 import { queryKeys } from '@lib/queryKeys';
 import { useAuth } from '@providers/AuthProvider/AuthContext';
+
+type GroceryQueryKey = ReturnType<typeof queryKeys.grocery.list>;
+
+const rollbackItems = (
+  queryClient: QueryClient,
+  queryKey: GroceryQueryKey,
+  previousItems: GroceryItem[] | undefined
+) => {
+  if (previousItems === undefined) {
+    queryClient.removeQueries({ queryKey, exact: true });
+  } else {
+    queryClient.setQueryData(queryKey, previousItems);
+  }
+};
 
 function useGroceryUser() {
   const { user } = useAuth();
@@ -59,8 +77,8 @@ export function useAddGroceryItems() {
 
     onError: (_error, _variables, context) => {
       // Rollback on error
-      if (context?.previousItems) {
-        queryClient.setQueryData(queryKey, context.previousItems);
+      if (context) {
+        rollbackItems(queryClient, queryKey, context.previousItems);
       }
       Alert.alert('Error', 'Failed to add items');
     },
@@ -100,8 +118,8 @@ export function useToggleGroceryItem() {
     },
 
     onError: (_error, _variables, context) => {
-      if (context?.previousItems) {
-        queryClient.setQueryData(queryKey, context.previousItems);
+      if (context) {
+        rollbackItems(queryClient, queryKey, context.previousItems);
       }
       Alert.alert('Error', 'Failed to update item');
     },
@@ -138,8 +156,8 @@ export function useDeleteGroceryItem() {
     },
 
     onError: (_error, _variables, context) => {
-      if (context?.previousItems) {
-        queryClient.setQueryData(queryKey, context.previousItems);
+      if (context) {
+        rollbackItems(queryClient, queryKey, context.previousItems);
       }
       Alert.alert('Error', 'Failed to delete item');
     },
@@ -178,8 +196,8 @@ export function useUpdateGroceryItem() {
     },
 
     onError: (_error, _variables, context) => {
-      if (context?.previousItems) {
-        queryClient.setQueryData(queryKey, context.previousItems);
+      if (context) {
+        rollbackItems(queryClient, queryKey, context.previousItems);
       }
       Alert.alert('Error', 'Failed to update item');
     },
@@ -215,8 +233,8 @@ export function useClearCheckedGroceryItems() {
     },
 
     onError: (_error, _variables, context) => {
-      if (context?.previousItems) {
-        queryClient.setQueryData(queryKey, context.previousItems);
+      if (context) {
+        rollbackItems(queryClient, queryKey, context.previousItems);
       }
       Alert.alert('Error', 'Failed to clear items');
     },
@@ -252,8 +270,8 @@ export function useCheckAllGroceryItems() {
     },
 
     onError: (_error, _variables, context) => {
-      if (context?.previousItems) {
-        queryClient.setQueryData(queryKey, context.previousItems);
+      if (context) {
+        rollbackItems(queryClient, queryKey, context.previousItems);
       }
       Alert.alert('Error', 'Failed to check all items');
     },
@@ -289,8 +307,8 @@ export function useUncheckAllGroceryItems() {
     },
 
     onError: (_error, _variables, context) => {
-      if (context?.previousItems) {
-        queryClient.setQueryData(queryKey, context.previousItems);
+      if (context) {
+        rollbackItems(queryClient, queryKey, context.previousItems);
       }
       Alert.alert('Error', 'Failed to uncheck all items');
     },

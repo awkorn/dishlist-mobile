@@ -5,6 +5,54 @@ import type { GroceryItem } from '../types';
 const GROCERY_LIST_KEY = STORAGE_KEYS.GROCERY_LIST;
 const mutationQueues = new Map<string, Promise<unknown>>();
 
+export class GroceryStorageReadError extends Error {
+  cause: unknown;
+
+  constructor(cause: unknown) {
+    super('Unable to read the saved grocery list');
+    this.name = 'GroceryStorageReadError';
+    this.cause = cause;
+  }
+}
+
+const isValidGroceryItem = (item: unknown): item is GroceryItem => {
+  if (typeof item !== 'object' || item === null) {
+    return false;
+  }
+
+  const value = item as Record<string, unknown>;
+
+  return (
+    typeof value.id === 'string' &&
+    value.id.length > 0 &&
+    typeof value.text === 'string' &&
+    value.text.trim().length > 0 &&
+    typeof value.checked === 'boolean' &&
+    typeof value.addedAt === 'number' &&
+    Number.isFinite(value.addedAt)
+  );
+};
+
+const parseStoredItems = (data: string): GroceryItem[] => {
+  const parsed: unknown = JSON.parse(data);
+
+  if (!Array.isArray(parsed)) {
+    throw new Error('Stored grocery data is not an array');
+  }
+
+  const ids = new Set<string>();
+
+  for (const item of parsed) {
+    if (!isValidGroceryItem(item) || ids.has(item.id)) {
+      throw new Error('Stored grocery data contains an invalid item');
+    }
+
+    ids.add(item.id);
+  }
+
+  return parsed as GroceryItem[];
+};
+
 const getUserGroceryListKey = (userId: string) => {
   if (!userId) {
     throw new Error('A user ID is required to access grocery items');
@@ -35,10 +83,10 @@ export const groceryStorage = {
   async loadItems(userId: string): Promise<GroceryItem[]> {
     try {
       const data = await AsyncStorage.getItem(getUserGroceryListKey(userId));
-      return data ? JSON.parse(data) : [];
+      return data === null ? [] : parseStoredItems(data);
     } catch (error) {
       console.error('Failed to load grocery items:', error);
-      return [];
+      throw new GroceryStorageReadError(error);
     }
   },
 

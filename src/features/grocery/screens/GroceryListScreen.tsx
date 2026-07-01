@@ -18,12 +18,15 @@ import {
   GroceryEmptyState,
   GroceryInputRow,
 } from "../components";
+import InlineError from "@components/ui/InlineError";
 
 export default function GroceryListScreen() {
   const insets = useSafeAreaInsets();
   const {
     items,
     isLoading,
+    isError,
+    isFetching,
     isAddingItem,
     editingText,
     editingItemId,
@@ -39,6 +42,7 @@ export default function GroceryListScreen() {
     saveEditedItem,
     handleClearChecked,
     handleToggleAll,
+    refresh,
   } = useGroceryList();
 
   const handleStartAdding = async () => {
@@ -77,6 +81,32 @@ export default function GroceryListScreen() {
     return (
       <View style={[styles.container, styles.loadingContainer]}>
         <ActivityIndicator size="large" color={theme.colors.primary[500]} />
+      </View>
+    );
+  }
+
+  if (isError) {
+    return (
+      <View style={styles.container}>
+        <LinearGradient
+          colors={["#FFFFFF", "#F4F2EE"]}
+          locations={[0, 1]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 0, y: 1 }}
+          style={{ paddingTop: insets.top }}
+        >
+          <View style={styles.header}>
+            <Text style={styles.title}>Grocery List</Text>
+          </View>
+        </LinearGradient>
+
+        <View style={styles.errorContainer}>
+          <InlineError
+            message="We couldn't load your grocery list. Your saved items have not been changed."
+            action={isFetching ? undefined : "Try Again"}
+            onActionPress={isFetching ? undefined : () => void refresh()}
+          />
+        </View>
       </View>
     );
   }
@@ -185,6 +215,10 @@ const styles = StyleSheet.create({
   loadingContainer: {
     justifyContent: "center",
     alignItems: "center",
+  },
+  errorContainer: {
+    paddingHorizontal: theme.spacing.xl,
+    paddingTop: theme.spacing.xl,
   },
   header: {
     paddingHorizontal: theme.spacing.xl,

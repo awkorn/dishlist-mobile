@@ -40,14 +40,39 @@ describe('groceryStorage', () => {
       expect(items).toEqual(mockItems);
     });
 
-    it('returns empty array on error', async () => {
+    it('rejects when storage cannot be read', async () => {
       (AsyncStorage.getItem as jest.Mock).mockRejectedValueOnce(
         new Error('Storage error')
       );
 
-      const items = await groceryStorage.loadItems(userId);
+      await expect(groceryStorage.loadItems(userId)).rejects.toMatchObject({
+        name: 'GroceryStorageReadError',
+        message: 'Unable to read the saved grocery list',
+      });
+    });
 
-      expect(items).toEqual([]);
+    it.each([
+      ['invalid JSON', '{not-json'],
+      ['a non-array value', JSON.stringify({ items: [] })],
+      [
+        'an invalid item',
+        JSON.stringify([
+          { id: '1', text: 'Milk', checked: 'no', addedAt: 123 },
+        ]),
+      ],
+      [
+        'duplicate item IDs',
+        JSON.stringify([
+          { id: '1', text: 'Milk', checked: false, addedAt: 123 },
+          { id: '1', text: 'Bread', checked: false, addedAt: 124 },
+        ]),
+      ],
+    ])('rejects %s', async (_description, storedValue) => {
+      (AsyncStorage.getItem as jest.Mock).mockResolvedValueOnce(storedValue);
+
+      await expect(groceryStorage.loadItems(userId)).rejects.toMatchObject({
+        name: 'GroceryStorageReadError',
+      });
     });
   });
 
@@ -92,6 +117,19 @@ describe('groceryStorage', () => {
       const result = await groceryStorage.addItems(userId, ['  Trimmed  ']);
 
       expect(result[0].text).toBe('Trimmed');
+    });
+
+    it('does not overwrite data when the existing list cannot be read', async () => {
+      (AsyncStorage.getItem as jest.Mock).mockRejectedValueOnce(
+        new Error('Storage error')
+      );
+
+      await expect(
+        groceryStorage.addItems(userId, ['New Item'])
+      ).rejects.toMatchObject({
+        name: 'GroceryStorageReadError',
+      });
+      expect(AsyncStorage.setItem).not.toHaveBeenCalled();
     });
   });
 
