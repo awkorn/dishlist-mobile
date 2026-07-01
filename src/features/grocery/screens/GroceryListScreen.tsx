@@ -3,7 +3,7 @@ import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
+  FlatList,
   TouchableOpacity,
   ActivityIndicator,
 } from "react-native";
@@ -163,34 +163,12 @@ export default function GroceryListScreen() {
         </View>
       </LinearGradient>
 
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={[
-          styles.scrollContent,
-          { paddingBottom: insets.bottom + 20 },
-        ]}
-        keyboardShouldPersistTaps="handled"
-        keyboardDismissMode="on-drag"
-      >
-        {items.length === 0 && !isAddingItem && <GroceryEmptyState />}
-
-        {isAddingItem && (
-          <>
-            <GroceryInputRow
-              value={editingText}
-              onChangeText={setEditingText}
-              onSubmit={handleDoneEditing}
-              onBlur={handleBlur}
-              isFirst={true}
-              isLast={items.length === 0}
-            />
-            {items.length > 0 && <View style={styles.divider} />}
-          </>
-        )}
-
-        {items.map((item, index) => (
+      <FlatList
+        testID="grocery-list"
+        data={items}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item, index }) => (
           <GroceryItemRow
-            key={item.id}
             item={item}
             isEditing={editingItemId === item.id}
             editingText={editingItemId === item.id ? editingText : ""}
@@ -204,8 +182,34 @@ export default function GroceryListScreen() {
             isFirst={index === 0 && !isAddingItem}
             isLast={index === items.length - 1}
           />
-        ))}
-      </ScrollView>
+        )}
+        ListHeaderComponent={
+          isAddingItem ? (
+            <>
+              <GroceryInputRow
+                value={editingText}
+                onChangeText={setEditingText}
+                onSubmit={handleDoneEditing}
+                onBlur={handleBlur}
+                isFirst={true}
+                isLast={items.length === 0}
+              />
+              {items.length > 0 && <View style={styles.divider} />}
+            </>
+          ) : null
+        }
+        ListEmptyComponent={isAddingItem ? null : <GroceryEmptyState />}
+        style={styles.list}
+        contentContainerStyle={[
+          styles.listContent,
+          { paddingBottom: insets.bottom + 20 },
+        ]}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
+        initialNumToRender={12}
+        maxToRenderPerBatch={10}
+        windowSize={7}
+      />
     </View>
   );
 }
@@ -253,10 +257,10 @@ const styles = StyleSheet.create({
     padding: theme.spacing.sm,
     marginLeft: "auto",
   },
-  scrollView: {
+  list: {
     flex: 1,
   },
-  scrollContent: {
+  listContent: {
     paddingHorizontal: theme.spacing.md,
   },
   divider: {

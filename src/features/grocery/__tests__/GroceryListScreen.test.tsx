@@ -1,4 +1,5 @@
 import React from "react";
+import { FlatList } from "react-native";
 import {
   fireEvent,
   render,
@@ -55,6 +56,28 @@ describe("GroceryListScreen", () => {
 
     fireEvent.press(getByText("Try Again"));
     expect(refresh).toHaveBeenCalledTimes(1);
+  });
+
+  it("renders grocery rows through a virtualized list", () => {
+    const items = [
+      { id: "1", text: "Milk", checked: false, addedAt: 123 },
+      { id: "2", text: "Bread", checked: true, addedAt: 124 },
+    ];
+
+    (useGroceryList as jest.Mock).mockReturnValue(
+      createHookValue({ items, checkedCount: 1 })
+    );
+
+    const { UNSAFE_getByType, getByText, queryByText } = render(
+      <GroceryListScreen />
+    );
+    const list = UNSAFE_getByType(FlatList);
+
+    expect(list.props.data).toEqual(items);
+    expect(list.props.initialNumToRender).toBe(12);
+    expect(getByText("Milk")).toBeTruthy();
+    expect(getByText("Bread")).toBeTruthy();
+    expect(queryByText("Your list is empty")).toBeNull();
   });
 
   it("keeps the add row open when saving fails", async () => {
