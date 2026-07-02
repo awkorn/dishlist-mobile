@@ -100,6 +100,7 @@ export interface FollowListUser {
 
 export interface FollowListResponse {
   users: FollowListUser[];
+  nextCursor: string | null;
 }
 
 export type ProfileTab = 'DishLists' | 'Recipes';

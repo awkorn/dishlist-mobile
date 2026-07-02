@@ -107,9 +107,16 @@ export const profileService = {
   /**
    * Get a user's followers list
    */
-  async getFollowers(userId: string): Promise<FollowListResponse> {
+  async getFollowers(
+    userId: string,
+    options: { cursor?: string; limit?: number } = {}
+  ): Promise<FollowListResponse> {
+    const params = new URLSearchParams();
+    if (options.cursor) params.set("cursor", options.cursor);
+    if (options.limit) params.set("limit", String(options.limit));
+    const query = params.toString();
     const response = await api.get<FollowListResponse>(
-      `/users/${userId}/followers`,
+      `/users/${userId}/followers${query ? `?${query}` : ""}`,
     );
     return response.data;
   },
@@ -117,9 +124,16 @@ export const profileService = {
   /**
    * Get a user's following list
    */
-  async getFollowing(userId: string): Promise<FollowListResponse> {
+  async getFollowing(
+    userId: string,
+    options: { cursor?: string; limit?: number } = {}
+  ): Promise<FollowListResponse> {
+    const params = new URLSearchParams();
+    if (options.cursor) params.set("cursor", options.cursor);
+    if (options.limit) params.set("limit", String(options.limit));
+    const query = params.toString();
     const response = await api.get<FollowListResponse>(
-      `/users/${userId}/following`,
+      `/users/${userId}/following${query ? `?${query}` : ""}`,
     );
     return response.data;
   },

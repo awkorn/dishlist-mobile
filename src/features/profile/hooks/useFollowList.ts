@@ -1,21 +1,36 @@
-import { useQuery } from '@tanstack/react-query';
-import { profileService } from '../services/profileService';
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { profileService } from "../services/profileService";
 
-const FOLLOWERS_QUERY_KEY = 'followers';
-const FOLLOWING_QUERY_KEY = 'following';
+const FOLLOWERS_QUERY_KEY = "followers";
+const FOLLOWING_QUERY_KEY = "following";
+const FOLLOW_LIST_PAGE_SIZE = 20;
 
-export function useFollowers(userId: string) {
-  return useQuery({
+export function useFollowers(userId: string, enabled = true) {
+  return useInfiniteQuery({
     queryKey: [FOLLOWERS_QUERY_KEY, userId],
-    queryFn: () => profileService.getFollowers(userId),
+    queryFn: ({ pageParam }) =>
+      profileService.getFollowers(userId, {
+        cursor: pageParam ?? undefined,
+        limit: FOLLOW_LIST_PAGE_SIZE,
+      }),
+    initialPageParam: null as string | null,
+    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+    enabled: !!userId && enabled,
     staleTime: 30 * 1000, // 30 seconds
   });
 }
 
-export function useFollowing(userId: string) {
-  return useQuery({
+export function useFollowing(userId: string, enabled = true) {
+  return useInfiniteQuery({
     queryKey: [FOLLOWING_QUERY_KEY, userId],
-    queryFn: () => profileService.getFollowing(userId),
+    queryFn: ({ pageParam }) =>
+      profileService.getFollowing(userId, {
+        cursor: pageParam ?? undefined,
+        limit: FOLLOW_LIST_PAGE_SIZE,
+      }),
+    initialPageParam: null as string | null,
+    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+    enabled: !!userId && enabled,
     staleTime: 30 * 1000,
   });
 }

@@ -41,12 +41,19 @@ describe("FollowersFollowingScreen", () => {
   };
 
   const createQueryResult = (overrides = {}) => ({
-    data: { users: [] },
+    data: {
+      pages: [{ users: [], nextCursor: null }],
+      pageParams: [null],
+    },
     isLoading: false,
     isError: false,
     error: null,
     isFetching: false,
     isRefetching: false,
+    isFetchingNextPage: false,
+    isFetchNextPageError: false,
+    hasNextPage: false,
+    fetchNextPage: jest.fn(),
     refetch: jest.fn(),
     ...overrides,
   });
@@ -104,5 +111,35 @@ describe("FollowersFollowingScreen", () => {
 
     fireEvent(followersList, "refresh");
     expect(refetchFollowers).toHaveBeenCalledTimes(1);
+  });
+
+  it("loads another follower page when the list reaches the end", () => {
+    const fetchNextPage = jest.fn();
+    (useFollowers as jest.Mock).mockReturnValue(
+      createQueryResult({
+        data: {
+          pages: [
+            {
+              users: [{ uid: "follower-1", username: "first" }],
+              nextCursor: "cursor-1",
+            },
+          ],
+          pageParams: [null],
+        },
+        hasNextPage: true,
+        fetchNextPage,
+      })
+    );
+
+    const { UNSAFE_getAllByType } = render(
+      <FollowersFollowingScreen
+        navigation={navigation as any}
+        route={route as any}
+      />
+    );
+    const [followersList] = UNSAFE_getAllByType(FlatList);
+
+    fireEvent(followersList, "endReached");
+    expect(fetchNextPage).toHaveBeenCalledTimes(1);
   });
 });

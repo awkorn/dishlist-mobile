@@ -138,4 +138,35 @@ describe('profileService', () => {
       expect(result).toEqual({ blockStatus: 'NONE' });
     });
   });
+
+  describe('follow lists', () => {
+    const page = {
+      users: [{ uid: 'user-2', username: 'chef' }],
+      nextCursor: 'follow-cursor',
+    };
+
+    it('requests a bounded followers page with a cursor', async () => {
+      (api.get as jest.Mock).mockResolvedValueOnce({ data: page });
+
+      const result = await profileService.getFollowers('user-123', {
+        cursor: 'previous-cursor',
+        limit: 20,
+      });
+
+      expect(api.get).toHaveBeenCalledWith(
+        '/users/user-123/followers?cursor=previous-cursor&limit=20'
+      );
+      expect(result).toEqual(page);
+    });
+
+    it('requests a bounded following page', async () => {
+      (api.get as jest.Mock).mockResolvedValueOnce({ data: page });
+
+      await profileService.getFollowing('user-123', { limit: 20 });
+
+      expect(api.get).toHaveBeenCalledWith(
+        '/users/user-123/following?limit=20'
+      );
+    });
+  });
 });

@@ -35,8 +35,12 @@ export default function FollowersFollowingScreen({ navigation, route }: Props) {
     error: followersErrorDetails,
     isFetching: followersFetching,
     isRefetching: followersRefreshing,
+    isFetchingNextPage: followersFetchingNextPage,
+    isFetchNextPageError: followersNextPageError,
+    hasNextPage: hasMoreFollowers,
+    fetchNextPage: fetchNextFollowers,
     refetch: refetchFollowers,
-  } = useFollowers(userId);
+  } = useFollowers(userId, activeTab === "followers");
   const {
     data: followingData,
     isLoading: followingLoading,
@@ -44,8 +48,17 @@ export default function FollowersFollowingScreen({ navigation, route }: Props) {
     error: followingErrorDetails,
     isFetching: followingFetching,
     isRefetching: followingRefreshing,
+    isFetchingNextPage: followingFetchingNextPage,
+    isFetchNextPageError: followingNextPageError,
+    hasNextPage: hasMoreFollowing,
+    fetchNextPage: fetchNextFollowing,
     refetch: refetchFollowing,
-  } = useFollowing(userId);
+  } = useFollowing(userId, activeTab === "following");
+
+  const followers =
+    followersData?.pages.flatMap((page) => page.users) ?? [];
+  const following =
+    followingData?.pages.flatMap((page) => page.users) ?? [];
 
   const handleBack = () => {
     navigation.goBack();
@@ -83,6 +96,43 @@ export default function FollowersFollowingScreen({ navigation, route }: Props) {
       <ActivityIndicator size="large" color={theme.colors.primary[500]} />
     </View>
   );
+
+  const renderPageFooter = (
+    hasPageError: boolean,
+    isLoadingMore: boolean,
+    onRetry: () => void
+  ) => {
+    if (isLoadingMore) {
+      return (
+        <View style={styles.footerContainer}>
+          <ActivityIndicator size="small" color={theme.colors.primary[500]} />
+        </View>
+      );
+    }
+
+    if (hasPageError) {
+      return (
+        <View style={styles.footerContainer}>
+          <Text style={styles.footerErrorText}>Unable to load more people.</Text>
+          <TouchableOpacity onPress={onRetry}>
+            <Text style={styles.footerRetryText}>Try Again</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+
+    return null;
+  };
+
+  const handleLoadMoreFollowers = () => {
+    if (!hasMoreFollowers || followersFetchingNextPage) return;
+    void fetchNextFollowers();
+  };
+
+  const handleLoadMoreFollowing = () => {
+    if (!hasMoreFollowing || followingFetchingNextPage) return;
+    void fetchNextFollowing();
+  };
 
   const renderErrorState = (
     type: Tab,
@@ -162,7 +212,7 @@ export default function FollowersFollowingScreen({ navigation, route }: Props) {
             renderLoadingState()
           ) : (
             <FlatList
-              data={followersData?.users || []}
+              data={followers}
               renderItem={renderFollowerItem}
               keyExtractor={(item) => item.uid}
               ListEmptyComponent={
@@ -176,9 +226,16 @@ export default function FollowersFollowingScreen({ navigation, route }: Props) {
                   : renderEmptyState("followers")
               }
               contentContainerStyle={styles.listContent}
+              ListFooterComponent={renderPageFooter(
+                followersNextPageError,
+                followersFetchingNextPage,
+                () => void fetchNextFollowers()
+              )}
               showsVerticalScrollIndicator={false}
               onRefresh={() => void refetchFollowers()}
               refreshing={followersRefreshing}
+              onEndReached={handleLoadMoreFollowers}
+              onEndReachedThreshold={0.4}
             />
           )}
         </View>
@@ -189,7 +246,7 @@ export default function FollowersFollowingScreen({ navigation, route }: Props) {
             renderLoadingState()
           ) : (
             <FlatList
-              data={followingData?.users || []}
+              data={following}
               renderItem={renderFollowingItem}
               keyExtractor={(item) => item.uid}
               ListEmptyComponent={
@@ -203,9 +260,16 @@ export default function FollowersFollowingScreen({ navigation, route }: Props) {
                   : renderEmptyState("following")
               }
               contentContainerStyle={styles.listContent}
+              ListFooterComponent={renderPageFooter(
+                followingNextPageError,
+                followingFetchingNextPage,
+                () => void fetchNextFollowing()
+              )}
               showsVerticalScrollIndicator={false}
               onRefresh={() => void refetchFollowing()}
               refreshing={followingRefreshing}
+              onEndReached={handleLoadMoreFollowing}
+              onEndReachedThreshold={0.4}
             />
           )}
         </View>
@@ -319,5 +383,18 @@ const styles = StyleSheet.create({
   retryButtonText: {
     ...typography.button,
     color: "white",
+  },
+  footerContainer: {
+    alignItems: "center",
+    paddingVertical: theme.spacing.lg,
+    gap: theme.spacing.xs,
+  },
+  footerErrorText: {
+    ...typography.body,
+    color: theme.colors.neutral[500],
+  },
+  footerRetryText: {
+    ...typography.button,
+    color: theme.colors.primary[600],
   },
 });
