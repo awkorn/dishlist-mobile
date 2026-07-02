@@ -238,13 +238,17 @@ export function useEditProfile({
       avatarValue = finalAvatarUrl || null;
     }
 
-    await updateMutation.mutateAsync({
-      firstName: trimmedFirstName,
-      username: trimmedUsername,
-      lastName: lastNameValue,
-      bio: bioValue,
-      avatarUrl: avatarValue,
-    });
+    try {
+      await updateMutation.mutateAsync({
+        firstName: trimmedFirstName,
+        username: trimmedUsername,
+        lastName: lastNameValue,
+        bio: bioValue,
+        avatarUrl: avatarValue,
+      });
+    } catch {
+      // The mutation's onError callback already presents the failure to the user.
+    }
   }, [formState, currentUser, updateMutation]);
 
   const isLoading = updateMutation.isPending || formState.isUploading;

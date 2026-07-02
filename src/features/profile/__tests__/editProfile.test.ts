@@ -267,7 +267,7 @@ describe('useEditProfile', () => {
     ).toBe('Fresh bio');
   });
 
-  it('shows alert on save error', async () => {
+  it('shows an alert without rejecting when a save fails', async () => {
     const error = { response: { data: { error: 'Username taken' } } };
     (profileService.updateProfile as jest.Mock).mockRejectedValueOnce(error);
 
@@ -277,11 +277,7 @@ describe('useEditProfile', () => {
     );
 
     await act(async () => {
-      try {
-        await result.current.handleSave();
-      } catch (e) {
-        // mutateAsync throws errors, which is expected
-      }
+      await expect(result.current.handleSave()).resolves.toBeUndefined();
     });
 
     await waitFor(() => {
