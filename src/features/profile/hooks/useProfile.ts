@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { profileService } from "../services/profileService";
 import { searchRecipes, searchDishLists } from "@utils/recipeSearch";
@@ -22,6 +22,7 @@ export function useProfile(userId: string) {
     isLoading: isRecipesLoading,
     isFetching: isRecipesFetching,
     isFetchingNextPage: isFetchingNextRecipes,
+    isFetchNextPageError: isFetchNextRecipesError,
     hasNextPage: hasMoreRecipes,
     isError: isRecipesError,
     error: recipesError,
@@ -39,6 +40,34 @@ export function useProfile(userId: string) {
     enabled: !!userId && activeTab === "Recipes",
     staleTime: 3 * 60 * 1000,
   });
+
+  const recipeSearchQuery = searchQuery.trim();
+  const loadedRecipePageCount = recipePages?.pages.length ?? 0;
+
+  // Recipe filtering happens locally so it can match tags and ingredients.
+  // Load every remaining page while searching to avoid treating an unloaded
+  // older recipe as absent.
+  useEffect(() => {
+    if (
+      activeTab !== "Recipes" ||
+      !recipeSearchQuery ||
+      !hasMoreRecipes ||
+      isFetchingNextRecipes ||
+      isFetchNextRecipesError
+    ) {
+      return;
+    }
+
+    void fetchNextRecipes();
+  }, [
+    activeTab,
+    recipeSearchQuery,
+    loadedRecipePageCount,
+    hasMoreRecipes,
+    isFetchingNextRecipes,
+    isFetchNextRecipesError,
+    fetchNextRecipes,
+  ]);
 
   const user = data?.user
     ? {
@@ -60,9 +89,9 @@ export function useProfile(userId: string) {
 
   // Filter recipes based on search query
   const filteredRecipes = useMemo(() => {
-    if (!searchQuery.trim()) return recipes;
-    return searchRecipes(recipes, searchQuery);
-  }, [recipes, searchQuery]);
+    if (!recipeSearchQuery) return recipes;
+    return searchRecipes(recipes, recipeSearchQuery);
+  }, [recipes, recipeSearchQuery]);
 
   const displayName = useMemo(() => {
     if (!user) return "";

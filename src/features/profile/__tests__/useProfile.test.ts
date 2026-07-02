@@ -181,6 +181,70 @@ describe('useProfile', () => {
     expect(result.current.recipes).toEqual([]);
   });
 
+  it('loads all remaining recipe pages before finalizing search results', async () => {
+    (profileService.getUserRecipes as jest.Mock).mockImplementation(
+      (_userId: string, { offset }: { offset: number }) => {
+        if (offset === 0) {
+          return Promise.resolve({
+            recipes: [{ id: 'r-new', title: 'Weeknight Pasta' }],
+            recipesMeta: { hasMore: true, limit: 24, offset: 0 },
+          });
+        }
+
+        if (offset === 24) {
+          return Promise.resolve({
+            recipes: [{ id: 'r-middle', title: 'Quick Lunch' }],
+            recipesMeta: { hasMore: true, limit: 24, offset: 24 },
+          });
+        }
+
+        return Promise.resolve({
+          recipes: [
+            {
+              id: 'r-old',
+              title: 'Sunday Dinner',
+              tags: ['holiday'],
+            },
+          ],
+          recipesMeta: { hasMore: false, limit: 24, offset: 48 },
+        });
+      }
+    );
+
+    const { result } = renderHook(() => useProfile('user-123'), {
+      wrapper: createWrapper(),
+    });
+
+    act(() => {
+      result.current.setActiveTab('Recipes');
+    });
+
+    await waitFor(() => {
+      expect(result.current.recipes).toEqual([
+        { id: 'r-new', title: 'Weeknight Pasta' },
+      ]);
+    });
+
+    act(() => {
+      result.current.setSearchQuery('holiday');
+    });
+
+    await waitFor(() => {
+      expect(profileService.getUserRecipes).toHaveBeenCalledWith('user-123', {
+        limit: 24,
+        offset: 48,
+      });
+      expect(result.current.recipes).toEqual([
+        {
+          id: 'r-old',
+          title: 'Sunday Dinner',
+          tags: ['holiday'],
+        },
+      ]);
+      expect(result.current.hasMoreRecipes).toBe(false);
+    });
+  });
+
   it('does not fetch when userId is empty', async () => {
     const { result } = renderHook(() => useProfile(''), {
       wrapper: createWrapper(),

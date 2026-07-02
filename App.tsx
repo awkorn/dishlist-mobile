@@ -36,7 +36,9 @@ const queryClient = new QueryClient({
       networkMode: "offlineFirst", // Use cache first, then network
     },
     mutations: {
-      retry: 1,
+      // Writes are not universally idempotent (for example, sending a follow
+      // request), so retries must be explicitly enabled by safe mutations.
+      retry: false,
       retryDelay: 1000,
       networkMode: "online",
     },
