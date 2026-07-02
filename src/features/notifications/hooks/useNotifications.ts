@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Alert } from "react-native";
 import { queryKeys } from "@lib/queryKeys";
@@ -109,6 +109,16 @@ export function useNotifications() {
     [notifications]
   );
 
+  // Keep the tab badge in sync with the freshly loaded list instead of
+  // refetching /unread-count after every list load or mutation.
+  useEffect(() => {
+    if (isLoading || isError) return;
+    queryClient.setQueryData<number>(
+      queryKeys.notifications.unread(),
+      unreadCount
+    );
+  }, [queryClient, unreadCount, isLoading, isError]);
+
   // Mark single as read mutation
   const markAsReadMutation = useMutation({
     mutationFn: notificationService.markAsRead,
@@ -151,11 +161,10 @@ export function useNotifications() {
     },
     onSettled: () => {
       // Refetch to ensure consistency
+      // The unread badge is synced from the refetched list (see the effect
+      // in useNotifications), so only the list needs invalidating here.
       queryClient.invalidateQueries({
         queryKey: queryKeys.notifications.all,
-      });
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.notifications.unread(),
       });
     },
   });
@@ -191,11 +200,10 @@ export function useNotifications() {
       }
     },
     onSettled: () => {
+      // The unread badge is synced from the refetched list (see the effect
+      // in useNotifications), so only the list needs invalidating here.
       queryClient.invalidateQueries({
         queryKey: queryKeys.notifications.all,
-      });
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.notifications.unread(),
       });
     },
   });
@@ -242,11 +250,10 @@ export function useNotifications() {
       }
     },
     onSettled: () => {
+      // The unread badge is synced from the refetched list (see the effect
+      // in useNotifications), so only the list needs invalidating here.
       queryClient.invalidateQueries({
         queryKey: queryKeys.notifications.all,
-      });
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.notifications.unread(),
       });
     },
   });
@@ -280,11 +287,10 @@ export function useNotifications() {
       Alert.alert("Error", "Failed to clear notifications. Please try again.");
     },
     onSettled: () => {
+      // The unread badge is synced from the refetched list (see the effect
+      // in useNotifications), so only the list needs invalidating here.
       queryClient.invalidateQueries({
         queryKey: queryKeys.notifications.all,
-      });
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.notifications.unread(),
       });
     },
   });
@@ -311,11 +317,10 @@ export function useNotifications() {
       );
     },
     onSettled: () => {
+      // The unread badge is synced from the refetched list (see the effect
+      // in useNotifications), so only the list needs invalidating here.
       queryClient.invalidateQueries({
         queryKey: queryKeys.notifications.all,
-      });
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.notifications.unread(),
       });
     },
   });
@@ -350,11 +355,10 @@ export function useNotifications() {
       Alert.alert("Error", "Failed to decline invitation.");
     },
     onSettled: () => {
+      // The unread badge is synced from the refetched list (see the effect
+      // in useNotifications), so only the list needs invalidating here.
       queryClient.invalidateQueries({
         queryKey: queryKeys.notifications.all,
-      });
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.notifications.unread(),
       });
     },
   });
@@ -436,11 +440,10 @@ export function useNotifications() {
       }
     },
     onSettled: () => {
+      // The unread badge is synced from the refetched list (see the effect
+      // in useNotifications), so only the list needs invalidating here.
       queryClient.invalidateQueries({
         queryKey: queryKeys.notifications.all,
-      });
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.notifications.unread(),
       });
     },
   });
@@ -474,11 +477,10 @@ export function useNotifications() {
       }
     },
     onSettled: () => {
+      // The unread badge is synced from the refetched list (see the effect
+      // in useNotifications), so only the list needs invalidating here.
       queryClient.invalidateQueries({
         queryKey: queryKeys.notifications.all,
-      });
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.notifications.unread(),
       });
     },
   });

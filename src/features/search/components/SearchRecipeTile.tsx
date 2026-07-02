@@ -4,9 +4,9 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  Image,
   Dimensions,
 } from "react-native";
+import { Image } from "expo-image";
 import { Clock, Users } from "lucide-react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -42,7 +42,12 @@ export function SearchRecipeTile({ recipe, onPress }: SearchRecipeTileProps) {
   return (
     <TouchableOpacity style={styles.container} onPress={handlePress}>
       {coverImageUrl ? (
-        <Image source={{ uri: coverImageUrl }} style={styles.image} />
+        <Image
+          source={{ uri: coverImageUrl }}
+          style={styles.image}
+          cachePolicy="memory-disk"
+          recyclingKey={recipe.id}
+        />
       ) : (
         <View style={[styles.image, styles.placeholderImage]}>
           <Text style={styles.placeholderEmoji}>🍽️</Text>

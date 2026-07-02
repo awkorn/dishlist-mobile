@@ -17,6 +17,8 @@ export function useProfile(userId: string) {
     enabled: !!userId,
   });
 
+  const recipeSearchQuery = searchQuery.trim();
+
   const {
     data: recipePages,
     isLoading: isRecipesLoading,
@@ -31,7 +33,15 @@ export function useProfile(userId: string) {
   } = useInfiniteQuery({
     queryKey: [PROFILE_QUERY_KEY, userId, "recipes"],
     queryFn: ({ pageParam }) =>
-      profileService.getUserRecipes(userId, { limit: 24, offset: pageParam as number }),
+      profileService.getUserRecipes(userId, {
+        // While searching, the effect below pages through the whole
+        // collection for local matching — use the server's max page size
+        // so that takes 1-2 requests instead of one 24-item hop at a time.
+        // Offsets stay consistent because getNextPageParam derives them
+        // from the server-returned meta of each page.
+        limit: recipeSearchQuery ? 100 : 24,
+        offset: pageParam as number,
+      }),
     initialPageParam: 0,
     getNextPageParam: (lastPage) => {
       if (!lastPage.recipesMeta?.hasMore) return undefined;
@@ -41,7 +51,6 @@ export function useProfile(userId: string) {
     staleTime: 3 * 60 * 1000,
   });
 
-  const recipeSearchQuery = searchQuery.trim();
   const loadedRecipePageCount = recipePages?.pages.length ?? 0;
 
   // Recipe filtering happens locally so it can match tags and ingredients.

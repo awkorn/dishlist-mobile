@@ -230,8 +230,10 @@ describe('useProfile', () => {
     });
 
     await waitFor(() => {
+      // While a search is active, remaining pages load at the server max
+      // page size so the catch-up takes as few requests as possible.
       expect(profileService.getUserRecipes).toHaveBeenCalledWith('user-123', {
-        limit: 24,
+        limit: 100,
         offset: 48,
       });
       expect(result.current.recipes).toEqual([

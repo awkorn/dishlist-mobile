@@ -4,9 +4,9 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  Image,
   Animated,
 } from "react-native";
+import { Image } from "expo-image";
 import {
   MoveLeft,
   Search,
@@ -122,7 +122,11 @@ export function ProfileHeader({
       <View style={styles.profileSection}>
         <View style={styles.avatarContainer}>
           {user.avatarUrl ? (
-            <Image source={{ uri: user.avatarUrl }} style={styles.avatar} />
+            <Image
+              source={{ uri: user.avatarUrl }}
+              style={styles.avatar}
+              cachePolicy="memory-disk"
+            />
           ) : (
             <View style={styles.avatarPlaceholder}>
               <UserIcon size={40} color={theme.colors.neutral[400]} />

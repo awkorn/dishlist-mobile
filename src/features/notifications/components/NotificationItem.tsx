@@ -5,8 +5,8 @@ import {
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
-  Image,
 } from "react-native";
+import { Image } from "expo-image";
 import { Swipeable } from "react-native-gesture-handler";
 import { Trash2, ChevronRight, User } from "lucide-react-native";
 import { theme } from "@styles/theme";
@@ -226,7 +226,12 @@ export function NotificationItem({
           {showAvatar && (
             <View style={styles.avatarContainer}>
               {avatarUrl ? (
-                <Image source={{ uri: avatarUrl }} style={styles.avatar} />
+                <Image
+                  source={{ uri: avatarUrl }}
+                  style={styles.avatar}
+                  cachePolicy="memory-disk"
+                  recyclingKey={notification.id}
+                />
               ) : (
                 <View style={styles.avatarPlaceholder}>
                   <User size={20} color={theme.colors.neutral[400]} />

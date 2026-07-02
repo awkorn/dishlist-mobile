@@ -6,11 +6,11 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
-  Image,
   Platform,
   Animated,
   Dimensions,
 } from "react-native";
+import { Image } from "expo-image";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
   ChevronLeft,
@@ -380,6 +380,7 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
                     <Image
                       source={{ uri: imageUrl }}
                       style={styles.galleryImage}
+                      cachePolicy="memory-disk"
                     />
                   </View>
                 ))}

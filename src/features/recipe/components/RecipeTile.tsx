@@ -4,9 +4,9 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  Image,
   Dimensions,
 } from "react-native";
+import { Image } from "expo-image";
 import { Clock, Users } from "lucide-react-native";
 import { typography } from "@styles/typography";
 import { theme } from "@styles/theme";
@@ -37,7 +37,12 @@ function RecipeTileContent({ recipe, onPress }: RecipeTileProps) {
   return (
     <TouchableOpacity style={styles.container} onPress={onPress}>
       {coverImageUrl ? (
-        <Image source={{ uri: coverImageUrl }} style={styles.image} />
+        <Image
+          source={{ uri: coverImageUrl }}
+          style={styles.image}
+          cachePolicy="memory-disk"
+          recyclingKey={recipe.id}
+        />
       ) : (
         <View style={styles.placeholderImage}>
           <Text style={styles.placeholderEmoji}>🍽️</Text>

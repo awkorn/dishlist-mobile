@@ -1,5 +1,10 @@
 import React from "react";
-import { View, StyleSheet, Animated } from "react-native";
+import {
+  FlatList,
+  RefreshControlProps,
+  StyleSheet,
+  View,
+} from "react-native";
 import { theme } from "@styles/theme";
 import { DishListTile } from "./DishListTile";
 import type { DishList } from "../types";
@@ -7,31 +12,43 @@ import type { DishList } from "../types";
 interface DishListGridProps {
   dishLists: DishList[];
   isFetching?: boolean;
+  refreshControl?: React.ReactElement<RefreshControlProps>;
+  ListFooterComponent?: React.ComponentProps<
+    typeof FlatList
+  >["ListFooterComponent"];
 }
 
 export function DishListGrid({
   dishLists,
   isFetching = false,
+  refreshControl,
+  ListFooterComponent,
 }: DishListGridProps) {
   return (
-    <View style={styles.grid}>
-      {dishLists.map((dishList) => (
-        <Animated.View
-          key={dishList.id}
-          style={{ opacity: isFetching ? 0.7 : 1 }}
-        >
-          <DishListTile dishList={dishList} />
-        </Animated.View>
-      ))}
-    </View>
+    <FlatList
+      data={dishLists}
+      keyExtractor={(item) => item.id}
+      numColumns={2}
+      renderItem={({ item }) => (
+        <View style={{ opacity: isFetching ? 0.7 : 1 }}>
+          <DishListTile dishList={item} />
+        </View>
+      )}
+      columnWrapperStyle={styles.row}
+      contentContainerStyle={styles.content}
+      showsVerticalScrollIndicator={false}
+      refreshControl={refreshControl}
+      ListFooterComponent={ListFooterComponent}
+    />
   );
 }
 
 const styles = StyleSheet.create({
-  grid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
+  row: {
     justifyContent: "space-between",
+  },
+  content: {
     paddingHorizontal: theme.spacing.xl,
+    paddingBottom: 100,
   },
 });

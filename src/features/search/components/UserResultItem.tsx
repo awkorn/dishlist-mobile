@@ -4,8 +4,8 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  Image,
 } from "react-native";
+import { Image } from "expo-image";
 import { User } from "lucide-react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -38,7 +38,12 @@ export function UserResultItem({ user, onPress }: UserResultItemProps) {
     <TouchableOpacity style={styles.container} onPress={handlePress}>
       {/* Avatar */}
       {user.avatarUrl ? (
-        <Image source={{ uri: user.avatarUrl }} style={styles.avatar} />
+        <Image
+          source={{ uri: user.avatarUrl }}
+          style={styles.avatar}
+          cachePolicy="memory-disk"
+          recyclingKey={user.uid}
+        />
       ) : (
         <View style={styles.avatarPlaceholder}>
           <User size={20} color={theme.colors.neutral[400]} />

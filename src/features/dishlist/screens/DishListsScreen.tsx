@@ -4,12 +4,11 @@ import {
   Text,
   StyleSheet,
   TextInput,
-  ScrollView,
   TouchableOpacity,
   RefreshControl,
   ActivityIndicator,
-  Image,
 } from "react-native";
+import { Image } from "expo-image";
 import { SafeAreaView } from "react-native-safe-area-context";
 import PagerView from "react-native-pager-view";
 import { Search, Plus, WifiOff, User } from "lucide-react-native";
@@ -72,11 +71,12 @@ export default function DishListsScreen() {
     return () => unsubscribe();
   }, [isOnline, refetch]);
 
-  // User profile for avatar
+  // Fallback for the header avatar — AuthContext already loads the profile
+  // on sign-in, so only fetch here if that failed and we have nothing.
   const { data: currentUserProfile } = useQuery({
     queryKey: queryKeys.users.me(),
     queryFn: profileService.getCurrentUserProfile,
-    enabled: !!user?.id,
+    enabled: !!user?.id && !userProfile,
     staleTime: 10 * 60 * 1000,
   });
 
@@ -146,8 +146,9 @@ export default function DishListsScreen() {
     }
 
     return (
-      <ScrollView
-        showsVerticalScrollIndicator={false}
+      <DishListGrid
+        dishLists={dishLists}
+        isFetching={isFetching}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -162,19 +163,17 @@ export default function DishListsScreen() {
             titleColor="#666"
           />
         }
-        contentContainerStyle={styles.scrollContent}
-      >
-        <DishListGrid dishLists={dishLists} isFetching={isFetching} />
-
-        {!isOnline && dishLists.length > 0 && (
-          <View style={styles.offlineMessage}>
-            <WifiOff size={16} color="#666" />
-            <Text style={styles.offlineText}>
-              Showing cached data • Last updated {getDataFreshness()}
-            </Text>
-          </View>
-        )}
-      </ScrollView>
+        ListFooterComponent={
+          !isOnline && dishLists.length > 0 ? (
+            <View style={styles.offlineMessage}>
+              <WifiOff size={16} color="#666" />
+              <Text style={styles.offlineText}>
+                Showing cached data • Last updated {getDataFreshness()}
+              </Text>
+            </View>
+          ) : null
+        }
+      />
     );
   };
 
@@ -207,6 +206,7 @@ export default function DishListsScreen() {
               <Image
                 source={{ uri: headerAvatarUrl }}
                 style={styles.profileAvatar}
+                cachePolicy="memory-disk"
               />
             ) : (
               <User size={24} color={theme.colors.neutral[600]} />
@@ -341,7 +341,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: theme.spacing.xl,
   },
-  scrollContent: { paddingBottom: 100 },
   offlineMessage: {
     flexDirection: "row",
     alignItems: "center",

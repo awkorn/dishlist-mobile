@@ -24,5 +24,14 @@ module.exports = function (api) {
         "react-native-reanimated/plugin",
       ],
     ],
+    env: {
+      production: {
+        // Console calls cost time/memory on device; keep errors and warnings
+        // so crash reporting and yellow-box signals survive in release builds.
+        plugins: [
+          ["transform-remove-console", { exclude: ["error", "warn"] }],
+        ],
+      },
+    },
   };
 };

@@ -1,12 +1,12 @@
 import { StatusBar } from "expo-status-bar";
 import { NavigationContainer } from "@react-navigation/native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider, onlineManager } from "@tanstack/react-query";
 import { AuthProvider } from "./src/providers/AuthProvider/AuthContext";
 import MainNavigator from "./src/navigation/MainNavigator";
 import { useCustomFonts } from "./src/hooks/useFonts";
-import { View, ActivityIndicator } from "react-native";
 import { useEffect } from "react";
+import * as SplashScreen from "expo-splash-screen";
 import NetInfo from "@react-native-community/netinfo";
 import { GlobalErrorBoundary } from "./src/providers/ErrorBoundary";
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -45,28 +45,31 @@ const queryClient = new QueryClient({
   },
 });
 
-// Global network monitoring
-const setupNetworkMonitoring = () => {
-  NetInfo.addEventListener((state) => {
-    if (state.isConnected) {
-      queryClient.invalidateQueries();
-    }
+// Feed connectivity changes to React Query so refetchOnReconnect works.
+// Queries themselves stay fresh until staleTime expires — a network event
+// must not invalidate the whole cache.
+onlineManager.setEventListener((setOnline) => {
+  const unsubscribe = NetInfo.addEventListener((state) => {
+    setOnline(state.isConnected ?? true);
   });
-};
+  return unsubscribe;
+});
+
+// Keep the native splash visible until fonts are ready, instead of
+// flashing a blank screen with a spinner.
+void SplashScreen.preventAutoHideAsync();
 
 export default function App() {
   const fontsLoaded = useCustomFonts();
 
   useEffect(() => {
-    setupNetworkMonitoring();
-  }, []);
+    if (fontsLoaded) {
+      void SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded]);
 
   if (!fontsLoaded) {
-    return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator size="large" color="#2563eb" />
-      </View>
-    );
+    return null;
   }
 
   return (

@@ -4,9 +4,9 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  Image,
   ActivityIndicator,
 } from "react-native";
+import { Image } from "expo-image";
 import { User } from "lucide-react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -72,7 +72,12 @@ export function FollowListUserItem({ user, showFollowButton = false }: FollowLis
     <TouchableOpacity style={styles.container} onPress={handlePress} activeOpacity={0.7}>
       {/* Avatar */}
       {user.avatarUrl ? (
-        <Image source={{ uri: user.avatarUrl }} style={styles.avatar} />
+        <Image
+          source={{ uri: user.avatarUrl }}
+          style={styles.avatar}
+          cachePolicy="memory-disk"
+          recyclingKey={user.uid}
+        />
       ) : (
         <View style={styles.avatarPlaceholder}>
           <User size={20} color={theme.colors.neutral[400]} />
