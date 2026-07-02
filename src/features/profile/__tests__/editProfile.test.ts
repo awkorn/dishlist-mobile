@@ -9,6 +9,14 @@ import { uploadImage } from '@services/image';
 import { PROFILE_QUERY_KEY } from '../hooks/useProfile';
 import type { ProfileData } from '../types';
 
+const mockSyncUserProfile = jest.fn();
+
+jest.mock('@providers/AuthProvider/AuthContext', () => ({
+  useAuth: () => ({
+    syncUserProfile: mockSyncUserProfile,
+  }),
+}));
+
 jest.mock('../services/profileService', () => ({
   profileService: {
     updateProfile: jest.fn(),
@@ -180,6 +188,7 @@ describe('useEditProfile', () => {
   it('uploads image and saves with Supabase URL when avatar is a local file', async () => {
     const localImageUri = 'file:///local/image.jpg';
     const uploadedUrl = 'https://example.supabase.co/storage/v1/object/public/avatars/new-avatar.jpg';
+    const updatedUser = { ...mockCurrentUser, avatarUrl: uploadedUrl };
 
     (ImagePicker.requestMediaLibraryPermissionsAsync as jest.Mock).mockResolvedValueOnce({ granted: true });
     (ImagePicker.launchImageLibraryAsync as jest.Mock).mockResolvedValueOnce({
@@ -187,7 +196,7 @@ describe('useEditProfile', () => {
       assets: [{ uri: localImageUri }],
     });
     (uploadImage as jest.Mock).mockResolvedValueOnce(uploadedUrl);
-    (profileService.updateProfile as jest.Mock).mockResolvedValueOnce({ user: mockCurrentUser });
+    (profileService.updateProfile as jest.Mock).mockResolvedValueOnce({ user: updatedUser });
 
     const { result } = renderHook(
       () => useEditProfile({ currentUser: mockCurrentUser, onSuccess: mockOnSuccess }),
@@ -218,6 +227,38 @@ describe('useEditProfile', () => {
       expect.objectContaining({ avatarUrl: uploadedUrl }),
       expect.anything()
     );
+    expect(mockSyncUserProfile).toHaveBeenCalledWith(updatedUser);
+  });
+
+  it('syncs a removed avatar to the authenticated profile', async () => {
+    const updatedUser = { ...mockCurrentUser, avatarUrl: null };
+    (profileService.updateProfile as jest.Mock).mockResolvedValueOnce({ user: updatedUser });
+
+    const { result } = renderHook(
+      () => useEditProfile({ currentUser: mockCurrentUser, onSuccess: mockOnSuccess }),
+      { wrapper: createWrapper() }
+    );
+
+    act(() => {
+      result.current.showImageOptions();
+    });
+
+    const alertButtons = (Alert.alert as jest.Mock).mock.calls[0][2];
+    const removePhoto = alertButtons.find((button: any) => button.text === 'Remove Photo');
+
+    act(() => {
+      removePhoto.onPress();
+    });
+
+    await act(async () => {
+      await result.current.handleSave();
+    });
+
+    expect(profileService.updateProfile).toHaveBeenCalledWith(
+      expect.objectContaining({ avatarUrl: null }),
+      expect.anything()
+    );
+    expect(mockSyncUserProfile).toHaveBeenCalledWith(updatedUser);
   });
 
   it('calls onSuccess after successful save', async () => {

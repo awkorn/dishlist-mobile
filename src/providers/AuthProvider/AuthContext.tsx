@@ -22,10 +22,12 @@ import type { SignUpResult } from "@features/auth/types";
 import api from "@services/api";
 import { queryKeys } from "@lib/queryKeys";
 import { unregisterCurrentDevicePushToken } from "@features/notifications/services/pushService";
+import type { UserProfile } from "@features/profile/types";
 
 interface AuthContextType {
   user: SupabaseUser | null;
   userProfile: User | null;
+  syncUserProfile: (profile: UserProfile) => void;
   loading: boolean;
   signIn: (
     email: string,
@@ -67,6 +69,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
   const [authFlowError, setAuthFlowError] = useState<string | null>(null);
   const authOperationRef = useRef<"signup" | "callback" | null>(null);
+  const authenticatedUserIdRef = useRef<string | null>(null);
+  authenticatedUserIdRef.current = user?.id ?? null;
 
   const registerUserProfile = useCallback(
     async (authUser: SupabaseUser, userData?: Partial<User>) => {
@@ -378,11 +382,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     setIsPasswordRecovery(false);
   };
 
+  const syncUserProfile = useCallback((profile: UserProfile) => {
+    if (authenticatedUserIdRef.current !== profile.uid) {
+      return;
+    }
+
+    setUserProfile((currentProfile) => {
+      if (currentProfile && currentProfile.uid !== profile.uid) {
+        return currentProfile;
+      }
+
+      const email = profile.email ?? currentProfile?.email;
+      if (!email) {
+        return currentProfile;
+      }
+
+      return {
+        uid: profile.uid,
+        email,
+        username: profile.username,
+        firstName: profile.firstName,
+        lastName: profile.lastName,
+        bio: profile.bio,
+        avatarUrl: profile.avatarUrl ?? undefined,
+      };
+    });
+  }, []);
+
   return (
     <AuthContext.Provider
       value={{
         user,
         userProfile,
+        syncUserProfile,
         loading,
         signIn,
         signUp,

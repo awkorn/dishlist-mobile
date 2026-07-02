@@ -113,6 +113,11 @@ export default function DishListsScreen() {
     return `${Math.floor(seconds / 3600)}h ago`;
   }, [dataUpdatedAt]);
 
+  const headerAvatarUrl =
+    userProfile?.avatarUrl ??
+    currentUserProfile?.user?.avatarUrl ??
+    undefined;
+
   const renderContent = () => {
     if (isLoading) {
       return (
@@ -198,11 +203,9 @@ export default function DishListsScreen() {
             style={styles.profileButton}
             onPress={handleProfilePress}
           >
-            {(userProfile?.avatarUrl || currentUserProfile?.user?.avatarUrl) ? (
+            {headerAvatarUrl ? (
               <Image
-                source={{
-                  uri: userProfile?.avatarUrl || currentUserProfile?.user?.avatarUrl,
-                }}
+                source={{ uri: headerAvatarUrl }}
                 style={styles.profileAvatar}
               />
             ) : (

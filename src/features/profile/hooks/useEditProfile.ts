@@ -4,6 +4,7 @@ import * as ImagePicker from "expo-image-picker";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { uploadImage } from "@services/image";
 import { queryKeys } from "@lib/queryKeys";
+import { useAuth } from "@providers/AuthProvider/AuthContext";
 import { profileService } from "../services/profileService";
 import { PROFILE_QUERY_KEY } from "./useProfile";
 import type { UserProfile, EditProfileState, ProfileData } from "../types";
@@ -28,6 +29,7 @@ export function useEditProfile({
   onSuccess,
 }: UseEditProfileOptions) {
   const queryClient = useQueryClient();
+  const { syncUserProfile } = useAuth();
   const [formState, setFormState] = useState<EditProfileState>(
     initialState(currentUser)
   );
@@ -54,6 +56,7 @@ export function useEditProfile({
             : previousData
       );
       queryClient.setQueryData(queryKeys.users.me(), { user });
+      syncUserProfile(user);
       queryClient.invalidateQueries({
         queryKey: [PROFILE_QUERY_KEY, user.uid],
       });
