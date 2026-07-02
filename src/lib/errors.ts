@@ -20,6 +20,10 @@ const authErrorMap: Record<string, ErrorMapping> = {
     message: "An account with this email already exists",
     action: "Try logging in instead",
   },
+  "Username already taken": {
+    message: "That username is taken",
+    action: "Please choose another username",
+  },
   "Password should be at least 6 characters": {
     message: "Password is too weak",
     action: "Use at least 6 characters",
