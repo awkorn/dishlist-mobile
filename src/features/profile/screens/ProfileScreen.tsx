@@ -57,6 +57,8 @@ export default function ProfileScreen({ navigation, route }: Props) {
     isRecipesFetching,
     isFetchingNextRecipes,
     hasMoreRecipes,
+    isRecipesError,
+    recipesError,
     isError,
     error,
     refetch,
@@ -178,6 +180,30 @@ export default function ProfileScreen({ navigation, route }: Props) {
     if (!hasMoreRecipes || isFetchingNextRecipes) return;
     fetchNextRecipes();
   };
+
+  const renderRecipesError = () => (
+    <View style={styles.tabErrorContainer}>
+      <Text style={styles.errorTitle}>Unable to load recipes</Text>
+      <Text style={styles.errorText}>
+        {getErrorMessage(
+          recipesError,
+          "Something went wrong while loading recipes. Please try again."
+        )}
+      </Text>
+      <TouchableOpacity
+        style={[
+          styles.retryButton,
+          isRecipesFetching && styles.retryButtonDisabled,
+        ]}
+        onPress={() => void refetchRecipes()}
+        disabled={isRecipesFetching}
+      >
+        <Text style={styles.retryButtonText}>
+          {isRecipesFetching ? "Trying..." : "Try Again"}
+        </Text>
+      </TouchableOpacity>
+    </View>
+  );
 
   // Dynamic search placeholder based on active tab
   const searchPlaceholder =
@@ -356,7 +382,9 @@ export default function ProfileScreen({ navigation, route }: Props) {
             contentContainerStyle={styles.listContent}
             ItemSeparatorComponent={() => <View style={styles.separator} />}
             ListEmptyComponent={
-              isRecipesLoading || isRecipesFetching ? (
+              isRecipesError ? (
+                renderRecipesError()
+              ) : isRecipesLoading || isRecipesFetching ? (
                 <View style={styles.tabLoadingContainer}>
                   <ActivityIndicator size="small" color={theme.colors.primary[500]} />
                 </View>
@@ -500,6 +528,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  tabErrorContainer: {
+    paddingHorizontal: 20,
+    paddingVertical: 40,
+    alignItems: "center",
+  },
   errorTitle: {
     ...typography.subtitle,
     color: theme.colors.neutral[900],
@@ -516,6 +549,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8,
+  },
+  retryButtonDisabled: {
+    opacity: 0.6,
   },
   retryButtonText: {
     ...typography.body,

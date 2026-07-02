@@ -47,6 +47,10 @@ describe('useProfile', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (profileService.getUserProfile as jest.Mock).mockResolvedValue(mockProfileData);
+    (profileService.getUserRecipes as jest.Mock).mockResolvedValue({
+      recipes: [],
+      recipesMeta: { hasMore: false, limit: 24, offset: 0 },
+    });
   });
 
   it('loads profile data on mount', async () => {
@@ -151,6 +155,30 @@ describe('useProfile', () => {
     });
 
     expect(result.current.user).toBeNull();
+  });
+
+  it('exposes recipe fetch errors separately from an empty recipe list', async () => {
+    const recipeError = new Error('Network error');
+    (profileService.getUserRecipes as jest.Mock).mockRejectedValue(recipeError);
+
+    const { result } = renderHook(() => useProfile('user-123'), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    act(() => {
+      result.current.setActiveTab('Recipes');
+    });
+
+    await waitFor(() => {
+      expect(result.current.isRecipesError).toBe(true);
+    });
+
+    expect(result.current.recipesError).toBe(recipeError);
+    expect(result.current.recipes).toEqual([]);
   });
 
   it('does not fetch when userId is empty', async () => {

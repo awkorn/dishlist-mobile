@@ -23,6 +23,8 @@ export function useProfile(userId: string) {
     isFetching: isRecipesFetching,
     isFetchingNextPage: isFetchingNextRecipes,
     hasNextPage: hasMoreRecipes,
+    isError: isRecipesError,
+    error: recipesError,
     fetchNextPage: fetchNextRecipes,
     refetch: refetchRecipes,
   } = useInfiniteQuery({
@@ -115,6 +117,8 @@ export function useProfile(userId: string) {
     isRecipesFetching,
     isFetchingNextRecipes,
     hasMoreRecipes: !!hasMoreRecipes,
+    isRecipesError,
+    recipesError,
     isError,
     error,
 

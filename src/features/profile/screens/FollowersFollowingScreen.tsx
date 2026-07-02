@@ -14,6 +14,7 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "@app-types/navigation";
 import { theme } from "@styles/theme";
 import { typography } from "@styles/typography";
+import { getErrorMessage } from "@utils";
 import { useFollowers, useFollowing } from "../hooks/useFollowList";
 import { FollowListUserItem } from "../components/FollowListUserItem";
 import type { FollowListUser } from "../types";
@@ -27,8 +28,24 @@ export default function FollowersFollowingScreen({ navigation, route }: Props) {
   const [activeTab, setActiveTab] = useState<Tab>(initialTab);
   const pagerRef = useRef<PagerView>(null);
 
-  const { data: followersData, isLoading: followersLoading, refetch: refetchFollowers } = useFollowers(userId);
-  const { data: followingData, isLoading: followingLoading, refetch: refetchFollowing } = useFollowing(userId);
+  const {
+    data: followersData,
+    isLoading: followersLoading,
+    isError: followersError,
+    error: followersErrorDetails,
+    isFetching: followersFetching,
+    isRefetching: followersRefreshing,
+    refetch: refetchFollowers,
+  } = useFollowers(userId);
+  const {
+    data: followingData,
+    isLoading: followingLoading,
+    isError: followingError,
+    error: followingErrorDetails,
+    isFetching: followingFetching,
+    isRefetching: followingRefreshing,
+    refetch: refetchFollowing,
+  } = useFollowing(userId);
 
   const handleBack = () => {
     navigation.goBack();
@@ -64,6 +81,36 @@ export default function FollowersFollowingScreen({ navigation, route }: Props) {
   const renderLoadingState = () => (
     <View style={styles.loadingContainer}>
       <ActivityIndicator size="large" color={theme.colors.primary[500]} />
+    </View>
+  );
+
+  const renderErrorState = (
+    type: Tab,
+    error: unknown,
+    isRetrying: boolean,
+    onRetry: () => void
+  ) => (
+    <View style={styles.errorContainer}>
+      <Text style={styles.errorTitle}>
+        {type === "followers"
+          ? "Unable to load followers"
+          : "Unable to load following"}
+      </Text>
+      <Text style={styles.errorText}>
+        {getErrorMessage(
+          error,
+          "Something went wrong. Please check your connection and try again."
+        )}
+      </Text>
+      <TouchableOpacity
+        style={[styles.retryButton, isRetrying && styles.retryButtonDisabled]}
+        onPress={onRetry}
+        disabled={isRetrying}
+      >
+        <Text style={styles.retryButtonText}>
+          {isRetrying ? "Trying..." : "Try Again"}
+        </Text>
+      </TouchableOpacity>
     </View>
   );
 
@@ -118,11 +165,20 @@ export default function FollowersFollowingScreen({ navigation, route }: Props) {
               data={followersData?.users || []}
               renderItem={renderFollowerItem}
               keyExtractor={(item) => item.uid}
-              ListEmptyComponent={() => renderEmptyState("followers")}
+              ListEmptyComponent={
+                followersError
+                  ? renderErrorState(
+                      "followers",
+                      followersErrorDetails,
+                      followersFetching,
+                      () => void refetchFollowers()
+                    )
+                  : renderEmptyState("followers")
+              }
               contentContainerStyle={styles.listContent}
               showsVerticalScrollIndicator={false}
-              onRefresh={refetchFollowers}
-              refreshing={false}
+              onRefresh={() => void refetchFollowers()}
+              refreshing={followersRefreshing}
             />
           )}
         </View>
@@ -136,11 +192,20 @@ export default function FollowersFollowingScreen({ navigation, route }: Props) {
               data={followingData?.users || []}
               renderItem={renderFollowingItem}
               keyExtractor={(item) => item.uid}
-              ListEmptyComponent={() => renderEmptyState("following")}
+              ListEmptyComponent={
+                followingError
+                  ? renderErrorState(
+                      "following",
+                      followingErrorDetails,
+                      followingFetching,
+                      () => void refetchFollowing()
+                    )
+                  : renderEmptyState("following")
+              }
               contentContainerStyle={styles.listContent}
               showsVerticalScrollIndicator={false}
-              onRefresh={refetchFollowing}
-              refreshing={false}
+              onRefresh={() => void refetchFollowing()}
+              refreshing={followingRefreshing}
             />
           )}
         </View>
@@ -223,5 +288,36 @@ const styles = StyleSheet.create({
     ...typography.body,
     color: theme.colors.neutral[500],
     textAlign: "center",
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: theme.spacing.xl,
+  },
+  errorTitle: {
+    ...typography.subtitle,
+    color: theme.colors.neutral[900],
+    textAlign: "center",
+    marginBottom: theme.spacing.sm,
+  },
+  errorText: {
+    ...typography.body,
+    color: theme.colors.neutral[500],
+    textAlign: "center",
+    marginBottom: theme.spacing.lg,
+  },
+  retryButton: {
+    backgroundColor: theme.colors.primary[500],
+    paddingVertical: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.xl,
+    borderRadius: theme.borderRadius.md,
+  },
+  retryButtonDisabled: {
+    opacity: 0.6,
+  },
+  retryButtonText: {
+    ...typography.button,
+    color: "white",
   },
 });
