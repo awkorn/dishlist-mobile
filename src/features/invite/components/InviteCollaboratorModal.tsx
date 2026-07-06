@@ -80,6 +80,9 @@ export function InviteCollaboratorModal({
           style={styles.userItem}
           onPress={() => toggleUserSelection(item.uid)}
           activeOpacity={0.7}
+          accessibilityRole="checkbox"
+          accessibilityState={{ checked: isSelected }}
+          accessibilityLabel={displayName}
         >
           <View style={styles.avatarContainer}>
             {item.avatarUrl ? (
@@ -198,6 +201,8 @@ export function InviteCollaboratorModal({
                 style={styles.externalShareButton}
                 onPress={handleShareViaMessage}
                 disabled={isGeneratingLink}
+                accessibilityRole="button"
+                accessibilityLabel="Share invite link via message"
               >
                 <View style={[styles.externalShareIcon, styles.messageIcon]}>
                   {isGeneratingLink ? (
@@ -212,6 +217,8 @@ export function InviteCollaboratorModal({
                 style={styles.externalShareButton}
                 onPress={handleCopyLink}
                 disabled={isGeneratingLink}
+                accessibilityRole="button"
+                accessibilityLabel="Copy invite link"
               >
                 <View style={[styles.externalShareIcon, styles.linkIcon]}>
                   {isGeneratingLink ? (

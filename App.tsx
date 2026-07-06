@@ -11,6 +11,8 @@ import NetInfo from "@react-native-community/netinfo";
 import { GlobalErrorBoundary } from "./src/providers/ErrorBoundary";
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { linking } from '@navigation/linking';
+import { navigationRef } from '@navigation/navigationRef';
+import InviteRedirectHandler from '@navigation/InviteRedirectHandler';
 import { usePushNotifications } from '@features/notifications';
 
 function PushNotificationHandler() {
@@ -78,8 +80,9 @@ export default function App() {
         <QueryClientProvider client={queryClient}>
           <SafeAreaProvider>
             <AuthProvider>
-              <NavigationContainer linking={linking}>
+              <NavigationContainer linking={linking} ref={navigationRef}>
                 <PushNotificationHandler />
+                <InviteRedirectHandler />
                 <MainNavigator />
                 <StatusBar style="auto" />
               </NavigationContainer>

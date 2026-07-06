@@ -49,9 +49,11 @@ export function CollaboratorsModal({
     pendingInvites,
     isOwner,
     isLoading,
+    isError,
     isRemoving,
     isRevoking,
     isResending,
+    refetch,
     handleRemoveCollaborator,
     handleRevokeInvite,
     handleResendInvite,
@@ -149,6 +151,9 @@ export function CollaboratorsModal({
                     handleRemoveCollaborator(item.data.user.uid, getDisplayName(item.data.user))
                   }
                   disabled={isRemoving}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Remove ${getDisplayName(item.data.user)}`}
+                  hitSlop={8}
                 >
                   {isRemoving ? (
                     <ActivityIndicator size="small" color={theme.colors.error} />
@@ -184,6 +189,9 @@ export function CollaboratorsModal({
                   style={styles.actionButton}
                   onPress={() => handleResendInvite(item.data.id)}
                   disabled={isResending}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Resend invite to ${getDisplayName(item.data.user)}`}
+                  hitSlop={8}
                 >
                   {isResending ? (
                     <ActivityIndicator size="small" color={theme.colors.primary[500]} />
@@ -197,6 +205,9 @@ export function CollaboratorsModal({
                     handleRevokeInvite(item.data.id, getDisplayName(item.data.user))
                   }
                   disabled={isRevoking}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Revoke invite to ${getDisplayName(item.data.user)}`}
+                  hitSlop={8}
                 >
                   {isRevoking ? (
                     <ActivityIndicator size="small" color={theme.colors.error[500]} />
@@ -258,7 +269,13 @@ export function CollaboratorsModal({
       <SafeAreaView style={styles.container} edges={['top']}>
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+          <TouchableOpacity
+            onPress={onClose}
+            style={styles.closeButton}
+            accessibilityRole="button"
+            accessibilityLabel="Close"
+            hitSlop={8}
+          >
             <X size={24} color={theme.colors.neutral[700]} />
           </TouchableOpacity>
           <Text style={styles.headerTitle} numberOfLines={1}>
@@ -271,6 +288,21 @@ export function CollaboratorsModal({
         {isLoading ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color={theme.colors.primary[500]} />
+          </View>
+        ) : isError ? (
+          <View style={styles.errorContainer}>
+            <Text style={styles.errorTitle}>Couldn't load collaborators</Text>
+            <Text style={styles.errorText}>
+              Check your connection and try again.
+            </Text>
+            <TouchableOpacity
+              style={styles.retryButton}
+              onPress={() => refetch()}
+              accessibilityRole="button"
+              accessibilityLabel="Retry loading collaborators"
+            >
+              <Text style={styles.retryButtonText}>Retry</Text>
+            </TouchableOpacity>
           </View>
         ) : (
           <FlatList
@@ -408,6 +440,37 @@ const styles = StyleSheet.create({
   emptyText: {
     ...typography.body,
     color: theme.colors.neutral[500],
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: theme.spacing.xl,
+  },
+  errorTitle: {
+    ...typography.subtitle,
+    color: theme.colors.textPrimary,
+    marginBottom: theme.spacing.sm,
+    textAlign: 'center',
+  },
+  errorText: {
+    ...typography.body,
+    color: theme.colors.neutral[500],
+    textAlign: 'center',
+    marginBottom: theme.spacing.xl,
+  },
+  retryButton: {
+    paddingHorizontal: theme.spacing.xl,
+    paddingVertical: theme.spacing.md,
+    borderRadius: theme.borderRadius.md,
+    backgroundColor: theme.colors.primary[500],
+    minHeight: 44,
+    justifyContent: 'center',
+  },
+  retryButtonText: {
+    ...typography.body,
+    color: 'white',
+    fontWeight: '600',
   },
 });
 
