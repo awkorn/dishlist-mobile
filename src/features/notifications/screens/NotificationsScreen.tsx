@@ -66,13 +66,17 @@ export default function NotificationsScreen() {
     groupedNotifications,
     hasNotifications,
     isLoading,
+    isError,
     isRefetching,
+    isFetchingNextPage,
     refetch,
+    handleLoadMore,
     handleDelete,
     handleClearAll,
     handleAcceptInvitation,
     handleDeclineInvitation,
     handleMarkAsRead,
+    pendingActionId,
     isAccepting,
     isDeclining,
     isClearing,
@@ -166,14 +170,14 @@ export default function NotificationsScreen() {
         notification={item}
         onDelete={handleDelete}
         onPress={handleNotificationPress}
-        onAccept={handleAccept} 
-        onDecline={handleDeclineInvitation} 
-        onAcceptFollow={handleAcceptFollow} 
-        onDeclineFollow={handleDeclineFollow} 
-        isAccepting={isAccepting}
-        isDeclining={isDeclining}
-        isAcceptingFollow={isAcceptingFollow} 
-        isDecliningFollow={isDecliningFollow}
+        onAccept={handleAccept}
+        onDecline={handleDeclineInvitation}
+        onAcceptFollow={handleAcceptFollow}
+        onDeclineFollow={handleDeclineFollow}
+        isAccepting={isAccepting && pendingActionId === item.id}
+        isDeclining={isDeclining && pendingActionId === item.id}
+        isAcceptingFollow={isAcceptingFollow && pendingActionId === item.id}
+        isDecliningFollow={isDecliningFollow && pendingActionId === item.id}
         showDivider={index < section.data.length - 1}
       />
     ),
@@ -184,6 +188,7 @@ export default function NotificationsScreen() {
       handleDeclineInvitation,
       handleAcceptFollow,
       handleDeclineFollow,
+      pendingActionId,
       isAccepting,
       isDeclining,
       isAcceptingFollow,
@@ -226,6 +231,9 @@ export default function NotificationsScreen() {
             style={[styles.clearAllButton]}
             onPress={handleClearAll}
             disabled={!hasNotifications || isClearing}
+            accessibilityRole="button"
+            accessibilityLabel="Clear all notifications"
+            accessibilityState={{ disabled: !hasNotifications || isClearing }}
           >
             {isClearing ? (
               <ActivityIndicator size="small" color="#FFFFFF" />
@@ -263,8 +271,34 @@ export default function NotificationsScreen() {
               tintColor={theme.colors.primary[500]}
             />
           }
+          onEndReached={handleLoadMore}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={
+            isFetchingNextPage ? (
+              <ActivityIndicator
+                style={styles.footerLoader}
+                size="small"
+                color={theme.colors.primary[500]}
+              />
+            ) : null
+          }
           showsVerticalScrollIndicator={false}
         />
+      ) : isError ? (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorTitle}>Couldn't Load Notifications</Text>
+          <Text style={styles.errorSubtitle}>
+            Please check your connection and try again.
+          </Text>
+          <TouchableOpacity
+            style={styles.retryButton}
+            onPress={() => refetch()}
+            accessibilityRole="button"
+            accessibilityLabel="Retry loading notifications"
+          >
+            <Text style={styles.retryButtonText}>Try Again</Text>
+          </TouchableOpacity>
+        </View>
       ) : (
         <NotificationsEmptyState />
       )}
@@ -309,5 +343,36 @@ const styles = StyleSheet.create({
   },
   listContent: {
     flexGrow: 1,
+  },
+  footerLoader: {
+    paddingVertical: theme.spacing.lg,
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: theme.spacing.xl,
+  },
+  errorTitle: {
+    ...typography.subtitle,
+    color: theme.colors.textPrimary,
+    marginBottom: theme.spacing.sm,
+  },
+  errorSubtitle: {
+    ...typography.body,
+    color: theme.colors.neutral[500],
+    textAlign: "center",
+    marginBottom: theme.spacing.lg,
+  },
+  retryButton: {
+    paddingVertical: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.xl,
+    borderRadius: theme.borderRadius.sm,
+    backgroundColor: theme.colors.primary[500],
+  },
+  retryButtonText: {
+    ...typography.button,
+    fontSize: 14,
+    color: "#FFFFFF",
   },
 });

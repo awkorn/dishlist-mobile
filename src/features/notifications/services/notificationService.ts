@@ -1,6 +1,6 @@
 import { api } from "@services/api";
 import type {
-  Notification,
+  NotificationsPage,
   NotificationsResponse,
   UnreadCountResponse,
   NotificationActionResponse,
@@ -8,11 +8,17 @@ import type {
 
 export const notificationService = {
   /**
-   * Fetch all notifications for the current user
+   * Fetch one page of notifications for the current user.
+   * Pass the previous page's nextCursor to fetch the next page.
    */
-  async getNotifications(): Promise<Notification[]> {
-    const response = await api.get<NotificationsResponse>("/notifications");
-    return response.data.notifications;
+  async getNotifications(cursor?: string): Promise<NotificationsPage> {
+    const response = await api.get<NotificationsResponse>("/notifications", {
+      params: cursor ? { cursor } : undefined,
+    });
+    return {
+      notifications: response.data.notifications,
+      nextCursor: response.data.nextCursor ?? null,
+    };
   },
 
   /**

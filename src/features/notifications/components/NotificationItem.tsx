@@ -186,6 +186,8 @@ export function NotificationItem({
       style={styles.deleteButton}
       onPress={handleDelete}
       testID={`delete-notification-${notification.id}`}
+      accessibilityRole="button"
+      accessibilityLabel="Delete notification"
     >
       <Trash2 size={20} color="white" />
     </TouchableOpacity>
@@ -207,6 +209,27 @@ export function NotificationItem({
     ? { onPress: handlePress, activeOpacity: 0.7 }
     : {};
 
+  // Swipe gestures are invisible to screen readers, so expose delete as an
+  // accessibility action; "unread" is otherwise signaled by color only.
+  // Actionable rows must NOT collapse into one accessible element (that would
+  // hide the Accept/Decline buttons) — their label lives on the message text.
+  const accessibleLabel = `${notification.isRead ? "" : "Unread. "}${message}. ${timeAgo}`;
+  const deleteAction = {
+    accessibilityActions: [{ name: "delete" as const, label: "Delete" }],
+    onAccessibilityAction: (event: { nativeEvent: { actionName: string } }) => {
+      if (event.nativeEvent.actionName === "delete") {
+        onDelete(notification.id);
+      }
+    },
+  };
+  const accessibilityProps = isActionable
+    ? {}
+    : {
+        accessible: true,
+        accessibilityLabel: accessibleLabel,
+        ...deleteAction,
+      };
+
   return (
     <View>
       <Swipeable
@@ -221,6 +244,7 @@ export function NotificationItem({
             !notification.isRead && styles.unreadContainer,
           ]}
           {...contentProps}
+          {...accessibilityProps}
         >
           {/* Avatar for follow requests/accepted */}
           {showAvatar && (
@@ -241,7 +265,12 @@ export function NotificationItem({
           )}
 
           <View style={styles.content}>
-            <Text style={styles.message}>{message}</Text>
+            <Text
+              style={styles.message}
+              accessibilityLabel={isActionable ? accessibleLabel : undefined}
+            >
+              {message}
+            </Text>
             <Text style={styles.time}>{timeAgo}</Text>
 
             {/* Action buttons for invitations and follow requests */}
@@ -251,6 +280,11 @@ export function NotificationItem({
                   style={[styles.actionButton, styles.declineButton]}
                   onPress={handleDecline}
                   disabled={isActionInProgress}
+                  accessibilityRole="button"
+                  accessibilityLabel={
+                    isFollowRequest ? "Decline follow request" : "Decline invitation"
+                  }
+                  accessibilityState={{ disabled: isActionInProgress }}
                 >
                   {currentlyDeclining ? (
                     <ActivityIndicator
@@ -266,6 +300,11 @@ export function NotificationItem({
                   style={[styles.actionButton, styles.acceptButton]}
                   onPress={handleAccept}
                   disabled={isActionInProgress}
+                  accessibilityRole="button"
+                  accessibilityLabel={
+                    isFollowRequest ? "Accept follow request" : "Accept invitation"
+                  }
+                  accessibilityState={{ disabled: isActionInProgress }}
                 >
                   {currentlyAccepting ? (
                     <ActivityIndicator size="small" color="#FFFFFF" />

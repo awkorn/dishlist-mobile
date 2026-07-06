@@ -18,7 +18,15 @@ export function NotificationBadge({ count, color, size }: NotificationBadgeProps
   const displayCount = count > 99 ? "99+" : count.toString();
 
   return (
-    <View style={styles.container}>
+    <View
+      style={styles.container}
+      accessible
+      accessibilityLabel={
+        showBadge
+          ? `Notifications, ${displayCount} unread`
+          : "Notifications"
+      }
+    >
       <Bell size={size} color={color} />
       {showBadge && (
         <View style={styles.badge}>

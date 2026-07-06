@@ -55,26 +55,43 @@ describe('notificationService', () => {
       },
     ];
 
-    it('fetches all notifications successfully', async () => {
+    it('fetches the first page of notifications successfully', async () => {
       (api.get as jest.Mock).mockResolvedValueOnce({
-        data: { notifications: mockNotifications },
+        data: { notifications: mockNotifications, nextCursor: null },
       });
 
       const result = await notificationService.getNotifications();
 
-      expect(api.get).toHaveBeenCalledWith('/notifications');
-      expect(result).toEqual(mockNotifications);
-      expect(result).toHaveLength(2);
+      expect(api.get).toHaveBeenCalledWith('/notifications', {
+        params: undefined,
+      });
+      expect(result.notifications).toEqual(mockNotifications);
+      expect(result.notifications).toHaveLength(2);
+      expect(result.nextCursor).toBeNull();
     });
 
-    it('returns empty array when no notifications', async () => {
+    it('passes the cursor and returns the next one', async () => {
+      (api.get as jest.Mock).mockResolvedValueOnce({
+        data: { notifications: mockNotifications, nextCursor: 'notif-2' },
+      });
+
+      const result = await notificationService.getNotifications('notif-0');
+
+      expect(api.get).toHaveBeenCalledWith('/notifications', {
+        params: { cursor: 'notif-0' },
+      });
+      expect(result.nextCursor).toBe('notif-2');
+    });
+
+    it('defaults nextCursor to null when the API omits it', async () => {
       (api.get as jest.Mock).mockResolvedValueOnce({
         data: { notifications: [] },
       });
 
       const result = await notificationService.getNotifications();
 
-      expect(result).toEqual([]);
+      expect(result.notifications).toEqual([]);
+      expect(result.nextCursor).toBeNull();
     });
 
     it('throws error when API call fails', async () => {

@@ -1,4 +1,13 @@
-import { useEffect, useState, useRef, useCallback } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useRef,
+  useCallback,
+  type ReactNode,
+} from "react";
+import { Alert } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "@app-types/navigation";
@@ -15,13 +24,30 @@ import {
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
+interface PushNotificationsContextValue {
+  pushEnabled: boolean;
+  togglePush: (enable: boolean) => Promise<void>;
+  isLoading: boolean;
+}
+
+const PushNotificationsContext =
+  createContext<PushNotificationsContextValue | null>(null);
+
 /**
- * Hook that manages push notification lifecycle:
+ * Owns the push notification lifecycle for the whole app:
  * - Auto-registers on mount if previously enabled
  * - Handles notification tap navigation
  * - Provides toggle controls for settings
+ *
+ * Must be mounted exactly ONCE, inside the NavigationContainer (it navigates
+ * on notification taps). Consumers read shared state via usePushNotifications —
+ * a second mount would register duplicate tap listeners and navigate twice.
  */
-export function usePushNotifications() {
+export function PushNotificationsProvider({
+  children,
+}: {
+  children: ReactNode;
+}) {
   const { user } = useAuth();
   const userId = user?.id;
   const [pushEnabled, setPushEnabled] = useState(false);
@@ -121,31 +147,75 @@ export function usePushNotifications() {
     };
   }, [navigation]);
 
-  const togglePush = useCallback(async (enable: boolean) => {
-    setPushEnabled(enable);
-    await AsyncStorage.setItem(PUSH_ENABLED_KEY, String(enable));
+  const togglePush = useCallback(
+    async (enable: boolean) => {
+      const previous = pushEnabled;
+      setPushEnabled(enable);
 
-    if (enable) {
-      const token = await enablePushNotifications();
-      if (token) {
-        tokenRef.current = token;
-        await AsyncStorage.setItem(PUSH_TOKEN_KEY, token);
-      } else {
-        // Permission denied — revert
-        setPushEnabled(false);
-        await AsyncStorage.setItem(PUSH_ENABLED_KEY, "false");
-      }
-    } else {
-      // Unregister
-      const savedToken =
-        tokenRef.current ?? (await AsyncStorage.getItem(PUSH_TOKEN_KEY));
-      if (savedToken) {
-        await disablePushNotifications(savedToken);
-        tokenRef.current = null;
-        await AsyncStorage.removeItem(PUSH_TOKEN_KEY);
-      }
-    }
-  }, []);
+      try {
+        await AsyncStorage.setItem(PUSH_ENABLED_KEY, String(enable));
 
-  return { pushEnabled, togglePush, isLoading };
+        if (enable) {
+          const token = await enablePushNotifications();
+          if (token) {
+            tokenRef.current = token;
+            await AsyncStorage.setItem(PUSH_TOKEN_KEY, token);
+          } else {
+            // Permission denied — revert
+            setPushEnabled(false);
+            await AsyncStorage.setItem(PUSH_ENABLED_KEY, "false");
+            Alert.alert(
+              "Notifications Disabled",
+              "Enable notifications for DishList in your device settings to receive push notifications."
+            );
+          }
+        } else {
+          // Unregister
+          const savedToken =
+            tokenRef.current ?? (await AsyncStorage.getItem(PUSH_TOKEN_KEY));
+          if (savedToken) {
+            await disablePushNotifications(savedToken);
+            tokenRef.current = null;
+            await AsyncStorage.removeItem(PUSH_TOKEN_KEY);
+          }
+        }
+      } catch (error) {
+        // Revert so the switch never shows a state the backend doesn't have —
+        // e.g. "off" while the token is still registered and pushes keep coming.
+        console.error("Failed to update push notification setting:", error);
+        setPushEnabled(previous);
+        await AsyncStorage.setItem(PUSH_ENABLED_KEY, String(previous)).catch(
+          () => undefined
+        );
+        Alert.alert(
+          "Error",
+          enable
+            ? "Failed to enable push notifications. Please try again."
+            : "Failed to disable push notifications. Please try again."
+        );
+      }
+    },
+    [pushEnabled]
+  );
+
+  return (
+    <PushNotificationsContext.Provider
+      value={{ pushEnabled, togglePush, isLoading }}
+    >
+      {children}
+    </PushNotificationsContext.Provider>
+  );
+}
+
+/**
+ * Read the shared push notification state (see PushNotificationsProvider).
+ */
+export function usePushNotifications(): PushNotificationsContextValue {
+  const context = useContext(PushNotificationsContext);
+  if (!context) {
+    throw new Error(
+      "usePushNotifications must be used within a PushNotificationsProvider"
+    );
+  }
+  return context;
 }

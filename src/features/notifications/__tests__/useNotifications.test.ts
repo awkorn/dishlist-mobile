@@ -15,6 +15,8 @@ jest.mock('../services/notificationService', () => ({
     deleteAllNotifications: jest.fn(),
     acceptInvitation: jest.fn(),
     declineInvitation: jest.fn(),
+    acceptFollowRequest: jest.fn(),
+    declineFollowRequest: jest.fn(),
   },
 }));
 
@@ -62,6 +64,12 @@ const createMockNotification = (overrides: Partial<Notification> = {}): Notifica
   ...overrides,
 });
 
+// The service returns cursor pages; most tests only need a single page.
+const asPage = (
+  notifications: Notification[],
+  nextCursor: string | null = null
+) => ({ notifications, nextCursor });
+
 describe('useNotifications', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -73,7 +81,7 @@ describe('useNotifications', () => {
         createMockNotification({ id: 'notif-1' }),
         createMockNotification({ id: 'notif-2', isRead: true }),
       ];
-      mockNotificationService.getNotifications.mockResolvedValue(mockNotifications);
+      mockNotificationService.getNotifications.mockResolvedValue(asPage(mockNotifications));
 
       const { result } = renderHook(() => useNotifications(), {
         wrapper: createWrapper(),
@@ -91,7 +99,7 @@ describe('useNotifications', () => {
     });
 
     it('returns empty array when no notifications exist', async () => {
-      mockNotificationService.getNotifications.mockResolvedValue([]);
+      mockNotificationService.getNotifications.mockResolvedValue(asPage([]));
 
       const { result } = renderHook(() => useNotifications(), {
         wrapper: createWrapper(),
@@ -127,7 +135,7 @@ describe('useNotifications', () => {
         createMockNotification({ id: 'notif-2', isRead: false }),
         createMockNotification({ id: 'notif-3', isRead: true }),
       ];
-      mockNotificationService.getNotifications.mockResolvedValue(mockNotifications);
+      mockNotificationService.getNotifications.mockResolvedValue(asPage(mockNotifications));
 
       const { result } = renderHook(() => useNotifications(), {
         wrapper: createWrapper(),
@@ -145,7 +153,7 @@ describe('useNotifications', () => {
         createMockNotification({ id: 'notif-1', isRead: true }),
         createMockNotification({ id: 'notif-2', isRead: true }),
       ];
-      mockNotificationService.getNotifications.mockResolvedValue(mockNotifications);
+      mockNotificationService.getNotifications.mockResolvedValue(asPage(mockNotifications));
 
       const { result } = renderHook(() => useNotifications(), {
         wrapper: createWrapper(),
@@ -165,7 +173,7 @@ describe('useNotifications', () => {
         createMockNotification({ id: 'notif-1', isRead: false }),
         createMockNotification({ id: 'notif-2', isRead: true }),
       ];
-      mockNotificationService.getNotifications.mockResolvedValue(mockNotifications);
+      mockNotificationService.getNotifications.mockResolvedValue(asPage(mockNotifications));
 
       const { result } = renderHook(() => useNotifications(), {
         wrapper: createWrapper(),
@@ -194,7 +202,7 @@ describe('useNotifications', () => {
         createMockNotification({ id: 'earlier-week', isRead: true, createdAt: lastWeek.toISOString() }),
         createMockNotification({ id: 'earlier', isRead: true, createdAt: lastMonth.toISOString() }),
       ];
-      mockNotificationService.getNotifications.mockResolvedValue(mockNotifications);
+      mockNotificationService.getNotifications.mockResolvedValue(asPage(mockNotifications));
 
       const { result } = renderHook(() => useNotifications(), {
         wrapper: createWrapper(),
@@ -216,7 +224,7 @@ describe('useNotifications', () => {
       const mockNotifications = [
         createMockNotification({ id: 'notif-1', isRead: false }),
       ];
-      mockNotificationService.getNotifications.mockResolvedValue(mockNotifications);
+      mockNotificationService.getNotifications.mockResolvedValue(asPage(mockNotifications));
       mockNotificationService.markAsRead.mockResolvedValue(undefined);
 
       const { result } = renderHook(() => useNotifications(), {
@@ -242,7 +250,7 @@ describe('useNotifications', () => {
       const mockNotifications = [
         createMockNotification({ id: 'notif-1', isRead: false }),
       ];
-      mockNotificationService.getNotifications.mockResolvedValue(mockNotifications);
+      mockNotificationService.getNotifications.mockResolvedValue(asPage(mockNotifications));
       
       // Create a promise we can control to keep mutation pending
       let resolveMarkAsRead: () => void;
@@ -283,7 +291,7 @@ describe('useNotifications', () => {
         createMockNotification({ id: 'notif-1', isRead: false }),
         createMockNotification({ id: 'notif-2', isRead: false }),
       ];
-      mockNotificationService.getNotifications.mockResolvedValue(mockNotifications);
+      mockNotificationService.getNotifications.mockResolvedValue(asPage(mockNotifications));
       mockNotificationService.markAllAsRead.mockResolvedValue(2);
 
       const { result } = renderHook(() => useNotifications(), {
@@ -310,7 +318,7 @@ describe('useNotifications', () => {
         createMockNotification({ id: 'notif-1' }),
         createMockNotification({ id: 'notif-2' }),
       ];
-      mockNotificationService.getNotifications.mockResolvedValue(mockNotifications);
+      mockNotificationService.getNotifications.mockResolvedValue(asPage(mockNotifications));
       mockNotificationService.deleteNotification.mockResolvedValue(undefined);
 
       const { result } = renderHook(() => useNotifications(), {
@@ -338,7 +346,7 @@ describe('useNotifications', () => {
         createMockNotification({ id: 'notif-1' }),
         createMockNotification({ id: 'notif-2' }),
       ];
-      mockNotificationService.getNotifications.mockResolvedValue(mockNotifications);
+      mockNotificationService.getNotifications.mockResolvedValue(asPage(mockNotifications));
       
       // Keep mutation pending to observe optimistic update
       let resolveDelete: () => void;
@@ -377,7 +385,7 @@ describe('useNotifications', () => {
   describe('handleClearAll', () => {
     it('shows confirmation alert before clearing', async () => {
       const mockNotifications = [createMockNotification({ id: 'notif-1' })];
-      mockNotificationService.getNotifications.mockResolvedValue(mockNotifications);
+      mockNotificationService.getNotifications.mockResolvedValue(asPage(mockNotifications));
 
       const { result } = renderHook(() => useNotifications(), {
         wrapper: createWrapper(),
@@ -411,7 +419,7 @@ describe('useNotifications', () => {
       );
 
       const mockNotifications = [createMockNotification({ id: 'notif-1' })];
-      mockNotificationService.getNotifications.mockResolvedValue(mockNotifications);
+      mockNotificationService.getNotifications.mockResolvedValue(asPage(mockNotifications));
       mockNotificationService.deleteAllNotifications.mockResolvedValue(1);
 
       const { result } = renderHook(() => useNotifications(), {
@@ -448,7 +456,7 @@ describe('useNotifications', () => {
           data: JSON.stringify({ dishListId: 'dl-123', dishListTitle: 'Summer Recipes' }),
         }),
       ];
-      mockNotificationService.getNotifications.mockResolvedValue(mockNotifications);
+      mockNotificationService.getNotifications.mockResolvedValue(asPage(mockNotifications));
       mockNotificationService.acceptInvitation.mockResolvedValue({ dishListId: 'dl-123' });
 
       const { result } = renderHook(() => useNotifications(), {
@@ -473,7 +481,7 @@ describe('useNotifications', () => {
       const mockNotifications = [
         createMockNotification({ id: 'notif-1', type: 'DISHLIST_INVITATION' }),
       ];
-      mockNotificationService.getNotifications.mockResolvedValue(mockNotifications);
+      mockNotificationService.getNotifications.mockResolvedValue(asPage(mockNotifications));
       mockNotificationService.acceptInvitation.mockRejectedValue({
         response: { data: { error: 'DishList no longer exists' } },
       });
@@ -503,7 +511,7 @@ describe('useNotifications', () => {
       const mockNotifications = [
         createMockNotification({ id: 'notif-1', type: 'DISHLIST_INVITATION' }),
       ];
-      mockNotificationService.getNotifications.mockResolvedValue(mockNotifications);
+      mockNotificationService.getNotifications.mockResolvedValue(asPage(mockNotifications));
       
       // Create a promise that we can control
       let resolveAccept: (value: { dishListId: string }) => void;
@@ -546,7 +554,7 @@ describe('useNotifications', () => {
       const mockNotifications = [
         createMockNotification({ id: 'notif-1', type: 'DISHLIST_INVITATION' }),
       ];
-      mockNotificationService.getNotifications.mockResolvedValue(mockNotifications);
+      mockNotificationService.getNotifications.mockResolvedValue(asPage(mockNotifications));
       mockNotificationService.declineInvitation.mockResolvedValue(undefined);
 
       const { result } = renderHook(() => useNotifications(), {
@@ -573,7 +581,7 @@ describe('useNotifications', () => {
         createMockNotification({ id: 'notif-1', type: 'DISHLIST_INVITATION' }),
         createMockNotification({ id: 'notif-2', type: 'RECIPE_SHARED' }),
       ];
-      mockNotificationService.getNotifications.mockResolvedValue(mockNotifications);
+      mockNotificationService.getNotifications.mockResolvedValue(asPage(mockNotifications));
       
       // Keep mutation pending to observe optimistic update
       let resolveDecline: () => void;
@@ -611,7 +619,7 @@ describe('useNotifications', () => {
       const mockNotifications = [
         createMockNotification({ id: 'notif-1', type: 'DISHLIST_INVITATION' }),
       ];
-      mockNotificationService.getNotifications.mockResolvedValue(mockNotifications);
+      mockNotificationService.getNotifications.mockResolvedValue(asPage(mockNotifications));
       mockNotificationService.declineInvitation.mockRejectedValue(new Error('Failed'));
 
       const { result } = renderHook(() => useNotifications(), {
@@ -632,6 +640,123 @@ describe('useNotifications', () => {
     });
   });
 
+  describe('follow request actions', () => {
+    it('shows error alert when accepting a follow request fails', async () => {
+      const mockNotifications = [
+        createMockNotification({ id: 'notif-1', type: 'FOLLOW_REQUEST' }),
+      ];
+      mockNotificationService.getNotifications.mockResolvedValue(asPage(mockNotifications));
+      mockNotificationService.acceptFollowRequest.mockRejectedValue(new Error('Failed'));
+
+      const { result } = renderHook(() => useNotifications(), {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false);
+      });
+
+      await act(async () => {
+        try {
+          await result.current.handleAcceptFollow('notif-1');
+        } catch (e) {
+          // Expected to throw
+        }
+      });
+
+      await waitFor(() => {
+        expect(Alert.alert).toHaveBeenCalledWith('Error', 'Failed to accept follow request.');
+      });
+
+      // Optimistic removal was rolled back
+      expect(result.current.notifications).toHaveLength(1);
+    });
+
+    it('shows error alert when declining a follow request fails', async () => {
+      const mockNotifications = [
+        createMockNotification({ id: 'notif-1', type: 'FOLLOW_REQUEST' }),
+      ];
+      mockNotificationService.getNotifications.mockResolvedValue(asPage(mockNotifications));
+      mockNotificationService.declineFollowRequest.mockRejectedValue(new Error('Failed'));
+
+      const { result } = renderHook(() => useNotifications(), {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false);
+      });
+
+      act(() => {
+        result.current.handleDeclineFollow('notif-1');
+      });
+
+      await waitFor(() => {
+        expect(Alert.alert).toHaveBeenCalledWith('Error', 'Failed to decline follow request.');
+      });
+    });
+  });
+
+  describe('pagination', () => {
+    it('flattens pages and loads more via handleLoadMore', async () => {
+      const pageOne = [createMockNotification({ id: 'notif-1' })];
+      const pageTwo = [createMockNotification({ id: 'notif-2' })];
+      mockNotificationService.getNotifications.mockImplementation((cursor?: string) =>
+        Promise.resolve(
+          cursor === 'cursor-1' ? asPage(pageTwo) : asPage(pageOne, 'cursor-1')
+        )
+      );
+
+      const { result } = renderHook(() => useNotifications(), {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false);
+      });
+
+      expect(result.current.notifications).toHaveLength(1);
+      expect(result.current.hasNextPage).toBe(true);
+
+      act(() => {
+        result.current.handleLoadMore();
+      });
+
+      await waitFor(() => {
+        expect(result.current.notifications).toHaveLength(2);
+      });
+
+      expect(result.current.notifications.map((n) => n.id)).toEqual([
+        'notif-1',
+        'notif-2',
+      ]);
+      expect(result.current.hasNextPage).toBe(false);
+      expect(mockNotificationService.getNotifications).toHaveBeenCalledWith('cursor-1');
+    });
+
+    it('does not fetch when there is no next page', async () => {
+      mockNotificationService.getNotifications.mockResolvedValue(
+        asPage([createMockNotification({ id: 'notif-1' })])
+      );
+
+      const { result } = renderHook(() => useNotifications(), {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false);
+      });
+
+      expect(result.current.hasNextPage).toBe(false);
+
+      act(() => {
+        result.current.handleLoadMore();
+      });
+
+      expect(mockNotificationService.getNotifications).toHaveBeenCalledTimes(1);
+    });
+  });
+
   describe('mutation loading states', () => {
     it('tracks isClearing state', async () => {
       let alertCallback: (() => void) | undefined;
@@ -643,7 +768,7 @@ describe('useNotifications', () => {
       );
 
       const mockNotifications = [createMockNotification({ id: 'notif-1' })];
-      mockNotificationService.getNotifications.mockResolvedValue(mockNotifications);
+      mockNotificationService.getNotifications.mockResolvedValue(asPage(mockNotifications));
 
       let resolveDelete: (value: number) => void;
       const deletePromise = new Promise<number>((resolve) => {

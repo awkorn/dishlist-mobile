@@ -1,9 +1,38 @@
-import { useCallback, useEffect, useMemo } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useCallback, useMemo } from "react";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient,
+  type InfiniteData,
+} from "@tanstack/react-query";
 import { Alert } from "react-native";
 import { queryKeys } from "@lib/queryKeys";
 import { notificationService } from "../services/notificationService";
-import type { Notification, GroupedNotifications } from "../types";
+import type {
+  Notification,
+  NotificationsPage,
+  GroupedNotifications,
+} from "../types";
+
+type NotificationsCache = InfiniteData<NotificationsPage, string | undefined>;
+
+/**
+ * Apply a transform to the notification arrays of every cached page,
+ * preserving page structure and cursors.
+ */
+function mapCachedPages(
+  cache: NotificationsCache | undefined,
+  transform: (notifications: Notification[]) => Notification[]
+): NotificationsCache | undefined {
+  if (!cache) return cache;
+  return {
+    ...cache,
+    pages: cache.pages.map((page) => ({
+      ...page,
+      notifications: transform(page.notifications),
+    })),
+  };
+}
 
 /**
  * Groups notifications by time section
@@ -80,19 +109,30 @@ export function getSectionTitle(
 export function useNotifications() {
   const queryClient = useQueryClient();
 
-  // Fetch all notifications
+  // Fetch notifications, one cursor page at a time
   const {
-    data: notifications = [],
+    data,
     isLoading,
     isError,
     error,
     refetch,
     isRefetching,
-  } = useQuery({
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteQuery({
     queryKey: queryKeys.notifications.all,
-    queryFn: notificationService.getNotifications,
+    queryFn: ({ pageParam }) => notificationService.getNotifications(pageParam),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
     staleTime: 30 * 1000, // Consider fresh for 30 seconds
   });
+
+  // Flatten loaded pages for grouping/rendering
+  const notifications = useMemo(
+    () => data?.pages.flatMap((page) => page.notifications) ?? [],
+    [data]
+  );
 
   // Group notifications by time
   const groupedNotifications = useMemo(
@@ -103,21 +143,22 @@ export function useNotifications() {
   // Check if there are any notifications
   const hasNotifications = notifications.length > 0;
 
-  // Unread count (for local use, badge uses separate query)
+  // Unread within the loaded pages (for local use only — the tab badge uses
+  // the /unread-count query, which counts ALL unread server-side, so it stays
+  // correct even when more unread exist beyond the loaded pages)
   const unreadCount = useMemo(
     () => notifications.filter((n) => !n.isRead).length,
     [notifications]
   );
 
-  // Keep the tab badge in sync with the freshly loaded list instead of
-  // refetching /unread-count after every list load or mutation.
-  useEffect(() => {
-    if (isLoading || isError) return;
-    queryClient.setQueryData<number>(
-      queryKeys.notifications.unread(),
-      unreadCount
-    );
-  }, [queryClient, unreadCount, isLoading, isError]);
+  // Every mutation below reconciles both the list and the badge with the
+  // server once it settles.
+  const invalidateNotifications = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: queryKeys.notifications.all });
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.notifications.unread(),
+    });
+  }, [queryClient]);
 
   // Mark single as read mutation
   const markAsReadMutation = useMutation({
@@ -129,17 +170,19 @@ export function useNotifications() {
       });
 
       // Snapshot previous value
-      const previousNotifications = queryClient.getQueryData<Notification[]>(
+      const previousNotifications = queryClient.getQueryData<NotificationsCache>(
         queryKeys.notifications.all
       );
 
       // Optimistically update
-      queryClient.setQueryData<Notification[]>(
+      queryClient.setQueryData<NotificationsCache>(
         queryKeys.notifications.all,
         (old) =>
-          old?.map((n) =>
-            n.id === notificationId ? { ...n, isRead: true } : n
-          ) ?? []
+          mapCachedPages(old, (items) =>
+            items.map((n) =>
+              n.id === notificationId ? { ...n, isRead: true } : n
+            )
+          )
       );
 
       // Also update unread count
@@ -159,14 +202,7 @@ export function useNotifications() {
         );
       }
     },
-    onSettled: () => {
-      // Refetch to ensure consistency
-      // The unread badge is synced from the refetched list (see the effect
-      // in useNotifications), so only the list needs invalidating here.
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.notifications.all,
-      });
-    },
+    onSettled: invalidateNotifications,
   });
 
   // Mark all as read mutation
@@ -177,14 +213,17 @@ export function useNotifications() {
         queryKey: queryKeys.notifications.all,
       });
 
-      const previousNotifications = queryClient.getQueryData<Notification[]>(
+      const previousNotifications = queryClient.getQueryData<NotificationsCache>(
         queryKeys.notifications.all
       );
 
       // Optimistically mark all as read
-      queryClient.setQueryData<Notification[]>(
+      queryClient.setQueryData<NotificationsCache>(
         queryKeys.notifications.all,
-        (old) => old?.map((n) => ({ ...n, isRead: true })) ?? []
+        (old) =>
+          mapCachedPages(old, (items) =>
+            items.map((n) => ({ ...n, isRead: true }))
+          )
       );
 
       queryClient.setQueryData<number>(queryKeys.notifications.unread(), 0);
@@ -199,13 +238,7 @@ export function useNotifications() {
         );
       }
     },
-    onSettled: () => {
-      // The unread badge is synced from the refetched list (see the effect
-      // in useNotifications), so only the list needs invalidating here.
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.notifications.all,
-      });
-    },
+    onSettled: invalidateNotifications,
   });
 
   // Delete single notification mutation
@@ -216,19 +249,22 @@ export function useNotifications() {
         queryKey: queryKeys.notifications.all,
       });
 
-      const previousNotifications = queryClient.getQueryData<Notification[]>(
+      const previousNotifications = queryClient.getQueryData<NotificationsCache>(
         queryKeys.notifications.all
       );
 
       // Find the notification to check if unread
-      const notification = previousNotifications?.find(
-        (n) => n.id === notificationId
-      );
+      const notification = previousNotifications?.pages
+        .flatMap((page) => page.notifications)
+        .find((n) => n.id === notificationId);
 
       // Optimistically remove
-      queryClient.setQueryData<Notification[]>(
+      queryClient.setQueryData<NotificationsCache>(
         queryKeys.notifications.all,
-        (old) => old?.filter((n) => n.id !== notificationId) ?? []
+        (old) =>
+          mapCachedPages(old, (items) =>
+            items.filter((n) => n.id !== notificationId)
+          )
       );
 
       // Update unread count if notification was unread
@@ -249,13 +285,7 @@ export function useNotifications() {
         );
       }
     },
-    onSettled: () => {
-      // The unread badge is synced from the refetched list (see the effect
-      // in useNotifications), so only the list needs invalidating here.
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.notifications.all,
-      });
-    },
+    onSettled: invalidateNotifications,
   });
 
   // Delete all (Clear All) mutation
@@ -266,12 +296,18 @@ export function useNotifications() {
         queryKey: queryKeys.notifications.all,
       });
 
-      const previousNotifications = queryClient.getQueryData<Notification[]>(
+      const previousNotifications = queryClient.getQueryData<NotificationsCache>(
         queryKeys.notifications.all
       );
 
-      // Optimistically clear all
-      queryClient.setQueryData<Notification[]>(queryKeys.notifications.all, []);
+      // Optimistically clear all (collapse to a single empty page)
+      queryClient.setQueryData<NotificationsCache>(
+        queryKeys.notifications.all,
+        {
+          pages: [{ notifications: [], nextCursor: null }],
+          pageParams: [undefined],
+        }
+      );
 
       queryClient.setQueryData<number>(queryKeys.notifications.unread(), 0);
 
@@ -286,13 +322,7 @@ export function useNotifications() {
       }
       Alert.alert("Error", "Failed to clear notifications. Please try again.");
     },
-    onSettled: () => {
-      // The unread badge is synced from the refetched list (see the effect
-      // in useNotifications), so only the list needs invalidating here.
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.notifications.all,
-      });
-    },
+    onSettled: invalidateNotifications,
   });
 
   // Accept invitation mutation
@@ -300,9 +330,12 @@ export function useNotifications() {
     mutationFn: notificationService.acceptInvitation,
     onSuccess: (_data, notificationId) => {
       // Remove the notification from cache
-      queryClient.setQueryData<Notification[]>(
+      queryClient.setQueryData<NotificationsCache>(
         queryKeys.notifications.all,
-        (old) => old?.filter((n) => n.id !== notificationId) ?? []
+        (old) =>
+          mapCachedPages(old, (items) =>
+            items.filter((n) => n.id !== notificationId)
+          )
       );
 
       // Invalidate dishlist queries to show new collaboration
@@ -316,13 +349,7 @@ export function useNotifications() {
         error?.response?.data?.error || "Failed to accept invitation."
       );
     },
-    onSettled: () => {
-      // The unread badge is synced from the refetched list (see the effect
-      // in useNotifications), so only the list needs invalidating here.
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.notifications.all,
-      });
-    },
+    onSettled: invalidateNotifications,
   });
 
   // Decline invitation mutation
@@ -333,14 +360,17 @@ export function useNotifications() {
         queryKey: queryKeys.notifications.all,
       });
 
-      const previousNotifications = queryClient.getQueryData<Notification[]>(
+      const previousNotifications = queryClient.getQueryData<NotificationsCache>(
         queryKeys.notifications.all
       );
 
       // Optimistically remove
-      queryClient.setQueryData<Notification[]>(
+      queryClient.setQueryData<NotificationsCache>(
         queryKeys.notifications.all,
-        (old) => old?.filter((n) => n.id !== notificationId) ?? []
+        (old) =>
+          mapCachedPages(old, (items) =>
+            items.filter((n) => n.id !== notificationId)
+          )
       );
 
       return { previousNotifications };
@@ -354,13 +384,77 @@ export function useNotifications() {
       }
       Alert.alert("Error", "Failed to decline invitation.");
     },
-    onSettled: () => {
-      // The unread badge is synced from the refetched list (see the effect
-      // in useNotifications), so only the list needs invalidating here.
-      queryClient.invalidateQueries({
+    onSettled: invalidateNotifications,
+  });
+
+  // Accept follow request mutation
+  const acceptFollowMutation = useMutation({
+    mutationFn: notificationService.acceptFollowRequest,
+    onMutate: async (notificationId) => {
+      await queryClient.cancelQueries({
         queryKey: queryKeys.notifications.all,
       });
+
+      const previousNotifications = queryClient.getQueryData<NotificationsCache>(
+        queryKeys.notifications.all
+      );
+
+      // Optimistically remove the notification
+      queryClient.setQueryData<NotificationsCache>(
+        queryKeys.notifications.all,
+        (old) =>
+          mapCachedPages(old, (items) =>
+            items.filter((n) => n.id !== notificationId)
+          )
+      );
+
+      return { previousNotifications };
     },
+    onError: (_err, _id, context) => {
+      if (context?.previousNotifications) {
+        queryClient.setQueryData(
+          queryKeys.notifications.all,
+          context.previousNotifications
+        );
+      }
+      Alert.alert("Error", "Failed to accept follow request.");
+    },
+    onSettled: invalidateNotifications,
+  });
+
+  // Decline follow request mutation
+  const declineFollowMutation = useMutation({
+    mutationFn: notificationService.declineFollowRequest,
+    onMutate: async (notificationId) => {
+      await queryClient.cancelQueries({
+        queryKey: queryKeys.notifications.all,
+      });
+
+      const previousNotifications = queryClient.getQueryData<NotificationsCache>(
+        queryKeys.notifications.all
+      );
+
+      // Optimistically remove the notification
+      queryClient.setQueryData<NotificationsCache>(
+        queryKeys.notifications.all,
+        (old) =>
+          mapCachedPages(old, (items) =>
+            items.filter((n) => n.id !== notificationId)
+          )
+      );
+
+      return { previousNotifications };
+    },
+    onError: (_err, _id, context) => {
+      if (context?.previousNotifications) {
+        queryClient.setQueryData(
+          queryKeys.notifications.all,
+          context.previousNotifications
+        );
+      }
+      Alert.alert("Error", "Failed to decline follow request.");
+    },
+    onSettled: invalidateNotifications,
   });
 
   // Wrapped handlers
@@ -411,81 +505,6 @@ export function useNotifications() {
     [declineInvitationMutation]
   );
 
-  // Accept follow request mutation
-  const acceptFollowMutation = useMutation({
-    mutationFn: notificationService.acceptFollowRequest,
-    onMutate: async (notificationId) => {
-      await queryClient.cancelQueries({
-        queryKey: queryKeys.notifications.all,
-      });
-
-      const previousNotifications = queryClient.getQueryData<Notification[]>(
-        queryKeys.notifications.all
-      );
-
-      // Optimistically remove the notification
-      queryClient.setQueryData<Notification[]>(
-        queryKeys.notifications.all,
-        (old) => old?.filter((n) => n.id !== notificationId) ?? []
-      );
-
-      return { previousNotifications };
-    },
-    onError: (_err, _id, context) => {
-      if (context?.previousNotifications) {
-        queryClient.setQueryData(
-          queryKeys.notifications.all,
-          context.previousNotifications
-        );
-      }
-    },
-    onSettled: () => {
-      // The unread badge is synced from the refetched list (see the effect
-      // in useNotifications), so only the list needs invalidating here.
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.notifications.all,
-      });
-    },
-  });
-
-  // Decline follow request mutation
-  const declineFollowMutation = useMutation({
-    mutationFn: notificationService.declineFollowRequest,
-    onMutate: async (notificationId) => {
-      await queryClient.cancelQueries({
-        queryKey: queryKeys.notifications.all,
-      });
-
-      const previousNotifications = queryClient.getQueryData<Notification[]>(
-        queryKeys.notifications.all
-      );
-
-      // Optimistically remove the notification
-      queryClient.setQueryData<Notification[]>(
-        queryKeys.notifications.all,
-        (old) => old?.filter((n) => n.id !== notificationId) ?? []
-      );
-
-      return { previousNotifications };
-    },
-    onError: (_err, _id, context) => {
-      if (context?.previousNotifications) {
-        queryClient.setQueryData(
-          queryKeys.notifications.all,
-          context.previousNotifications
-        );
-      }
-    },
-    onSettled: () => {
-      // The unread badge is synced from the refetched list (see the effect
-      // in useNotifications), so only the list needs invalidating here.
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.notifications.all,
-      });
-    },
-  });
-
-  // Add handlers
   const handleAcceptFollow = useCallback(
     (notificationId: string) => {
       return acceptFollowMutation.mutateAsync(notificationId);
@@ -500,6 +519,22 @@ export function useNotifications() {
     [declineFollowMutation]
   );
 
+  // Load the next page (no-op when everything is loaded or a fetch is running)
+  const handleLoadMore = useCallback(() => {
+    if (hasNextPage && !isFetchingNextPage) {
+      void fetchNextPage();
+    }
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  // The notification currently being accepted/declined, so only that row
+  // shows a spinner instead of every actionable row.
+  const pendingActionId =
+    (acceptInvitationMutation.isPending && acceptInvitationMutation.variables) ||
+    (declineInvitationMutation.isPending && declineInvitationMutation.variables) ||
+    (acceptFollowMutation.isPending && acceptFollowMutation.variables) ||
+    (declineFollowMutation.isPending && declineFollowMutation.variables) ||
+    null;
+
   return {
     // Data
     notifications,
@@ -512,9 +547,12 @@ export function useNotifications() {
     isRefetching,
     isError,
     error,
+    isFetchingNextPage,
+    hasNextPage: hasNextPage ?? false,
 
     // Actions
     refetch,
+    handleLoadMore,
     handleMarkAsRead,
     handleMarkAllAsRead,
     handleDelete,
@@ -525,6 +563,7 @@ export function useNotifications() {
     handleDeclineFollow,
 
     // Mutation states (for UI feedback)
+    pendingActionId,
     isAccepting: acceptInvitationMutation.isPending,
     isDeclining: declineInvitationMutation.isPending,
     isClearing: deleteAllMutation.isPending,
