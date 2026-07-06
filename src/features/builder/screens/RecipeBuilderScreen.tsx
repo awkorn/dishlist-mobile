@@ -116,6 +116,13 @@ export default function RecipeBuilderScreen() {
             setRecipeToSave(null);
             Alert.alert("Saved!", "Recipe has been added to your DishList.");
           },
+          onError: () => {
+            // Keep the picker open so the user can retry; surface the failure.
+            Alert.alert(
+              "Couldn't save recipe",
+              "Something went wrong saving this recipe. Please try again."
+            );
+          },
         }
       );
     },
