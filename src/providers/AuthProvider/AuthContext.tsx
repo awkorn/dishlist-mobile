@@ -22,6 +22,7 @@ import type { SignUpResult } from "@features/auth/types";
 import api from "@services/api";
 import { queryKeys } from "@lib/queryKeys";
 import { unregisterCurrentDevicePushToken } from "@features/notifications/services/pushService";
+import { captureInviteLink } from "@features/invite/services/pendingInvite";
 import type { UserProfile } from "@features/profile/types";
 
 interface AuthContextType {
@@ -204,6 +205,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     };
 
     const linkingSubscription = Linking.addEventListener("url", ({ url }) => {
+      // Stash invite deep links opened while logged out so we can route to them
+      // after sign-in (InviteLanding lives in the authenticated stack only).
+      if (!authenticatedUserIdRef.current) {
+        void captureInviteLink(url);
+      }
       void handleAuthUrl(url);
     });
 
@@ -227,6 +233,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         // checks) only depend on the local session, so we must NOT block the
         // splash spinner on a network round-trip that could hang when offline.
         void loadUserProfile(session.user);
+      } else if (initialUrl) {
+        // Cold start from an invite deep link while logged out: stash the token
+        // so InviteRedirectHandler can route to it once the user signs in.
+        await captureInviteLink(initialUrl);
       }
       setLoading(false);
     };

@@ -5,6 +5,7 @@ import {
   StyleSheet,
   ActivityIndicator,
   Image,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { User as UserIcon } from 'lucide-react-native';
@@ -84,15 +85,27 @@ export default function InviteLandingScreen({ route, navigation }: Props) {
     }
   };
 
-  const handleDecline = async () => {
-    try {
-      await inviteService.declineInvite(token);
-      // Navigate to DishLists screen
-      navigation.replace('Home');
-    } catch (error) {
-      // Still navigate away even if decline fails
-      navigation.replace('Home');
-    }
+  const handleDecline = () => {
+    Alert.alert(
+      'Decline Invite',
+      'Are you sure you want to decline this invitation?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Decline',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await inviteService.declineInvite(token);
+            } catch (error) {
+              // Still navigate away even if decline fails
+            } finally {
+              navigation.replace('Home');
+            }
+          },
+        },
+      ]
+    );
   };
 
   const handleGoHome = () => {
@@ -113,6 +126,19 @@ export default function InviteLandingScreen({ route, navigation }: Props) {
 
   // Error state
   if (state.status === 'error') {
+    // Terminal codes can't be fixed by retrying; anything else (network,
+    // unknown) offers a Retry that re-validates the token.
+    const TERMINAL_CODES = [
+      'EXPIRED',
+      'NOT_FOUND',
+      'ALREADY_USED',
+      'WRONG_USER',
+      'IS_OWNER',
+      'UNAVAILABLE',
+      'BLOCKED',
+    ];
+    const canRetry = !TERMINAL_CODES.includes(state.code);
+
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.content}>
@@ -133,7 +159,19 @@ export default function InviteLandingScreen({ route, navigation }: Props) {
             <Text style={styles.errorMessage}>{state.message}</Text>
           </View>
 
-          <Button title="Go to DishLists" onPress={handleGoHome} style={styles.button} />
+          {canRetry && (
+            <Button
+              title="Try Again"
+              onPress={validateInvite}
+              style={styles.button}
+            />
+          )}
+          <Button
+            title="Go to DishLists"
+            onPress={handleGoHome}
+            variant={canRetry ? 'secondary' : undefined}
+            style={styles.button}
+          />
         </View>
       </SafeAreaView>
     );
