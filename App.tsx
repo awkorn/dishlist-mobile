@@ -13,12 +13,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { linking } from '@navigation/linking';
 import { navigationRef } from '@navigation/navigationRef';
 import InviteRedirectHandler from '@navigation/InviteRedirectHandler';
-import { usePushNotifications } from '@features/notifications';
-
-function PushNotificationHandler() {
-  usePushNotifications();
-  return null;
-}
+import { PushNotificationsProvider } from '@features/notifications';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -81,10 +76,11 @@ export default function App() {
           <SafeAreaProvider>
             <AuthProvider>
               <NavigationContainer linking={linking} ref={navigationRef}>
-                <PushNotificationHandler />
-                <InviteRedirectHandler />
-                <MainNavigator />
-                <StatusBar style="auto" />
+                <PushNotificationsProvider>
+                  <InviteRedirectHandler />
+                  <MainNavigator />
+                  <StatusBar style="auto" />
+                </PushNotificationsProvider>
               </NavigationContainer>
             </AuthProvider>
           </SafeAreaProvider>

@@ -128,6 +128,13 @@ export type NotificationData =
 // API Response types
 export interface NotificationsResponse {
   notifications: Notification[];
+  nextCursor?: string | null;
+}
+
+// One page of the cursor-paginated notifications list
+export interface NotificationsPage {
+  notifications: Notification[];
+  nextCursor: string | null;
 }
 
 export interface UnreadCountResponse {
