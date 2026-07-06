@@ -298,11 +298,11 @@ function MessageBubble({
             activeOpacity={0.65}
           >
             <RefreshCcw
-              size={22}
+              size={18}
               color={
                 actionsDisabled
                   ? theme.colors.neutral[400]
-                  : theme.colors.neutral[900]
+                  : theme.colors.neutral[600]
               }
               strokeWidth={2}
             />
@@ -320,11 +320,11 @@ function MessageBubble({
             activeOpacity={0.65}
           >
             <SquarePen
-              size={22}
+              size={18}
               color={
                 actionsDisabled
                   ? theme.colors.neutral[400]
-                  : theme.colors.neutral[900]
+                  : theme.colors.neutral[600]
               }
               strokeWidth={2}
             />
@@ -394,7 +394,7 @@ const styles = StyleSheet.create({
   userBubble: {
     alignSelf: "flex-end",
     maxWidth: "80%",
-    backgroundColor: theme.colors.primary[500],
+    backgroundColor: theme.colors.primary[600],
     borderRadius: 18,
     borderBottomRightRadius: 4,
     paddingHorizontal: 16,
