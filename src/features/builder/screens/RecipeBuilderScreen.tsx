@@ -107,7 +107,7 @@ export default function RecipeBuilderScreen() {
           prepTime: recipeToSave.prepTime ?? undefined,
           cookTime: recipeToSave.cookTime ?? undefined,
           servings: recipeToSave.servings ?? undefined,
-          tags: recipeToSave.tags,
+          tags: [],
           dishListId,
         },
         {

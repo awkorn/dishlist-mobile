@@ -84,17 +84,6 @@ export function GeneratedRecipeDetailSheet({
             )}
           </View>
 
-          {/* Tags */}
-          {recipe.tags.length > 0 && (
-            <View style={styles.tagsRow}>
-              {recipe.tags.map((tag) => (
-                <View key={tag} style={styles.tag}>
-                  <Text style={styles.tagText}>{tag}</Text>
-                </View>
-              ))}
-            </View>
-          )}
-
           {/* Ingredients */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>
@@ -220,23 +209,6 @@ const styles = StyleSheet.create({
     ...typography.caption,
     fontSize: 11,
     color: theme.colors.neutral[500],
-  },
-  tagsRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 6,
-    marginBottom: theme.spacing.xl,
-  },
-  tag: {
-    backgroundColor: theme.colors.primary[50],
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-  },
-  tagText: {
-    ...typography.caption,
-    fontSize: 12,
-    color: theme.colors.primary[600],
   },
   section: {
     marginBottom: theme.spacing.xl,

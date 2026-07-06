@@ -61,17 +61,6 @@ export function GeneratedRecipeCard({
             </View>
           )}
         </View>
-
-        {/* Tags */}
-        {recipe.tags.length > 0 && (
-          <View style={styles.tagsRow}>
-            {recipe.tags.slice(0, 2).map((tag) => (
-              <View key={tag} style={styles.tag}>
-                <Text style={styles.tagText}>{tag}</Text>
-              </View>
-            ))}
-          </View>
-        )}
       </View>
     </TouchableOpacity>
   );
@@ -121,22 +110,5 @@ const styles = StyleSheet.create({
     ...typography.caption,
     fontSize: 11,
     color: theme.colors.neutral[500],
-  },
-  tagsRow: {
-    flexDirection: "row",
-    gap: 4,
-    marginTop: 6,
-    flexWrap: "wrap",
-  },
-  tag: {
-    backgroundColor: theme.colors.primary[50],
-    borderRadius: 6,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-  },
-  tagText: {
-    ...typography.caption,
-    fontSize: 10,
-    color: theme.colors.primary[600],
   },
 });

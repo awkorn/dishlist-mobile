@@ -17,7 +17,6 @@ export interface GeneratedRecipe {
   servings: number | null;
   ingredients: RecipeItem[];
   instructions: RecipeItem[];
-  tags: string[];
 }
 
 // ─── API Request / Response ─────────────────────────────────────────
