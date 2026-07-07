@@ -74,6 +74,8 @@ export default function ImportRecipeModal({
             onPress={handleClose}
             disabled={isProcessing}
             style={styles.closeButton}
+            accessibilityRole="button"
+            accessibilityLabel="Close"
           >
             <X size={24} color={theme.colors.neutral[700]} />
           </TouchableOpacity>
@@ -141,7 +143,12 @@ export default function ImportRecipeModal({
                 <Text style={styles.imagesSectionTitle}>
                   Selected Photos ({selectedImages.length}/5)
                 </Text>
-                <TouchableOpacity onPress={clearImages} disabled={isProcessing}>
+                <TouchableOpacity
+                  onPress={clearImages}
+                  disabled={isProcessing}
+                  accessibilityRole="button"
+                  accessibilityLabel="Clear all photos"
+                >
                   <Text style={styles.clearAllText}>Clear All</Text>
                 </TouchableOpacity>
               </View>
@@ -154,6 +161,8 @@ export default function ImportRecipeModal({
                       style={styles.removeImageButton}
                       onPress={() => removeImage(index)}
                       disabled={isProcessing}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Remove photo ${index + 1}`}
                     >
                       <X size={14} color={theme.colors.surface} />
                     </TouchableOpacity>

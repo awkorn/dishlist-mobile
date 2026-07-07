@@ -77,6 +77,13 @@ export default function AddToDishListModal({
         ]}
         onPress={() => !alreadyAdded && handleSelectDishList(item.id)}
         disabled={alreadyAdded || addMutation.isPending}
+        accessibilityRole="button"
+        accessibilityState={{ disabled: alreadyAdded }}
+        accessibilityLabel={
+          alreadyAdded
+            ? `${item.title}, already added`
+            : `Add to ${item.title}`
+        }
       >
         <View style={styles.dishListInfo}>
           <View style={styles.dishListHeader}>
