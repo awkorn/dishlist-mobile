@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import * as ImagePicker from "expo-image-picker";
-import * as FileSystem from "expo-file-system";
+import { manipulateAsync, SaveFormat } from "expo-image-manipulator";
 import { Alert } from "react-native";
 import { recipeService } from "../services";
 import { getErrorMessage } from "@utils";
@@ -28,6 +28,9 @@ interface UseImportRecipeReturn {
 }
 
 const MAX_IMAGES = 5;
+// Long-edge cap for imported photos. gpt-4o vision downscales large images
+// anyway, so this only trims payload size, not extraction quality.
+const MAX_IMPORT_DIMENSION = 1568;
 
 export function useImportRecipe(
   options: UseImportRecipeOptions = {}
@@ -64,26 +67,28 @@ export function useImportRecipe(
     return true;
   };
 
-  // Convert image URI to base64
+  // Downscale + re-encode the image to JPEG base64 before upload. Resizing the
+  // long edge to <= MAX_IMPORT_DIMENSION keeps multi-photo payloads well under
+  // the API body limit (and the server-side per-image cap), and normalizing to
+  // JPEG guarantees an allowlisted mimeType regardless of the source format.
   const imageToBase64 = async (
     uri: string
   ): Promise<{ base64: string; mimeType: string }> => {
-    const file = new FileSystem.File(uri);
-    const base64 = await file.base64();
+    const result = await manipulateAsync(
+      uri,
+      [{ resize: { width: MAX_IMPORT_DIMENSION } }],
+      {
+        base64: true,
+        compress: 0.7,
+        format: SaveFormat.JPEG,
+      }
+    );
 
-    // Determine MIME type from URI
-    const extension = uri.split(".").pop()?.toLowerCase() || "jpg";
-    const mimeTypes: Record<string, string> = {
-      jpg: "image/jpeg",
-      jpeg: "image/jpeg",
-      png: "image/png",
-      gif: "image/gif",
-      webp: "image/webp",
-      heic: "image/heic",
-    };
-    const mimeType = mimeTypes[extension] || "image/jpeg";
+    if (!result.base64) {
+      throw new Error("Failed to prepare image for import");
+    }
 
-    return { base64, mimeType };
+    return { base64: result.base64, mimeType: "image/jpeg" };
   };
 
   // Process picked images

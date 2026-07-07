@@ -329,6 +329,8 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
           <TouchableOpacity
             onPress={() => navigation.goBack()}
             style={styles.headerButton}
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
           >
             <ChevronLeft size={24} color={theme.colors.neutral[700]} />
           </TouchableOpacity>
@@ -340,6 +342,8 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
           <TouchableOpacity
             onPress={() => setShowActionSheet(true)}
             style={styles.headerButton}
+            accessibilityRole="button"
+            accessibilityLabel="Recipe options"
           >
             <MoreHorizontal size={24} color={theme.colors.neutral[700]} />
           </TouchableOpacity>
@@ -505,6 +509,11 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
                     key={i}
                     style={styles.ingredientRow}
                     onPress={() => toggleIngredient(i)}
+                    accessibilityRole="checkbox"
+                    accessibilityState={{
+                      checked: progress.checkedIngredients.has(i),
+                    }}
+                    accessibilityLabel={item.text}
                   >
                     <View
                       style={[
@@ -566,6 +575,11 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
                     key={i}
                     style={styles.instructionRow}
                     onPress={() => toggleStep(i)}
+                    accessibilityRole="checkbox"
+                    accessibilityState={{
+                      checked: progress.completedSteps.has(i),
+                    }}
+                    accessibilityLabel={`Step ${stepNum}: ${item.text}`}
                   >
                     <View style={styles.stepNumber}>
                       <Text

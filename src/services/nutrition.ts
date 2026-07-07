@@ -9,10 +9,23 @@ interface NutritionInfo {
   fat?: number;
 }
 
-// Cache key generator
+// Small, Unicode-safe string hash (djb2). Avoids btoa, which throws on any
+// non-Latin1 character (e.g. "½", "jalapeño") that routinely appears in recipe
+// ingredients.
+const hashString = (value: string): string => {
+  let hash = 5381;
+  for (let i = 0; i < value.length; i++) {
+    hash = (hash * 33) ^ value.charCodeAt(i);
+  }
+  // >>> 0 coerces to an unsigned 32-bit int for a stable, positive key.
+  return (hash >>> 0).toString(36);
+};
+
+// Cache key generator. Copies before sorting so the caller's array is not
+// mutated, and hashes the joined ingredients for a collision-resistant key.
 const getCacheKey = (ingredients: string[], servings: number): string => {
-  const ingredientsKey = ingredients.sort().join('|');
-  return `nutrition_${btoa(ingredientsKey)}_${servings}`;
+  const ingredientsKey = [...ingredients].sort().join('|');
+  return `nutrition_${hashString(ingredientsKey)}_${servings}`;
 };
 
 // Main calculation function with caching
