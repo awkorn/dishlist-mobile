@@ -26,7 +26,6 @@ import {
   Info,
   FileText,
   Shield,
-  Scale,
 } from "lucide-react-native";
 import { useAuth } from "@providers/AuthProvider/AuthContext";
 import { usePushNotifications } from "@features/notifications";
@@ -131,13 +130,27 @@ export default function SettingsScreen({ navigation }: Props) {
     );
   }, [isDeleting, signOut, user?.id]);
 
-  const handleOpenURL = useCallback((url: string) => {
-    Linking.openURL(url);
+  const handleOpenURL = useCallback(async (url: string) => {
+    try {
+      const canOpen = await Linking.canOpenURL(url);
+      if (!canOpen) {
+        throw new Error("No handler for URL");
+      }
+      await Linking.openURL(url);
+    } catch (error) {
+      const isEmail = url.startsWith("mailto:");
+      Alert.alert(
+        "Can't Open Link",
+        isEmail
+          ? `No email app is set up on this device. You can reach us at ${SUPPORT_EMAIL}.`
+          : "We couldn't open that link. Please try again later."
+      );
+    }
   }, []);
 
   const handleRateApp = useCallback(() => {
-    Linking.openURL(URLS.APP_STORE);
-  }, []);
+    handleOpenURL(URLS.APP_STORE);
+  }, [handleOpenURL]);
 
   const handlePushToggle = useCallback(
     (value: boolean) => {
@@ -155,6 +168,8 @@ export default function SettingsScreen({ navigation }: Props) {
         <TouchableOpacity
           onPress={() => navigation.goBack()}
           hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
         >
           <ArrowLeft size={24} color={theme.colors.neutral[800]} />
         </TouchableOpacity>
@@ -191,19 +206,21 @@ export default function SettingsScreen({ navigation }: Props) {
             destructive
             showDivider={false}
             onPress={handleDeleteAccount}
+            loading={isDeleting}
+            disabled={isDeleting}
           />
         </SettingsSection>
 
         {/* ── Subscription ──────────────────────────────────── */}
+        {/* Static until the RevenueCat paywall/management screen ships
+            (see PRODUCTION_READINESS.md settings — Manual/flagged). Kept as a
+            non-interactive info row so it can't present as a broken button. */}
         <SettingsSection title="Subscription">
           <SettingsRow
             icon={<Crown size={18} color={theme.colors.neutral[600]} />}
             label="Manage Subscription"
             subtitle="Free plan"
-            onPress={() => {
-              // TODO: Navigate to subscription/paywall screen (RevenueCat)
-              console.log("Manage subscription");
-            }}
+            type="static"
             showDivider={false}
           />
         </SettingsSection>
@@ -266,16 +283,11 @@ export default function SettingsScreen({ navigation }: Props) {
             icon={<Shield size={18} color={theme.colors.neutral[600]} />}
             label="Privacy Policy"
             onPress={() => handleOpenURL(URLS.PRIVACY)}
-          />
-          <SettingsRow
-            icon={<Scale size={18} color={theme.colors.neutral[600]} />}
-            label="Licenses"
-            onPress={() => {
-              // TODO: Navigate to licenses screen or open URL
-              console.log("Licenses");
-            }}
             showDivider={false}
           />
+          {/* "Licenses" row removed until an OSS-licenses destination exists
+              (see PRODUCTION_READINESS.md settings — Manual/flagged); a row that
+              only console.log'd on tap was a dead/App-Store-risky control. */}
         </SettingsSection>
       </ScrollView>
     </SafeAreaView>

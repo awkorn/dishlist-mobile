@@ -113,6 +113,8 @@ export default function ChangePasswordScreen({ navigation }: Props) {
           style={styles.eyeButton}
           onPress={toggleShow}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          accessibilityRole="button"
+          accessibilityLabel={show ? "Hide password" : "Show password"}
         >
           {show ? (
             <EyeOff size={20} color={theme.colors.neutral[400]} />
@@ -131,6 +133,8 @@ export default function ChangePasswordScreen({ navigation }: Props) {
         <TouchableOpacity
           onPress={() => navigation.goBack()}
           hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
         >
           <ArrowLeft size={24} color={theme.colors.neutral[800]} />
         </TouchableOpacity>

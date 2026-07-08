@@ -84,6 +84,8 @@ export default function ChangeEmailScreen({ navigation }: Props) {
           <TouchableOpacity
             onPress={() => navigation.goBack()}
             hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
           >
             <ArrowLeft size={24} color={theme.colors.neutral[800]} />
           </TouchableOpacity>
@@ -124,6 +126,8 @@ export default function ChangeEmailScreen({ navigation }: Props) {
         <TouchableOpacity
           onPress={() => navigation.goBack()}
           hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
         >
           <ArrowLeft size={24} color={theme.colors.neutral[800]} />
         </TouchableOpacity>
@@ -215,6 +219,8 @@ export default function ChangeEmailScreen({ navigation }: Props) {
                 style={styles.eyeButton}
                 onPress={() => setShowPassword((prev) => !prev)}
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                accessibilityRole="button"
+                accessibilityLabel={showPassword ? "Hide password" : "Show password"}
               >
                 {showPassword ? (
                   <EyeOff size={20} color={theme.colors.neutral[400]} />
