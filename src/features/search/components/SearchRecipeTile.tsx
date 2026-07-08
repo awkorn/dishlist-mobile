@@ -40,7 +40,12 @@ export function SearchRecipeTile({ recipe, onPress }: SearchRecipeTileProps) {
   const coverImageUrl = recipe.imageUrls?.[0] || recipe.imageUrl;
 
   return (
-    <TouchableOpacity style={styles.container} onPress={handlePress}>
+    <TouchableOpacity
+      style={styles.container}
+      onPress={handlePress}
+      accessibilityRole="button"
+      accessibilityLabel={`Recipe: ${recipe.title}`}
+    >
       {coverImageUrl ? (
         <Image
           source={{ uri: coverImageUrl }}

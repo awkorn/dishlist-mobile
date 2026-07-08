@@ -7,6 +7,9 @@ import type { SearchTab, SearchResponse, SearchUser, SearchRecipe, SearchDishLis
 
 const DEBOUNCE_MS = 300;
 const PAGE_SIZE = 20;
+// Keep in sync with the API (MIN_QUERY_LENGTH). Below this we don't search —
+// single-char queries return low-quality, window-limited noise.
+const MIN_QUERY_LENGTH = 2;
 
 interface UseSearchOptions {
   initialTab?: SearchTab;
@@ -20,6 +23,8 @@ export function useSearch(options: UseSearchOptions = {}) {
 
   // Debounce the search query
   const debouncedQuery = useDebouncedValue(query, DEBOUNCE_MS);
+  const trimmedQuery = debouncedQuery.trim();
+  const isQueryValid = trimmedQuery.length >= MIN_QUERY_LENGTH;
 
   // Build query key for React Query
   const searchQueryKey = useMemo(
@@ -50,7 +55,7 @@ export function useSearch(options: UseSearchOptions = {}) {
     },
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
-    enabled: debouncedQuery.length > 0,
+    enabled: isQueryValid,
     staleTime: 30 * 1000, // 30 seconds
   });
 
@@ -72,7 +77,9 @@ export function useSearch(options: UseSearchOptions = {}) {
 
   // Check if there are any results
   const hasResults = users.length > 0 || recipes.length > 0 || dishLists.length > 0;
-  const isEmpty = debouncedQuery.length > 0 && !isLoading && !hasResults;
+  const isEmpty = isQueryValid && !isLoading && !hasResults;
+  // A typed-but-too-short query (client shows a "keep typing" hint).
+  const isQueryTooShort = trimmedQuery.length > 0 && !isQueryValid;
 
   // Handle tab change
   const handleTabChange = useCallback((tab: SearchTab) => {
@@ -108,9 +115,10 @@ export function useSearch(options: UseSearchOptions = {}) {
     dishLists,
     hasResults,
     isEmpty,
+    isQueryTooShort,
 
     // Loading states
-    isLoading: isLoading && debouncedQuery.length > 0,
+    isLoading: isLoading && isQueryValid,
     isFetching,
     isFetchingNextPage,
     isError,

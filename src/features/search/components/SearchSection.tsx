@@ -33,7 +33,12 @@ export function SearchSection({
       <View style={styles.header}>
         <Text style={styles.title}>{title}</Text>
         {onSeeAll && (
-          <TouchableOpacity style={styles.seeAllButton} onPress={onSeeAll}>
+          <TouchableOpacity
+            style={styles.seeAllButton}
+            onPress={onSeeAll}
+            accessibilityRole="button"
+            accessibilityLabel={`See all ${title}`}
+          >
             <ChevronRight size={20} color={theme.colors.neutral[600]} />
           </TouchableOpacity>
         )}

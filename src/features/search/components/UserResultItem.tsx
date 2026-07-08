@@ -35,7 +35,14 @@ export function UserResultItem({ user, onPress }: UserResultItemProps) {
   const displayName = [user.firstName, user.lastName].filter(Boolean).join(" ") || user.username || "User";
 
   return (
-    <TouchableOpacity style={styles.container} onPress={handlePress}>
+    <TouchableOpacity
+      style={styles.container}
+      onPress={handlePress}
+      accessibilityRole="button"
+      accessibilityLabel={
+        user.isFollowing ? `${displayName}, following` : displayName
+      }
+    >
       {/* Avatar */}
       {user.avatarUrl ? (
         <Image
