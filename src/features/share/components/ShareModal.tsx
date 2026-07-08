@@ -49,12 +49,14 @@ export function ShareModal({
     selectedUserIds,
     filteredMutuals,
     isLoadingMutuals,
+    isMutualsError,
     isSending,
     toggleUserSelection,
     clearSelection,
     handleSendToSelected,
     handleShareViaMessage,
     handleCopyLink,
+    refetchMutuals,
     hasSelection,
     selectionCount,
     supportsDirectShare,
@@ -82,6 +84,9 @@ export function ShareModal({
           style={styles.userItem}
           onPress={() => toggleUserSelection(item.uid)}
           activeOpacity={0.7}
+          accessibilityRole="checkbox"
+          accessibilityState={{ checked: isSelected }}
+          accessibilityLabel={displayName}
         >
           <View style={styles.avatarContainer}>
             {item.avatarUrl ? (
@@ -122,6 +127,23 @@ export function ShareModal({
       );
     }
 
+    if (isMutualsError) {
+      return (
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyTitle}>Couldn't Load People</Text>
+          <Text style={styles.emptyText}>
+            Something went wrong. Check your connection and try again.
+          </Text>
+          <Button
+            title="Try Again"
+            onPress={() => refetchMutuals()}
+            variant="secondary"
+            style={styles.retryButton}
+          />
+        </View>
+      );
+    }
+
     if (searchQuery && filteredMutuals.length === 0) {
       return (
         <View style={styles.emptyContainer}>
@@ -145,7 +167,13 @@ export function ShareModal({
     }
 
     return null;
-  }, [isLoadingMutuals, searchQuery, filteredMutuals.length]);
+  }, [
+    isLoadingMutuals,
+    isMutualsError,
+    refetchMutuals,
+    searchQuery,
+    filteredMutuals.length,
+  ]);
 
   return (
     <Modal
@@ -213,6 +241,9 @@ export function ShareModal({
               <TouchableOpacity
                 style={styles.externalShareButton}
                 onPress={handleShareViaMessage}
+                accessibilityRole="button"
+                accessibilityLabel="Share via message"
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
               >
                 <View style={[styles.externalShareIcon, styles.messageIcon]}>
                   <MessageCircle size={24} color="white" fill="white" />
@@ -222,6 +253,9 @@ export function ShareModal({
               <TouchableOpacity
                 style={styles.externalShareButton}
                 onPress={handleCopyLink}
+                accessibilityRole="button"
+                accessibilityLabel="Copy link"
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
               >
                 <View style={[styles.externalShareIcon, styles.linkIcon]}>
                   <Link2 size={24} color={theme.colors.neutral[600]} />
@@ -356,6 +390,9 @@ const styles = StyleSheet.create({
     ...typography.body,
     color: theme.colors.neutral[500],
     textAlign: "center",
+  },
+  retryButton: {
+    marginTop: theme.spacing.lg,
   },
   linkOnlyContent: {
     flex: 1,

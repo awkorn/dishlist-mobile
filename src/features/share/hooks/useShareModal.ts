@@ -1,5 +1,6 @@
 import { useState, useCallback, useMemo } from 'react';
-import { Alert, Share, Clipboard } from 'react-native';
+import { Alert, Share } from 'react-native';
+import * as Clipboard from 'expo-clipboard';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { shareService } from '../services/shareService';
 import { queryKeys } from '@lib/queryKeys';
@@ -26,6 +27,7 @@ export function useShareModal({
   const {
     data: mutuals = [],
     isLoading: isLoadingMutuals,
+    isError: isMutualsError,
     refetch: refetchMutuals,
   } = useQuery({
     queryKey: queryKeys.users.mutuals(searchQuery),
@@ -148,9 +150,14 @@ export function useShareModal({
     }
   }, [shareType, contentTitle, shareLink]);
 
-  const handleCopyLink = useCallback(() => {
-    Clipboard.setString(shareLink);
-    Alert.alert('Link Copied', 'The link has been copied to your clipboard.');
+  const handleCopyLink = useCallback(async () => {
+    try {
+      await Clipboard.setStringAsync(shareLink);
+      Alert.alert('Link Copied', 'The link has been copied to your clipboard.');
+    } catch (error) {
+      console.error('Copy link error:', error);
+      Alert.alert('Error', 'Could not copy the link. Please try again.');
+    }
   }, [shareLink]);
 
   return {
@@ -159,6 +166,7 @@ export function useShareModal({
     selectedUserIds,
     filteredMutuals,
     isLoadingMutuals,
+    isMutualsError,
     isSending: shareMutation.isPending,
     toggleUserSelection,
     clearSelection,
