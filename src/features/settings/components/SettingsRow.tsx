@@ -5,6 +5,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   Switch,
+  ActivityIndicator,
 } from "react-native";
 import { ChevronRight } from "lucide-react-native";
 import { theme } from "@styles/theme";
@@ -22,6 +23,10 @@ interface SettingsRowNavigateProps extends SettingsRowBaseProps {
   type?: "navigate";
   onPress: () => void;
   rightText?: string;
+  /** Show a spinner (instead of the chevron) and block taps while a row-level
+   *  action is in flight — e.g. account deletion. */
+  loading?: boolean;
+  disabled?: boolean;
 }
 
 interface SettingsRowToggleProps extends SettingsRowBaseProps {
@@ -43,12 +48,23 @@ type SettingsRowProps =
 export function SettingsRow(props: SettingsRowProps) {
   const { icon, label, subtitle, destructive = false, showDivider = true } = props;
 
+  const isNavigate = props.type === undefined || props.type === "navigate";
+  const loading = isNavigate && "loading" in props ? props.loading === true : false;
+  const disabled =
+    isNavigate && "disabled" in props ? props.disabled === true : false;
+
   const labelColor = destructive
     ? theme.colors.error
     : theme.colors.neutral[800];
 
   const content = (
-    <View style={[styles.row, showDivider && styles.divider]}>
+    <View
+      style={[
+        styles.row,
+        showDivider && styles.divider,
+        (loading || disabled) && styles.rowDisabled,
+      ]}
+    >
       {icon && <View style={styles.iconContainer}>{icon}</View>}
 
       <View style={styles.labelContainer}>
@@ -66,15 +82,19 @@ export function SettingsRow(props: SettingsRowProps) {
             true: theme.colors.primary[500],
           }}
           thumbColor="white"
+          accessibilityLabel={label}
         />
       ) : (
         <View style={styles.rightContainer}>
           {"rightText" in props && props.rightText && (
             <Text style={styles.rightText}>{props.rightText}</Text>
           )}
-          {(props.type === undefined || props.type === "navigate") && (
-            <ChevronRight size={18} color={theme.colors.neutral[400]} />
-          )}
+          {isNavigate &&
+            (loading ? (
+              <ActivityIndicator size="small" color={theme.colors.neutral[400]} />
+            ) : (
+              <ChevronRight size={18} color={theme.colors.neutral[400]} />
+            ))}
         </View>
       )}
     </View>
@@ -83,7 +103,14 @@ export function SettingsRow(props: SettingsRowProps) {
   // Navigate rows are pressable
   if (props.type === undefined || props.type === "navigate") {
     return (
-      <TouchableOpacity onPress={props.onPress} activeOpacity={0.6}>
+      <TouchableOpacity
+        onPress={props.onPress}
+        activeOpacity={0.6}
+        disabled={loading || disabled}
+        accessibilityRole="button"
+        accessibilityLabel={label}
+        accessibilityState={{ disabled: loading || disabled, busy: loading }}
+      >
         {content}
       </TouchableOpacity>
     );
@@ -103,6 +130,9 @@ const styles = StyleSheet.create({
   divider: {
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: theme.colors.neutral[200],
+  },
+  rowDisabled: {
+    opacity: 0.5,
   },
   iconContainer: {
     width: 30,

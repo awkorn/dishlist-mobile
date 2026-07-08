@@ -4,6 +4,8 @@ import {
   signOut,
   resetPassword,
   updateRecoveredPassword,
+  changePassword,
+  changeEmail,
 } from '../services/authService';
 
 // Mock Supabase client
@@ -12,6 +14,7 @@ const mockSignUp = jest.fn();
 const mockSignOut = jest.fn();
 const mockResetPasswordForEmail = jest.fn();
 const mockUpdateUser = jest.fn();
+const mockGetUser = jest.fn();
 
 jest.mock("expo-linking", () => ({
   createURL: (path: string) => `dishlist://${path}`,
@@ -25,6 +28,7 @@ jest.mock('@services/supabase', () => ({
       signOut: (...args: any[]) => mockSignOut(...args),
       resetPasswordForEmail: (...args: any[]) => mockResetPasswordForEmail(...args),
       updateUser: (...args: any[]) => mockUpdateUser(...args),
+      getUser: (...args: any[]) => mockGetUser(...args),
     },
   },
 }));
@@ -206,6 +210,132 @@ describe('authService', () => {
       expect(mockUpdateUser).toHaveBeenCalledWith({
         password: "new-password",
       });
+    });
+  });
+
+  describe("changePassword", () => {
+    it("re-authenticates with the current password, then updates", async () => {
+      mockGetUser.mockResolvedValueOnce({
+        data: { user: { email: "me@example.com" } },
+      });
+      mockSignInWithPassword.mockResolvedValueOnce({ error: null });
+      mockUpdateUser.mockResolvedValueOnce({ error: null });
+
+      const result = await changePassword("old-pass", "new-pass");
+
+      expect(result.error).toBeNull();
+      expect(mockSignInWithPassword).toHaveBeenCalledWith({
+        email: "me@example.com",
+        password: "old-pass",
+      });
+      expect(mockUpdateUser).toHaveBeenCalledWith({ password: "new-pass" });
+    });
+
+    it("returns an error when there is no authenticated user", async () => {
+      mockGetUser.mockResolvedValueOnce({ data: { user: null } });
+
+      const result = await changePassword("old-pass", "new-pass");
+
+      expect(result.error).toBe("No authenticated user found");
+      expect(mockSignInWithPassword).not.toHaveBeenCalled();
+      expect(mockUpdateUser).not.toHaveBeenCalled();
+    });
+
+    it("rejects an incorrect current password without updating", async () => {
+      mockGetUser.mockResolvedValueOnce({
+        data: { user: { email: "me@example.com" } },
+      });
+      mockSignInWithPassword.mockResolvedValueOnce({
+        error: { message: "Invalid login credentials" },
+      });
+
+      const result = await changePassword("wrong-pass", "new-pass");
+
+      expect(result.error).toBe("Current password is incorrect");
+      expect(mockUpdateUser).not.toHaveBeenCalled();
+    });
+
+    it("surfaces an update failure after successful re-auth", async () => {
+      mockGetUser.mockResolvedValueOnce({
+        data: { user: { email: "me@example.com" } },
+      });
+      mockSignInWithPassword.mockResolvedValueOnce({ error: null });
+      mockUpdateUser.mockResolvedValueOnce({
+        error: { message: "Password should be at least 6 characters" },
+      });
+
+      const result = await changePassword("old-pass", "123");
+
+      expect(result.error).toBe("Password should be at least 6 characters");
+    });
+
+    it("handles unexpected thrown errors", async () => {
+      mockGetUser.mockRejectedValueOnce(new Error("Network error"));
+
+      const result = await changePassword("old-pass", "new-pass");
+
+      expect(result.error).toBe("Network error");
+    });
+  });
+
+  describe("changeEmail", () => {
+    it("re-authenticates, then requests the email change", async () => {
+      mockGetUser.mockResolvedValueOnce({
+        data: { user: { email: "old@example.com" } },
+      });
+      mockSignInWithPassword.mockResolvedValueOnce({ error: null });
+      mockUpdateUser.mockResolvedValueOnce({ error: null });
+
+      const result = await changeEmail("my-pass", "new@example.com");
+
+      expect(result.error).toBeNull();
+      expect(mockSignInWithPassword).toHaveBeenCalledWith({
+        email: "old@example.com",
+        password: "my-pass",
+      });
+      expect(mockUpdateUser).toHaveBeenCalledWith({ email: "new@example.com" });
+    });
+
+    it("rejects when the new email matches the current email", async () => {
+      mockGetUser.mockResolvedValueOnce({
+        data: { user: { email: "Me@Example.com" } },
+      });
+
+      const result = await changeEmail("my-pass", "me@example.com");
+
+      expect(result.error).toBe(
+        "New email must be different from your current email"
+      );
+      expect(mockSignInWithPassword).not.toHaveBeenCalled();
+      expect(mockUpdateUser).not.toHaveBeenCalled();
+    });
+
+    it("rejects an incorrect password without requesting the change", async () => {
+      mockGetUser.mockResolvedValueOnce({
+        data: { user: { email: "old@example.com" } },
+      });
+      mockSignInWithPassword.mockResolvedValueOnce({
+        error: { message: "Invalid login credentials" },
+      });
+
+      const result = await changeEmail("wrong-pass", "new@example.com");
+
+      expect(result.error).toBe("Password is incorrect");
+      expect(mockUpdateUser).not.toHaveBeenCalled();
+    });
+
+    it("surfaces an update failure after successful re-auth", async () => {
+      mockGetUser.mockResolvedValueOnce({
+        data: { user: { email: "old@example.com" } },
+      });
+      mockSignInWithPassword.mockResolvedValueOnce({ error: null });
+      mockUpdateUser.mockResolvedValueOnce({
+        error: { message: "Email already in use" },
+      });
+
+      const result = await changeEmail("my-pass", "taken@example.com");
+
+      expect(result.error).toBe("Email already in use");
     });
   });
 });
