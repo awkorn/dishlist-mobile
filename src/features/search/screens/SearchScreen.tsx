@@ -45,6 +45,7 @@ export default function SearchScreen() {
     dishLists,
     hasResults,
     isEmpty,
+    isQueryTooShort,
     isLoading,
     isError,
     isFetchingNextPage,
@@ -79,11 +80,13 @@ export default function SearchScreen() {
 
   // Render ALL tab content (sections with horizontal scroll)
   const renderAllTabContent = () => {
-    if (!debouncedQuery) {
+    if (!debouncedQuery || isQueryTooShort) {
       return (
         <View style={styles.placeholder}>
           <Text style={styles.placeholderText}>
-            Search for users, recipes, or DishLists
+            {isQueryTooShort
+              ? "Keep typing to search…"
+              : "Search for users, recipes, or DishLists"}
           </Text>
         </View>
       );
@@ -155,10 +158,12 @@ export default function SearchScreen() {
 
   // Render USERS tab content (vertical list)
   const renderUsersTabContent = () => {
-    if (!debouncedQuery) {
+    if (!debouncedQuery || isQueryTooShort) {
       return (
         <View style={styles.placeholder}>
-          <Text style={styles.placeholderText}>Search for users</Text>
+          <Text style={styles.placeholderText}>
+            {isQueryTooShort ? "Keep typing to search…" : "Search for users"}
+          </Text>
         </View>
       );
     }
@@ -201,10 +206,12 @@ export default function SearchScreen() {
 
   // Render RECIPES tab content (grid)
   const renderRecipesTabContent = () => {
-    if (!debouncedQuery) {
+    if (!debouncedQuery || isQueryTooShort) {
       return (
         <View style={styles.placeholder}>
-          <Text style={styles.placeholderText}>Search for recipes</Text>
+          <Text style={styles.placeholderText}>
+            {isQueryTooShort ? "Keep typing to search…" : "Search for recipes"}
+          </Text>
         </View>
       );
     }
@@ -249,10 +256,12 @@ export default function SearchScreen() {
 
   // Render DISHLISTS tab content (grid)
   const renderDishListsTabContent = () => {
-    if (!debouncedQuery) {
+    if (!debouncedQuery || isQueryTooShort) {
       return (
         <View style={styles.placeholder}>
-          <Text style={styles.placeholderText}>Search for DishLists</Text>
+          <Text style={styles.placeholderText}>
+            {isQueryTooShort ? "Keep typing to search…" : "Search for DishLists"}
+          </Text>
         </View>
       );
     }
