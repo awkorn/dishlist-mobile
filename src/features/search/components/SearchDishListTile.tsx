@@ -50,6 +50,7 @@ export function SearchDishListTile({ dishList, onPress }: SearchDishListTileProp
         type: "following",
         icon: Heart,
         color: theme.colors.error,
+        label: "Following",
       });
     }
 
@@ -58,6 +59,7 @@ export function SearchDishListTile({ dishList, onPress }: SearchDishListTileProp
         type: "collaborator",
         icon: Handshake,
         color: theme.colors.success,
+        label: "Collaborator",
       });
     }
 
@@ -66,6 +68,7 @@ export function SearchDishListTile({ dishList, onPress }: SearchDishListTileProp
         type: "public",
         icon: Eye,
         color: theme.colors.neutral[500],
+        label: "Public",
       });
     }
 
@@ -73,7 +76,12 @@ export function SearchDishListTile({ dishList, onPress }: SearchDishListTileProp
   };
 
   return (
-    <TouchableOpacity style={styles.container} onPress={handlePress}>
+    <TouchableOpacity
+      style={styles.container}
+      onPress={handlePress}
+      accessibilityRole="button"
+      accessibilityLabel={`DishList: ${dishList.title} by ${ownerName}`}
+    >
       <View style={styles.content}>
         <Text style={styles.title} numberOfLines={2}>
           {dishList.title}
@@ -94,7 +102,12 @@ export function SearchDishListTile({ dishList, onPress }: SearchDishListTileProp
 
         <View style={styles.badges}>
           {getBadges().map((badge) => (
-            <View key={badge.type} style={styles.badge}>
+            <View
+              key={badge.type}
+              style={styles.badge}
+              accessible
+              accessibilityLabel={badge.label}
+            >
               <badge.icon size={14} color={badge.color} />
             </View>
           ))}

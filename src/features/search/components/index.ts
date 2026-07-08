@@ -4,3 +4,4 @@ export { SearchDishListTile } from "./SearchDishListTile";
 export { SearchTabs } from "./SearchTabs";
 export { SearchSection } from "./SearchSection";
 export { SearchEmptyState } from "./SearchEmptyState";
+export { SearchErrorState } from "./SearchErrorState";

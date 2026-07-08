@@ -25,6 +25,7 @@ import {
   SearchDishListTile,
   SearchSection,
   SearchEmptyState,
+  SearchErrorState,
 } from "../components";
 import type { SearchTab, SearchUser, SearchRecipe, SearchDishList } from "../types";
 
@@ -45,12 +46,14 @@ export default function SearchScreen() {
     hasResults,
     isEmpty,
     isLoading,
+    isError,
     isFetchingNextPage,
     hasNextPage,
     loadMore,
     setQuery,
     setActiveTab,
     clearSearch,
+    refetch,
   } = useSearch();
 
   // Handle tab change with navigation to filtered tab
@@ -92,6 +95,10 @@ export default function SearchScreen() {
           <ActivityIndicator size="large" color={theme.colors.primary[500]} />
         </View>
       );
+    }
+
+    if (isError) {
+      return <SearchErrorState onRetry={refetch} />;
     }
 
     if (isEmpty) {
@@ -164,6 +171,10 @@ export default function SearchScreen() {
       );
     }
 
+    if (isError) {
+      return <SearchErrorState onRetry={refetch} />;
+    }
+
     if (users.length === 0) {
       return <SearchEmptyState query={debouncedQuery} />;
     }
@@ -204,6 +215,10 @@ export default function SearchScreen() {
           <ActivityIndicator size="large" color={theme.colors.primary[500]} />
         </View>
       );
+    }
+
+    if (isError) {
+      return <SearchErrorState onRetry={refetch} />;
     }
 
     if (recipes.length === 0) {
@@ -248,6 +263,10 @@ export default function SearchScreen() {
           <ActivityIndicator size="large" color={theme.colors.primary[500]} />
         </View>
       );
+    }
+
+    if (isError) {
+      return <SearchErrorState onRetry={refetch} />;
     }
 
     if (dishLists.length === 0) {
@@ -312,7 +331,12 @@ export default function SearchScreen() {
           autoCorrect={false}
         />
         {query.length > 0 && (
-          <TouchableOpacity onPress={clearSearch} style={styles.clearButton}>
+          <TouchableOpacity
+            onPress={clearSearch}
+            style={styles.clearButton}
+            accessibilityRole="button"
+            accessibilityLabel="Clear search"
+          >
             <X size={18} color={theme.colors.neutral[500]} />
           </TouchableOpacity>
         )}

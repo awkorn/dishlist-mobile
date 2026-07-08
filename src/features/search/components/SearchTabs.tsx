@@ -24,6 +24,9 @@ export function SearchTabs({ activeTab, onTabChange }: SearchTabsProps) {
           key={tab.key}
           style={[styles.tab, activeTab === tab.key && styles.activeTab]}
           onPress={() => onTabChange(tab.key)}
+          accessibilityRole="tab"
+          accessibilityState={{ selected: activeTab === tab.key }}
+          accessibilityLabel={`${tab.label} tab`}
         >
           <Text
             style={[
