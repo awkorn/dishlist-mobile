@@ -23,17 +23,15 @@ import {
   Share,
   Flag,
 } from "lucide-react-native";
-import { useQuery } from "@tanstack/react-query";
 import { typography } from "@styles/typography";
 import { theme } from "@styles/theme";
 import { getErrorMessage } from "@utils";
 import ActionSheet, { ActionSheetOption } from "@components/ui/ActionSheet";
 import { QueryErrorBoundary } from "@providers/ErrorBoundary";
 import { useAuth } from "@providers/AuthProvider/AuthContext";
-import { queryKeys } from "@lib/queryKeys";
 import {
   useRemoveRecipeFromDishList,
-  dishlistService,
+  useDishListDetail,
 } from "@features/dishlist";
 import { useRecipeDetail, useRecipeProgress } from "../hooks";
 import {
@@ -117,12 +115,7 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
   }, [resetSteps]);
 
   // Load DishList for permissions if dishListId is provided
-  const { data: dishList } = useQuery({
-    queryKey: queryKeys.dishLists.detail(dishListId || ""),
-    queryFn: () => dishlistService.getDishListDetail(dishListId!),
-    enabled: !!dishListId,
-    staleTime: 5 * 60 * 1000,
-  });
+  const { dishList } = useDishListDetail({ dishListId: dishListId || "" });
 
   const removeRecipeMutation = useRemoveRecipeFromDishList();
   const addToGroceryMutation = useAddGroceryItems();

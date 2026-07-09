@@ -16,6 +16,7 @@ interface DishListGridProps {
   ListFooterComponent?: React.ComponentProps<
     typeof FlatList
   >["ListFooterComponent"];
+  onEndReached?: () => void;
 }
 
 export function DishListGrid({
@@ -23,6 +24,7 @@ export function DishListGrid({
   isFetching = false,
   refreshControl,
   ListFooterComponent,
+  onEndReached,
 }: DishListGridProps) {
   return (
     <FlatList
@@ -39,6 +41,8 @@ export function DishListGrid({
       showsVerticalScrollIndicator={false}
       refreshControl={refreshControl}
       ListFooterComponent={ListFooterComponent}
+      onEndReached={onEndReached}
+      onEndReachedThreshold={0.5}
     />
   );
 }

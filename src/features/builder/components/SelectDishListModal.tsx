@@ -8,12 +8,10 @@ import {
   FlatList,
 } from "react-native";
 import { Crown, Handshake } from "lucide-react-native";
-import { useQuery } from "@tanstack/react-query";
 import { theme } from "@styles/theme";
 import { typography } from "@styles/typography";
 import Modal from "@components/ui/Modal";
-import { queryKeys } from "@lib/queryKeys";
-import { dishlistService } from "@features/dishlist/services";
+import { useDishLists } from "@features/dishlist/hooks";
 import type { DishList } from "@features/dishlist/types";
 
 interface SelectDishListModalProps {
@@ -29,11 +27,13 @@ export function SelectDishListModal({
   onSelect,
   saving,
 }: SelectDishListModalProps) {
-  const { data: allDishLists = [], isLoading } = useQuery({
-    queryKey: queryKeys.dishLists.list("all"),
-    queryFn: () => dishlistService.getDishLists("all"),
-    enabled: visible,
-  });
+  const {
+    dishLists: allDishLists,
+    isLoading,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+  } = useDishLists({ tab: "all", enabled: visible });
 
   const eligibleDishLists = useMemo(() => {
     return allDishLists.filter(
@@ -88,6 +88,19 @@ export function SelectDishListModal({
             keyExtractor={(item) => item.id}
             contentContainerStyle={styles.listContent}
             showsVerticalScrollIndicator={false}
+            onEndReached={() => {
+              if (hasNextPage && !isFetchingNextPage) fetchNextPage();
+            }}
+            onEndReachedThreshold={0.5}
+            ListFooterComponent={
+              isFetchingNextPage ? (
+                <ActivityIndicator
+                  size="small"
+                  color={theme.colors.primary[500]}
+                  style={styles.footerLoader}
+                />
+              ) : null
+            }
           />
         )}
 
@@ -137,6 +150,9 @@ const styles = StyleSheet.create({
   },
   listContent: {
     padding: theme.spacing.xl,
+  },
+  footerLoader: {
+    paddingVertical: theme.spacing.md,
   },
   dishListItem: {
     flexDirection: "row",

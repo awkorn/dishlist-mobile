@@ -12,8 +12,7 @@ import { useQuery } from '@tanstack/react-query';
 import { theme } from '@styles/theme';
 import { typography } from '@styles/typography';
 import Modal from '@components/ui/Modal';
-import { queryKeys } from '@lib/queryKeys';
-import { dishlistService } from '@features/dishlist/services';
+import { useDishLists } from '@features/dishlist/hooks';
 import { recipeService } from '../services';
 import { useAddRecipeToDishList } from '../hooks';
 import type { DishList } from '@features/dishlist/types';
@@ -33,12 +32,14 @@ export default function AddToDishListModal({
   recipeTitle,
   createsCopy,
 }: AddToDishListModalProps) {
-  // Fetch user's owned/collaborated dishlists
-  const { data: allDishLists = [], isLoading: loadingDishLists } = useQuery({
-    queryKey: queryKeys.dishLists.list('all'),
-    queryFn: () => dishlistService.getDishLists('all'),
-    enabled: visible,
-  });
+  // Fetch user's owned/collaborated dishlists (paginated)
+  const {
+    dishLists: allDishLists,
+    isLoading: loadingDishLists,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+  } = useDishLists({ tab: 'all', enabled: visible });
 
   // Fetch which dishlists already contain this recipe
   const { data: existingDishListIds = [], isLoading: loadingExisting } = useQuery({
@@ -147,6 +148,19 @@ export default function AddToDishListModal({
             keyExtractor={(item) => item.id}
             contentContainerStyle={styles.listContent}
             showsVerticalScrollIndicator={false}
+            onEndReached={() => {
+              if (hasNextPage && !isFetchingNextPage) fetchNextPage();
+            }}
+            onEndReachedThreshold={0.5}
+            ListFooterComponent={
+              isFetchingNextPage ? (
+                <ActivityIndicator
+                  size="small"
+                  color={theme.colors.primary[500]}
+                  style={styles.footerLoader}
+                />
+              ) : null
+            }
           />
         )}
 
@@ -205,6 +219,9 @@ const styles = StyleSheet.create({
   },
   listContent: {
     padding: theme.spacing.xl,
+  },
+  footerLoader: {
+    paddingVertical: theme.spacing.md,
   },
   dishListItem: {
     flexDirection: 'row',

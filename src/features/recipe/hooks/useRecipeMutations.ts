@@ -3,8 +3,15 @@ import { Alert } from 'react-native';
 import { recipeService } from '../services';
 import { queryKeys } from '@lib/queryKeys';
 import type { Recipe, CreateRecipeData, UpdateRecipeData } from '../types';
-import type { DishListDetail, DishListRecipe } from '@features/dishlist/types';
-import { dishlistService } from '@features/dishlist/services';
+import type { DishListRecipe } from '@features/dishlist/types';
+import {
+  appendRecipeToDetailCache,
+  type DishListDetailCache,
+} from '@features/dishlist/hooks';
+import {
+  dishlistService,
+  DISH_LIST_RECIPES_PAGE_SIZE,
+} from '@features/dishlist/services';
 
 const RECIPE_QUERY_KEY = 'recipe';
 
@@ -19,36 +26,34 @@ export function useCreateRecipe() {
 
     onSuccess: (newRecipe, variables) => {
       // Directly add recipe to dishlist detail cache for instant UI update
-      queryClient.setQueryData<DishListDetail>(
+      const dishListRecipe: DishListRecipe = {
+        id: newRecipe.id,
+        title: newRecipe.title,
+        description: newRecipe.description,
+        imageUrl: newRecipe.imageUrl,
+        imageUrls: newRecipe.imageUrls,
+        prepTime: newRecipe.prepTime,
+        cookTime: newRecipe.cookTime,
+        servings: newRecipe.servings,
+        tags: newRecipe.tags,
+        creatorId: newRecipe.creatorId,
+        creator: newRecipe.creator,
+        createdAt: newRecipe.createdAt,
+        updatedAt: newRecipe.updatedAt,
+      };
+      queryClient.setQueryData<DishListDetailCache>(
         queryKeys.dishLists.detail(variables.dishListId),
-        (old) => {
-          if (!old) return old;
-          const dishListRecipe: DishListRecipe = {
-            id: newRecipe.id,
-            title: newRecipe.title,
-            description: newRecipe.description,
-            imageUrl: newRecipe.imageUrl,
-            imageUrls: newRecipe.imageUrls,
-            prepTime: newRecipe.prepTime,
-            cookTime: newRecipe.cookTime,
-            servings: newRecipe.servings,
-            tags: newRecipe.tags,
-            creatorId: newRecipe.creatorId,
-            creator: newRecipe.creator,
-            createdAt: newRecipe.createdAt,
-            updatedAt: newRecipe.updatedAt,
-          };
-          return {
-            ...old,
-            recipes: [...old.recipes, dishListRecipe],
-            recipeCount: old.recipeCount + 1,
-          };
-        }
+        (old) => appendRecipeToDetailCache(old, dishListRecipe)
       );
       // Eagerly fetch detail data for when cache didn't exist yet (e.g. Recipe Builder flow)
-      queryClient.prefetchQuery({
+      queryClient.prefetchInfiniteQuery({
         queryKey: queryKeys.dishLists.detail(variables.dishListId),
-        queryFn: () => dishlistService.getDishListDetail(variables.dishListId),
+        queryFn: () =>
+          dishlistService.getDishListDetail(variables.dishListId, {
+            recipesLimit: DISH_LIST_RECIPES_PAGE_SIZE,
+            recipesOffset: 0,
+          }),
+        initialPageParam: 0,
       });
       // Background invalidation for list views
       queryClient.invalidateQueries({ queryKey: queryKeys.dishLists.all });
@@ -154,34 +159,24 @@ export function useAddRecipeToDishList() {
         [RECIPE_QUERY_KEY, attachedRecipe.id],
         attachedRecipe,
       );
-      queryClient.setQueryData<DishListDetail>(
+      const dishListRecipe: DishListRecipe = {
+        id: attachedRecipe.id,
+        title: attachedRecipe.title,
+        description: attachedRecipe.description,
+        imageUrl: attachedRecipe.imageUrl,
+        imageUrls: attachedRecipe.imageUrls,
+        prepTime: attachedRecipe.prepTime,
+        cookTime: attachedRecipe.cookTime,
+        servings: attachedRecipe.servings,
+        tags: attachedRecipe.tags,
+        creatorId: attachedRecipe.creatorId,
+        creator: attachedRecipe.creator,
+        createdAt: attachedRecipe.createdAt,
+        updatedAt: attachedRecipe.updatedAt,
+      };
+      queryClient.setQueryData<DishListDetailCache>(
         queryKeys.dishLists.detail(variables.dishListId),
-        (old) => {
-          if (!old) return old;
-          if (old.recipes.some((recipe) => recipe.id === attachedRecipe.id)) {
-            return old;
-          }
-          const dishListRecipe: DishListRecipe = {
-            id: attachedRecipe.id,
-            title: attachedRecipe.title,
-            description: attachedRecipe.description,
-            imageUrl: attachedRecipe.imageUrl,
-            imageUrls: attachedRecipe.imageUrls,
-            prepTime: attachedRecipe.prepTime,
-            cookTime: attachedRecipe.cookTime,
-            servings: attachedRecipe.servings,
-            tags: attachedRecipe.tags,
-            creatorId: attachedRecipe.creatorId,
-            creator: attachedRecipe.creator,
-            createdAt: attachedRecipe.createdAt,
-            updatedAt: attachedRecipe.updatedAt,
-          };
-          return {
-            ...old,
-            recipes: [...old.recipes, dishListRecipe],
-            recipeCount: old.recipeCount + 1,
-          };
-        }
+        (old) => appendRecipeToDetailCache(old, dishListRecipe)
       );
       // Background invalidation for full consistency
       queryClient.invalidateQueries({

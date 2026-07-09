@@ -38,10 +38,29 @@ export interface DishListRecipe {
   updatedAt: string;
 }
 
+export interface DishListsPageMeta {
+  limit: number;
+  offset: number;
+  total: number;
+  hasMore: boolean;
+}
+
+export interface DishListsPage {
+  dishLists: DishList[];
+  meta: DishListsPageMeta;
+}
+
+export interface DishListRecipesMeta {
+  limit: number;
+  offset: number;
+  hasMore: boolean;
+}
+
 export interface DishListDetail extends DishList {
   followerCount: number;
   collaboratorCount: number;
   recipes: DishListRecipe[];
+  recipesMeta?: DishListRecipesMeta;
 }
 
 export interface CreateDishListData {

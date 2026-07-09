@@ -7,6 +7,7 @@ import {
   useUpdateDishList,
 } from "../hooks/useDishListMutations";
 import { dishlistService } from "../services";
+import type { DishListDetailCache } from "../hooks";
 import type { DishList, DishListDetail } from "../types";
 
 jest.mock("../services", () => ({
@@ -142,9 +143,13 @@ describe("useUpdateDishList", () => {
       updatedAt: "2026-01-02",
     };
 
+    const existingCache: DishListDetailCache = {
+      pages: [existingDetail],
+      pageParams: [0],
+    };
     queryClient.setQueryData(
       queryKeys.dishLists.detail(existingDetail.id),
-      existingDetail,
+      existingCache,
     );
     mockDishlistService.updateDishList.mockResolvedValueOnce(updatedSummary);
 
@@ -161,9 +166,9 @@ describe("useUpdateDishList", () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
     expect(
-      queryClient.getQueryData<DishListDetail>(
+      queryClient.getQueryData<DishListDetailCache>(
         queryKeys.dishLists.detail(existingDetail.id),
-      ),
+      )?.pages[0],
     ).toEqual({
       ...existingDetail,
       ...updatedSummary,

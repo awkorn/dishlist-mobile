@@ -5,6 +5,7 @@ import { queryKeys } from "@lib/queryKeys";
 import { useAddRecipeToDishList } from "../hooks/useRecipeMutations";
 import { recipeService } from "../services";
 import type { DishListDetail } from "@features/dishlist/types";
+import type { DishListDetailCache } from "@features/dishlist/hooks";
 
 jest.mock("../services", () => ({
   recipeService: {
@@ -39,9 +40,13 @@ describe("useAddRecipeToDishList", () => {
       createdAt: "2026-01-01",
       updatedAt: "2026-01-01",
     };
+    const destinationCache: DishListDetailCache = {
+      pages: [destination],
+      pageParams: [0],
+    };
     queryClient.setQueryData(
       queryKeys.dishLists.detail(destination.id),
-      destination,
+      destinationCache,
     );
 
     mockRecipeService.addRecipeToDishList.mockResolvedValueOnce({
@@ -75,10 +80,12 @@ describe("useAddRecipeToDishList", () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-    const cached = queryClient.getQueryData<DishListDetail>(
+    const cached = queryClient.getQueryData<DishListDetailCache>(
       queryKeys.dishLists.detail(destination.id),
     );
-    expect(cached?.recipes.map((recipe) => recipe.id)).toEqual(["fork-1"]);
-    expect(cached?.recipeCount).toBe(1);
+    expect(
+      cached?.pages[0].recipes.map((recipe) => recipe.id),
+    ).toEqual(["fork-1"]);
+    expect(cached?.pages[0].recipeCount).toBe(1);
   });
 });

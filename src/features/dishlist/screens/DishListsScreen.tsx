@@ -48,8 +48,17 @@ export default function DishListsScreen() {
 
   const currentTabKey = TAB_TO_API_PARAM[TAB_LABELS[activeTab]];
 
-  const { dishLists, isLoading, isError, isFetching, dataUpdatedAt, refetch } =
-    useDishLists({ tab: currentTabKey, searchQuery });
+  const {
+    dishLists,
+    isLoading,
+    isError,
+    isFetching,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+    dataUpdatedAt,
+    refetch,
+  } = useDishLists({ tab: currentTabKey, searchQuery });
 
   // Network listener
   useEffect(() => {
@@ -95,6 +104,12 @@ export default function DishListsScreen() {
       navigation.navigate("Profile", { userId: user.id });
     }
   }, [navigation, user?.id]);
+
+  const handleEndReached = useCallback(() => {
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const handleTabPress = useCallback((index: number) => {
     setActiveTab(index);
@@ -163,15 +178,25 @@ export default function DishListsScreen() {
             titleColor="#666"
           />
         }
+        onEndReached={handleEndReached}
         ListFooterComponent={
-          !isOnline && dishLists.length > 0 ? (
-            <View style={styles.offlineMessage}>
-              <WifiOff size={16} color="#666" />
-              <Text style={styles.offlineText}>
-                Showing cached data • Last updated {getDataFreshness()}
-              </Text>
-            </View>
-          ) : null
+          <>
+            {isFetchingNextPage && (
+              <ActivityIndicator
+                size="small"
+                color="#2563eb"
+                style={styles.footerLoader}
+              />
+            )}
+            {!isOnline && dishLists.length > 0 && (
+              <View style={styles.offlineMessage}>
+                <WifiOff size={16} color="#666" />
+                <Text style={styles.offlineText}>
+                  Showing cached data • Last updated {getDataFreshness()}
+                </Text>
+              </View>
+            )}
+          </>
         }
       />
     );
@@ -340,6 +365,9 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     justifyContent: "space-between",
     paddingHorizontal: theme.spacing.xl,
+  },
+  footerLoader: {
+    paddingVertical: theme.spacing.md,
   },
   offlineMessage: {
     flexDirection: "row",
