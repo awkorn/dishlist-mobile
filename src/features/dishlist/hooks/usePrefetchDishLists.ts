@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@lib/queryKeys';
-import { dishlistService } from '../services';
+import { dishlistService, DISH_LISTS_PAGE_SIZE } from '../services';
 
 export function usePrefetchDishLists() {
   const queryClient = useQueryClient();
@@ -9,14 +9,24 @@ export function usePrefetchDishLists() {
   const prefetchDishLists = useCallback(async () => {
     try {
       await Promise.all([
-        queryClient.prefetchQuery({
+        queryClient.prefetchInfiniteQuery({
           queryKey: queryKeys.dishLists.list('all'),
-          queryFn: () => dishlistService.getDishLists('all'),
+          queryFn: () =>
+            dishlistService.getDishLists('all', {
+              limit: DISH_LISTS_PAGE_SIZE,
+              offset: 0,
+            }),
+          initialPageParam: 0,
           staleTime: 5 * 60 * 1000,
         }),
-        queryClient.prefetchQuery({
+        queryClient.prefetchInfiniteQuery({
           queryKey: queryKeys.dishLists.list('my'),
-          queryFn: () => dishlistService.getDishLists('my'),
+          queryFn: () =>
+            dishlistService.getDishLists('my', {
+              limit: DISH_LISTS_PAGE_SIZE,
+              offset: 0,
+            }),
+          initialPageParam: 0,
           staleTime: 5 * 60 * 1000,
         }),
       ]);

@@ -23,6 +23,25 @@ const mockDishlistService = dishlistService as jest.Mocked<
   typeof dishlistService
 >;
 
+const toPage = (
+  dishLists: any[],
+  meta: Partial<{
+    limit: number;
+    offset: number;
+    total: number;
+    hasMore: boolean;
+  }> = {}
+) => ({
+  dishLists,
+  meta: {
+    limit: 30,
+    offset: 0,
+    total: dishLists.length,
+    hasMore: false,
+    ...meta,
+  },
+});
+
 describe("useDishLists", () => {
   let queryClient: QueryClient;
 
@@ -79,7 +98,9 @@ describe("useDishLists", () => {
       },
     ];
 
-    mockDishlistService.getDishLists.mockResolvedValueOnce(mockDishLists);
+    mockDishlistService.getDishLists.mockResolvedValueOnce(
+      toPage(mockDishLists)
+    );
 
     const { result } = renderHook(() => useDishLists({ tab: "all" }), {
       wrapper: createWrapper(),
@@ -92,7 +113,74 @@ describe("useDishLists", () => {
     });
 
     expect(result.current.dishLists).toEqual(mockDishLists);
+    expect(result.current.hasNextPage).toBe(false);
     expect(result.current.isError).toBe(false);
+  });
+
+  it("should fetch and merge subsequent pages", async () => {
+    const firstPage = [
+      {
+        id: "1",
+        title: "My Recipes",
+        recipeCount: 5,
+        isOwner: true,
+        isCollaborator: false,
+        isFollowing: false,
+        visibility: "PUBLIC" as const,
+        isDefault: true,
+        isPinned: false,
+        owner: { uid: "user-1" },
+        createdAt: "2024-01-01",
+        updatedAt: "2024-01-01",
+      },
+    ];
+    const secondPage = [
+      {
+        id: "2",
+        title: "Family Recipes",
+        recipeCount: 3,
+        isOwner: true,
+        isCollaborator: false,
+        isFollowing: false,
+        visibility: "PUBLIC" as const,
+        isDefault: false,
+        isPinned: false,
+        owner: { uid: "user-1" },
+        createdAt: "2024-01-01",
+        updatedAt: "2024-01-01",
+      },
+    ];
+
+    mockDishlistService.getDishLists
+      .mockResolvedValueOnce(
+        toPage(firstPage, { limit: 1, offset: 0, total: 2, hasMore: true })
+      )
+      .mockResolvedValueOnce(
+        toPage(secondPage, { limit: 1, offset: 1, total: 2, hasMore: false })
+      );
+
+    const { result } = renderHook(() => useDishLists({ tab: "all" }), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    expect(result.current.dishLists).toHaveLength(1);
+    expect(result.current.hasNextPage).toBe(true);
+
+    await result.current.fetchNextPage();
+
+    await waitFor(() => {
+      expect(result.current.dishLists).toHaveLength(2);
+    });
+
+    expect(result.current.dishLists.map((list) => list.id)).toEqual([
+      "1",
+      "2",
+    ]);
+    expect(result.current.hasNextPage).toBe(false);
   });
 
   it("should filter dishlists by search query", async () => {
@@ -127,7 +215,9 @@ describe("useDishLists", () => {
       },
     ];
 
-    mockDishlistService.getDishLists.mockResolvedValueOnce(mockDishLists);
+    mockDishlistService.getDishLists.mockResolvedValueOnce(
+      toPage(mockDishLists)
+    );
 
     const { result } = renderHook(
       () => useDishLists({ tab: "all", searchQuery: "Family" }),
@@ -179,7 +269,9 @@ describe("useDishLists", () => {
       },
     ];
 
-    mockDishlistService.getDishLists.mockResolvedValueOnce(mockDishLists);
+    mockDishlistService.getDishLists.mockResolvedValueOnce(
+      toPage(mockDishLists)
+    );
 
     const { result } = renderHook(
       () => useDishLists({ tab: "all", searchQuery: "NonExistent" }),

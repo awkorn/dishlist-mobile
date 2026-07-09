@@ -23,22 +23,47 @@ describe('dishlistService', () => {
         { id: '1', title: 'My Recipes', recipeCount: 5 },
         { id: '2', title: 'Family Recipes', recipeCount: 3 },
       ];
+      const mockMeta = { limit: 30, offset: 0, total: 2, hasMore: false };
+      mockApi.get.mockResolvedValueOnce({
+        data: { dishLists: mockDishLists, meta: mockMeta },
+      });
+
+      const result = await dishlistService.getDishLists();
+
+      expect(mockApi.get).toHaveBeenCalledWith(
+        '/dishlists?tab=all&limit=30&offset=0'
+      );
+      expect(result).toEqual({ dishLists: mockDishLists, meta: mockMeta });
+    });
+
+    it('should fetch dishlists with specific tab and page', async () => {
+      const mockDishLists = [{ id: '1', title: 'My Recipes' }];
+      const mockMeta = { limit: 10, offset: 20, total: 40, hasMore: true };
+      mockApi.get.mockResolvedValueOnce({
+        data: { dishLists: mockDishLists, meta: mockMeta },
+      });
+
+      const result = await dishlistService.getDishLists('my', {
+        limit: 10,
+        offset: 20,
+      });
+
+      expect(mockApi.get).toHaveBeenCalledWith(
+        '/dishlists?tab=my&limit=10&offset=20'
+      );
+      expect(result).toEqual({ dishLists: mockDishLists, meta: mockMeta });
+    });
+
+    it('should synthesize meta when the server omits it', async () => {
+      const mockDishLists = [{ id: '1', title: 'My Recipes' }];
       mockApi.get.mockResolvedValueOnce({ data: { dishLists: mockDishLists } });
 
       const result = await dishlistService.getDishLists();
 
-      expect(mockApi.get).toHaveBeenCalledWith('/dishlists?tab=all');
-      expect(result).toEqual(mockDishLists);
-    });
-
-    it('should fetch dishlists with specific tab', async () => {
-      const mockDishLists = [{ id: '1', title: 'My Recipes' }];
-      mockApi.get.mockResolvedValueOnce({ data: { dishLists: mockDishLists } });
-
-      const result = await dishlistService.getDishLists('my');
-
-      expect(mockApi.get).toHaveBeenCalledWith('/dishlists?tab=my');
-      expect(result).toEqual(mockDishLists);
+      expect(result).toEqual({
+        dishLists: mockDishLists,
+        meta: { limit: 30, offset: 0, total: 1, hasMore: false },
+      });
     });
   });
 
@@ -54,8 +79,24 @@ describe('dishlistService', () => {
 
       const result = await dishlistService.getDishListDetail('1');
 
-      expect(mockApi.get).toHaveBeenCalledWith('/dishlists/1');
+      expect(mockApi.get).toHaveBeenCalledWith(
+        '/dishlists/1?recipesLimit=30&recipesOffset=0'
+      );
       expect(result).toEqual(mockDetail);
+    });
+
+    it('should fetch a specific recipes page', async () => {
+      const mockDetail = { id: '1', title: 'My Recipes', recipes: [] };
+      mockApi.get.mockResolvedValueOnce({ data: { dishList: mockDetail } });
+
+      await dishlistService.getDishListDetail('1', {
+        recipesLimit: 30,
+        recipesOffset: 60,
+      });
+
+      expect(mockApi.get).toHaveBeenCalledWith(
+        '/dishlists/1?recipesLimit=30&recipesOffset=60'
+      );
     });
   });
 

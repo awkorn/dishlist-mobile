@@ -90,6 +90,46 @@ describe("useDishListDetail", () => {
     expect(result.current.isError).toBe(false);
   });
 
+  it("should fetch and merge subsequent recipe pages", async () => {
+    const pageOne = {
+      ...mockDishListDetail,
+      recipes: [mockDishListDetail.recipes[0]],
+      recipesMeta: { limit: 1, offset: 0, hasMore: true },
+    };
+    const pageTwo = {
+      ...mockDishListDetail,
+      recipes: [mockDishListDetail.recipes[1]],
+      recipesMeta: { limit: 1, offset: 1, hasMore: false },
+    };
+
+    mockDishlistService.getDishListDetail
+      .mockResolvedValueOnce(pageOne)
+      .mockResolvedValueOnce(pageTwo);
+
+    const { result } = renderHook(
+      () => useDishListDetail({ dishListId: "1" }),
+      { wrapper: createWrapper() }
+    );
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    expect(result.current.filteredRecipes).toHaveLength(1);
+    expect(result.current.hasNextPage).toBe(true);
+
+    await result.current.fetchNextPage();
+
+    await waitFor(() => {
+      expect(result.current.filteredRecipes).toHaveLength(2);
+    });
+
+    expect(
+      result.current.filteredRecipes.map((recipe) => recipe.id)
+    ).toEqual(["r1", "r2"]);
+    expect(result.current.hasNextPage).toBe(false);
+  });
+
   it("should filter recipes by search query", async () => {
     mockDishlistService.getDishListDetail.mockResolvedValueOnce(
       mockDishListDetail

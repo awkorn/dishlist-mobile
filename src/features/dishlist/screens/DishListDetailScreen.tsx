@@ -3,7 +3,7 @@ import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
+  FlatList,
   TouchableOpacity,
   ActivityIndicator,
   RefreshControl,
@@ -66,6 +66,9 @@ export default function DishListDetailScreen({
     isError,
     error,
     isRefetching,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
     refetch,
   } = useDishListDetail({ dishListId, searchQuery });
 
@@ -76,6 +79,12 @@ export default function DishListDetailScreen({
   const handleRefresh = useCallback(() => {
     refetch();
   }, [refetch]);
+
+  const handleEndReached = useCallback(() => {
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const handleImportComplete = useCallback(
     (response: ImportRecipeResponse) => {
@@ -325,9 +334,25 @@ export default function DishListDetailScreen({
         </View>
 
         {/* Recipe Grid */}
-        <ScrollView
+        <FlatList
           style={styles.content}
           contentContainerStyle={styles.scrollContent}
+          data={filteredRecipes}
+          keyExtractor={(item) => item.id}
+          numColumns={2}
+          columnWrapperStyle={styles.recipeRow}
+          renderItem={({ item }) => (
+            <RecipeTile
+              recipe={item}
+              onPress={() =>
+                navigation.navigate("RecipeDetail", {
+                  recipeId: item.id,
+                  dishListId,
+                })
+              }
+            />
+          )}
+          showsVerticalScrollIndicator={false}
           refreshControl={
             <RefreshControl
               refreshing={isRefetching}
@@ -336,8 +361,9 @@ export default function DishListDetailScreen({
               tintColor="#2563eb"
             />
           }
-        >
-          {filteredRecipes.length === 0 ? (
+          onEndReached={handleEndReached}
+          onEndReachedThreshold={0.5}
+          ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <Text style={styles.emptyTitle}>
                 {searchQuery ? "No Recipes Found" : "No Recipes Yet"}
@@ -359,23 +385,17 @@ export default function DishListDetailScreen({
                 </TouchableOpacity>
               )}
             </View>
-          ) : (
-            <View style={styles.recipeGrid}>
-              {filteredRecipes.map((recipe) => (
-                <RecipeTile
-                  key={recipe.id}
-                  recipe={recipe}
-                  onPress={() =>
-                    navigation.navigate("RecipeDetail", {
-                      recipeId: recipe.id,
-                      dishListId,
-                    })
-                  }
-                />
-              ))}
-            </View>
-          )}
-        </ScrollView>
+          }
+          ListFooterComponent={
+            isFetchingNextPage ? (
+              <ActivityIndicator
+                size="small"
+                color={theme.colors.primary[500]}
+                style={styles.footerLoader}
+              />
+            ) : null
+          }
+        />
 
         {/* Action Sheet */}
         <ActionSheet
@@ -547,10 +567,12 @@ const styles = StyleSheet.create({
     ...typography.button,
     color: "white",
   },
-  recipeGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
+  recipeRow: {
     gap: theme.spacing.lg,
+    marginBottom: theme.spacing.lg,
+  },
+  footerLoader: {
+    paddingVertical: theme.spacing.md,
   },
   collabRow: {
     flexDirection: "row",

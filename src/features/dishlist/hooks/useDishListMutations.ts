@@ -2,9 +2,18 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Alert } from 'react-native';
 import { queryKeys } from '@lib/queryKeys';
 import { dishlistService } from '../services';
+import {
+  mapDishListsCache,
+  prependToDishListsCache,
+  type DishListsCache,
+} from './useDishLists';
+import {
+  mapDishListDetailCache,
+  removeRecipeFromDetailCache,
+  type DishListDetailCache,
+} from './useDishListDetail';
 import type {
   DishList,
-  DishListDetail,
   CreateDishListData,
   UpdateDishListData,
 } from '../types';
@@ -36,23 +45,23 @@ export function useCreateDishList() {
         updatedAt: new Date().toISOString(),
       };
 
-      const previousMyLists = queryClient.getQueryData<DishList[]>(
+      const previousMyLists = queryClient.getQueryData<DishListsCache>(
         queryKeys.dishLists.list('my')
       );
-      const previousAllLists = queryClient.getQueryData<DishList[]>(
+      const previousAllLists = queryClient.getQueryData<DishListsCache>(
         queryKeys.dishLists.list('all')
       );
 
       if (previousMyLists) {
-        queryClient.setQueryData<DishList[]>(
+        queryClient.setQueryData(
           queryKeys.dishLists.list('my'),
-          [optimisticDishList, ...previousMyLists]
+          prependToDishListsCache(previousMyLists, optimisticDishList)
         );
       }
       if (previousAllLists) {
-        queryClient.setQueryData<DishList[]>(
+        queryClient.setQueryData(
           queryKeys.dishLists.list('all'),
-          [optimisticDishList, ...previousAllLists]
+          prependToDishListsCache(previousAllLists, optimisticDishList)
         );
       }
 
@@ -73,14 +82,15 @@ export function useCreateDishList() {
     },
 
     onSuccess: (data) => {
-      queryClient.setQueryData<DishList[]>(
-        queryKeys.dishLists.list('my'),
-        (old) => old ? [data, ...old.filter((item) => !item.id.startsWith('temp-'))] : [data]
-      );
-      queryClient.setQueryData<DishList[]>(
-        queryKeys.dishLists.list('all'),
-        (old) => old ? [data, ...old.filter((item) => !item.id.startsWith('temp-'))] : [data]
-      );
+      const replaceTemp = (old: DishListsCache | undefined) =>
+        prependToDishListsCache(
+          mapDishListsCache(old, (lists) =>
+            lists.filter((item) => !item.id.startsWith('temp-'))
+          ),
+          data
+        );
+      queryClient.setQueryData<DishListsCache>(queryKeys.dishLists.list('my'), replaceTemp);
+      queryClient.setQueryData<DishListsCache>(queryKeys.dishLists.list('all'), replaceTemp);
     },
 
     onSettled: () => {
@@ -102,25 +112,35 @@ export function useUpdateDishList() {
     onMutate: async ({ dishListId, title, visibility }) => {
       await queryClient.cancelQueries({ queryKey: queryKeys.dishLists.all });
 
-      const previousDetail = queryClient.getQueryData(queryKeys.dishLists.detail(dishListId));
-      const previousAllLists = queryClient.getQueryData<DishList[]>(queryKeys.dishLists.list('all'));
-      const previousMyLists = queryClient.getQueryData<DishList[]>(queryKeys.dishLists.list('my'));
+      const previousDetail = queryClient.getQueryData<DishListDetailCache>(
+        queryKeys.dishLists.detail(dishListId)
+      );
+      const previousAllLists = queryClient.getQueryData<DishListsCache>(
+        queryKeys.dishLists.list('all')
+      );
+      const previousMyLists = queryClient.getQueryData<DishListsCache>(
+        queryKeys.dishLists.list('my')
+      );
 
-      queryClient.setQueryData(queryKeys.dishLists.detail(dishListId), (old: any) => ({
-        ...old,
-        title,
-        visibility,
-        updatedAt: new Date().toISOString(),
-      }));
+      queryClient.setQueryData<DishListDetailCache>(
+        queryKeys.dishLists.detail(dishListId),
+        (old) =>
+          mapDishListDetailCache(old, (page) => ({
+            ...page,
+            title,
+            visibility,
+            updatedAt: new Date().toISOString(),
+          }))
+      );
 
-      const updateInList = (lists: DishList[] | undefined) => {
-        if (!lists) return lists;
-        return lists.map((list) =>
-          list.id === dishListId
-            ? { ...list, title, visibility, updatedAt: new Date().toISOString() }
-            : list
+      const updateInList = (cache: DishListsCache | undefined) =>
+        mapDishListsCache(cache, (lists) =>
+          lists.map((list) =>
+            list.id === dishListId
+              ? { ...list, title, visibility, updatedAt: new Date().toISOString() }
+              : list
+          )
         );
-      };
 
       queryClient.setQueryData(queryKeys.dishLists.list('all'), updateInList(previousAllLists));
       queryClient.setQueryData(queryKeys.dishLists.list('my'), updateInList(previousMyLists));
@@ -145,9 +165,10 @@ export function useUpdateDishList() {
     },
 
     onSuccess: (data, variables) => {
-      queryClient.setQueryData<DishListDetail>(
+      queryClient.setQueryData<DishListDetailCache>(
         queryKeys.dishLists.detail(variables.dishListId),
-        (current) => current ? { ...current, ...data } : current,
+        (current) =>
+          mapDishListDetailCache(current, (page) => ({ ...page, ...data }))
       );
     },
 
@@ -170,17 +191,17 @@ export function useTogglePinDishList() {
     onMutate: async ({ dishListId, isPinned }) => {
       await queryClient.cancelQueries({ queryKey: queryKeys.dishLists.all });
 
-      const updateCache = (lists: DishList[] | undefined) => {
-        if (!lists) return lists;
-        return lists.map((list) =>
-          list.id === dishListId ? { ...list, isPinned: !isPinned } : list
+      const updateCache = (cache: DishListsCache | undefined) =>
+        mapDishListsCache(cache, (lists) =>
+          lists.map((list) =>
+            list.id === dishListId ? { ...list, isPinned: !isPinned } : list
+          )
         );
-      };
 
       const previousStates = {
-        all: queryClient.getQueryData<DishList[]>(queryKeys.dishLists.list('all')),
-        my: queryClient.getQueryData<DishList[]>(queryKeys.dishLists.list('my')),
-        collaborations: queryClient.getQueryData<DishList[]>(queryKeys.dishLists.list('collaborations')),
+        all: queryClient.getQueryData<DishListsCache>(queryKeys.dishLists.list('all')),
+        my: queryClient.getQueryData<DishListsCache>(queryKeys.dishLists.list('my')),
+        collaborations: queryClient.getQueryData<DishListsCache>(queryKeys.dishLists.list('collaborations')),
       };
 
       queryClient.setQueryData(queryKeys.dishLists.list('all'), updateCache(previousStates.all));
@@ -211,8 +232,8 @@ export function useToggleFollowDishList() {
 
   return useMutation({
     mutationFn: ({ dishListId, isFollowing }: { dishListId: string; isFollowing: boolean }) =>
-      isFollowing 
-        ? dishlistService.unfollowDishList(dishListId) 
+      isFollowing
+        ? dishlistService.unfollowDishList(dishListId)
         : dishlistService.followDishList(dishListId),
 
     onSuccess: (_, variables) => {
@@ -238,15 +259,15 @@ export function useDeleteDishList() {
     onMutate: async (dishListId) => {
       await queryClient.cancelQueries({ queryKey: queryKeys.dishLists.all });
 
-      const removeFromCache = (lists: DishList[] | undefined) => {
-        if (!lists) return lists;
-        return lists.filter((list) => list.id !== dishListId);
-      };
+      const removeFromCache = (cache: DishListsCache | undefined) =>
+        mapDishListsCache(cache, (lists) =>
+          lists.filter((list) => list.id !== dishListId)
+        );
 
       const previousStates = {
-        all: queryClient.getQueryData<DishList[]>(queryKeys.dishLists.list('all')),
-        my: queryClient.getQueryData<DishList[]>(queryKeys.dishLists.list('my')),
-        collaborations: queryClient.getQueryData<DishList[]>(queryKeys.dishLists.list('collaborations')),
+        all: queryClient.getQueryData<DishListsCache>(queryKeys.dishLists.list('all')),
+        my: queryClient.getQueryData<DishListsCache>(queryKeys.dishLists.list('my')),
+        collaborations: queryClient.getQueryData<DishListsCache>(queryKeys.dishLists.list('collaborations')),
       };
 
       queryClient.setQueryData(queryKeys.dishLists.list('all'), removeFromCache(previousStates.all));
@@ -285,16 +306,14 @@ export function useRemoveRecipeFromDishList() {
     onMutate: async ({ dishListId, recipeId }) => {
       await queryClient.cancelQueries({ queryKey: queryKeys.dishLists.detail(dishListId) });
 
-      const previousDetail = queryClient.getQueryData(queryKeys.dishLists.detail(dishListId));
+      const previousDetail = queryClient.getQueryData<DishListDetailCache>(
+        queryKeys.dishLists.detail(dishListId)
+      );
 
-      queryClient.setQueryData(queryKeys.dishLists.detail(dishListId), (old: any) => {
-        if (!old) return old;
-        return {
-          ...old,
-          recipes: old.recipes.filter((r: any) => r.id !== recipeId),
-          recipeCount: old.recipeCount - 1,
-        };
-      });
+      queryClient.setQueryData<DishListDetailCache>(
+        queryKeys.dishLists.detail(dishListId),
+        (old) => removeRecipeFromDetailCache(old, recipeId)
+      );
 
       return { previousDetail };
     },

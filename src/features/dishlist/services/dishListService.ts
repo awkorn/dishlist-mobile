@@ -1,26 +1,49 @@
 import { api } from '@services/api';
-import type { 
-  DishList, 
-  DishListDetail, 
-  CreateDishListData, 
+import type {
+  DishList,
+  DishListDetail,
+  DishListsPage,
+  CreateDishListData,
   UpdateDishListData,
-  DishListTab 
+  DishListTab
 } from '../types';
+
+export const DISH_LISTS_PAGE_SIZE = 30;
+export const DISH_LIST_RECIPES_PAGE_SIZE = 30;
 
 export const dishlistService = {
   /**
-   * Fetch all dishlists for a given tab filter
+   * Fetch one page of dishlists for a given tab filter
    */
-  async getDishLists(tab: DishListTab = 'all'): Promise<DishList[]> {
-    const response = await api.get<{ dishLists: DishList[] }>(`/dishlists?tab=${tab}`);
-    return response.data.dishLists;
+  async getDishLists(
+    tab: DishListTab = 'all',
+    options: { limit?: number; offset?: number } = {}
+  ): Promise<DishListsPage> {
+    const limit = options.limit ?? DISH_LISTS_PAGE_SIZE;
+    const offset = options.offset ?? 0;
+    const response = await api.get<DishListsPage>(
+      `/dishlists?tab=${tab}&limit=${limit}&offset=${offset}`
+    );
+    const { dishLists, meta } = response.data;
+    return {
+      dishLists,
+      // Fallback for a server that predates pagination metadata
+      meta: meta ?? { limit, offset, total: dishLists.length, hasMore: false },
+    };
   },
 
   /**
-   * Fetch a single dishlist with full details including recipes
+   * Fetch a single dishlist with full details and one page of recipes
    */
-  async getDishListDetail(id: string): Promise<DishListDetail> {
-    const response = await api.get<{ dishList: DishListDetail }>(`/dishlists/${id}`);
+  async getDishListDetail(
+    id: string,
+    options: { recipesLimit?: number; recipesOffset?: number } = {}
+  ): Promise<DishListDetail> {
+    const recipesLimit = options.recipesLimit ?? DISH_LIST_RECIPES_PAGE_SIZE;
+    const recipesOffset = options.recipesOffset ?? 0;
+    const response = await api.get<{ dishList: DishListDetail }>(
+      `/dishlists/${id}?recipesLimit=${recipesLimit}&recipesOffset=${recipesOffset}`
+    );
     return response.data.dishList;
   },
 
