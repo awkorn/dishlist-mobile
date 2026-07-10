@@ -39,7 +39,9 @@ function DishListTileContent({ dishList, onPress }: DishListTileProps) {
   const getBadges = () => {
     const badges = [];
 
-    if (dishList.isPinned) {
+    // The default "My Recipes" list is permanently pinned even when reading
+    // data cached from an older API response.
+    if (dishList.isDefault || dishList.isPinned) {
       badges.push({
         type: "pinned",
         icon: Pin,

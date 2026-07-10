@@ -162,7 +162,10 @@ export default function DishListDetailScreen({
     }
 
     // Pin toggle - available for dishlists in the user's library
-    if (dishList.isOwner || dishList.isCollaborator || dishList.isFollowing) {
+    if (
+      !dishList.isDefault &&
+      (dishList.isOwner || dishList.isCollaborator || dishList.isFollowing)
+    ) {
       options.push({
         title: dishList.isPinned ? "Unpin DishList" : "Pin DishList",
         icon: dishList.isPinned ? PinOff : Pin,

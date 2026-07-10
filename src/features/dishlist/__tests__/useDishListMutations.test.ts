@@ -4,16 +4,20 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { queryKeys } from "@lib/queryKeys";
 import {
   useToggleFollowDishList,
+  useTogglePinDishList,
   useUpdateDishList,
 } from "../hooks/useDishListMutations";
+import { sortDishLists } from "../hooks/useDishLists";
 import { dishlistService } from "../services";
-import type { DishListDetailCache } from "../hooks";
+import type { DishListDetailCache, DishListsCache } from "../hooks";
 import type { DishList, DishListDetail } from "../types";
 
 jest.mock("../services", () => ({
   dishlistService: {
     followDishList: jest.fn(),
     unfollowDishList: jest.fn(),
+    pinDishList: jest.fn(),
+    unpinDishList: jest.fn(),
     updateDishList: jest.fn(),
   },
 }));
@@ -78,6 +82,102 @@ describe("useToggleFollowDishList", () => {
       "dishlist-1",
     );
     expect(mockDishlistService.followDishList).not.toHaveBeenCalled();
+  });
+});
+
+describe("useTogglePinDishList", () => {
+  let queryClient: QueryClient;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    queryClient = new QueryClient({
+      defaultOptions: {
+        mutations: { retry: false },
+        queries: { retry: false },
+      },
+    });
+  });
+
+  const wrapper = ({ children }: { children: React.ReactNode }) =>
+    React.createElement(
+      QueryClientProvider,
+      { client: queryClient },
+      children,
+    );
+
+  it("optimistically pins and reorders a list in the Following tab", async () => {
+    const makeDishList = (overrides: Partial<DishList>): DishList => ({
+      id: "dishlist",
+      title: "DishList",
+      visibility: "PUBLIC",
+      isDefault: false,
+      isPinned: false,
+      recipeCount: 0,
+      isOwner: false,
+      isCollaborator: false,
+      isFollowing: true,
+      owner: { uid: "user-2" },
+      createdAt: "2026-01-01T00:00:00.000Z",
+      updatedAt: "2026-01-01T00:00:00.000Z",
+      ...overrides,
+    });
+    const followingCache: DishListsCache = {
+      pages: [
+        {
+          dishLists: [
+            makeDishList({
+              id: "default",
+              title: "My Recipes",
+              isDefault: true,
+              isOwner: true,
+            }),
+            makeDishList({
+              id: "existing-pin",
+              isPinned: true,
+              updatedAt: "2026-01-02T00:00:00.000Z",
+            }),
+            makeDishList({
+              id: "new-pin",
+              updatedAt: "2026-01-03T00:00:00.000Z",
+            }),
+          ],
+          meta: {
+            limit: 30,
+            offset: 0,
+            total: 3,
+            hasMore: false,
+          },
+        },
+      ],
+      pageParams: [0],
+    };
+    queryClient.setQueryData(
+      queryKeys.dishLists.list("following"),
+      followingCache,
+    );
+    mockDishlistService.pinDishList.mockResolvedValueOnce();
+
+    const { result } = renderHook(() => useTogglePinDishList(), { wrapper });
+
+    act(() => {
+      result.current.mutate({ dishListId: "new-pin", isPinned: false });
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    const updatedLists =
+      queryClient
+        .getQueryData<DishListsCache>(queryKeys.dishLists.list("following"))
+        ?.pages.flatMap((page) => page.dishLists) ?? [];
+
+    expect(updatedLists.find((list) => list.id === "new-pin")?.isPinned).toBe(
+      true,
+    );
+    expect(sortDishLists(updatedLists).map((list) => list.id)).toEqual([
+      "default",
+      "new-pin",
+      "existing-pin",
+    ]);
   });
 });
 

@@ -191,10 +191,12 @@ export function useTogglePinDishList() {
     onMutate: async ({ dishListId, isPinned }) => {
       await queryClient.cancelQueries({ queryKey: queryKeys.dishLists.all });
 
+      const nextIsPinned = !isPinned;
+
       const updateCache = (cache: DishListsCache | undefined) =>
         mapDishListsCache(cache, (lists) =>
           lists.map((list) =>
-            list.id === dishListId ? { ...list, isPinned: !isPinned } : list
+            list.id === dishListId ? { ...list, isPinned: nextIsPinned } : list
           )
         );
 
@@ -202,19 +204,39 @@ export function useTogglePinDishList() {
         all: queryClient.getQueryData<DishListsCache>(queryKeys.dishLists.list('all')),
         my: queryClient.getQueryData<DishListsCache>(queryKeys.dishLists.list('my')),
         collaborations: queryClient.getQueryData<DishListsCache>(queryKeys.dishLists.list('collaborations')),
+        following: queryClient.getQueryData<DishListsCache>(queryKeys.dishLists.list('following')),
+        detail: queryClient.getQueryData<DishListDetailCache>(
+          queryKeys.dishLists.detail(dishListId)
+        ),
       };
 
       queryClient.setQueryData(queryKeys.dishLists.list('all'), updateCache(previousStates.all));
       queryClient.setQueryData(queryKeys.dishLists.list('my'), updateCache(previousStates.my));
       queryClient.setQueryData(queryKeys.dishLists.list('collaborations'), updateCache(previousStates.collaborations));
+      queryClient.setQueryData(queryKeys.dishLists.list('following'), updateCache(previousStates.following));
+      queryClient.setQueryData<DishListDetailCache>(
+        queryKeys.dishLists.detail(dishListId),
+        (current) =>
+          mapDishListDetailCache(current, (page) => ({
+            ...page,
+            isPinned: nextIsPinned,
+          }))
+      );
 
       return previousStates;
     },
 
-    onError: (_error, _variables, context) => {
+    onError: (_error, variables, context) => {
       if (context?.all) queryClient.setQueryData(queryKeys.dishLists.list('all'), context.all);
       if (context?.my) queryClient.setQueryData(queryKeys.dishLists.list('my'), context.my);
       if (context?.collaborations) queryClient.setQueryData(queryKeys.dishLists.list('collaborations'), context.collaborations);
+      if (context?.following) queryClient.setQueryData(queryKeys.dishLists.list('following'), context.following);
+      if (context?.detail) {
+        queryClient.setQueryData(
+          queryKeys.dishLists.detail(variables.dishListId),
+          context.detail
+        );
+      }
       Alert.alert('Error', 'Failed to update pin status. Please try again.');
     },
 

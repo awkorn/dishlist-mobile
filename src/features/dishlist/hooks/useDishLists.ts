@@ -7,6 +7,30 @@ import type { DishList, DishListsPage, DishListTab } from '../types';
 export type DishListsCache = InfiniteData<DishListsPage, number>;
 
 /**
+ * Match the API's display order locally so optimistic create and pin updates
+ * render in their final position before the follow-up request completes.
+ */
+export function sortDishLists(dishLists: DishList[]): DishList[] {
+  const getTimestamp = (dishList: DishList) => {
+    const updatedAt = Date.parse(dishList.updatedAt);
+    if (!Number.isNaN(updatedAt)) return updatedAt;
+
+    const createdAt = Date.parse(dishList.createdAt);
+    return Number.isNaN(createdAt) ? 0 : createdAt;
+  };
+
+  return [...dishLists].sort((a, b) => {
+    if (a.isDefault !== b.isDefault) return a.isDefault ? -1 : 1;
+    if (a.isPinned !== b.isPinned) return a.isPinned ? -1 : 1;
+
+    const recencyDifference = getTimestamp(b) - getTimestamp(a);
+    if (recencyDifference !== 0) return recencyDifference;
+
+    return a.id.localeCompare(b.id);
+  });
+}
+
+/**
  * Apply a transform to every cached page's dishLists, preserving page
  * structure and metadata. Used by mutations for optimistic updates.
  */
@@ -85,11 +109,13 @@ export function useDishLists({
     refetchOnReconnect: true,
     refetchOnWindowFocus: false,
     refetchInterval: false,
-    placeholderData: (prev) => prev,
   });
 
   const loadedDishLists = useMemo(
-    () => query.data?.pages.flatMap((page) => page.dishLists) ?? [],
+    () =>
+      sortDishLists(
+        query.data?.pages.flatMap((page) => page.dishLists) ?? []
+      ),
     [query.data]
   );
 
