@@ -69,15 +69,23 @@ export const resetPassword = async (
   email: string
 ): Promise<{ error: string | null }> => {
   try {
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: Linking.createURL("reset-password"),
+    const normalizedEmail = email.trim().toLowerCase();
+    const redirectTo = Linking.createURL("reset-password");
+
+    const { error } = await supabase.auth.resetPasswordForEmail(normalizedEmail, {
+      redirectTo,
     });
     if (error) {
       return { error: error.message };
     }
     return { error: null };
-  } catch (error: any) {
-    return { error: error.message };
+  } catch (error: unknown) {
+    return {
+      error:
+        error instanceof Error
+          ? error.message
+          : "Unable to send a password reset email",
+    };
   }
 };
 
@@ -87,8 +95,13 @@ export const updateRecoveredPassword = async (
   try {
     const { error } = await supabase.auth.updateUser({ password });
     return { error: error?.message ?? null };
-  } catch (error: any) {
-    return { error: error.message };
+  } catch (error: unknown) {
+    return {
+      error:
+        error instanceof Error
+          ? error.message
+          : "Unable to update your password",
+    };
   }
 };
 

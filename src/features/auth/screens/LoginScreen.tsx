@@ -14,27 +14,37 @@ import { typography } from '@styles/typography';
 import { theme } from '@styles/theme';
 import Button from '@components/ui/Button';
 import InlineError from '@components/ui/InlineError';
+import type { LoginScreenProps } from '@app-types/navigation';
 
-interface LoginScreenProps {
-  navigation: any;
+interface Feedback {
+  message: string;
+  action?: string;
 }
 
-export default function LoginScreen({ navigation }: LoginScreenProps) {
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+export default function LoginScreen({
+  navigation,
+}: Pick<LoginScreenProps, 'navigation'>) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<{ message: string; action?: string } | null>(null);
+  const [loginLoading, setLoginLoading] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
+  const [error, setError] = useState<Feedback | null>(null);
+  const [success, setSuccess] = useState<Feedback | null>(null);
   const {
     signIn,
     resetPassword,
     authFlowError,
     clearAuthFlowError,
   } = useAuth();
-  const displayedError =
+  const displayedError: Feedback | null =
     error ?? (authFlowError ? { message: authFlowError } : null);
+  const isBusy = loginLoading || resetLoading;
 
   const handleLogin = async () => {
     setError(null);
+    setSuccess(null);
     clearAuthFlowError();
 
     if (!email.trim()) {
@@ -53,27 +63,33 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
       return;
     }
 
-    setLoading(true);
+    setLoginLoading(true);
 
     try {
-      const result = await signIn(email, password);
+      const result = await signIn(email.trim().toLowerCase(), password);
 
       if (result.error) {
         const errorInfo = getAuthErrorMessage(result.error);
         setError(errorInfo);
       }
-    } catch (err) {
-      setError({
-        message: 'Something went wrong',
-        action: 'Please try again',
-      });
+    } catch (err: unknown) {
+      setError(
+        getAuthErrorMessage(
+          err instanceof Error ? err.message : 'Unable to sign in'
+        )
+      );
     } finally {
-      setLoading(false);
+      setLoginLoading(false);
     }
   };
 
   const handleForgotPassword = async () => {
-    if (!email.trim()) {
+    const normalizedEmail = email.trim().toLowerCase();
+    setError(null);
+    setSuccess(null);
+    clearAuthFlowError();
+
+    if (!normalizedEmail) {
       setError({
         message: "Enter your email first",
         action: "Type your email above, then tap forgot password",
@@ -81,25 +97,35 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
       return;
     }
 
-    setLoading(true);
+    if (!EMAIL_PATTERN.test(normalizedEmail)) {
+      setError({
+        message: "Enter a valid email address",
+        action: "Check the address for typos and try again",
+      });
+      return;
+    }
+
+    setResetLoading(true);
     try {
-      const result = await resetPassword(email.trim());
+      const result = await resetPassword(normalizedEmail);
       if (result.error) {
         const errorInfo = getAuthErrorMessage(result.error);
         setError(errorInfo);
       } else {
-        setError({
-          message: "Password reset email sent",
-          action: "Check your inbox for a reset link",
+        setSuccess({
+          message: "Check your inbox",
+          action:
+            "If an account exists for this email, you'll receive a password reset link shortly.",
         });
       }
-    } catch (err) {
-      setError({
-        message: "Something went wrong",
-        action: "Please try again",
-      });
+    } catch (err: unknown) {
+      setError(
+        getAuthErrorMessage(
+          err instanceof Error ? err.message : "Unable to send reset email"
+        )
+      );
     } finally {
-      setLoading(false);
+      setResetLoading(false);
     }
   };
 
@@ -108,6 +134,7 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
       contentContainerStyle={styles.container}
       enableOnAndroid={true}
       extraScrollHeight={10}
+      keyboardShouldPersistTaps="handled"
     >
       <View style={styles.content}>
         <View style={styles.header}>
@@ -124,11 +151,21 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
         {displayedError && (
           <InlineError
             message={displayedError.message}
-            action={displayedError.message.includes('password') ? 'Reset Password' : undefined}
-            onActionPress={
-              displayedError.message.includes('password') ? handleForgotPassword : undefined
-            }
+            action={displayedError.action}
           />
+        )}
+
+        {success && (
+          <View
+            style={styles.successBanner}
+            accessibilityRole="alert"
+            accessibilityLiveRegion="polite"
+          >
+            <Text style={styles.successTitle}>{success.message}</Text>
+            {success.action && (
+              <Text style={styles.successText}>{success.action}</Text>
+            )}
+          </View>
         )}
 
         <View style={styles.form}>
@@ -143,13 +180,14 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
             onChangeText={(text) => {
               setEmail(text);
               setError(null);
+              setSuccess(null);
               clearAuthFlowError();
             }}
             keyboardType="email-address"
             autoCapitalize="none"
             autoCorrect={false}
             autoComplete="email"
-            editable={!loading}
+            editable={!isBusy}
             testID="email-input"
           />
 
@@ -164,28 +202,33 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
             onChangeText={(text) => {
               setPassword(text);
               setError(null);
+              setSuccess(null);
               clearAuthFlowError();
             }}
             secureTextEntry
             autoComplete="password"
-            editable={!loading}
+            editable={!isBusy}
             testID="password-input"
           />
 
           <Button
             title="Login"
             onPress={handleLogin}
-            loading={loading}
-            disabled={loading}
+            loading={loginLoading}
+            disabled={isBusy}
             style={styles.loginButton}
           />
 
           <TouchableOpacity
             onPress={handleForgotPassword}
             style={styles.forgotPassword}
-            disabled={loading}
+            disabled={isBusy}
+            accessibilityRole="button"
+            accessibilityState={{ disabled: isBusy, busy: resetLoading }}
           >
-            <Text style={styles.forgotPasswordText}>Forgot password?</Text>
+            <Text style={styles.forgotPasswordText}>
+              {resetLoading ? 'Sending reset email…' : 'Forgot password?'}
+            </Text>
           </TouchableOpacity>
         </View>
 
@@ -193,8 +236,10 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
           <Text style={styles.footerText}>New user? </Text>
           <TouchableOpacity
             onPress={() => navigation.navigate('SignUp')}
-            disabled={loading}
+            disabled={isBusy}
             testID="signup-link"
+            accessibilityRole="button"
+            accessibilityState={{ disabled: isBusy }}
           >
             <Text style={styles.linkText}>Sign up</Text>
           </TouchableOpacity>
@@ -232,6 +277,22 @@ const styles = StyleSheet.create({
   },
   form: {
     marginBottom: theme.spacing['3xl'],
+  },
+  successBanner: {
+    backgroundColor: '#ECFDF5',
+    borderRadius: theme.borderRadius.sm,
+    padding: theme.spacing.md,
+    marginBottom: theme.spacing.lg,
+  },
+  successTitle: {
+    ...typography.body,
+    color: '#065F46',
+    fontWeight: '600',
+  },
+  successText: {
+    ...typography.caption,
+    color: '#047857',
+    marginTop: theme.spacing.xs,
   },
   input: {
     borderWidth: 1,

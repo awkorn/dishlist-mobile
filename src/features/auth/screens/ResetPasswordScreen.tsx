@@ -15,6 +15,11 @@ import { getAuthErrorMessage } from "@lib/errors";
 import { theme } from "@styles/theme";
 import { typography } from "@styles/typography";
 
+interface Feedback {
+  message: string;
+  action?: string;
+}
+
 export default function ResetPasswordScreen() {
   const {
     updateRecoveredPassword,
@@ -23,7 +28,7 @@ export default function ResetPasswordScreen() {
   const [password, setPassword] = useState("");
   const [confirmation, setConfirmation] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<Feedback | null>(null);
 
   const isValid =
     password.length >= VALIDATION.PASSWORD_MIN_LENGTH &&
@@ -33,30 +38,51 @@ export default function ResetPasswordScreen() {
     setError(null);
 
     if (password.length < VALIDATION.PASSWORD_MIN_LENGTH) {
-      setError(
-        `Password must be at least ${VALIDATION.PASSWORD_MIN_LENGTH} characters`
-      );
+      setError({
+        message: `Password must be at least ${VALIDATION.PASSWORD_MIN_LENGTH} characters`,
+        action: "Choose a longer password and try again",
+      });
       return;
     }
     if (password !== confirmation) {
-      setError("Passwords don't match");
+      setError({
+        message: "Passwords don't match",
+        action: "Make sure both password fields are identical",
+      });
       return;
     }
 
     setLoading(true);
-    const result = await updateRecoveredPassword(password);
-    setLoading(false);
+    try {
+      const result = await updateRecoveredPassword(password);
 
-    if (result.error) {
-      setError(getAuthErrorMessage(result.error).message);
-      return;
+      if (result.error) {
+        setError(getAuthErrorMessage(result.error));
+        return;
+      }
+
+      Alert.alert(
+        "Password updated",
+        "Your password has been changed successfully.",
+        [
+          {
+            text: "Continue",
+            onPress: () => {
+              void finishPasswordRecovery();
+            },
+          },
+        ],
+        { cancelable: false }
+      );
+    } catch (err: unknown) {
+      setError(
+        getAuthErrorMessage(
+          err instanceof Error ? err.message : "Unable to update your password"
+        )
+      );
+    } finally {
+      setLoading(false);
     }
-
-    Alert.alert(
-      "Password updated",
-      "Your password has been changed successfully.",
-      [{ text: "Continue", onPress: finishPasswordRecovery }]
-    );
   };
 
   return (
@@ -68,8 +94,15 @@ export default function ResetPasswordScreen() {
         </Text>
 
         {error && (
-          <View style={styles.errorBanner}>
-            <Text style={styles.errorText}>{error}</Text>
+          <View
+            style={styles.errorBanner}
+            accessibilityRole="alert"
+            accessibilityLiveRegion="assertive"
+          >
+            <Text style={styles.errorText}>{error.message}</Text>
+            {error.action && (
+              <Text style={styles.errorAction}>{error.action}</Text>
+            )}
           </View>
         )}
 
@@ -113,6 +146,7 @@ export default function ResetPasswordScreen() {
           onPress={handleSubmit}
           accessibilityRole="button"
           accessibilityLabel="Update password"
+          accessibilityState={{ disabled: !isValid || loading, busy: loading }}
         >
           {loading ? (
             <ActivityIndicator color="#fff" />
@@ -168,6 +202,11 @@ const styles = StyleSheet.create({
   errorText: {
     ...typography.body,
     color: theme.colors.error,
+  },
+  errorAction: {
+    ...typography.caption,
+    color: theme.colors.error,
+    marginTop: theme.spacing.xs,
   },
   button: {
     height: 50,

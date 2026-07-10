@@ -24,6 +24,8 @@ import { queryKeys } from "@lib/queryKeys";
 import { unregisterCurrentDevicePushToken } from "@features/notifications/services/pushService";
 import { captureInviteLink } from "@features/invite/services/pendingInvite";
 import type { UserProfile } from "@features/profile/types";
+import { parseAuthCallback } from "@features/auth/services/authCallback";
+import { getAuthErrorMessage } from "@lib/errors";
 
 interface AuthContextType {
   user: SupabaseUser | null;
@@ -45,7 +47,7 @@ interface AuthContextType {
     password: string
   ) => Promise<{ error: string | null }>;
   isPasswordRecovery: boolean;
-  finishPasswordRecovery: () => void;
+  finishPasswordRecovery: () => Promise<void>;
   authFlowError: string | null;
   clearAuthFlowError: () => void;
 }
@@ -131,46 +133,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   useEffect(() => {
     let emailSyncTimer: ReturnType<typeof setTimeout> | null = null;
-    const getAuthParams = (url: string) => {
-      const parsed = new URL(url);
-      const query = new URLSearchParams(parsed.search);
-      const fragment = new URLSearchParams(parsed.hash.replace(/^#/, ""));
-
-      return {
-        accessToken:
-          query.get("access_token") ?? fragment.get("access_token"),
-        refreshToken:
-          query.get("refresh_token") ?? fragment.get("refresh_token"),
-        code: query.get("code") ?? fragment.get("code"),
-        type: query.get("type") ?? fragment.get("type"),
-        error:
-          query.get("error_description") ??
-          fragment.get("error_description") ??
-          query.get("error") ??
-          fragment.get("error"),
-      };
-    };
-
     const handleAuthUrl = async (url: string) => {
-      const params = getAuthParams(url);
-      const isAuthCallback =
-        !!params.accessToken || !!params.code || !!params.error;
-      if (!isAuthCallback) return false;
+      const callback = parseAuthCallback(url);
+      if (callback.kind === "none") return false;
 
       authOperationRef.current = "callback";
       setLoading(true);
       setAuthFlowError(null);
 
       try {
-        if (params.error) {
-          throw new Error(params.error);
+        if (callback.kind === "error") {
+          throw new Error(callback.message);
         }
 
-        const result = params.code
-          ? await supabase.auth.exchangeCodeForSession(params.code)
+        const result = callback.kind === "code"
+          ? await supabase.auth.exchangeCodeForSession(callback.code)
           : await supabase.auth.setSession({
-              access_token: params.accessToken!,
-              refresh_token: params.refreshToken!,
+              access_token: callback.accessToken,
+              refresh_token: callback.refreshToken,
             });
 
         if (result.error) throw result.error;
@@ -179,10 +159,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
         setUser(session.user);
 
-        const isRecoveryLink =
-          params.type === "recovery" || url.includes("reset-password");
-
-        if (isRecoveryLink) {
+        if (callback.isRecovery) {
+          // A recovery link creates an authenticated Supabase session, but the
+          // user must choose a new password before entering the app. Clear any
+          // profile/cache from a previous account while that happens.
+          setUserProfile(null);
+          queryClient.clear();
           setIsPasswordRecovery(true);
         } else {
           await registerUserProfile(session.user);
@@ -192,9 +174,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         setUser(null);
         setUserProfile(null);
         setIsPasswordRecovery(false);
+        const errorInfo = getAuthErrorMessage(
+          error?.message || "Email link is invalid or has expired"
+        );
         setAuthFlowError(
-          error?.message ||
-            "This sign-in link is invalid or expired. Please request a new one."
+          errorInfo.action
+            ? `${errorInfo.message}. ${errorInfo.action}`
+            : errorInfo.message
         );
       } finally {
         authOperationRef.current = null;
@@ -388,8 +374,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     return authUpdateRecoveredPassword(password);
   };
 
-  const finishPasswordRecovery = () => {
-    setIsPasswordRecovery(false);
+  const finishPasswordRecovery = async () => {
+    setLoading(true);
+    try {
+      if (user) {
+        await loadUserProfile(user);
+      }
+      setIsPasswordRecovery(false);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const syncUserProfile = useCallback((profile: UserProfile) => {

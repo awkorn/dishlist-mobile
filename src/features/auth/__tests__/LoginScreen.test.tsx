@@ -2,6 +2,7 @@ import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import LoginScreen from '../screens/LoginScreen';
+import type { LoginScreenProps } from '@app-types/navigation';
 
 // Mock the auth context
 const mockSignIn = jest.fn();
@@ -27,7 +28,9 @@ const mockNavigation = {
 const renderLoginScreen = () => {
   return render(
     <NavigationContainer>
-      <LoginScreen navigation={mockNavigation} />
+      <LoginScreen
+        navigation={mockNavigation as unknown as LoginScreenProps['navigation']}
+      />
     </NavigationContainer>
   );
 };
@@ -102,6 +105,66 @@ describe('LoginScreen', () => {
     fireEvent.press(getByText('Sign up'));
 
     expect(mockNavigate).toHaveBeenCalledWith('SignUp');
+  });
+
+  it('validates the email before requesting a password reset', async () => {
+    const { getByPlaceholderText, getByText } = renderLoginScreen();
+
+    fireEvent.changeText(getByPlaceholderText('Email'), 'not-an-email');
+    fireEvent.press(getByText('Forgot password?'));
+
+    await waitFor(() => {
+      expect(getByText('Enter a valid email address')).toBeTruthy();
+      expect(mockResetPassword).not.toHaveBeenCalled();
+    });
+  });
+
+  it('requests a reset and shows a clear success message', async () => {
+    mockResetPassword.mockResolvedValueOnce({ error: null });
+    const { getByPlaceholderText, getByText } = renderLoginScreen();
+
+    fireEvent.changeText(getByPlaceholderText('Email'), '  Test@Example.com ');
+    fireEvent.press(getByText('Forgot password?'));
+
+    await waitFor(() => {
+      expect(mockResetPassword).toHaveBeenCalledWith('test@example.com');
+      expect(getByText('Check your inbox')).toBeTruthy();
+      expect(
+        getByText(
+          "If an account exists for this email, you'll receive a password reset link shortly."
+        )
+      ).toBeTruthy();
+    });
+  });
+
+  it('shows an actionable reset request error', async () => {
+    mockResetPassword.mockResolvedValueOnce({
+      error: 'Network request failed',
+    });
+    const { getByPlaceholderText, getByText } = renderLoginScreen();
+
+    fireEvent.changeText(getByPlaceholderText('Email'), 'test@example.com');
+    fireEvent.press(getByText('Forgot password?'));
+
+    await waitFor(() => {
+      expect(getByText('Unable to connect')).toBeTruthy();
+      expect(
+        getByText('Check your internet connection and try again')
+      ).toBeTruthy();
+    });
+  });
+
+  it('recovers cleanly when the reset request throws', async () => {
+    mockResetPassword.mockRejectedValueOnce(new Error('Network request failed'));
+    const { getByPlaceholderText, getByText } = renderLoginScreen();
+
+    fireEvent.changeText(getByPlaceholderText('Email'), 'test@example.com');
+    fireEvent.press(getByText('Forgot password?'));
+
+    await waitFor(() => {
+      expect(getByText('Unable to connect')).toBeTruthy();
+      expect(getByText('Forgot password?')).toBeTruthy();
+    });
   });
 
   it('clears error when user types in email field', async () => {

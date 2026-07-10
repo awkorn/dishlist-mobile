@@ -180,7 +180,7 @@ describe('authService', () => {
     it('returns no error on successful password reset request', async () => {
       mockResetPasswordForEmail.mockResolvedValueOnce({ error: null });
 
-      const result = await resetPassword('test@example.com');
+      const result = await resetPassword('  Test@Example.com ');
 
       expect(result.error).toBeNull();
       expect(mockResetPasswordForEmail).toHaveBeenCalledWith(
@@ -198,6 +198,14 @@ describe('authService', () => {
 
       expect(result.error).toBe('Unable to send reset email');
     });
+
+    it('returns a useful fallback when a non-Error value is thrown', async () => {
+      mockResetPasswordForEmail.mockRejectedValueOnce(null);
+
+      const result = await resetPassword('test@example.com');
+
+      expect(result.error).toBe('Unable to send a password reset email');
+    });
   });
 
   describe("updateRecoveredPassword", () => {
@@ -210,6 +218,14 @@ describe('authService', () => {
       expect(mockUpdateUser).toHaveBeenCalledWith({
         password: "new-password",
       });
+    });
+
+    it("returns a useful fallback when password update throws unexpectedly", async () => {
+      mockUpdateUser.mockRejectedValueOnce(null);
+
+      const result = await updateRecoveredPassword("new-password");
+
+      expect(result.error).toBe("Unable to update your password");
     });
   });
 

@@ -18,7 +18,11 @@ export default function InlineError({
   if (!message) return null;
 
   return (
-    <View style={styles.container}>
+    <View
+      style={styles.container}
+      accessibilityRole="alert"
+      accessibilityLiveRegion="assertive"
+    >
       <View style={styles.iconContainer}>
         <AlertCircle size={16} color={theme.colors.error} />
       </View>
@@ -26,11 +30,17 @@ export default function InlineError({
       <View style={styles.content}>
         <Text style={styles.message}>{message}</Text>
         
-        {action && onActionPress && (
-          <TouchableOpacity onPress={onActionPress} style={styles.actionButton}>
+        {action &&
+          (onActionPress ? (
+            <TouchableOpacity
+              onPress={onActionPress}
+              accessibilityRole="button"
+            >
+              <Text style={styles.actionText}>{action}</Text>
+            </TouchableOpacity>
+          ) : (
             <Text style={styles.actionText}>{action}</Text>
-          </TouchableOpacity>
-        )}
+          ))}
       </View>
     </View>
   );
@@ -57,13 +67,11 @@ const styles = StyleSheet.create({
     color: '#991B1B', 
     lineHeight: 20,
   },
-  actionButton: {
-    marginTop: theme.spacing.xs,
-  },
   actionText: {
     ...typography.caption,
     color: theme.colors.error,
     fontWeight: '600',
     fontSize: 13,
+    marginTop: theme.spacing.xs,
   },
 });

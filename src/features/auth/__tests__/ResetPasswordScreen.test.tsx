@@ -45,4 +45,56 @@ describe("ResetPasswordScreen", () => {
       expect(mockFinishPasswordRecovery).toHaveBeenCalled();
     });
   });
+
+  it("shows an actionable error when the recovery session is missing", async () => {
+    mockUpdateRecoveredPassword.mockResolvedValueOnce({
+      error: "Auth session missing!",
+    });
+    const { getByPlaceholderText, getByText } = render(
+      <ResetPasswordScreen />
+    );
+
+    fireEvent.changeText(
+      getByPlaceholderText("New password (6+ characters)"),
+      "new-password"
+    );
+    fireEvent.changeText(
+      getByPlaceholderText("Confirm new password"),
+      "new-password"
+    );
+    fireEvent.press(getByText("Update Password"));
+
+    await waitFor(() => {
+      expect(
+        getByText("This password reset link is invalid or expired")
+      ).toBeTruthy();
+      expect(
+        getByText("Request a new reset email and open its link on this device")
+      ).toBeTruthy();
+    });
+  });
+
+  it("handles an unexpected update failure without leaving the form busy", async () => {
+    mockUpdateRecoveredPassword.mockRejectedValueOnce(
+      new Error("Network request failed")
+    );
+    const { getByPlaceholderText, getByText } = render(
+      <ResetPasswordScreen />
+    );
+
+    fireEvent.changeText(
+      getByPlaceholderText("New password (6+ characters)"),
+      "new-password"
+    );
+    fireEvent.changeText(
+      getByPlaceholderText("Confirm new password"),
+      "new-password"
+    );
+    fireEvent.press(getByText("Update Password"));
+
+    await waitFor(() => {
+      expect(getByText("Unable to connect")).toBeTruthy();
+      expect(getByText("Update Password")).toBeTruthy();
+    });
+  });
 });

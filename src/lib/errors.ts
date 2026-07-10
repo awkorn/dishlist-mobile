@@ -39,6 +39,54 @@ const authErrorMap: Record<string, ErrorMapping> = {
   "Unable to validate email address: invalid format": {
     message: "Please enter a valid email address",
   },
+  "Auth session missing": {
+    message: "This password reset link is invalid or expired",
+    action: "Request a new reset email and open its link on this device",
+  },
+  "Email link is invalid or has expired": {
+    message: "This password reset link has expired",
+    action: "Request a new reset email",
+  },
+  "otp_expired": {
+    message: "This password reset link has expired",
+    action: "Request a new reset email",
+  },
+  "token has expired": {
+    message: "This password reset link has expired",
+    action: "Request a new reset email",
+  },
+  "invalid refresh token": {
+    message: "This password reset link is invalid or expired",
+    action: "Request a new reset email",
+  },
+  "same password": {
+    message: "Choose a different password",
+    action: "Your new password must be different from your current password",
+  },
+  "different from the old password": {
+    message: "Choose a different password",
+    action: "Your new password must be different from your current password",
+  },
+  "weak password": {
+    message: "Password is too weak",
+    action: "Choose a stronger password and try again",
+  },
+  "Network request failed": {
+    message: "Unable to connect",
+    action: "Check your internet connection and try again",
+  },
+  "Failed to fetch": {
+    message: "Unable to connect",
+    action: "Check your internet connection and try again",
+  },
+  "Error sending recovery email": {
+    message: "We couldn't send the reset email",
+    action: "Please try again in a moment",
+  },
+  "redirect_to": {
+    message: "Password reset is temporarily unavailable",
+    action: "Please contact DishList support",
+  },
 };
 
 
@@ -114,8 +162,8 @@ export const getAuthErrorMessage = (
 
   // Fallback
   return {
-    message: "Something went wrong",
-    action: "Please try again",
+    message: "We couldn't complete that request",
+    action: "Please try again. If it continues, contact DishList support",
   };
 };
 

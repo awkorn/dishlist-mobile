@@ -57,8 +57,7 @@ export default function SettingsScreen({ navigation }: Props) {
   const { pushEnabled, togglePush } = usePushNotifications();
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const appVersion =
-    Constants.expoConfig?.version ?? Constants.manifest?.version ?? "1.0.0";
+  const appVersion = Constants.expoConfig?.version ?? "1.0.0";
   const buildNumber =
     Constants.expoConfig?.ios?.buildNumber ?? "";
 
