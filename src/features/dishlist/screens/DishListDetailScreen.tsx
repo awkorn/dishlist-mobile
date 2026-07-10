@@ -44,6 +44,7 @@ import {
   useToggleFollowDishList,
   useDeleteDishList,
 } from "../hooks";
+import { DishListDetailSkeleton } from "../components/DishListDetailSkeleton";
 
 export default function DishListDetailScreen({
   route,
@@ -235,14 +236,7 @@ export default function DishListDetailScreen({
 
   // Loading state
   if (isLoading && !dishList) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={theme.colors.primary[500]} />
-          <Text style={styles.loadingText}>Loading DishList...</Text>
-        </View>
-      </SafeAreaView>
-    );
+    return <DishListDetailSkeleton onBack={navigation.goBack} />;
   }
 
   if (isError || !dishList) {
@@ -454,16 +448,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    gap: theme.spacing.lg,
-  },
-  loadingText: {
-    ...typography.body,
-    color: theme.colors.neutral[600],
   },
   errorContainer: {
     flex: 1,

@@ -4,6 +4,7 @@ import { Alert } from 'react-native';
 import React from 'react';
 import { useNotifications, getSectionTitle } from '../hooks/useNotifications';
 import { notificationService } from '../services/notificationService';
+import { queryKeys } from '@lib/queryKeys';
 import type { Notification } from '../types';
 
 jest.mock('../services/notificationService', () => ({
@@ -37,8 +38,7 @@ const createTestQueryClient = () =>
     },
   });
 
-const createWrapper = () => {
-  const queryClient = createTestQueryClient();
+const createWrapper = (queryClient = createTestQueryClient()) => {
   return ({ children }: { children: React.ReactNode }) =>
     React.createElement(QueryClientProvider, { client: queryClient }, children);
 };
@@ -641,6 +641,86 @@ describe('useNotifications', () => {
   });
 
   describe('follow request actions', () => {
+    it('optimistically removes an accepted request and updates the badge without refetching', async () => {
+      const mockNotifications = [
+        createMockNotification({ id: 'notif-1', type: 'FOLLOW_REQUEST', isRead: false }),
+      ];
+      mockNotificationService.getNotifications.mockResolvedValue(asPage(mockNotifications));
+
+      let resolveAccept: (value: { success: boolean }) => void;
+      const acceptPromise = new Promise<{ success: boolean }>((resolve) => {
+        resolveAccept = resolve;
+      });
+      mockNotificationService.acceptFollowRequest.mockReturnValue(acceptPromise);
+
+      const queryClient = createTestQueryClient();
+      queryClient.setQueryDefaults(queryKeys.notifications.unread(), {
+        gcTime: Infinity,
+      });
+      queryClient.setQueryData(queryKeys.notifications.unread(), 1);
+
+      const { result } = renderHook(() => useNotifications(), {
+        wrapper: createWrapper(queryClient),
+      });
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false);
+      });
+
+      let mutationPromise!: Promise<{ success: boolean }>;
+      act(() => {
+        mutationPromise = result.current.handleAcceptFollow('notif-1');
+      });
+
+      await waitFor(() => {
+        expect(result.current.notifications).toHaveLength(0);
+        expect(queryClient.getQueryData(queryKeys.notifications.unread())).toBe(0);
+      });
+      expect(result.current.isRefetching).toBe(false);
+
+      await act(async () => {
+        resolveAccept!({ success: true });
+        await mutationPromise;
+      });
+
+      expect(mockNotificationService.getNotifications).toHaveBeenCalledTimes(1);
+      expect(queryClient.getQueryData(queryKeys.notifications.unread())).toBe(0);
+    });
+
+    it('restores the request and badge when accepting fails', async () => {
+      const mockNotifications = [
+        createMockNotification({ id: 'notif-1', type: 'FOLLOW_REQUEST', isRead: false }),
+      ];
+      mockNotificationService.getNotifications.mockResolvedValue(asPage(mockNotifications));
+      mockNotificationService.acceptFollowRequest.mockRejectedValue(new Error('Failed'));
+
+      const queryClient = createTestQueryClient();
+      queryClient.setQueryDefaults(queryKeys.notifications.unread(), {
+        gcTime: Infinity,
+      });
+      queryClient.setQueryData(queryKeys.notifications.unread(), 1);
+
+      const { result } = renderHook(() => useNotifications(), {
+        wrapper: createWrapper(queryClient),
+      });
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false);
+      });
+
+      await act(async () => {
+        try {
+          await result.current.handleAcceptFollow('notif-1');
+        } catch (e) {
+          // Expected to throw
+        }
+      });
+
+      expect(result.current.notifications).toHaveLength(1);
+      expect(queryClient.getQueryData(queryKeys.notifications.unread())).toBe(1);
+      expect(mockNotificationService.getNotifications).toHaveBeenCalledTimes(1);
+    });
+
     it('shows error alert when accepting a follow request fails', async () => {
       const mockNotifications = [
         createMockNotification({ id: 'notif-1', type: 'FOLLOW_REQUEST' }),

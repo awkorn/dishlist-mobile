@@ -4,6 +4,7 @@ import {
   useMutation,
   useQueryClient,
   type InfiniteData,
+  type QueryClient,
 } from "@tanstack/react-query";
 import { Alert } from "react-native";
 import { queryKeys } from "@lib/queryKeys";
@@ -15,6 +16,11 @@ import type {
 } from "../types";
 
 type NotificationsCache = InfiniteData<NotificationsPage, string | undefined>;
+
+interface NotificationMutationContext {
+  previousNotifications: NotificationsCache | undefined;
+  previousUnreadCount: number | undefined;
+}
 
 /**
  * Apply a transform to the notification arrays of every cached page,
@@ -32,6 +38,91 @@ function mapCachedPages(
       notifications: transform(page.notifications),
     })),
   };
+}
+
+function findCachedNotification(
+  cache: NotificationsCache | undefined,
+  notificationId: string
+): Notification | undefined {
+  return cache?.pages
+    .flatMap((page) => page.notifications)
+    .find((notification) => notification.id === notificationId);
+}
+
+/**
+ * Stop active notification requests before an optimistic update so a stale
+ * response cannot overwrite the row or badge while the mutation is pending.
+ */
+async function cancelNotificationQueries(queryClient: QueryClient) {
+  await Promise.all([
+    queryClient.cancelQueries({
+      queryKey: queryKeys.notifications.all,
+      exact: true,
+    }),
+    queryClient.cancelQueries({
+      queryKey: queryKeys.notifications.unread(),
+      exact: true,
+    }),
+  ]);
+}
+
+function getMutationContext(
+  queryClient: QueryClient
+): NotificationMutationContext {
+  return {
+    previousNotifications: queryClient.getQueryData<NotificationsCache>(
+      queryKeys.notifications.all
+    ),
+    previousUnreadCount: queryClient.getQueryData<number>(
+      queryKeys.notifications.unread()
+    ),
+  };
+}
+
+function restoreNotificationContext(
+  queryClient: QueryClient,
+  context: NotificationMutationContext | undefined
+) {
+  if (!context) return;
+
+  if (context.previousNotifications !== undefined) {
+    queryClient.setQueryData(
+      queryKeys.notifications.all,
+      context.previousNotifications
+    );
+  }
+
+  if (context.previousUnreadCount !== undefined) {
+    queryClient.setQueryData(
+      queryKeys.notifications.unread(),
+      context.previousUnreadCount
+    );
+  }
+}
+
+function decrementUnreadCount(
+  queryClient: QueryClient,
+  notification: Notification | undefined
+) {
+  if (notification?.isRead !== false) return;
+
+  queryClient.setQueryData<number>(
+    queryKeys.notifications.unread(),
+    (old) => (old === undefined ? old : Math.max(0, old - 1))
+  );
+}
+
+function removeNotificationFromCache(
+  queryClient: QueryClient,
+  notificationId: string
+) {
+  queryClient.setQueryData<NotificationsCache>(
+    queryKeys.notifications.all,
+    (old) =>
+      mapCachedPages(old, (items) =>
+        items.filter((notification) => notification.id !== notificationId)
+      )
+  );
 }
 
 /**
@@ -151,27 +242,15 @@ export function useNotifications() {
     [notifications]
   );
 
-  // Every mutation below reconciles both the list and the badge with the
-  // server once it settles.
-  const invalidateNotifications = useCallback(() => {
-    queryClient.invalidateQueries({ queryKey: queryKeys.notifications.all });
-    queryClient.invalidateQueries({
-      queryKey: queryKeys.notifications.unread(),
-    });
-  }, [queryClient]);
-
   // Mark single as read mutation
   const markAsReadMutation = useMutation({
     mutationFn: notificationService.markAsRead,
     onMutate: async (notificationId) => {
-      // Cancel outgoing refetches
-      await queryClient.cancelQueries({
-        queryKey: queryKeys.notifications.all,
-      });
-
-      // Snapshot previous value
-      const previousNotifications = queryClient.getQueryData<NotificationsCache>(
-        queryKeys.notifications.all
+      await cancelNotificationQueries(queryClient);
+      const context = getMutationContext(queryClient);
+      const notification = findCachedNotification(
+        context.previousNotifications,
+        notificationId
       );
 
       // Optimistically update
@@ -185,37 +264,21 @@ export function useNotifications() {
           )
       );
 
-      // Also update unread count
-      queryClient.setQueryData<number>(
-        queryKeys.notifications.unread(),
-        (old) => Math.max(0, (old ?? 0) - 1)
-      );
+      decrementUnreadCount(queryClient, notification);
 
-      return { previousNotifications };
+      return context;
     },
     onError: (_err, _id, context) => {
-      // Rollback on error
-      if (context?.previousNotifications) {
-        queryClient.setQueryData(
-          queryKeys.notifications.all,
-          context.previousNotifications
-        );
-      }
+      restoreNotificationContext(queryClient, context);
     },
-    onSettled: invalidateNotifications,
   });
 
   // Mark all as read mutation
   const markAllAsReadMutation = useMutation({
     mutationFn: notificationService.markAllAsRead,
     onMutate: async () => {
-      await queryClient.cancelQueries({
-        queryKey: queryKeys.notifications.all,
-      });
-
-      const previousNotifications = queryClient.getQueryData<NotificationsCache>(
-        queryKeys.notifications.all
-      );
+      await cancelNotificationQueries(queryClient);
+      const context = getMutationContext(queryClient);
 
       // Optimistically mark all as read
       queryClient.setQueryData<NotificationsCache>(
@@ -226,79 +289,45 @@ export function useNotifications() {
           )
       );
 
-      queryClient.setQueryData<number>(queryKeys.notifications.unread(), 0);
+      queryClient.setQueryData<number>(
+        queryKeys.notifications.unread(),
+        (old) => (old === undefined ? old : 0)
+      );
 
-      return { previousNotifications };
+      return context;
     },
     onError: (_err, _vars, context) => {
-      if (context?.previousNotifications) {
-        queryClient.setQueryData(
-          queryKeys.notifications.all,
-          context.previousNotifications
-        );
-      }
+      restoreNotificationContext(queryClient, context);
     },
-    onSettled: invalidateNotifications,
   });
 
   // Delete single notification mutation
   const deleteMutation = useMutation({
     mutationFn: notificationService.deleteNotification,
     onMutate: async (notificationId) => {
-      await queryClient.cancelQueries({
-        queryKey: queryKeys.notifications.all,
-      });
-
-      const previousNotifications = queryClient.getQueryData<NotificationsCache>(
-        queryKeys.notifications.all
+      await cancelNotificationQueries(queryClient);
+      const context = getMutationContext(queryClient);
+      const notification = findCachedNotification(
+        context.previousNotifications,
+        notificationId
       );
 
-      // Find the notification to check if unread
-      const notification = previousNotifications?.pages
-        .flatMap((page) => page.notifications)
-        .find((n) => n.id === notificationId);
+      removeNotificationFromCache(queryClient, notificationId);
+      decrementUnreadCount(queryClient, notification);
 
-      // Optimistically remove
-      queryClient.setQueryData<NotificationsCache>(
-        queryKeys.notifications.all,
-        (old) =>
-          mapCachedPages(old, (items) =>
-            items.filter((n) => n.id !== notificationId)
-          )
-      );
-
-      // Update unread count if notification was unread
-      if (notification && !notification.isRead) {
-        queryClient.setQueryData<number>(
-          queryKeys.notifications.unread(),
-          (old) => Math.max(0, (old ?? 0) - 1)
-        );
-      }
-
-      return { previousNotifications };
+      return context;
     },
     onError: (_err, _id, context) => {
-      if (context?.previousNotifications) {
-        queryClient.setQueryData(
-          queryKeys.notifications.all,
-          context.previousNotifications
-        );
-      }
+      restoreNotificationContext(queryClient, context);
     },
-    onSettled: invalidateNotifications,
   });
 
   // Delete all (Clear All) mutation
   const deleteAllMutation = useMutation({
     mutationFn: notificationService.deleteAllNotifications,
     onMutate: async () => {
-      await queryClient.cancelQueries({
-        queryKey: queryKeys.notifications.all,
-      });
-
-      const previousNotifications = queryClient.getQueryData<NotificationsCache>(
-        queryKeys.notifications.all
-      );
+      await cancelNotificationQueries(queryClient);
+      const context = getMutationContext(queryClient);
 
       // Optimistically clear all (collapse to a single empty page)
       queryClient.setQueryData<NotificationsCache>(
@@ -309,152 +338,114 @@ export function useNotifications() {
         }
       );
 
-      queryClient.setQueryData<number>(queryKeys.notifications.unread(), 0);
+      queryClient.setQueryData<number>(
+        queryKeys.notifications.unread(),
+        (old) => (old === undefined ? old : 0)
+      );
 
-      return { previousNotifications };
+      return context;
     },
     onError: (_err, _vars, context) => {
-      if (context?.previousNotifications) {
-        queryClient.setQueryData(
-          queryKeys.notifications.all,
-          context.previousNotifications
-        );
-      }
+      restoreNotificationContext(queryClient, context);
       Alert.alert("Error", "Failed to clear notifications. Please try again.");
     },
-    onSettled: invalidateNotifications,
   });
 
   // Accept invitation mutation
   const acceptInvitationMutation = useMutation({
     mutationFn: notificationService.acceptInvitation,
-    onSuccess: (_data, notificationId) => {
-      // Remove the notification from cache
-      queryClient.setQueryData<NotificationsCache>(
-        queryKeys.notifications.all,
-        (old) =>
-          mapCachedPages(old, (items) =>
-            items.filter((n) => n.id !== notificationId)
-          )
+    onMutate: async (notificationId) => {
+      await cancelNotificationQueries(queryClient);
+      const context = getMutationContext(queryClient);
+      const notification = findCachedNotification(
+        context.previousNotifications,
+        notificationId
       );
 
+      removeNotificationFromCache(queryClient, notificationId);
+      decrementUnreadCount(queryClient, notification);
+
+      return context;
+    },
+    onSuccess: () => {
       // Invalidate dishlist queries to show new collaboration
       queryClient.invalidateQueries({
         queryKey: queryKeys.dishLists.all,
       });
     },
-    onError: (error: any) => {
+    onError: (error: any, _id, context) => {
+      restoreNotificationContext(queryClient, context);
       Alert.alert(
         "Error",
         error?.response?.data?.error || "Failed to accept invitation."
       );
     },
-    onSettled: invalidateNotifications,
   });
 
   // Decline invitation mutation
   const declineInvitationMutation = useMutation({
     mutationFn: notificationService.declineInvitation,
     onMutate: async (notificationId) => {
-      await queryClient.cancelQueries({
-        queryKey: queryKeys.notifications.all,
-      });
-
-      const previousNotifications = queryClient.getQueryData<NotificationsCache>(
-        queryKeys.notifications.all
+      await cancelNotificationQueries(queryClient);
+      const context = getMutationContext(queryClient);
+      const notification = findCachedNotification(
+        context.previousNotifications,
+        notificationId
       );
 
-      // Optimistically remove
-      queryClient.setQueryData<NotificationsCache>(
-        queryKeys.notifications.all,
-        (old) =>
-          mapCachedPages(old, (items) =>
-            items.filter((n) => n.id !== notificationId)
-          )
-      );
+      removeNotificationFromCache(queryClient, notificationId);
+      decrementUnreadCount(queryClient, notification);
 
-      return { previousNotifications };
+      return context;
     },
     onError: (_err, _id, context) => {
-      if (context?.previousNotifications) {
-        queryClient.setQueryData(
-          queryKeys.notifications.all,
-          context.previousNotifications
-        );
-      }
+      restoreNotificationContext(queryClient, context);
       Alert.alert("Error", "Failed to decline invitation.");
     },
-    onSettled: invalidateNotifications,
   });
 
   // Accept follow request mutation
   const acceptFollowMutation = useMutation({
     mutationFn: notificationService.acceptFollowRequest,
     onMutate: async (notificationId) => {
-      await queryClient.cancelQueries({
-        queryKey: queryKeys.notifications.all,
-      });
-
-      const previousNotifications = queryClient.getQueryData<NotificationsCache>(
-        queryKeys.notifications.all
+      await cancelNotificationQueries(queryClient);
+      const context = getMutationContext(queryClient);
+      const notification = findCachedNotification(
+        context.previousNotifications,
+        notificationId
       );
 
-      // Optimistically remove the notification
-      queryClient.setQueryData<NotificationsCache>(
-        queryKeys.notifications.all,
-        (old) =>
-          mapCachedPages(old, (items) =>
-            items.filter((n) => n.id !== notificationId)
-          )
-      );
+      removeNotificationFromCache(queryClient, notificationId);
+      decrementUnreadCount(queryClient, notification);
 
-      return { previousNotifications };
+      return context;
     },
     onError: (_err, _id, context) => {
-      if (context?.previousNotifications) {
-        queryClient.setQueryData(
-          queryKeys.notifications.all,
-          context.previousNotifications
-        );
-      }
+      restoreNotificationContext(queryClient, context);
       Alert.alert("Error", "Failed to accept follow request.");
     },
-    onSettled: invalidateNotifications,
   });
 
   // Decline follow request mutation
   const declineFollowMutation = useMutation({
     mutationFn: notificationService.declineFollowRequest,
     onMutate: async (notificationId) => {
-      await queryClient.cancelQueries({
-        queryKey: queryKeys.notifications.all,
-      });
-
-      const previousNotifications = queryClient.getQueryData<NotificationsCache>(
-        queryKeys.notifications.all
+      await cancelNotificationQueries(queryClient);
+      const context = getMutationContext(queryClient);
+      const notification = findCachedNotification(
+        context.previousNotifications,
+        notificationId
       );
 
-      // Optimistically remove the notification
-      queryClient.setQueryData<NotificationsCache>(
-        queryKeys.notifications.all,
-        (old) =>
-          mapCachedPages(old, (items) =>
-            items.filter((n) => n.id !== notificationId)
-          )
-      );
+      removeNotificationFromCache(queryClient, notificationId);
+      decrementUnreadCount(queryClient, notification);
 
-      return { previousNotifications };
+      return context;
     },
     onError: (_err, _id, context) => {
-      if (context?.previousNotifications) {
-        queryClient.setQueryData(
-          queryKeys.notifications.all,
-          context.previousNotifications
-        );
-      }
+      restoreNotificationContext(queryClient, context);
       Alert.alert("Error", "Failed to decline follow request.");
     },
-    onSettled: invalidateNotifications,
   });
 
   // Wrapped handlers
