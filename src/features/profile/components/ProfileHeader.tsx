@@ -19,11 +19,12 @@ import { InlineSearchInput } from "@components/ui";
 import type { UserProfile } from "../types";
 import { FollowButton } from "./FollowButton";
 
-const AVATAR_SIZE = 100;
+const AVATAR_SIZE = 104;
 
 interface ProfileHeaderProps {
   user: UserProfile;
   displayName: string;
+  isOwnProfile: boolean;
   onBackPress: () => void;
   onEditPress?: () => void;
   onSharePress?: () => void;
@@ -40,6 +41,7 @@ interface ProfileHeaderProps {
 export function ProfileHeader({
   user,
   displayName,
+  isOwnProfile,
   onBackPress,
   onEditPress,
   onSharePress,
@@ -72,53 +74,60 @@ export function ProfileHeader({
 
   return (
     <View style={styles.container}>
-      {/* White header */}
-      <View style={styles.whiteSection}>
-        {/* Top row */}
-        <View style={styles.topRow}>
-          {/* Back */}
-          <TouchableOpacity onPress={onBackPress} style={styles.iconBtn}>
-            <MoveLeft size={24} color={theme.colors.neutral[700]} />
-          </TouchableOpacity>
+      <View style={styles.topRow}>
+        <TouchableOpacity
+          onPress={onBackPress}
+          style={styles.iconBtn}
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
+        >
+          <MoveLeft size={24} color={theme.colors.neutral[700]} />
+        </TouchableOpacity>
 
-          {/* Inline search - will expand to fill space when active */}
-          <InlineSearchInput
-            isActive={isSearchActive}
-            value={searchQuery}
-            onChangeText={onSearchChange}
-            onClose={onSearchToggle}
-            placeholder={searchPlaceholder}
-          />
+        <InlineSearchInput
+          isActive={isSearchActive}
+          value={searchQuery}
+          onChangeText={onSearchChange}
+          onClose={onSearchToggle}
+          placeholder={searchPlaceholder}
+        />
 
-          {/* Right icons - hide when search is active */}
-          {!isSearchActive && (
-            <Animated.View
-              style={[
-                styles.rightIcons,
-                {
-                  opacity: iconsOpacity,
-                  transform: [{ scale: iconsScale }],
-                },
-              ]}
+        {!isSearchActive && (
+          <Animated.View
+            style={[
+              styles.rightIcons,
+              {
+                opacity: iconsOpacity,
+                transform: [{ scale: iconsScale }],
+              },
+            ]}
+          >
+            <TouchableOpacity
+              onPress={onSearchToggle}
+              style={styles.iconBtn}
+              accessibilityRole="button"
+              accessibilityLabel="Search profile content"
             >
-              <TouchableOpacity onPress={onSearchToggle} style={styles.iconBtn}>
-                <Search size={22} color={theme.colors.neutral[700]} />
-              </TouchableOpacity>
+              <Search size={22} color={theme.colors.neutral[700]} />
+            </TouchableOpacity>
 
-              {onMenuPress && (
-                <TouchableOpacity onPress={onMenuPress} style={styles.iconBtn}>
-                  <EllipsisVertical
-                    size={22}
-                    color={theme.colors.neutral[700]}
-                  />
-                </TouchableOpacity>
-              )}
-            </Animated.View>
-          )}
-        </View>
+            {onMenuPress && (
+              <TouchableOpacity
+                onPress={onMenuPress}
+                style={styles.iconBtn}
+                accessibilityRole="button"
+                accessibilityLabel="Profile options"
+              >
+                <EllipsisVertical
+                  size={22}
+                  color={theme.colors.neutral[700]}
+                />
+              </TouchableOpacity>
+            )}
+          </Animated.View>
+        )}
       </View>
 
-      {/* Profile content */}
       <View style={styles.profileSection}>
         <View style={styles.avatarContainer}>
           {user.avatarUrl ? (
@@ -126,52 +135,66 @@ export function ProfileHeader({
               source={{ uri: user.avatarUrl }}
               style={styles.avatar}
               cachePolicy="memory-disk"
+              accessibilityLabel={`${displayName}'s profile photo`}
             />
           ) : (
-            <View style={styles.avatarPlaceholder}>
+            <View
+              style={styles.avatarPlaceholder}
+              accessible
+              accessibilityLabel={`${displayName}'s profile photo placeholder`}
+            >
               <UserIcon size={40} color={theme.colors.neutral[400]} />
             </View>
           )}
         </View>
 
-        <View style={styles.infoRow}>
-          <View style={styles.nameSection}>
-            <Text style={styles.displayName}>{displayName}</Text>
-            {user.username && (
-              <Text style={styles.username}>@{user.username}</Text>
-            )}
-          </View>
+        <View style={styles.nameSection}>
+          <Text
+            style={styles.displayName}
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.8}
+          >
+            {displayName}
+          </Text>
+          {user.username && (
+            <Text style={styles.username}>@{user.username}</Text>
+          )}
+        </View>
 
-          <View style={styles.statsSection}>
-            <TouchableOpacity
-              style={styles.stat}
-              onPress={onFollowersPress}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.statNumber}>{user.followerCount}</Text>
-              <Text style={styles.statLabel}>Followers</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.stat}
-              onPress={onFollowingPress}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.statNumber}>{user.followingCount}</Text>
-              <Text style={styles.statLabel}>Following</Text>
-            </TouchableOpacity>
-          </View>
+        <View style={styles.statsSection}>
+          <TouchableOpacity
+            style={styles.stat}
+            onPress={onFollowersPress}
+            activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel={`${user.followerCount} followers`}
+          >
+            <Text style={styles.statNumber}>{user.followerCount}</Text>
+            <Text style={styles.statLabel}>Followers</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.stat}
+            onPress={onFollowingPress}
+            activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel={`${user.followingCount} following`}
+          >
+            <Text style={styles.statNumber}>{user.followingCount}</Text>
+            <Text style={styles.statLabel}>Following</Text>
+          </TouchableOpacity>
         </View>
 
         {user.bio && <Text style={styles.bio}>{user.bio}</Text>}
 
-        {/* Action Buttons Row */}
-        {user.isOwnProfile ? (
-          // Own profile: Edit + Share buttons
+        {isOwnProfile ? (
           <View style={styles.actionButtonsRow}>
             <TouchableOpacity
               style={[styles.actionButton, styles.editActionButton]}
               onPress={onEditPress}
               activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel="Edit profile"
             >
               <Text
                 style={[styles.actionButtonText, styles.editActionButtonText]}
@@ -184,12 +207,13 @@ export function ProfileHeader({
               style={styles.actionButton}
               onPress={onSharePress}
               activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel="Share profile"
             >
               <Text style={styles.actionButtonText}>Share Profile</Text>
             </TouchableOpacity>
           </View>
         ) : (
-          // Other user's profile: Full-width follow button
           <View style={styles.followButtonRow}>
             <FollowButton
               userId={user.uid}
@@ -204,17 +228,16 @@ export function ProfileHeader({
 }
 
 const styles = StyleSheet.create({
-  container: {},
-  whiteSection: {
-    backgroundColor: theme.colors.surface,
-    paddingBottom: AVATAR_SIZE / 2,
+  container: {
+    backgroundColor: theme.colors.background,
   },
   topRow: {
+    minHeight: 60,
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 16,
+    paddingTop: 8,
+    paddingBottom: 4,
   },
   iconBtn: {
     padding: 8,
@@ -228,73 +251,83 @@ const styles = StyleSheet.create({
   },
   profileSection: {
     paddingHorizontal: 20,
-    paddingBottom: 16,
+    paddingTop: 4,
+    paddingBottom: 20,
+    alignItems: "center",
   },
   avatarContainer: {
-    marginTop: -(AVATAR_SIZE / 2),
-    marginBottom: 12,
+    marginBottom: 14,
   },
   avatar: {
     width: AVATAR_SIZE,
     height: AVATAR_SIZE,
     borderRadius: AVATAR_SIZE / 2,
     backgroundColor: theme.colors.neutral[200],
-    borderWidth: 3,
-    borderColor: theme.colors.background,
+    borderWidth: 2,
+    borderColor: theme.colors.surface,
   },
   avatarPlaceholder: {
     width: AVATAR_SIZE,
     height: AVATAR_SIZE,
     borderRadius: AVATAR_SIZE / 2,
     backgroundColor: theme.colors.neutral[200],
-    borderWidth: 3,
-    borderColor: theme.colors.background,
+    borderWidth: 2,
+    borderColor: theme.colors.surface,
     justifyContent: "center",
     alignItems: "center",
   },
-  infoRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginBottom: 8,
-  },
   nameSection: {
-    flex: 1,
+    alignSelf: "stretch",
+    alignItems: "center",
   },
   displayName: {
-    ...typography.heading3,
+    ...typography.editorialTitle,
+    fontSize: 30,
+    lineHeight: 38,
     color: theme.colors.neutral[900],
-    marginBottom: 2,
+    textAlign: "center",
   },
   username: {
     ...typography.body,
     color: theme.colors.neutral[500],
+    marginTop: 1,
+    textAlign: "center",
   },
   statsSection: {
     flexDirection: "row",
-    gap: 20,
+    justifyContent: "center",
+    gap: 48,
+    marginTop: 18,
   },
   stat: {
     alignItems: "center",
+    minWidth: 72,
   },
   statNumber: {
-    ...typography.subtitle,
-    color: theme.colors.neutral[700],
+    fontFamily: "GeneralSans-SemiBold",
+    fontSize: 17,
+    lineHeight: 22,
+    color: theme.colors.textPrimary,
   },
   statLabel: {
-    ...typography.caption,
+    ...typography.body,
+    fontSize: 15,
     color: theme.colors.neutral[500],
+    marginTop: 1,
   },
   bio: {
     ...typography.body,
     color: theme.colors.neutral[700],
-    marginTop: 8,
+    marginTop: 16,
+    maxWidth: 320,
+    textAlign: "center",
+    lineHeight: 22,
   },
-  // Action buttons for own profile
   actionButtonsRow: {
+    alignSelf: "stretch",
     flexDirection: "row",
     gap: 12,
-    marginTop: 16,
+    marginTop: 20,
   },
   actionButton: {
     flex: 1,
@@ -303,8 +336,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: 8,
     backgroundColor: theme.colors.primary[500],
-    paddingVertical: 10,
-    borderRadius: theme.borderRadius.md,
+    minHeight: 34,
+    paddingVertical: 8,
+    borderRadius: 10,
   },
   editActionButton: {
     backgroundColor: theme.colors.surface,
@@ -319,8 +353,8 @@ const styles = StyleSheet.create({
   editActionButtonText: {
     color: theme.colors.primary[500],
   },
-  // Follow button row for other profiles
   followButtonRow: {
-    marginTop: 16,
+    alignSelf: "stretch",
+    marginTop: 20,
   },
 });

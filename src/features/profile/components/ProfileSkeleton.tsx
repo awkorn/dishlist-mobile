@@ -69,20 +69,18 @@ export function ProfileSkeleton({ onBack }: ProfileSkeletonProps) {
         >
           <View style={styles.avatar} />
 
-          <View style={styles.infoRow}>
-            <View style={styles.nameSection}>
-              <View style={styles.name} />
-              <View style={styles.username} />
+          <View style={styles.nameSection}>
+            <View style={styles.name} />
+            <View style={styles.username} />
+          </View>
+          <View style={styles.statsSection}>
+            <View style={styles.stat}>
+              <View style={styles.statNumber} />
+              <View style={styles.statLabel} />
             </View>
-            <View style={styles.statsSection}>
-              <View style={styles.stat}>
-                <View style={styles.statNumber} />
-                <View style={styles.statLabel} />
-              </View>
-              <View style={styles.stat}>
-                <View style={styles.statNumber} />
-                <View style={styles.statLabel} />
-              </View>
+            <View style={styles.stat}>
+              <View style={styles.statNumber} />
+              <View style={styles.statLabel} />
             </View>
           </View>
 
@@ -163,40 +161,37 @@ const styles = StyleSheet.create({
   },
   profileContent: {
     paddingHorizontal: theme.spacing.xl,
-    paddingBottom: theme.spacing.lg,
+    paddingTop: theme.spacing.xs,
+    paddingBottom: theme.spacing.xl,
+    alignItems: "center",
   },
   avatar: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    width: 104,
+    height: 104,
+    borderRadius: 52,
     backgroundColor: skeletonColor,
-    marginBottom: theme.spacing.md,
-  },
-  infoRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    gap: theme.spacing.lg,
+    marginBottom: 14,
   },
   nameSection: {
-    flex: 1,
+    alignItems: "center",
     gap: theme.spacing.sm,
   },
   name: {
-    width: "75%",
-    height: 22,
+    width: 176,
+    height: 28,
     borderRadius: theme.borderRadius.sm,
     backgroundColor: skeletonColor,
   },
   username: {
-    width: "52%",
+    width: 94,
     height: 14,
     borderRadius: theme.borderRadius.sm,
     backgroundColor: skeletonColor,
   },
   statsSection: {
     flexDirection: "row",
-    gap: theme.spacing.xl,
+    gap: 48,
+    marginTop: 18,
   },
   stat: {
     alignItems: "center",
@@ -215,7 +210,7 @@ const styles = StyleSheet.create({
     backgroundColor: skeletonColor,
   },
   bioLine: {
-    width: "100%",
+    width: "88%",
     height: 14,
     borderRadius: theme.borderRadius.sm,
     backgroundColor: skeletonColor,
@@ -229,14 +224,15 @@ const styles = StyleSheet.create({
     marginTop: theme.spacing.sm,
   },
   buttonRow: {
+    alignSelf: "stretch",
     flexDirection: "row",
     gap: theme.spacing.md,
     marginTop: theme.spacing.xl,
   },
   actionButton: {
     flex: 1,
-    height: 42,
-    borderRadius: theme.borderRadius.sm,
+    height: 44,
+    borderRadius: 10,
     backgroundColor: skeletonColor,
   },
   tabs: {

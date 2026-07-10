@@ -92,7 +92,7 @@ export default function GroceryListScreen() {
     return (
       <View style={styles.container}>
         <LinearGradient
-          colors={["#FFFFFF", "#F4F2EE"]}
+          colors={["#FFFFFF", theme.colors.background]}
           locations={[0, 1]}
           start={{ x: 0, y: 0 }}
           end={{ x: 0, y: 1 }}
@@ -117,7 +117,7 @@ export default function GroceryListScreen() {
   return (
     <View style={styles.container}>
       <LinearGradient
-        colors={["#FFFFFF", "#F4F2EE"]}
+        colors={["#FFFFFF", theme.colors.background]}
         locations={[0, 1]}
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}

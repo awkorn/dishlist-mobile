@@ -23,7 +23,7 @@ export const theme = {
     success: "#10B981",
     error: "#EF4444",
     warning: "#F59E0B",
-    background: "#F4F2EE",
+    background: "#F7F5F3",
     surface: "#FFFFFF",
     textPrimary: "#00295B",
   },

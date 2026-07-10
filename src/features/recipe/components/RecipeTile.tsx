@@ -116,6 +116,7 @@ const styles = StyleSheet.create({
   },
   title: {
     ...typography.body,
+    fontFamily: "Inter-Medium",
     fontSize: 14,
     color: theme.colors.textPrimary,
     marginBottom: theme.spacing.xs,

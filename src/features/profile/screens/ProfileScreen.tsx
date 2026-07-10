@@ -305,6 +305,7 @@ export default function ProfileScreen({ navigation, route }: Props) {
       <ProfileHeader
         user={user}
         displayName={displayName}
+        isOwnProfile={isOwnProfile}
         onBackPress={handleBack}
         onEditPress={isOwnProfile ? handleEditProfile : undefined}
         onSharePress={isOwnProfile ? handleShareProfile : undefined}
@@ -448,17 +449,17 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.background,
   },
   safeArea: {
-    backgroundColor: theme.colors.surface,
+    backgroundColor: theme.colors.background,
   },
   loadingWrapper: {
     flex: 1,
     backgroundColor: theme.colors.background,
   },
   loadingSafeArea: {
-    backgroundColor: theme.colors.surface,
+    backgroundColor: theme.colors.background,
   },
   blockedHeader: {
-    backgroundColor: theme.colors.surface,
+    backgroundColor: theme.colors.background,
     paddingHorizontal: 16,
     paddingTop: 12,
     paddingBottom: 16,

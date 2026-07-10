@@ -16,6 +16,8 @@ export function ProfileTabs({ activeTab, onTabChange }: ProfileTabsProps) {
         style={[styles.tab, activeTab === 'DishLists' && styles.activeTab]}
         onPress={() => onTabChange('DishLists')}
         activeOpacity={0.7}
+        accessibilityRole="tab"
+        accessibilityState={{ selected: activeTab === 'DishLists' }}
       >
         <Text style={[styles.tabText, activeTab === 'DishLists' && styles.activeTabText]}>
           DishLists
@@ -25,6 +27,8 @@ export function ProfileTabs({ activeTab, onTabChange }: ProfileTabsProps) {
         style={[styles.tab, activeTab === 'Recipes' && styles.activeTab]}
         onPress={() => onTabChange('Recipes')}
         activeOpacity={0.7}
+        accessibilityRole="tab"
+        accessibilityState={{ selected: activeTab === 'Recipes' }}
       >
         <Text style={[styles.tabText, activeTab === 'Recipes' && styles.activeTabText]}>
           Recipes

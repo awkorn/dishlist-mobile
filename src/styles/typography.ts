@@ -39,6 +39,23 @@ export const typography = {
     lineHeight: 36,
     letterSpacing: -0.5,
   },
+  editorialPageTitle: {
+    fontFamily: "PlayfairDisplay-SemiBold",
+    fontSize: 32,
+    lineHeight: 38,
+    letterSpacing: -0.5,
+  },
+  editorialTitle: {
+    fontFamily: "PlayfairDisplay-Medium",
+    fontSize: 26,
+    lineHeight: 32,
+    letterSpacing: -0.25,
+  },
+  editorialNavigationTitle: {
+    fontFamily: "PlayfairDisplay-Medium",
+    fontSize: 20,
+    lineHeight: 25,
+  },
   subtitle: {
     fontFamily: "Inter-Medium",
     fontSize: 19,

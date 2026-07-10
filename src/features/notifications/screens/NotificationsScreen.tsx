@@ -219,7 +219,7 @@ export default function NotificationsScreen() {
     <View style={styles.container}>
       {/* Header */}
       <LinearGradient
-        colors={["#FFFFFF", "#F4F2EE"]}
+        colors={["#FFFFFF", theme.colors.background]}
         locations={[0, 1]}
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
