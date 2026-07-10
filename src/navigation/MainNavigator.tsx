@@ -20,12 +20,13 @@ import { FollowersFollowingScreen } from "@features/profile";
 import TabNavigator from "./TabNavigator";
 import { RootStackParamList } from "@app-types/navigation";
 import { ChangePasswordScreen, ChangeEmailScreen } from "@features/settings";
+import { theme } from "@styles/theme";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 const LoadingScreen = () => (
   <View style={styles.loadingContainer}>
-    <ActivityIndicator size="large" color="#2563eb" />
+    <ActivityIndicator size="large" color={theme.colors.primary[500]} />
   </View>
 );
 
@@ -118,6 +119,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#f5f5f5",
+    backgroundColor: theme.colors.background,
   },
 });

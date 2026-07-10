@@ -23,6 +23,7 @@ import { EditProfileSheet } from "../components/EditProfileSheet";
 import { DishListTile } from "@features/dishlist";
 import RecipeTile from "@features/recipe/components/RecipeTile";
 import { ProfileEmptyState } from "../components/ProfileEmptyState";
+import { ProfileSkeleton } from "../components/ProfileSkeleton";
 import { ShareModal } from "@features/share";
 import { ReportContentModal } from "@components/moderation/ReportContentModal";
 import { theme } from "@styles/theme";
@@ -229,15 +230,7 @@ export default function ProfileScreen({ navigation, route }: Props) {
   };
 
   if (isLoading) {
-    return (
-      <View style={styles.loadingWrapper}>
-        <SafeAreaView style={styles.loadingSafeArea} edges={["top"]} />
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={theme.colors.primary[500]} />
-          <Text style={styles.loadingText}>Loading profile...</Text>
-        </View>
-      </View>
-    );
+    return <ProfileSkeleton onBack={handleBack} />;
   }
 
   if (isError || !user) {
@@ -506,16 +499,6 @@ const styles = StyleSheet.create({
     ...typography.body,
     color: "white",
     fontWeight: "600",
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  loadingText: {
-    ...typography.body,
-    color: theme.colors.neutral[600],
-    marginTop: 12,
   },
   errorContainer: {
     flex: 1,

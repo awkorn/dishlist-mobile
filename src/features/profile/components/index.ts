@@ -5,3 +5,4 @@ export { ProfileTabs } from './ProfileTabs';
 export { ProfileEmptyState } from './ProfileEmptyState';
 export { FollowButton } from './FollowButton';
 export { FollowListUserItem } from './FollowListUserItem';
+export { ProfileSkeleton } from './ProfileSkeleton';

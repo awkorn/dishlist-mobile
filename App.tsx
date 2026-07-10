@@ -14,6 +14,7 @@ import { linking } from '@navigation/linking';
 import { navigationRef } from '@navigation/navigationRef';
 import InviteRedirectHandler from '@navigation/InviteRedirectHandler';
 import { PushNotificationsProvider } from '@features/notifications';
+import { theme } from '@styles/theme';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -70,7 +71,9 @@ export default function App() {
   }
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <GestureHandlerRootView
+      style={{ flex: 1, backgroundColor: theme.colors.background }}
+    >
       <GlobalErrorBoundary>
         <QueryClientProvider client={queryClient}>
           <SafeAreaProvider>
@@ -79,7 +82,10 @@ export default function App() {
                 <PushNotificationsProvider>
                   <InviteRedirectHandler />
                   <MainNavigator />
-                  <StatusBar style="auto" />
+                  <StatusBar
+                    style="dark"
+                    backgroundColor={theme.colors.background}
+                  />
                 </PushNotificationsProvider>
               </NavigationContainer>
             </AuthProvider>
