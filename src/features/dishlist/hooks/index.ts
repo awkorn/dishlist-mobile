@@ -9,8 +9,12 @@ export {
   mapDishListDetailCache,
   appendRecipeToDetailCache,
   removeRecipeFromDetailCache,
+  updateRecipeInDetailCache,
 } from './useDishListDetail';
-export type { DishListDetailCache } from './useDishListDetail';
+export type {
+  DishListDetailCache,
+  DishListRecipePatch,
+} from './useDishListDetail';
 export { usePrefetchDishLists } from './usePrefetchDishLists';
 export {
   useCreateDishList,

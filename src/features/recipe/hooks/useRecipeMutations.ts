@@ -6,7 +6,9 @@ import type { Recipe, CreateRecipeData, UpdateRecipeData } from '../types';
 import type { DishListRecipe } from '@features/dishlist/types';
 import {
   appendRecipeToDetailCache,
+  updateRecipeInDetailCache,
   type DishListDetailCache,
+  type DishListRecipePatch,
 } from '@features/dishlist/hooks';
 import {
   dishlistService,
@@ -14,6 +16,42 @@ import {
 } from '@features/dishlist/services';
 
 const RECIPE_QUERY_KEY = 'recipe';
+
+function createDishListRecipePatch(
+  recipeId: string,
+  data: UpdateRecipeData,
+  updatedAt: string
+): DishListRecipePatch {
+  return {
+    id: recipeId,
+    title: data.title,
+    description: data.description,
+    imageUrl: data.imageUrl ?? undefined,
+    imageUrls: data.imageUrls,
+    prepTime: data.prepTime,
+    cookTime: data.cookTime,
+    servings: data.servings,
+    tags: data.tags,
+    updatedAt,
+  };
+}
+
+function createDishListRecipePatchFromRecipe(
+  recipe: Recipe
+): DishListRecipePatch {
+  return {
+    id: recipe.id,
+    title: recipe.title,
+    description: recipe.description,
+    imageUrl: recipe.imageUrl,
+    imageUrls: recipe.imageUrls,
+    prepTime: recipe.prepTime,
+    cookTime: recipe.cookTime,
+    servings: recipe.servings,
+    tags: recipe.tags,
+    updatedAt: recipe.updatedAt,
+  };
+}
 
 /**
  * Hook for creating a new recipe
@@ -77,18 +115,33 @@ export function useUpdateRecipe() {
       recipeService.updateRecipe(recipeId, data),
 
     onMutate: async ({ recipeId, data }) => {
-      // Cancel outgoing queries
-      await queryClient.cancelQueries({ queryKey: [RECIPE_QUERY_KEY, recipeId] });
+      // Prevent in-flight responses from overwriting the optimistic update.
+      await Promise.all([
+        queryClient.cancelQueries({ queryKey: [RECIPE_QUERY_KEY, recipeId] }),
+        queryClient.cancelQueries({ queryKey: queryKeys.dishLists.details() }),
+      ]);
 
-      // Snapshot previous value
+      // Snapshot every affected cache so a failed save can be fully rolled back.
       const previousRecipe = queryClient.getQueryData<Recipe>([RECIPE_QUERY_KEY, recipeId]);
+      const previousDishListDetails =
+        queryClient.getQueriesData<DishListDetailCache>({
+          queryKey: queryKeys.dishLists.details(),
+        });
+      const optimisticUpdatedAt = new Date().toISOString();
 
-      // Optimistically update
       queryClient.setQueryData([RECIPE_QUERY_KEY, recipeId], (old: Recipe | undefined) => 
-        old ? { ...old, ...data, updatedAt: new Date().toISOString() } : old
+        old ? { ...old, ...data, updatedAt: optimisticUpdatedAt } : old
+      );
+      queryClient.setQueriesData<DishListDetailCache>(
+        { queryKey: queryKeys.dishLists.details() },
+        (old) =>
+          updateRecipeInDetailCache(
+            old,
+            createDishListRecipePatch(recipeId, data, optimisticUpdatedAt)
+          )
       );
 
-      return { previousRecipe, recipeId };
+      return { previousRecipe, previousDishListDetails, recipeId };
     },
 
     onError: (error: any, variables, context) => {
@@ -99,6 +152,9 @@ export function useUpdateRecipe() {
           context.previousRecipe
         );
       }
+      context?.previousDishListDetails.forEach(([queryKey, cache]) => {
+        queryClient.setQueryData(queryKey, cache);
+      });
       Alert.alert(
         'Error',
         error?.response?.data?.error || 'Failed to update recipe. Please try again.'
@@ -108,8 +164,16 @@ export function useUpdateRecipe() {
     onSuccess: (data, variables) => {
       // Update with real server data
       queryClient.setQueryData([RECIPE_QUERY_KEY, variables.recipeId], data);
+      queryClient.setQueriesData<DishListDetailCache>(
+        { queryKey: queryKeys.dishLists.details() },
+        (old) =>
+          updateRecipeInDetailCache(
+            old,
+            createDishListRecipePatchFromRecipe(data)
+          )
+      );
 
-      // Invalidate related queries
+      // Refetch in the background while keeping the confirmed title visible.
       queryClient.invalidateQueries({ queryKey: [RECIPE_QUERY_KEY, variables.recipeId] });
       queryClient.invalidateQueries({ queryKey: queryKeys.dishLists.all });
     },

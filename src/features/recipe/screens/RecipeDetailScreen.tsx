@@ -4,7 +4,6 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  ActivityIndicator,
   Alert,
   Platform,
   Animated,
@@ -39,6 +38,7 @@ import {
   CookModeModal,
   AddToDishListModal,
   TagDisplay,
+  RecipeDetailSkeleton,
 } from "../components";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "@app-types/navigation";
@@ -280,14 +280,7 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
 
   // Loading state
   if (isLoading) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={theme.colors.primary[500]} />
-          <Text style={styles.loadingText}>Loading recipe...</Text>
-        </View>
-      </SafeAreaView>
-    );
+    return <RecipeDetailSkeleton onBack={navigation.goBack} />;
   }
 
   // Error state
@@ -689,16 +682,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    gap: theme.spacing.lg,
-  },
-  loadingText: {
-    ...typography.body,
-    color: theme.colors.neutral[600],
   },
   errorContainer: {
     flex: 1,

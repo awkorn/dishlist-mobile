@@ -64,6 +64,49 @@ export function removeRecipeFromDetailCache(
   };
 }
 
+export type DishListRecipePatch = Pick<DishListRecipe, 'id'> &
+  Partial<
+    Pick<
+      DishListRecipe,
+      | 'title'
+      | 'description'
+      | 'imageUrl'
+      | 'imageUrls'
+      | 'prepTime'
+      | 'cookTime'
+      | 'servings'
+      | 'tags'
+      | 'updatedAt'
+    >
+  >;
+
+/**
+ * Update a recipe summary wherever it appears in a paginated DishList cache.
+ * Returning the original cache when there is no match avoids unnecessary
+ * rerenders for unrelated DishLists.
+ */
+export function updateRecipeInDetailCache(
+  cache: DishListDetailCache | undefined,
+  patch: DishListRecipePatch
+): DishListDetailCache | undefined {
+  if (!cache) return cache;
+
+  let cacheChanged = false;
+  const pages = cache.pages.map((page) => {
+    let pageChanged = false;
+    const recipes = page.recipes.map((recipe) => {
+      if (recipe.id !== patch.id) return recipe;
+      pageChanged = true;
+      cacheChanged = true;
+      return { ...recipe, ...patch };
+    });
+
+    return pageChanged ? { ...page, recipes } : page;
+  });
+
+  return cacheChanged ? { ...cache, pages } : cache;
+}
+
 interface UseDishListDetailOptions {
   dishListId: string;
   searchQuery?: string;

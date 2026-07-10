@@ -3,7 +3,8 @@ export const queryKeys = {
     all: ["dishLists"] as const,
     lists: () => [...queryKeys.dishLists.all, "list"] as const,
     list: (tab: string) => [...queryKeys.dishLists.lists(), tab] as const,
-    detail: (id: string) => [...queryKeys.dishLists.all, "detail", id] as const,
+    details: () => [...queryKeys.dishLists.all, "detail"] as const,
+    detail: (id: string) => [...queryKeys.dishLists.details(), id] as const,
   },
   recipes: {
     all: ["recipes"] as const,
