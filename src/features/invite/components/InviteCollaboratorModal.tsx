@@ -50,6 +50,8 @@ export function InviteCollaboratorModal({
     isLoadingMutuals,
     isSending,
     isGeneratingLink,
+    isSharingViaMessage,
+    isCopyingLink,
     toggleUserSelection,
     clearSelection,
     handleSendToSelected,
@@ -203,9 +205,13 @@ export function InviteCollaboratorModal({
                 disabled={isGeneratingLink}
                 accessibilityRole="button"
                 accessibilityLabel="Share invite link via message"
+                accessibilityState={{
+                  busy: isSharingViaMessage,
+                  disabled: isGeneratingLink,
+                }}
               >
                 <View style={[styles.externalShareIcon, styles.messageIcon]}>
-                  {isGeneratingLink ? (
+                  {isSharingViaMessage ? (
                     <ActivityIndicator size="small" color="white" />
                   ) : (
                     <MessageCircle size={24} color="white" fill="white" />
@@ -219,9 +225,13 @@ export function InviteCollaboratorModal({
                 disabled={isGeneratingLink}
                 accessibilityRole="button"
                 accessibilityLabel="Copy invite link"
+                accessibilityState={{
+                  busy: isCopyingLink,
+                  disabled: isGeneratingLink,
+                }}
               >
                 <View style={[styles.externalShareIcon, styles.linkIcon]}>
-                  {isGeneratingLink ? (
+                  {isCopyingLink ? (
                     <ActivityIndicator size="small" color={theme.colors.neutral[600]} />
                   ) : (
                     <Link2 size={24} color={theme.colors.neutral[600]} />

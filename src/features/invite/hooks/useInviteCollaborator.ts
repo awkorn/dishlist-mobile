@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useRef } from 'react';
 import { Alert, Share, Clipboard } from 'react-native';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { shareService } from '@features/share/services';
@@ -12,6 +12,8 @@ interface UseInviteCollaboratorOptions {
   onInviteSuccess?: () => void;
 }
 
+type ExternalShareMethod = 'message' | 'link';
+
 export function useInviteCollaborator({
   dishListId,
   dishListTitle,
@@ -19,6 +21,9 @@ export function useInviteCollaborator({
 }: UseInviteCollaboratorOptions) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(new Set());
+  const [activeExternalShareMethod, setActiveExternalShareMethod] =
+    useState<ExternalShareMethod | null>(null);
+  const isGeneratingLinkRef = useRef(false);
 
   // Fetch mutuals (reuse share service)
   const {
@@ -115,6 +120,10 @@ export function useInviteCollaborator({
 
   // Share via native share sheet (text/message)
   const handleShareViaMessage = useCallback(async () => {
+    if (isGeneratingLinkRef.current) return;
+
+    isGeneratingLinkRef.current = true;
+    setActiveExternalShareMethod('message');
     try {
       const result = await generateLinkMutation.mutateAsync();
       const message = `Join me as a collaborator on "${dishListTitle}"!\n${result.link}`;
@@ -126,11 +135,18 @@ export function useInviteCollaborator({
     } catch (error) {
       // Error handled in mutation
       console.error('Share via message error:', error);
+    } finally {
+      isGeneratingLinkRef.current = false;
+      setActiveExternalShareMethod(null);
     }
   }, [dishListTitle, generateLinkMutation]);
 
   // Copy invite link to clipboard
   const handleCopyLink = useCallback(async () => {
+    if (isGeneratingLinkRef.current) return;
+
+    isGeneratingLinkRef.current = true;
+    setActiveExternalShareMethod('link');
     try {
       const result = await generateLinkMutation.mutateAsync();
       Clipboard.setString(result.link);
@@ -138,6 +154,9 @@ export function useInviteCollaborator({
     } catch (error) {
       // Error handled in mutation
       console.error('Copy link error:', error);
+    } finally {
+      isGeneratingLinkRef.current = false;
+      setActiveExternalShareMethod(null);
     }
   }, [generateLinkMutation]);
 
@@ -151,7 +170,9 @@ export function useInviteCollaborator({
     // Loading states
     isLoadingMutuals,
     isSending: inviteMutation.isPending,
-    isGeneratingLink: generateLinkMutation.isPending,
+    isGeneratingLink: activeExternalShareMethod !== null,
+    isSharingViaMessage: activeExternalShareMethod === 'message',
+    isCopyingLink: activeExternalShareMethod === 'link',
 
     // Actions
     toggleUserSelection,
