@@ -7,9 +7,7 @@ import {
   Alert,
   Platform,
   Animated,
-  Dimensions,
 } from "react-native";
-import { Image } from "expo-image";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
   ChevronLeft,
@@ -39,6 +37,7 @@ import {
   AddToDishListModal,
   TagDisplay,
   RecipeDetailSkeleton,
+  RecipeGallery,
 } from "../components";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "@app-types/navigation";
@@ -53,7 +52,6 @@ type Props = NativeStackScreenProps<RootStackParamList, "RecipeDetail">;
 
 const HEADER_REVEAL_DISTANCE = 76;
 const DEFAULT_METADATA_BOTTOM = 380;
-const SCREEN_WIDTH = Dimensions.get("window").width;
 
 // Helper to get display step number (excluding headers)
 function getDisplayStepNumber(items: RecipeItem[], index: number): number {
@@ -262,7 +260,10 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
     () => recipe?.notes?.map((note) => note.trim()).filter(Boolean) || [],
     [recipe],
   );
-  const [activePhotoIndex, setActivePhotoIndex] = useState(0);
+  const noteAttribution = useMemo(() => {
+    const author = recipe?.creator.firstName || recipe?.creator.username;
+    return author ? `${author.toUpperCase()}’S NOTE` : "RECIPE NOTE";
+  }, [recipe]);
 
   const compactHeaderRevealStart = Math.max(
     0,
@@ -320,11 +321,7 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
           >
             <ChevronLeft size={24} color={theme.colors.neutral[700]} />
           </TouchableOpacity>
-          <View style={styles.headerTitleWrap} pointerEvents="none">
-            <Text style={styles.headerTitle} numberOfLines={1}>
-              {recipe.title}
-            </Text>
-          </View>
+          <View style={styles.headerSpacer} />
           <TouchableOpacity
             onPress={() => setShowActionSheet(true)}
             style={styles.headerButton}
@@ -349,54 +346,8 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
             { useNativeDriver: true },
           )}
         >
-          {/* Photo Gallery */}
-          {recipeImages.length > 0 && (
-            <View style={styles.gallerySection}>
-              <Animated.ScrollView
-                horizontal
-                pagingEnabled
-                showsHorizontalScrollIndicator={false}
-                onMomentumScrollEnd={(event) => {
-                  const nextIndex = Math.round(
-                    event.nativeEvent.contentOffset.x / SCREEN_WIDTH,
-                  );
-                  setActivePhotoIndex(
-                    Math.max(0, Math.min(nextIndex, recipeImages.length - 1)),
-                  );
-                }}
-              >
-                {recipeImages.map((imageUrl, index) => (
-                  <View key={`${imageUrl}-${index}`} style={styles.galleryPage}>
-                    <Image
-                      source={{ uri: imageUrl }}
-                      style={styles.galleryImage}
-                      cachePolicy="memory-disk"
-                    />
-                  </View>
-                ))}
-              </Animated.ScrollView>
-              {recipeImages.length > 1 && (
-                <View style={styles.galleryDots}>
-                  {recipeImages.map((_, index) => (
-                    <View
-                      key={index}
-                      style={[
-                        styles.galleryDot,
-                        activePhotoIndex === index && styles.galleryDotActive,
-                      ]}
-                    />
-                  ))}
-                </View>
-              )}
-            </View>
-          )}
-
-          {/* Meta Info */}
           <View
-            style={[
-              styles.metaSection,
-              recipeImages.length === 0 && styles.metaSectionNoGallery,
-            ]}
+            style={styles.recipeHeading}
             onLayout={(event) => {
               const { y, height } = event.nativeEvent.layout;
               const nextBottom = Math.ceil(y + height);
@@ -405,31 +356,38 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
               );
             }}
           >
-            <View style={styles.metaRow}>
-              {recipe.prepTime && recipe.prepTime > 0 && (
-                <View style={styles.metaItem}>
-                  <Text style={styles.metaLabel}>Prep Time</Text>
-                  <Text style={styles.metaValue}>{recipe.prepTime} min</Text>
-                </View>
-              )}
-              {recipe.cookTime && recipe.cookTime > 0 && (
-                <View style={styles.metaItem}>
-                  <Text style={styles.metaLabel}>Cook Time</Text>
-                  <Text style={styles.metaValue}>{recipe.cookTime} min</Text>
-                </View>
-              )}
-              {totalTime > 0 && (
-                <View style={styles.metaItem}>
-                  <Text style={styles.metaLabel}>Total Time</Text>
-                  <Text style={styles.metaValue}>{totalTime} min</Text>
-                </View>
-              )}
-              {recipe.servings && recipe.servings > 0 && (
-                <View style={styles.metaItem}>
-                  <Text style={styles.metaLabel}>Servings</Text>
-                  <Text style={styles.metaValue}>{recipe.servings}</Text>
-                </View>
-              )}
+            <Text style={styles.dishListTitle} numberOfLines={2}>
+              {dishList?.title || "Recipe"}
+            </Text>
+            <Text style={styles.recipeTitle}>{recipe.title}</Text>
+
+            <View style={styles.metaSection}>
+              <View style={styles.metaRow}>
+                {recipe.prepTime && recipe.prepTime > 0 && (
+                  <View style={styles.metaItem}>
+                    <Text style={styles.metaLabel}>Prep Time</Text>
+                    <Text style={styles.metaValue}>{recipe.prepTime} min</Text>
+                  </View>
+                )}
+                {recipe.cookTime && recipe.cookTime > 0 && (
+                  <View style={styles.metaItem}>
+                    <Text style={styles.metaLabel}>Cook Time</Text>
+                    <Text style={styles.metaValue}>{recipe.cookTime} min</Text>
+                  </View>
+                )}
+                {totalTime > 0 && (
+                  <View style={styles.metaItem}>
+                    <Text style={styles.metaLabel}>Total Time</Text>
+                    <Text style={styles.metaValue}>{totalTime} min</Text>
+                  </View>
+                )}
+                {recipe.servings && recipe.servings > 0 && (
+                  <View style={styles.metaItem}>
+                    <Text style={styles.metaLabel}>Servings</Text>
+                    <Text style={styles.metaValue}>{recipe.servings}</Text>
+                  </View>
+                )}
+              </View>
             </View>
           </View>
 
@@ -448,9 +406,11 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
           <TouchableOpacity
             style={styles.cookModeButton}
             onPress={() => setShowCookMode(true)}
+            accessibilityRole="button"
+            accessibilityLabel="Start Cooking"
           >
             <PlayCircle size={20} color="white" />
-            <Text style={styles.cookModeButtonText}>Cook Mode</Text>
+            <Text style={styles.cookModeButtonText}>Start Cooking</Text>
           </TouchableOpacity>
 
           {/* Recipe Description */}
@@ -605,18 +565,22 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
             />
           </View>
 
+          <RecipeGallery
+            imageUrls={recipeImages}
+            recipeTitle={recipe.title}
+          />
+
           {/* Notes */}
           {recipeNotes.length > 0 && (
             <View style={styles.section}>
-              <Text style={[styles.sectionTitle, styles.notesTitle]}>
-                Notes
-              </Text>
-              {recipeNotes.map((note, index) => (
-                <View key={index} style={styles.noteRow}>
-                  <Text style={styles.noteBullet}>•</Text>
-                  <Text style={styles.noteText}>{note}</Text>
-                </View>
-              ))}
+              <View style={styles.notesList}>
+                {recipeNotes.map((note, index) => (
+                  <View key={index} style={styles.noteTile}>
+                    <Text style={styles.noteAttribution}>{noteAttribution}</Text>
+                    <Text style={styles.noteText}>{note}</Text>
+                  </View>
+                ))}
+              </View>
             </View>
           )}
 
@@ -723,15 +687,8 @@ const styles = StyleSheet.create({
     padding: theme.spacing.xs,
     zIndex: 1,
   },
-  headerTitleWrap: {
+  headerSpacer: {
     flex: 1,
-    marginHorizontal: theme.spacing.md,
-  },
-  headerTitle: {
-    ...typography.subtitle,
-    fontFamily: "Inter-SemiBold",
-    textAlign: "center",
-    color: theme.colors.textPrimary,
   },
   headerDivider: {
     position: "absolute",
@@ -747,34 +704,20 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: theme.spacing["4xl"],
   },
-  gallerySection: {
-    paddingTop: theme.spacing.sm,
-    paddingBottom: theme.spacing.lg,
+  recipeHeading: {
+    paddingHorizontal: theme.spacing.xl,
+    paddingTop: theme.spacing.md,
   },
-  galleryPage: {
-    width: SCREEN_WIDTH,
-    alignItems: "center",
+  dishListTitle: {
+    ...typography.caption,
+    color: theme.colors.recipeAccent,
+    fontFamily: typography.primarySemiBold,
+    marginBottom: theme.spacing.md,
   },
-  galleryImage: {
-    width: SCREEN_WIDTH - theme.spacing["4xl"] * 2,
-    height: 190,
-    borderRadius: theme.borderRadius.md,
-    backgroundColor: theme.colors.neutral[200],
-  },
-  galleryDots: {
-    flexDirection: "row",
-    justifyContent: "center",
-    gap: 5,
-    marginTop: theme.spacing.md,
-  },
-  galleryDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: theme.colors.neutral[300],
-  },
-  galleryDotActive: {
-    backgroundColor: theme.colors.primary[500],
+  recipeTitle: {
+    ...typography.heading2,
+    color: theme.colors.textPrimary,
+    marginBottom: theme.spacing.xl,
   },
   recipeIntro: {
     paddingHorizontal: theme.spacing.xl,
@@ -787,14 +730,11 @@ const styles = StyleSheet.create({
     lineHeight: 24,
   },
   metaSection: {
-    paddingHorizontal: theme.spacing.xl,
-    paddingTop: theme.spacing.sm,
-    paddingBottom: theme.spacing.xl,
+    paddingVertical: theme.spacing.lg,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: theme.colors.neutral[300],
     borderBottomWidth: 1,
-    borderBottomColor: theme.colors.neutral[200],
-  },
-  metaSectionNoGallery: {
-    paddingTop: theme.spacing.md,
+    borderBottomColor: theme.colors.neutral[300],
   },
   attribution: {
     paddingHorizontal: theme.spacing.xl,
@@ -807,12 +747,14 @@ const styles = StyleSheet.create({
   },
   metaRow: {
     flexDirection: "row",
-    justifyContent: "space-around",
+    justifyContent: "space-between",
     alignItems: "flex-start",
+    flexWrap: "wrap",
   },
   metaItem: {
     alignItems: "center",
-    minWidth: 70,
+    flex: 1,
+    minWidth: 72,
   },
   metaLabel: {
     ...typography.caption,
@@ -833,7 +775,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: theme.colors.primary[500],
     marginHorizontal: theme.spacing.xl,
-    marginTop: theme.spacing.xl,
+    marginVertical: theme.spacing.xl,
     padding: theme.spacing.lg,
     borderRadius: theme.borderRadius.md,
     gap: theme.spacing.sm,
@@ -843,7 +785,8 @@ const styles = StyleSheet.create({
     color: "white",
   },
   section: {
-    padding: theme.spacing.xl,
+    paddingHorizontal: theme.spacing.xl,
+    paddingVertical: theme.spacing.md,
   },
   sectionTitle: {
     ...typography.heading3,
@@ -875,14 +818,14 @@ const styles = StyleSheet.create({
   instructionRow: {
     flexDirection: "row",
     alignItems: "flex-start",
-    paddingVertical: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
     gap: theme.spacing.md,
   },
   sectionHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: theme.spacing.lg,
+    marginBottom: theme.spacing.md,
   },
   resetLink: {
     ...typography.body,
@@ -931,24 +874,25 @@ const styles = StyleSheet.create({
     color: theme.colors.primary[600],
     fontWeight: "600",
   },
-  notesTitle: {
-    marginBottom: theme.spacing.lg,
+  notesList: {
+    gap: theme.spacing.md,
   },
-  noteRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: theme.spacing.sm,
-    marginBottom: theme.spacing.md,
+  noteTile: {
+    width: "100%",
+    backgroundColor: theme.colors.infoTile,
+    borderRadius: theme.borderRadius.md,
+    padding: theme.spacing.lg,
   },
-  noteBullet: {
-    ...typography.body,
-    color: theme.colors.primary[500],
-    lineHeight: 24,
+  noteAttribution: {
+    ...typography.caption,
+    fontFamily: typography.primarySemiBold,
+    color: theme.colors.noteAccent,
+    letterSpacing: 0.6,
+    marginBottom: theme.spacing.sm,
   },
   noteText: {
     ...typography.body,
-    color: theme.colors.neutral[800],
-    flex: 1,
+    color: theme.colors.textPrimary,
     lineHeight: 24,
   },
 });

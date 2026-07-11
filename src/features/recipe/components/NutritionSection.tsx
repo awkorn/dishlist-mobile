@@ -67,7 +67,7 @@ export default function NutritionSection({
   const displayNutrition = calculatedNutrition || nutrition;
 
   return (
-    <View style={styles.container}>
+    <View>
       <Text style={styles.sectionTitle}>Nutrition Information</Text>
 
       {displayNutrition ? (
@@ -102,9 +102,6 @@ export default function NutritionSection({
 }
 
 const styles = StyleSheet.create({
-  container: {
-    marginBottom: theme.spacing['3xl'],
-  },
   sectionTitle: {
     ...typography.heading3,
     color: theme.colors.textPrimary,

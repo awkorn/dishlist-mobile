@@ -4,6 +4,10 @@ export const useCustomFonts = () => {
     const [fontsLoaded] = useFonts({
         'GeneralSans-SemiBold': require('../../assets/fonts/GeneralSans-Semibold.ttf'),
 
+        'Bricolage-Regular': require('../../assets/fonts/BricolageGrotesque-Regular.ttf'),
+        'Bricolage-SemiBold': require('../../assets/fonts/BricolageGrotesque-SemiBold.ttf'),
+        'Bricolage-Bold': require('../../assets/fonts/BricolageGrotesque-Bold.ttf'),
+
         'PlayfairDisplay-Regular': require('../../assets/fonts/PlayfairDisplay-Regular.ttf'),
         'PlayfairDisplay-SemiBold': require('../../assets/fonts/PlayfairDisplay-SemiBold.ttf'),
         'PlayfairDisplay-Medium': require('../../assets/fonts/PlayfairDisplay-Medium.ttf'),

@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   TextInput,
   FlatList,
-  Image,
   ActivityIndicator,
   Dimensions,
   KeyboardAvoidingView,
@@ -16,7 +15,6 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   Search,
-  User as UserIcon,
   MessageCircle,
   Link2,
   Check,
@@ -24,6 +22,7 @@ import {
 import { theme } from '@styles/theme';
 import { typography } from '@styles/typography';
 import Button from '@components/ui/Button';
+import Avatar from '@components/ui/Avatar';
 import { useInviteCollaborator } from '../hooks/useInviteCollaborator';
 import type { InviteCollaboratorModalProps } from '../types';
 import type { MutualUser } from '@features/share/types';
@@ -87,13 +86,13 @@ export function InviteCollaboratorModal({
           accessibilityLabel={displayName}
         >
           <View style={styles.avatarContainer}>
-            {item.avatarUrl ? (
-              <Image source={{ uri: item.avatarUrl }} style={styles.avatar} />
-            ) : (
-              <View style={styles.avatarPlaceholder}>
-                <UserIcon size={28} color={theme.colors.neutral[400]} />
-              </View>
-            )}
+            <Avatar
+              avatarUrl={item.avatarUrl}
+              firstName={item.firstName}
+              lastName={item.lastName}
+              username={item.username}
+              size={AVATAR_SIZE}
+            />
 
             {/* Selection checkmark overlay */}
             {isSelected && (
@@ -311,20 +310,6 @@ const styles = StyleSheet.create({
   avatarContainer: {
     position: 'relative',
     marginBottom: theme.spacing.xs,
-  },
-  avatar: {
-    width: AVATAR_SIZE,
-    height: AVATAR_SIZE,
-    borderRadius: AVATAR_SIZE / 2,
-    backgroundColor: theme.colors.neutral[200],
-  },
-  avatarPlaceholder: {
-    width: AVATAR_SIZE,
-    height: AVATAR_SIZE,
-    borderRadius: AVATAR_SIZE / 2,
-    backgroundColor: theme.colors.neutral[200],
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   checkOverlay: {
     position: 'absolute',

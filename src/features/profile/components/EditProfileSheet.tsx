@@ -7,17 +7,17 @@ import {
   TouchableOpacity,
   TextInput,
   ScrollView,
-  Image,
   KeyboardAvoidingView,
   Platform,
   Keyboard,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Camera, User as UserIcon } from "lucide-react-native";
+import { Camera } from "lucide-react-native";
 import { theme } from "@styles/theme";
 import { typography } from "@styles/typography";
 import { useEditProfile } from "../hooks/useEditProfile";
 import type { UserProfile } from "../types";
+import Avatar from "@components/ui/Avatar";
 
 interface EditProfileSheetProps {
   visible: boolean;
@@ -120,16 +120,13 @@ export function EditProfileSheet({
                 disabled={isLoading}
                 style={styles.avatarTouchable}
               >
-                {formState.avatarUri ? (
-                  <Image
-                    source={{ uri: formState.avatarUri }}
-                    style={styles.avatar}
-                  />
-                ) : (
-                  <View style={styles.avatarPlaceholder}>
-                    <UserIcon size={40} color={theme.colors.neutral[400]} />
-                  </View>
-                )}
+                <Avatar
+                  avatarUrl={formState.avatarUri}
+                  firstName={formState.firstName}
+                  lastName={formState.lastName}
+                  username={currentUser.username}
+                  size={100}
+                />
                 <View style={styles.cameraIcon}>
                   <Camera size={16} color="white" />
                 </View>
@@ -262,20 +259,6 @@ const styles = StyleSheet.create({
   },
   avatarTouchable: {
     position: "relative",
-  },
-  avatar: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: theme.colors.neutral[200],
-  },
-  avatarPlaceholder: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: theme.colors.neutral[200],
-    justifyContent: "center",
-    alignItems: "center",
   },
   cameraIcon: {
     position: "absolute",

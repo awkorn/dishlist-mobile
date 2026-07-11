@@ -37,6 +37,8 @@ interface PreferenceSection {
     strokeWidth?: number;
   }>;
   options: PreferenceOption[];
+  accentColor: string;
+  selectedColor: string;
 }
 
 interface PreferencesModalProps {
@@ -51,6 +53,8 @@ const PREFERENCE_SECTIONS: PreferenceSection[] = [
     title: "Diet",
     type: "single",
     icon: Leaf,
+    accentColor: theme.colors.textPrimary,
+    selectedColor: theme.colors.avatarDefault,
     options: [
       { label: "Paleo", value: "Paleo" },
       { label: "Keto", value: "Keto" },
@@ -62,6 +66,8 @@ const PREFERENCE_SECTIONS: PreferenceSection[] = [
     title: "I'm Avoiding",
     type: "multiple",
     icon: Ban,
+    accentColor: theme.colors.recipeAccent,
+    selectedColor: theme.colors.avoidanceSelected,
     options: [
       { label: "Gluten", value: "Avoid gluten" },
       { label: "Dairy", value: "Avoid dairy" },
@@ -75,6 +81,8 @@ const PREFERENCE_SECTIONS: PreferenceSection[] = [
     title: "Nutrition",
     type: "multiple",
     icon: Dumbbell,
+    accentColor: theme.colors.nutritionAccent,
+    selectedColor: theme.colors.nutritionSelected,
     options: [
       { label: "High protein", value: "High protein" },
       { label: "Low calorie", value: "Low calorie" },
@@ -245,7 +253,11 @@ export function PreferencesModal({
                     return (
                       <TouchableOpacity
                         key={option.value}
-                        style={[styles.chip, selected && styles.chipSelected]}
+                        style={[
+                          styles.chip,
+                          { borderColor: section.accentColor },
+                          selected && { backgroundColor: section.selectedColor },
+                        ]}
                         onPress={() => togglePreference(section, option.value)}
                         activeOpacity={0.75}
                         accessibilityRole="button"
@@ -254,7 +266,7 @@ export function PreferencesModal({
                         <Text
                           style={[
                             styles.chipText,
-                            selected && styles.chipTextSelected,
+                            { color: section.accentColor },
                           ]}
                         >
                           {option.label}
@@ -273,6 +285,8 @@ export function PreferencesModal({
                   type: "multiple",
                   icon: SlidersHorizontal,
                   options: [],
+                  accentColor: theme.colors.textPrimary,
+                  selectedColor: theme.colors.avatarDefault,
                 }}
               />
               {customPreferences.length > 0 && (
@@ -353,8 +367,10 @@ function SectionHeader({ section }: { section: PreferenceSection }) {
 
   return (
     <View style={styles.sectionHeader}>
-      <Icon size={14} color={theme.colors.textPrimary} strokeWidth={2} />
-      <Text style={styles.sectionTitle}>{section.title}</Text>
+      <Icon size={16} color={section.accentColor} strokeWidth={2} />
+      <Text style={[styles.sectionTitle, { color: section.accentColor }]}>
+        {section.title}
+      </Text>
     </View>
   );
 }
@@ -369,17 +385,17 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.18)",
   },
   sheet: {
-    maxHeight: "78%",
+    maxHeight: "84%",
     backgroundColor: theme.colors.surface,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    paddingTop: theme.spacing.xl,
+    paddingTop: theme.spacing["2xl"],
     paddingHorizontal: theme.spacing.xl,
   },
   header: {
     flexDirection: "row",
     alignItems: "flex-start",
-    marginBottom: theme.spacing.lg,
+    marginBottom: theme.spacing.xl,
   },
   closeButton: {
     width: 28,
@@ -412,16 +428,16 @@ const styles = StyleSheet.create({
     flexGrow: 0,
   },
   contentContainer: {
-    paddingBottom: theme.spacing.xl,
+    paddingBottom: theme.spacing["2xl"],
   },
   section: {
-    marginBottom: theme.spacing.xl,
+    marginBottom: theme.spacing["2xl"],
   },
   sectionHeader: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
-    marginBottom: theme.spacing.md,
+    gap: theme.spacing.sm,
+    marginBottom: theme.spacing.lg,
   },
   sectionTitle: {
     ...typography.caption,
@@ -432,20 +448,20 @@ const styles = StyleSheet.create({
   chipRow: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: theme.spacing.sm,
+    gap: theme.spacing.md,
   },
   chip: {
     minWidth: 74,
-    minHeight: 30,
+    minHeight: 40,
     alignItems: "center",
     justifyContent: "center",
     flexDirection: "row",
     gap: 5,
-    borderRadius: 15,
+    borderRadius: 20,
     borderWidth: 1,
     borderColor: theme.colors.textPrimary,
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: 6,
+    paddingHorizontal: theme.spacing.lg,
+    paddingVertical: theme.spacing.sm,
     backgroundColor: theme.colors.surface,
   },
   chipSelected: {
@@ -455,8 +471,8 @@ const styles = StyleSheet.create({
     ...typography.caption,
     fontFamily: "Inter-SemiBold",
     color: theme.colors.textPrimary,
-    fontSize: 10,
-    lineHeight: 13,
+    fontSize: 11,
+    lineHeight: 15,
     textTransform: "uppercase",
   },
   chipTextSelected: {

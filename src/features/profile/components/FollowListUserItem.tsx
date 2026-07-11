@@ -6,13 +6,12 @@ import {
   StyleSheet,
   ActivityIndicator,
 } from "react-native";
-import { Image } from "expo-image";
-import { User } from "lucide-react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { theme } from "@styles/theme";
 import { typography } from "@styles/typography";
 import { RootStackParamList } from "@app-types/navigation";
+import Avatar from "@components/ui/Avatar";
 import { useFollowUser } from "../hooks/useFollowUser";
 import type { FollowListUser, FollowStatus } from "../types";
 
@@ -71,18 +70,7 @@ export function FollowListUserItem({ user, showFollowButton = false }: FollowLis
   return (
     <TouchableOpacity style={styles.container} onPress={handlePress} activeOpacity={0.7}>
       {/* Avatar */}
-      {user.avatarUrl ? (
-        <Image
-          source={{ uri: user.avatarUrl }}
-          style={styles.avatar}
-          cachePolicy="memory-disk"
-          recyclingKey={user.uid}
-        />
-      ) : (
-        <View style={styles.avatarPlaceholder}>
-          <User size={20} color={theme.colors.neutral[400]} />
-        </View>
-      )}
+      <Avatar {...user} size={48} />
 
       {/* User Info */}
       <View style={styles.info}>
@@ -123,20 +111,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: theme.spacing.md,
     paddingHorizontal: theme.spacing.lg,
-  },
-  avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: theme.colors.neutral[200],
-  },
-  avatarPlaceholder: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: theme.colors.neutral[100],
-    justifyContent: "center",
-    alignItems: "center",
   },
   info: {
     flex: 1,

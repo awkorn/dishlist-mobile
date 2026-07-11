@@ -1,9 +1,9 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
-import { User as UserIcon } from 'lucide-react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { theme } from '@styles/theme';
 import { typography } from '@styles/typography';
 import type { DishListOwner } from '@features/dishlist/types';
+import Avatar from '@components/ui/Avatar';
 
 interface CollaboratorPreviewProps {
   owner: DishListOwner;
@@ -40,13 +40,7 @@ export function CollaboratorPreview({
       <View style={styles.avatarStack}>
         {/* Owner Avatar (always first/bottom) */}
         <View style={[styles.avatarWrapper, { zIndex: 2 }]}>
-          {owner.avatarUrl ? (
-            <Image source={{ uri: owner.avatarUrl }} style={styles.avatar} />
-          ) : (
-            <View style={styles.avatarPlaceholder}>
-              <UserIcon size={14} color={theme.colors.neutral[400]} />
-            </View>
-          )}
+          <Avatar {...owner} size={AVATAR_SIZE - 4} colorIndex={0} />
         </View>
 
         {/* Second avatar placeholder for collaborators */}
@@ -58,8 +52,8 @@ export function CollaboratorPreview({
               { zIndex: 1 },
             ]}
           >
-            <View style={styles.avatarPlaceholder}>
-              <UserIcon size={14} color={theme.colors.neutral[400]} />
+            <View style={styles.collaboratorCountAvatar}>
+              <Text style={styles.collaboratorCountText}>+{collaboratorCount}</Text>
             </View>
           </View>
         )}
@@ -94,18 +88,19 @@ const styles = StyleSheet.create({
   stackedAvatar: {
     marginLeft: -AVATAR_OVERLAP,
   },
-  avatar: {
-    width: AVATAR_SIZE - 4, // Account for border
-    height: AVATAR_SIZE - 4,
-    borderRadius: (AVATAR_SIZE - 4) / 2,
-  },
-  avatarPlaceholder: {
+  collaboratorCountAvatar: {
     width: AVATAR_SIZE - 4,
     height: AVATAR_SIZE - 4,
     borderRadius: (AVATAR_SIZE - 4) / 2,
-    backgroundColor: theme.colors.neutral[200],
+    backgroundColor: theme.colors.avatarWarm,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  collaboratorCountText: {
+    ...typography.caption,
+    color: theme.colors.textPrimary,
+    fontSize: 10,
+    lineHeight: 12,
   },
   nameText: {
     ...typography.button,

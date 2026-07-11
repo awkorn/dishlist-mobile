@@ -6,16 +6,15 @@ import {
   TouchableOpacity,
   Animated,
 } from "react-native";
-import { Image } from "expo-image";
 import {
   MoveLeft,
   Search,
   EllipsisVertical,
-  User as UserIcon,
 } from "lucide-react-native";
 import { theme } from "@styles/theme";
 import { typography } from "@styles/typography";
 import { InlineSearchInput } from "@components/ui";
+import Avatar from "@components/ui/Avatar";
 import type { UserProfile } from "../types";
 import { FollowButton } from "./FollowButton";
 
@@ -130,22 +129,13 @@ export function ProfileHeader({
 
       <View style={styles.profileSection}>
         <View style={styles.avatarContainer}>
-          {user.avatarUrl ? (
-            <Image
-              source={{ uri: user.avatarUrl }}
-              style={styles.avatar}
-              cachePolicy="memory-disk"
-              accessibilityLabel={`${displayName}'s profile photo`}
-            />
-          ) : (
-            <View
-              style={styles.avatarPlaceholder}
-              accessible
-              accessibilityLabel={`${displayName}'s profile photo placeholder`}
-            >
-              <UserIcon size={40} color={theme.colors.neutral[400]} />
-            </View>
-          )}
+          <Avatar
+            {...user}
+            displayName={displayName}
+            size={AVATAR_SIZE}
+            style={styles.avatarBorder}
+            accessibilityLabel={`${displayName}'s profile photo`}
+          />
         </View>
 
         <View style={styles.nameSection}>
@@ -258,23 +248,9 @@ const styles = StyleSheet.create({
   avatarContainer: {
     marginBottom: 14,
   },
-  avatar: {
-    width: AVATAR_SIZE,
-    height: AVATAR_SIZE,
-    borderRadius: AVATAR_SIZE / 2,
-    backgroundColor: theme.colors.neutral[200],
+  avatarBorder: {
     borderWidth: 2,
     borderColor: theme.colors.surface,
-  },
-  avatarPlaceholder: {
-    width: AVATAR_SIZE,
-    height: AVATAR_SIZE,
-    borderRadius: AVATAR_SIZE / 2,
-    backgroundColor: theme.colors.neutral[200],
-    borderWidth: 2,
-    borderColor: theme.colors.surface,
-    justifyContent: "center",
-    alignItems: "center",
   },
   nameSection: {
     alignSelf: "stretch",

@@ -8,10 +8,9 @@ import {
   RefreshControl,
   ActivityIndicator,
 } from "react-native";
-import { Image } from "expo-image";
 import { SafeAreaView } from "react-native-safe-area-context";
 import PagerView from "react-native-pager-view";
-import { Search, Plus, WifiOff, User } from "lucide-react-native";
+import { Search, Plus, WifiOff } from "lucide-react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import NetInfo from "@react-native-community/netinfo";
@@ -23,6 +22,7 @@ import { QueryErrorBoundary } from "@providers/ErrorBoundary";
 import { queryKeys } from "@lib/queryKeys";
 import { profileService } from "@features/profile/services/profileService";
 import { RootStackParamList } from "@app-types/navigation";
+import Avatar from "@components/ui/Avatar";
 import { useDishLists } from "../hooks";
 import {
   DishListGrid,
@@ -132,6 +132,7 @@ export default function DishListsScreen() {
     userProfile?.avatarUrl ??
     currentUserProfile?.user?.avatarUrl ??
     undefined;
+  const headerProfile = userProfile ?? currentUserProfile?.user;
 
   const renderContent = () => {
     if (isLoading) {
@@ -227,15 +228,13 @@ export default function DishListsScreen() {
             style={styles.profileButton}
             onPress={handleProfilePress}
           >
-            {headerAvatarUrl ? (
-              <Image
-                source={{ uri: headerAvatarUrl }}
-                style={styles.profileAvatar}
-                cachePolicy="memory-disk"
-              />
-            ) : (
-              <User size={24} color={theme.colors.neutral[600]} />
-            )}
+            <Avatar
+              avatarUrl={headerAvatarUrl}
+              firstName={headerProfile?.firstName}
+              lastName={headerProfile?.lastName}
+              username={headerProfile?.username}
+              size={32}
+            />
           </TouchableOpacity>
         </View>
       </View>
@@ -315,11 +314,6 @@ const styles = StyleSheet.create({
   addButton: { padding: theme.spacing.sm },
   profileButton: {
     padding: theme.spacing.xs,
-  },
-  profileAvatar: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
   },
   searchContainer: {
     flexDirection: "row",

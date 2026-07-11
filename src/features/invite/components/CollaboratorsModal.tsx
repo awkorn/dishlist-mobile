@@ -6,13 +6,11 @@ import {
   Modal,
   TouchableOpacity,
   FlatList,
-  Image,
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   X,
-  User as UserIcon,
   Crown,
   Clock,
   Trash2,
@@ -20,6 +18,7 @@ import {
 } from 'lucide-react-native';
 import { theme } from '@styles/theme';
 import { typography } from '@styles/typography';
+import Avatar from '@components/ui/Avatar';
 import { useCollaborators } from '../hooks/useCollaborators';
 import type { Collaborator, PendingInvite } from '../types';
 
@@ -105,13 +104,7 @@ export function CollaboratorsModal({
           return (
             <View style={styles.userRow}>
               <View style={styles.userInfo}>
-                {item.data.avatarUrl ? (
-                  <Image source={{ uri: item.data.avatarUrl }} style={styles.avatar} />
-                ) : (
-                  <View style={styles.avatarPlaceholder}>
-                    <UserIcon size={20} color={theme.colors.neutral[400]} />
-                  </View>
-                )}
+                <Avatar {...item.data} size={44} colorIndex={0} />
                 <View style={styles.nameContainer}>
                   <Text style={styles.userName}>{getDisplayName(item.data)}</Text>
                   {item.data.username && (
@@ -130,13 +123,13 @@ export function CollaboratorsModal({
           return (
             <View style={styles.userRow}>
               <View style={styles.userInfo}>
-                {item.data.user.avatarUrl ? (
-                  <Image source={{ uri: item.data.user.avatarUrl }} style={styles.avatar} />
-                ) : (
-                  <View style={styles.avatarPlaceholder}>
-                    <UserIcon size={20} color={theme.colors.neutral[400]} />
-                  </View>
-                )}
+                <Avatar
+                  {...item.data.user}
+                  size={44}
+                  colorIndex={collaborators.findIndex(
+                    (collaborator) => collaborator.id === item.data.id,
+                  ) + 1}
+                />
                 <View style={styles.nameContainer}>
                   <Text style={styles.userName}>{getDisplayName(item.data.user)}</Text>
                   {item.data.user.username && (
@@ -169,13 +162,17 @@ export function CollaboratorsModal({
           return (
             <View style={styles.userRow}>
               <View style={styles.userInfo}>
-                {item.data.user.avatarUrl ? (
-                  <Image source={{ uri: item.data.user.avatarUrl }} style={styles.avatar} />
-                ) : (
-                  <View style={styles.avatarPlaceholder}>
-                    <UserIcon size={20} color={theme.colors.neutral[400]} />
-                  </View>
-                )}
+                <Avatar
+                  {...item.data.user}
+                  size={44}
+                  colorIndex={
+                    collaborators.length +
+                    pendingInvites.findIndex(
+                      (invite) => invite.id === item.data.id,
+                    ) +
+                    1
+                  }
+                />
                 <View style={styles.nameContainer}>
                   <Text style={styles.userName}>{getDisplayName(item.data.user)}</Text>
                   <View style={styles.pendingBadge}>
@@ -235,6 +232,8 @@ export function CollaboratorsModal({
       isRemoving,
       isRevoking,
       isResending,
+      collaborators,
+      pendingInvites,
       getDisplayName,
       handleRemoveCollaborator,
       handleRevokeInvite,
@@ -373,20 +372,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
-  },
-  avatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: theme.colors.neutral[200],
-  },
-  avatarPlaceholder: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: theme.colors.neutral[100],
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   nameContainer: {
     marginLeft: theme.spacing.md,

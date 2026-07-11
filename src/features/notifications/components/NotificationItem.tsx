@@ -6,9 +6,8 @@ import {
   StyleSheet,
   ActivityIndicator,
 } from "react-native";
-import { Image } from "expo-image";
 import { Swipeable } from "react-native-gesture-handler";
-import { Trash2, ChevronRight, User } from "lucide-react-native";
+import { Trash2, ChevronRight } from "lucide-react-native";
 import { theme } from "@styles/theme";
 import { typography } from "@styles/typography";
 import type {
@@ -19,6 +18,7 @@ import type {
   RecipeAddedData,
 } from "../types";
 import { parseNotificationData, isNavigableNotification } from "../types";
+import Avatar from "@components/ui/Avatar";
 
 interface NotificationItemProps {
   notification: Notification;
@@ -249,18 +249,13 @@ export function NotificationItem({
           {/* Avatar for follow requests/accepted */}
           {showAvatar && (
             <View style={styles.avatarContainer}>
-              {avatarUrl ? (
-                <Image
-                  source={{ uri: avatarUrl }}
-                  style={styles.avatar}
-                  cachePolicy="memory-disk"
-                  recyclingKey={notification.id}
-                />
-              ) : (
-                <View style={styles.avatarPlaceholder}>
-                  <User size={20} color={theme.colors.neutral[400]} />
-                </View>
-              )}
+              <Avatar
+                avatarUrl={avatarUrl}
+                firstName={notification.sender?.firstName}
+                lastName={notification.sender?.lastName}
+                username={notification.sender?.username}
+                size={40}
+              />
             </View>
           )}
 
@@ -345,20 +340,6 @@ const styles = StyleSheet.create({
   avatarContainer: {
     marginRight: theme.spacing.md,
     marginTop: 2,
-  },
-  avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: theme.colors.neutral[200],
-  },
-  avatarPlaceholder: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: theme.colors.neutral[100],
-    justifyContent: "center",
-    alignItems: "center",
   },
   content: {
     flex: 1,

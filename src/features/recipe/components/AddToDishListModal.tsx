@@ -7,7 +7,7 @@ import {
   ActivityIndicator,
   FlatList,
 } from 'react-native';
-import { Check, Crown, Handshake } from 'lucide-react-native';
+import { Check } from 'lucide-react-native';
 import { useQuery } from '@tanstack/react-query';
 import { theme } from '@styles/theme';
 import { typography } from '@styles/typography';
@@ -83,27 +83,29 @@ export default function AddToDishListModal({
         accessibilityLabel={
           alreadyAdded
             ? `${item.title}, already added`
-            : `Add to ${item.title}`
+            : `Add to ${item.title}, ${item.isOwner ? 'Owner' : 'Collaborator'}`
         }
+        accessibilityHint={alreadyAdded ? undefined : 'Adds this recipe to the DishList'}
+        activeOpacity={0.7}
       >
         <View style={styles.dishListInfo}>
-          <View style={styles.dishListHeader}>
-            <Text
-              style={[
-                styles.dishListTitle,
-                alreadyAdded && styles.dishListTitleDisabled,
-              ]}
-              numberOfLines={1}
-            >
-              {item.title}
-            </Text>
-            <View style={styles.badges}>
-              {item.isOwner && <Crown size={14} color={theme.colors.warning} />}
-              {item.isCollaborator && <Handshake size={14} color={theme.colors.success} />}
-            </View>
-          </View>
+          <Text
+            style={[
+              styles.dishListTitle,
+              alreadyAdded && styles.dishListTitleDisabled,
+            ]}
+            numberOfLines={1}
+          >
+            {item.title}
+          </Text>
           <Text style={styles.dishListMeta}>
             {item.recipeCount} {item.recipeCount === 1 ? 'recipe' : 'recipes'}
+          </Text>
+        </View>
+
+        <View style={styles.roleContainer}>
+          <Text style={styles.roleLabel}>
+            {item.isOwner ? 'Owner' : 'Collaborator'}
           </Text>
         </View>
 
@@ -227,38 +229,37 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: theme.colors.surface,
+    backgroundColor: theme.colors.infoTile,
     padding: theme.spacing.lg,
     borderRadius: theme.borderRadius.md,
     marginBottom: theme.spacing.md,
     borderWidth: 1,
-    borderColor: theme.colors.neutral[200],
+    borderColor: theme.colors.infoTile,
   },
   dishListItemDisabled: {
     opacity: 0.5,
-    backgroundColor: theme.colors.neutral[50],
   },
   dishListInfo: {
     flex: 1,
-  },
-  dishListHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.sm,
-    marginBottom: theme.spacing.xs,
   },
   dishListTitle: {
     ...typography.subtitle,
     fontSize: 16,
     color: theme.colors.textPrimary,
-    flex: 1,
+    marginBottom: theme.spacing.xs,
   },
   dishListTitleDisabled: {
     color: theme.colors.neutral[500],
   },
-  badges: {
-    flexDirection: 'row',
-    gap: theme.spacing.xs,
+  roleContainer: {
+    minHeight: 44,
+    justifyContent: 'center',
+    marginLeft: theme.spacing.lg,
+  },
+  roleLabel: {
+    ...typography.caption,
+    color: theme.colors.neutral[500],
+    flexShrink: 0,
   },
   dishListMeta: {
     ...typography.caption,

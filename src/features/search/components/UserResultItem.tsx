@@ -5,13 +5,12 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from "react-native";
-import { Image } from "expo-image";
-import { User } from "lucide-react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { theme } from "@styles/theme";
 import { typography } from "@styles/typography";
 import { RootStackParamList } from "@app-types/navigation";
+import Avatar from "@components/ui/Avatar";
 import type { SearchUser } from "../types";
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -44,18 +43,7 @@ export function UserResultItem({ user, onPress }: UserResultItemProps) {
       }
     >
       {/* Avatar */}
-      {user.avatarUrl ? (
-        <Image
-          source={{ uri: user.avatarUrl }}
-          style={styles.avatar}
-          cachePolicy="memory-disk"
-          recyclingKey={user.uid}
-        />
-      ) : (
-        <View style={styles.avatarPlaceholder}>
-          <User size={20} color={theme.colors.neutral[400]} />
-        </View>
-      )}
+      <Avatar {...user} size={44} />
 
       {/* User Info */}
       <View style={styles.info}>
@@ -85,20 +73,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: theme.spacing.md,
     paddingHorizontal: theme.spacing.lg,
-  },
-  avatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: theme.colors.neutral[200],
-  },
-  avatarPlaceholder: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: theme.colors.neutral[100],
-    justifyContent: "center",
-    alignItems: "center",
   },
   info: {
     flex: 1,

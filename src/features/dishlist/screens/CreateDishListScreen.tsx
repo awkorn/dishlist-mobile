@@ -131,7 +131,13 @@ export default function CreateDishListScreen({
       >
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={handleCancel} disabled={isLoading}>
+          <TouchableOpacity
+            onPress={handleCancel}
+            disabled={isLoading}
+            style={styles.closeButton}
+            accessibilityRole="button"
+            accessibilityLabel="Close DishList modal"
+          >
             <X size={24} color={theme.colors.neutral[700]} />
           </TouchableOpacity>
 
@@ -263,7 +269,7 @@ export default function CreateDishListScreen({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.surface,
   },
   keyboardView: {
     flex: 1,
@@ -274,21 +280,27 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: theme.spacing.xl,
     paddingVertical: theme.spacing.xl,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.neutral[200],
     backgroundColor: theme.colors.surface,
+  },
+  closeButton: {
+    width: 44,
+    height: 44,
+    marginLeft: -theme.spacing.md,
+    alignItems: "center",
+    justifyContent: "center",
   },
   headerTitle: {
     ...typography.heading3,
     color: theme.colors.textPrimary,
   },
   headerSpacer: {
-    width: 32,
+    width: 44,
   },
   content: {
     flex: 1,
     padding: theme.spacing["3xl"],
     marginTop: theme.spacing.md,
+    backgroundColor: theme.colors.surface,
   },
   inputSection: {
     marginBottom: theme.spacing.lg,
@@ -357,6 +369,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     padding: theme.spacing.lg,
     gap: theme.spacing.md,
+    backgroundColor: theme.colors.surface,
   },
   cancelButton: {
     flex: 1,

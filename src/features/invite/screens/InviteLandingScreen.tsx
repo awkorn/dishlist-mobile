@@ -4,14 +4,13 @@ import {
   Text,
   StyleSheet,
   ActivityIndicator,
-  Image,
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { User as UserIcon } from 'lucide-react-native';
 import { theme } from '@styles/theme';
 import { typography } from '@styles/typography';
 import Button from '@components/ui/Button';
+import Avatar from '@components/ui/Avatar';
 import { inviteService } from '../services/inviteService';
 import { useAuth } from '@providers/AuthProvider/AuthContext';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -229,13 +228,7 @@ export default function InviteLandingScreen({ route, navigation }: Props) {
 
         {/* Inviter Avatar */}
         <View style={styles.inviterContainer}>
-          {invite.inviter.avatarUrl ? (
-            <Image source={{ uri: invite.inviter.avatarUrl }} style={styles.inviterAvatar} />
-          ) : (
-            <View style={styles.inviterAvatarPlaceholder}>
-              <UserIcon size={32} color={theme.colors.neutral[400]} />
-            </View>
-          )}
+          <Avatar {...invite.inviter} size={80} />
         </View>
 
         {/* Action Buttons */}
@@ -305,20 +298,6 @@ const styles = StyleSheet.create({
   },
   inviterContainer: {
     marginBottom: theme.spacing['3xl'],
-  },
-  inviterAvatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: theme.colors.neutral[200],
-  },
-  inviterAvatarPlaceholder: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: theme.colors.neutral[200],
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   buttonContainer: {
     width: '100%',

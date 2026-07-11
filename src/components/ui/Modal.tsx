@@ -38,7 +38,12 @@ export default function Modal({
           <View style={styles.header}>
             <View style={styles.headerLeft}>
               {showCloseButton && (
-                <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+                <TouchableOpacity
+                  onPress={onClose}
+                  style={styles.closeButton}
+                  accessibilityRole="button"
+                  accessibilityLabel="Close modal"
+                >
                   <X size={24} color={theme.colors.neutral[600]} />
                 </TouchableOpacity>
               )}
@@ -56,7 +61,7 @@ export default function Modal({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.surface,
   },
   header: {
     flexDirection: 'row',
@@ -64,8 +69,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: theme.spacing.xl,
     paddingVertical: theme.spacing.lg,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.neutral[200],
     backgroundColor: theme.colors.surface,
   },
   headerLeft: {
@@ -75,13 +78,18 @@ const styles = StyleSheet.create({
     width: 32,
   },
   closeButton: {
-    padding: theme.spacing.xs,
+    width: 44,
+    height: 44,
+    marginLeft: -theme.spacing.md,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   title: {
-    ...typography.heading3,
+    ...typography.subtitle,
     color: theme.colors.textPrimary,
   },
   content: {
     flex: 1,
+    backgroundColor: theme.colors.surface,
   },
 });

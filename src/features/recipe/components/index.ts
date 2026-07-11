@@ -8,3 +8,4 @@ export { default as TagDisplay } from './TagDisplay';
 export { default as TagInput } from './TagInput';
 export { default as DraggableRecipeList } from './DraggableRecipeList';
 export { RecipeDetailSkeleton } from './RecipeDetailSkeleton';
+export { default as RecipeGallery } from './RecipeGallery';
