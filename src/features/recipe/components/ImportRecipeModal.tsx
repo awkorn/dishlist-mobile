@@ -213,9 +213,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: theme.spacing.lg,
-    paddingVertical: theme.spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.neutral[200],
+    paddingVertical: theme.spacing.lg,
   },
   closeButton: {
     padding: theme.spacing.xs,
@@ -355,8 +353,6 @@ const styles = StyleSheet.create({
   footer: {
     paddingHorizontal: theme.spacing.xl,
     paddingVertical: theme.spacing.lg,
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.neutral[200],
   },
   extractButton: {
     width: '100%',
