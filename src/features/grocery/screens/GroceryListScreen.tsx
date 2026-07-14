@@ -100,6 +100,7 @@ export default function GroceryListScreen() {
         >
           <ScreenHeader
             title="Grocery List"
+            titleAlign="left"
             style={styles.header}
             titleStyle={styles.title}
           />
@@ -127,6 +128,7 @@ export default function GroceryListScreen() {
       >
         <ScreenHeader
           title="Grocery List"
+          titleAlign="left"
           style={styles.header}
           titleStyle={styles.title}
         />

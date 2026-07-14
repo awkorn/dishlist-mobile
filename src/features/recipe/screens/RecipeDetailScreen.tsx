@@ -698,7 +698,7 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.md,
   },
   recipeTitle: {
-    ...typography.heading2,
+    ...typography.recipeDetailTitle,
     color: theme.colors.textPrimary,
     marginBottom: theme.spacing.xl,
   },

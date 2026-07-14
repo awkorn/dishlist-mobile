@@ -227,6 +227,7 @@ export default function NotificationsScreen() {
       >
         <ScreenHeader
           title="Notifications"
+          titleAlign="left"
           style={styles.header}
           titleStyle={styles.title}
           rightSlot={

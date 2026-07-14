@@ -151,6 +151,7 @@ export default function RecipeBuilderScreen() {
       >
         <ScreenHeader
           title="Recipe Builder"
+          titleAlign="left"
           style={styles.header}
           titleStyle={styles.title}
           rightSlot={

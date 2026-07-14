@@ -18,12 +18,12 @@ export const typography = {
 
   // Text styles
   heading1: {
-    fontFamily: "PlayfairDisplay-SemiBold",
+    fontFamily: "Inter-SemiBold",
     fontSize: 48,
     lineHeight: 56,
   },
   heading2: {
-    fontFamily: "PlayfairDisplay-SemiBold",
+    fontFamily: "Inter-SemiBold",
     fontSize: 36,
     lineHeight: 38,
   },
@@ -51,14 +51,19 @@ export const typography = {
     lineHeight: 36,
     letterSpacing: -0.5,
   },
+  recipeDetailTitle: {
+    fontFamily: "PlayfairDisplay-SemiBold",
+    fontSize: 36,
+    lineHeight: 38,
+  },
   editorialTitle: {
-    fontFamily: "PlayfairDisplay-Medium",
+    fontFamily: "Inter-Medium",
     fontSize: 26,
     lineHeight: 32,
     letterSpacing: -0.25,
   },
   editorialNavigationTitle: {
-    fontFamily: "PlayfairDisplay-Medium",
+    fontFamily: "Inter-Medium",
     fontSize: 20,
     lineHeight: 25,
   },

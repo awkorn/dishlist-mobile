@@ -15,11 +15,30 @@ describe("ScreenHeader", () => {
       typography.editorialNavigationTitle,
     );
     expect(
+      StyleSheet.flatten(getByText("Grocery List").props.style),
+    ).toMatchObject({ fontFamily: "Inter-Medium", textAlign: "center" });
+    expect(
       StyleSheet.flatten(getByTestId("screen-header-left-slot").props.style),
     ).toMatchObject({ flex: 1, minWidth: 44 });
     expect(
       StyleSheet.flatten(getByTestId("screen-header-right-slot").props.style),
     ).toMatchObject({ flex: 1, minWidth: 44 });
+  });
+
+  it("supports a left-aligned title layout", () => {
+    const { getByText, getByTestId } = render(
+      <ScreenHeader title="Notifications" titleAlign="left" />,
+    );
+
+    expect(
+      StyleSheet.flatten(getByText("Notifications").props.style),
+    ).toMatchObject({ flex: 1, textAlign: "left" });
+    expect(
+      StyleSheet.flatten(getByTestId("screen-header-left-slot").props.style),
+    ).toMatchObject({ flex: 0, minWidth: 0 });
+    expect(
+      StyleSheet.flatten(getByTestId("screen-header-right-slot").props.style),
+    ).toMatchObject({ flex: 0 });
   });
 
   it("renders optional left and right slots", () => {

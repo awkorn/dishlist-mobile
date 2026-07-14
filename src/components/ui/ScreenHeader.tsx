@@ -16,6 +16,7 @@ interface ScreenHeaderProps {
   title: string;
   leftSlot?: ReactNode;
   rightSlot?: ReactNode;
+  titleAlign?: "center" | "left";
   style?: StyleProp<ViewStyle>;
   titleStyle?: StyleProp<TextStyle>;
   numberOfLines?: number;
@@ -25,23 +26,36 @@ export function ScreenHeader({
   title,
   leftSlot,
   rightSlot,
+  titleAlign = "center",
   style,
   titleStyle,
   numberOfLines = 1,
 }: ScreenHeaderProps) {
+  const isLeftAligned = titleAlign === "left";
+
   return (
     <View style={[styles.header, style]}>
-      <View style={styles.leftSlot} testID="screen-header-left-slot">
+      <View
+        style={[styles.leftSlot, isLeftAligned && styles.collapsedLeftSlot]}
+        testID="screen-header-left-slot"
+      >
         {leftSlot}
       </View>
       <Text
-        style={[styles.title, titleStyle]}
+        style={[
+          styles.title,
+          isLeftAligned && styles.leftAlignedTitle,
+          titleStyle,
+        ]}
         numberOfLines={numberOfLines}
         accessibilityRole="header"
       >
         {title}
       </Text>
-      <View style={styles.rightSlot} testID="screen-header-right-slot">
+      <View
+        style={[styles.rightSlot, isLeftAligned && styles.compactRightSlot]}
+        testID="screen-header-right-slot"
+      >
         {rightSlot}
       </View>
     </View>
@@ -83,6 +97,10 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     justifyContent: "center",
   },
+  collapsedLeftSlot: {
+    flex: 0,
+    minWidth: 0,
+  },
   rightSlot: {
     flex: 1,
     minWidth: 44,
@@ -90,11 +108,19 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
     justifyContent: "center",
   },
+  compactRightSlot: {
+    flex: 0,
+    marginLeft: theme.spacing.md,
+  },
   title: {
     ...typography.editorialNavigationTitle,
     flexShrink: 1,
     color: theme.colors.textPrimary,
     textAlign: "center",
+  },
+  leftAlignedTitle: {
+    flex: 1,
+    textAlign: "left",
   },
   action: {
     minWidth: 44,

@@ -210,6 +210,7 @@ export default function DishListsScreen() {
 
       <ScreenHeader
         title="DishLists"
+        titleAlign="left"
         style={styles.header}
         titleStyle={styles.title}
         rightSlot={
