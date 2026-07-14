@@ -238,6 +238,7 @@ const styles = StyleSheet.create({
     paddingTop: theme.spacing.xl,
   },
   header: {
+    minHeight: theme.layout.pageHeaderMinHeight,
     backgroundColor: "transparent",
   },
   title: {

@@ -365,7 +365,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.background,
   },
   header: {
-    minHeight: 76,
+    minHeight: theme.layout.pageHeaderMinHeight,
   },
   title: {
     ...typography.pageTitle,

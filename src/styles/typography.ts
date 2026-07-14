@@ -41,8 +41,8 @@ export const typography = {
   },
   pageTitle: {
     fontFamily: "Inter-SemiBold",
-    fontSize: 30,
-    lineHeight: 36,
+    fontSize: 28,
+    lineHeight: 33,
     letterSpacing: -0.5,
   },
   editorialPageTitle: {

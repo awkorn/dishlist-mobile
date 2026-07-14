@@ -54,6 +54,9 @@ export const theme = {
     "3xl": 32,
     "4xl": 40,
   },
+  layout: {
+    pageHeaderMinHeight: 60,
+  },
   borderRadius: {
     sm: 8,
     md: 12,

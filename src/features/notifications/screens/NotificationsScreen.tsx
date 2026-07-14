@@ -315,7 +315,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   header: {
-    minHeight: 68,
+    minHeight: theme.layout.pageHeaderMinHeight,
     backgroundColor: "transparent",
   },
   title: {
