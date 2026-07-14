@@ -116,7 +116,7 @@ export function ProfileMenu({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.2)",
+    backgroundColor: theme.colors.overlay,
     justifyContent: "flex-start",
     alignItems: "flex-end",
   },
@@ -124,7 +124,7 @@ const styles = StyleSheet.create({
     marginTop: 100, // Position below the header icons
     marginRight: theme.spacing.xl,
     backgroundColor: theme.colors.surface,
-    borderRadius: theme.borderRadius.md,
+    borderRadius: theme.borderRadius.lg,
     paddingVertical: theme.spacing.sm,
     minWidth: 200,
     shadowColor: "#000",

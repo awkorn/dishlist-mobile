@@ -384,13 +384,13 @@ const styles = StyleSheet.create({
   },
   backdrop: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0, 0, 0, 0.18)",
+    backgroundColor: theme.colors.overlay,
   },
   sheet: {
     maxHeight: "84%",
     backgroundColor: theme.colors.surface,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
+    borderTopLeftRadius: theme.borderRadius.lg,
+    borderTopRightRadius: theme.borderRadius.lg,
     paddingTop: theme.spacing["2xl"],
     paddingHorizontal: theme.spacing.xl,
   },
