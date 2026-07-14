@@ -24,6 +24,7 @@ export interface ActionSheetOption {
 interface ActionSheetProps {
   visible: boolean;
   onClose: () => void;
+  onDismiss?: () => void;
   title?: string;
   options: ActionSheetOption[];
 }
@@ -33,36 +34,82 @@ const { height } = Dimensions.get('window');
 export default function ActionSheet({
   visible,
   onClose,
+  onDismiss,
   title,
   options,
 }: ActionSheetProps) {
   const slideAnim = React.useRef(new Animated.Value(height)).current;
+  const opacityAnim = React.useRef(new Animated.Value(0)).current;
+  const [rendered, setRendered] = React.useState(visible);
+  const renderedRef = React.useRef(visible);
+  const onDismissRef = React.useRef(onDismiss);
 
   React.useEffect(() => {
+    onDismissRef.current = onDismiss;
+  }, [onDismiss]);
+
+  React.useEffect(() => {
+    let animation: Animated.CompositeAnimation | undefined;
+    let animationFrame: number | undefined;
+
     if (visible) {
-      Animated.spring(slideAnim, {
-        toValue: 0,
-        useNativeDriver: true,
-        tension: 75,
-        friction: 10,
-      }).start();
-    } else {
-      Animated.timing(slideAnim, {
-        toValue: height,
-        duration: 200,
-        useNativeDriver: true,
-      }).start();
+      renderedRef.current = true;
+      setRendered(true);
+      slideAnim.setValue(height);
+      opacityAnim.setValue(0);
+
+      animationFrame = requestAnimationFrame(() => {
+        animation = Animated.parallel([
+          Animated.spring(slideAnim, {
+            toValue: 0,
+            useNativeDriver: true,
+            tension: 75,
+            friction: 10,
+          }),
+          Animated.timing(opacityAnim, {
+            toValue: 1,
+            duration: 150,
+            useNativeDriver: true,
+          }),
+        ]);
+        animation.start();
+      });
+    } else if (renderedRef.current) {
+      animation = Animated.parallel([
+        Animated.timing(slideAnim, {
+          toValue: height,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+        Animated.timing(opacityAnim, {
+          toValue: 0,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+      ]);
+      animation.start(({ finished }) => {
+        if (!finished) return;
+
+        renderedRef.current = false;
+        setRendered(false);
+        onDismissRef.current?.();
+      });
     }
-  }, [visible]);
+
+    return () => {
+      if (animationFrame !== undefined) cancelAnimationFrame(animationFrame);
+      animation?.stop();
+    };
+  }, [opacityAnim, slideAnim, visible]);
 
   return (
     <Modal
-      visible={visible}
+      visible={rendered}
       transparent={true}
-      animationType="fade"
+      animationType="none"
       onRequestClose={onClose}
     >
-      <View style={styles.overlay}>
+      <Animated.View style={[styles.overlay, { opacity: opacityAnim }]}>
         <TouchableOpacity
           style={styles.backdrop}
           activeOpacity={1}
@@ -91,11 +138,11 @@ export default function ActionSheet({
             </View>
             
             <View style={styles.options}>
-              {options.map((option, index) => {
+              {options.map((option) => {
                 const IconComponent = option.icon;
                 return (
                   <TouchableOpacity
-                    key={index}
+                    key={option.title}
                     style={[
                       styles.option,
                       option.disabled && styles.optionDisabled,
@@ -107,6 +154,8 @@ export default function ActionSheet({
                       }
                     }}
                     disabled={option.disabled}
+                    accessibilityRole="button"
+                    accessibilityState={{ disabled: option.disabled }}
                   >
                     {IconComponent && (
                       <IconComponent
@@ -135,7 +184,7 @@ export default function ActionSheet({
             </View>
           </SafeAreaView>
         </Animated.View>
-      </View>
+      </Animated.View>
     </Modal>
   );
 }

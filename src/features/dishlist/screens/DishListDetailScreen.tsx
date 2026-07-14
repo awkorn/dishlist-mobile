@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useMemo, useRef } from "react";
 import {
   View,
   Text,
@@ -59,6 +59,7 @@ export default function DishListDetailScreen({
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [showCollaboratorsModal, setShowCollaboratorsModal] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
+  const actionSheetDismissAction = useRef<(() => void) | null>(null);
 
   const {
     dishList,
@@ -100,6 +101,12 @@ export default function DishListDetailScreen({
     [navigation, dishListId],
   );
 
+  const handleActionSheetDismiss = useCallback(() => {
+    const dismissAction = actionSheetDismissAction.current;
+    actionSheetDismissAction.current = null;
+    dismissAction?.();
+  }, []);
+
   const actionSheetOptions: ActionSheetOption[] = useMemo(() => {
     if (!dishList) return [];
 
@@ -116,7 +123,9 @@ export default function DishListDetailScreen({
         {
           title: "Import Recipe",
           icon: Camera,
-          onPress: () => setShowImportModal(true),
+          onPress: () => {
+            actionSheetDismissAction.current = () => setShowImportModal(true);
+          },
         },
       );
     }
@@ -127,12 +136,7 @@ export default function DishListDetailScreen({
         title: "Share DishList",
         icon: Share,
         onPress: () => {
-          setShowActionSheet(false);
-
-          // Close action sheet first
-          // Small delay to allow action sheet to close before opening share modal
-
-          setTimeout(() => setShowShareModal(true), 300);
+          actionSheetDismissAction.current = () => setShowShareModal(true);
         },
       });
     }
@@ -156,8 +160,7 @@ export default function DishListDetailScreen({
           title: "Invite Collaborator",
           icon: UserPlus,
           onPress: () => {
-            setShowActionSheet(false);
-            setTimeout(() => setShowInviteModal(true), 300);
+            actionSheetDismissAction.current = () => setShowInviteModal(true);
           },
         },
       );
@@ -195,7 +198,9 @@ export default function DishListDetailScreen({
         title: "Report DishList",
         icon: Flag,
         destructive: true,
-        onPress: () => setShowReportModal(true),
+        onPress: () => {
+          actionSheetDismissAction.current = () => setShowReportModal(true);
+        },
       });
     }
 
@@ -399,6 +404,7 @@ export default function DishListDetailScreen({
         <ActionSheet
           visible={showActionSheet}
           onClose={() => setShowActionSheet(false)}
+          onDismiss={handleActionSheetDismiss}
           options={actionSheetOptions}
         />
         <ImportRecipeModal

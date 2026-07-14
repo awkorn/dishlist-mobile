@@ -4,3 +4,4 @@ export { NetworkIndicator } from './NetworkIndicator';
 export { DishListEmptyState } from './DishListEmptyState';
 export { DishListErrorState } from './DishListErrorState';
 export { DishListGrid } from './DishListGrid';
+export { DishListPickerModal } from './DishListPickerModal';

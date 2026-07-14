@@ -75,10 +75,17 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
   const [showAddToDishListModal, setShowAddToDishListModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
+  const actionSheetDismissAction = useRef<(() => void) | null>(null);
   const [topMetadataBottom, setTopMetadataBottom] = useState(
     DEFAULT_METADATA_BOTTOM,
   );
   const scrollY = useRef(new Animated.Value(0)).current;
+
+  const handleActionSheetDismiss = useCallback(() => {
+    const dismissAction = actionSheetDismissAction.current;
+    actionSheetDismissAction.current = null;
+    dismissAction?.();
+  }, []);
 
   // Recipe data
   const { recipe, isLoading, isError, error, refetch, updateNutritionCache } =
@@ -157,7 +164,10 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
       {
         title: isOwner ? "Add to DishList" : "Save to DishList",
         icon: Plus,
-        onPress: () => setShowAddToDishListModal(true),
+        onPress: () => {
+          actionSheetDismissAction.current = () =>
+            setShowAddToDishListModal(true);
+        },
       },
     ];
 
@@ -166,8 +176,7 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
         title: "Share Recipe",
         icon: Share,
         onPress: () => {
-          setShowActionSheet(false);
-          setTimeout(() => setShowShareModal(true), 300);
+          actionSheetDismissAction.current = () => setShowShareModal(true);
         },
       });
     }
@@ -234,7 +243,9 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
         title: "Report Recipe",
         icon: Flag,
         destructive: true,
-        onPress: () => setShowReportModal(true),
+        onPress: () => {
+          actionSheetDismissAction.current = () => setShowReportModal(true);
+        },
       });
     }
 
@@ -594,6 +605,7 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
         <ActionSheet
           visible={showActionSheet}
           onClose={() => setShowActionSheet(false)}
+          onDismiss={handleActionSheetDismiss}
           title="Recipe Options"
           options={actionSheetOptions}
         />
