@@ -122,6 +122,11 @@ export interface Recipe {
   notes?: string[];
   tags?: string[];
   isShareable?: boolean;
+  // Social-import provenance (set for recipes imported via the share
+  // extension); drives the attribution row on RecipeDetail.
+  sourceUrl?: string | null;
+  sourcePlatform?: "TIKTOK" | "INSTAGRAM" | "FACEBOOK" | null;
+  sourceAuthor?: string | null;
   originalRecipeId?: string;
   originalRecipe?: {
     id: string;
@@ -142,6 +147,23 @@ export interface Recipe {
   };
   createdAt: string;
   updatedAt: string;
+}
+
+export type SocialImportStatusValue =
+  | "PENDING"
+  | "PROCESSING"
+  | "COMPLETED"
+  | "FAILED";
+
+export interface SocialImportStatus {
+  importId: string;
+  status: SocialImportStatusValue;
+  errorCode: string | null;
+  errorMessage: string | null;
+  recipeId: string | null;
+  sourceUrl: string;
+  platform: "TIKTOK" | "INSTAGRAM" | "FACEBOOK";
+  createdAt: string;
 }
 
 export type AddRecipeToDishListMode = "LINKED" | "FORKED" | "REUSED_FORK";

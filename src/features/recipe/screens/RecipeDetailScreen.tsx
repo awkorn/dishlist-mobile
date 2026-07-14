@@ -7,6 +7,7 @@ import {
   Alert,
   Platform,
   Animated,
+  Linking,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
@@ -411,6 +412,29 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
             </View>
           )}
 
+          {/* Social-import attribution: links back to the original post */}
+          {recipe.sourceUrl && (
+            <TouchableOpacity
+              style={styles.attribution}
+              onPress={() => void Linking.openURL(recipe.sourceUrl!)}
+              accessibilityRole="link"
+              accessibilityLabel="Open the original post"
+            >
+              <Text style={styles.attributionText}>
+                Saved from{" "}
+                {recipe.sourcePlatform === "TIKTOK"
+                  ? "TikTok"
+                  : recipe.sourcePlatform === "INSTAGRAM"
+                    ? "Instagram"
+                    : recipe.sourcePlatform === "FACEBOOK"
+                      ? "Facebook"
+                      : "the web"}
+                {recipe.sourceAuthor ? ` • ${recipe.sourceAuthor}` : ""}{" "}
+                <Text style={styles.attributionLink}>View original</Text>
+              </Text>
+            </TouchableOpacity>
+          )}
+
           {/* Cook Mode Button */}
           <Button
             title="Start Cooking"
@@ -727,6 +751,11 @@ const styles = StyleSheet.create({
     ...typography.caption,
     color: theme.colors.neutral[600],
     lineHeight: 18,
+  },
+  attributionLink: {
+    ...typography.caption,
+    color: theme.colors.primary[500],
+    fontWeight: "600",
   },
   metaRow: {
     flexDirection: "row",

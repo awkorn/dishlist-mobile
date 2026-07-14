@@ -15,6 +15,13 @@ import { navigationRef } from '@navigation/navigationRef';
 import InviteRedirectHandler from '@navigation/InviteRedirectHandler';
 import { PushNotificationsProvider } from '@features/notifications';
 import { theme } from '@styles/theme';
+import { initSharedSessionSync } from '@services/sharedSession';
+import { useSocialImportStatus } from '@features/recipe/hooks/useSocialImportStatus';
+
+// Mirror the Supabase session into App Group storage for the share extension
+// (and adopt sessions the extension refreshed). Module-level like the api.ts
+// token cache: must be active before any auth event fires.
+initSharedSessionSync();
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -57,6 +64,14 @@ onlineManager.setEventListener((setOnline) => {
 // flashing a blank screen with a spinner.
 void SplashScreen.preventAutoHideAsync();
 
+// Reconciles share-extension imports when the app foregrounds (the push
+// notification is the primary signal; this covers push-denied users). Needs
+// navigation + auth + query contexts, hence a child of the providers.
+function SocialImportReconciler() {
+  useSocialImportStatus();
+  return null;
+}
+
 export default function App() {
   const fontsLoaded = useCustomFonts();
 
@@ -80,6 +95,7 @@ export default function App() {
             <AuthProvider>
               <NavigationContainer linking={linking} ref={navigationRef}>
                 <PushNotificationsProvider>
+                  <SocialImportReconciler />
                   <InviteRedirectHandler />
                   <MainNavigator />
                   <StatusBar

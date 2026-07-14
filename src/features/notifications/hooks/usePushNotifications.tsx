@@ -134,6 +134,13 @@ export function PushNotificationsProvider({
             });
           }
           break;
+        case "RECIPE_IMPORT_COMPLETED":
+          if (data.recipeId) {
+            navigation.navigate("RecipeDetail", {
+              recipeId: data.recipeId as string,
+            });
+          }
+          break;
         default:
           // For unknown types, go to notifications tab
           navigation.navigate("Home", { screen: "NotificationsTab" } as any);
