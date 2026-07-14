@@ -85,7 +85,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   title: {
-    ...typography.subtitle,
+    ...typography.editorialNavigationTitle,
     color: theme.colors.textPrimary,
   },
   content: {

@@ -89,7 +89,6 @@ export default function ChangeEmailScreen({ navigation }: Props) {
       <SafeAreaView style={styles.container} edges={["top"]}>
         <ScreenHeader
           title="Change Email"
-          titleStyle={styles.headerTitle}
           leftSlot={
             <ScreenHeaderAction
               onPress={() => navigation.goBack()}
@@ -131,7 +130,6 @@ export default function ChangeEmailScreen({ navigation }: Props) {
     <SafeAreaView style={styles.container} edges={["top"]}>
       <ScreenHeader
         title="Change Email"
-        titleStyle={styles.headerTitle}
         leftSlot={
           <ScreenHeaderAction
             onPress={() => navigation.goBack()}
@@ -265,11 +263,6 @@ const styles = StyleSheet.create({
   },
   flex: {
     flex: 1,
-  },
-  headerTitle: {
-    ...typography.heading3,
-    fontSize: 20,
-    color: theme.colors.textPrimary,
   },
   scrollContent: {
     padding: theme.spacing.xl,

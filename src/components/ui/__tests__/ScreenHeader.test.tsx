@@ -1,6 +1,7 @@
 import React from "react";
 import { StyleSheet, Text } from "react-native";
 import { fireEvent, render } from "@testing-library/react-native";
+import { typography } from "@styles/typography";
 import { ScreenHeader, ScreenHeaderAction } from "../ScreenHeader";
 
 describe("ScreenHeader", () => {
@@ -10,6 +11,9 @@ describe("ScreenHeader", () => {
     );
 
     expect(getByText("Grocery List")).toBeTruthy();
+    expect(StyleSheet.flatten(getByText("Grocery List").props.style)).toMatchObject(
+      typography.editorialNavigationTitle,
+    );
     expect(
       StyleSheet.flatten(getByTestId("screen-header-left-slot").props.style),
     ).toMatchObject({ flex: 1, minWidth: 44 });

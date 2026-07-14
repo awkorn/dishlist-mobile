@@ -91,7 +91,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   title: {
-    ...typography.heading3,
+    ...typography.editorialNavigationTitle,
     flexShrink: 1,
     color: theme.colors.textPrimary,
     textAlign: "center",

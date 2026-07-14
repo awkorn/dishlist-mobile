@@ -172,7 +172,7 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   headerTitle: {
-    ...typography.subtitle,
+    ...typography.editorialNavigationTitle,
     color: theme.colors.textPrimary,
     flex: 1,
     textAlign: "center",

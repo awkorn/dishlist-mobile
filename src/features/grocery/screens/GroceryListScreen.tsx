@@ -239,7 +239,7 @@ const styles = StyleSheet.create({
     backgroundColor: "transparent",
   },
   title: {
-    ...typography.heading4,
+    ...typography.pageTitle,
     color: theme.colors.textPrimary,
   },
   headerButtons: {

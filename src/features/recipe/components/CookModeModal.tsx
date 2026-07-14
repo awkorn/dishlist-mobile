@@ -276,7 +276,7 @@ const styles = StyleSheet.create({
     width: 36,
   },
   recipeTitle: {
-    ...typography.subtitle,
+    ...typography.editorialNavigationTitle,
     color: theme.colors.textPrimary,
     marginBottom: theme.spacing.xs,
   },

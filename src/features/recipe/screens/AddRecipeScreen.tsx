@@ -410,7 +410,6 @@ export default function AddRecipeScreen({ route, navigation }: Props) {
                   : "Add Recipe"
             }
             style={styles.header}
-            titleStyle={styles.headerTitle}
             leftSlot={
               <ScreenHeaderAction
                 onPress={handleCancel}
@@ -627,10 +626,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.neutral[200],
     backgroundColor: theme.colors.surface,
-  },
-  headerTitle: {
-    ...typography.heading3,
-    color: theme.colors.textPrimary,
   },
   scrollView: {
     flex: 1,

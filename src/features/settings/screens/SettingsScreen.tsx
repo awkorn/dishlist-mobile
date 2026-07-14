@@ -33,7 +33,6 @@ import { api } from "@services/api";
 import { supabase } from "@services/supabase";
 import { SettingsSection, SettingsRow } from "../components";
 import { theme } from "@styles/theme";
-import { typography } from "@styles/typography";
 import { ScreenHeader, ScreenHeaderAction } from "@components/ui";
 import Constants from "expo-constants";
 import { groceryStorage } from "@features/grocery/services";
@@ -165,7 +164,6 @@ export default function SettingsScreen({ navigation }: Props) {
     <SafeAreaView style={styles.container} edges={["top"]}>
       <ScreenHeader
         title="Settings"
-        titleStyle={styles.headerTitle}
         leftSlot={
           <ScreenHeaderAction
             onPress={() => navigation.goBack()}
@@ -298,11 +296,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
-  },
-  headerTitle: {
-    ...typography.heading3,
-    fontSize: 20,
-    color: theme.colors.textPrimary,
   },
   scrollView: {
     flex: 1,

@@ -270,7 +270,6 @@ export function CollaboratorsModal({
         <ScreenHeader
           title={dishListTitle}
           style={styles.header}
-          titleStyle={styles.headerTitle}
           leftSlot={
             <ScreenHeaderAction
               onPress={onClose}
@@ -324,10 +323,6 @@ const styles = StyleSheet.create({
   header: {
     paddingHorizontal: theme.spacing.lg,
     backgroundColor: theme.colors.surface,
-  },
-  headerTitle: {
-    ...typography.heading3,
-    color: theme.colors.textPrimary,
   },
   loadingContainer: {
     flex: 1,

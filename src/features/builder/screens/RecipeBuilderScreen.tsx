@@ -367,7 +367,7 @@ const styles = StyleSheet.create({
     minHeight: 76,
   },
   title: {
-    ...typography.heading4,
+    ...typography.pageTitle,
     color: theme.colors.textPrimary,
   },
   chatArea: {

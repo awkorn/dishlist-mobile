@@ -219,7 +219,7 @@ const styles = StyleSheet.create({
     padding: theme.spacing.xs,
   },
   headerTitle: {
-    ...typography.heading3,
+    ...typography.editorialNavigationTitle,
     color: theme.colors.neutral[800],
   },
   headerSpacer: {
