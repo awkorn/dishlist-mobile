@@ -40,3 +40,4 @@ yarn-error.*
 
 # ai 
 AGENTS.md
+/docs/

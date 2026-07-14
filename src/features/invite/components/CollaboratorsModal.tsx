@@ -113,7 +113,7 @@ export function CollaboratorsModal({
                 </View>
               </View>
               <View style={styles.ownerBadge}>
-                <Crown size={14} color={theme.colors.warning[600]} />
+                <Crown size={14} color={theme.colors.warning} />
                 <Text style={styles.ownerText}>Owner</Text>
               </View>
             </View>
@@ -176,7 +176,7 @@ export function CollaboratorsModal({
                 <View style={styles.nameContainer}>
                   <Text style={styles.userName}>{getDisplayName(item.data.user)}</Text>
                   <View style={styles.pendingBadge}>
-                    <Clock size={12} color={theme.colors.warning[600]} />
+                    <Clock size={12} color={theme.colors.warning} />
                     <Text style={styles.pendingText}>Pending</Text>
                   </View>
                 </View>
@@ -207,9 +207,9 @@ export function CollaboratorsModal({
                   hitSlop={8}
                 >
                   {isRevoking ? (
-                    <ActivityIndicator size="small" color={theme.colors.error[500]} />
+                    <ActivityIndicator size="small" color={theme.colors.error} />
                   ) : (
-                    <Trash2 size={18} color={theme.colors.error[500]} />
+                    <Trash2 size={18} color={theme.colors.error} />
                   )}
                 </TouchableOpacity>
               </View>
@@ -389,14 +389,14 @@ const styles = StyleSheet.create({
   ownerBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: theme.colors.warning[50],
+    backgroundColor: theme.colors.warning + '15',
     paddingHorizontal: theme.spacing.sm,
     paddingVertical: theme.spacing.xs,
     borderRadius: theme.borderRadius.lg,
   },
   ownerText: {
     ...typography.caption,
-    color: theme.colors.warning[700],
+    color: theme.colors.warning,
     marginLeft: 4,
     fontWeight: '600',
   },
@@ -407,7 +407,7 @@ const styles = StyleSheet.create({
   },
   pendingText: {
     ...typography.caption,
-    color: theme.colors.warning[600],
+    color: theme.colors.warning,
     marginLeft: 4,
   },
   pendingActions: {
