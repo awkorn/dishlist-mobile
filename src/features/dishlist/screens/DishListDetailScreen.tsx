@@ -338,7 +338,10 @@ export default function DishListDetailScreen({
         {/* Recipe Grid */}
         <FlatList
           style={styles.content}
-          contentContainerStyle={styles.scrollContent}
+          contentContainerStyle={[
+            styles.scrollContent,
+            filteredRecipes.length === 0 && styles.emptyScrollContent,
+          ]}
           data={filteredRecipes}
           keyExtractor={(item) => item.id}
           numColumns={2}
@@ -502,6 +505,10 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: theme.spacing.lg,
+  },
+  emptyScrollContent: {
+    flexGrow: 1,
+    marginBottom: 40,
   },
   recipeRow: {
     gap: theme.spacing.lg,

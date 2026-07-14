@@ -57,7 +57,7 @@ export const typography = {
     lineHeight: 38,
   },
   editorialTitle: {
-    fontFamily: "Inter-Medium",
+    fontFamily: "PlayfairDisplay-Medium",
     fontSize: 26,
     lineHeight: 32,
     letterSpacing: -0.25,

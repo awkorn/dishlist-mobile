@@ -254,7 +254,7 @@ const styles = StyleSheet.create({
     ...typography.editorialTitle,
     fontSize: 30,
     lineHeight: 38,
-    color: theme.colors.neutral[900],
+    color: theme.colors.textPrimary,
     textAlign: "center",
   },
   username: {
