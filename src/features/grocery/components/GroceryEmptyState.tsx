@@ -1,7 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { theme } from '@styles/theme';
-import { typography } from '@styles/typography';
+import { EmptyState } from '@components/ui';
 
 interface GroceryEmptyStateProps {
   title?: string;
@@ -12,30 +10,5 @@ export function GroceryEmptyState({
   title = 'Your list is empty',
   message = 'Tap + to add your first item',
 }: GroceryEmptyStateProps) {
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>{title}</Text>
-      <Text style={styles.message}>{message}</Text>
-    </View>
-  );
+  return <EmptyState title={title} message={message} />;
 }
-
-const styles = StyleSheet.create({
-  container: {
-    marginTop: '40%',
-    paddingHorizontal: theme.spacing['4xl'],
-    paddingVertical: theme.spacing['4xl'],
-    alignItems: 'center',
-  },
-  title: {
-    ...typography.subtitle,
-    color: theme.colors.textPrimary,
-    marginBottom: theme.spacing.sm,
-    textAlign: 'center',
-  },
-  message: {
-    ...typography.body,
-    color: theme.colors.neutral[500],
-    textAlign: 'center',
-  },
-});

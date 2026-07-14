@@ -4,7 +4,6 @@ import {
   Text,
   StyleSheet,
   SectionList,
-  TouchableOpacity,
   ActivityIndicator,
   RefreshControl,
 } from "react-native";
@@ -15,7 +14,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { theme } from "@styles/theme";
 import { typography } from "@styles/typography";
 import { RootStackParamList } from "@app-types/navigation";
-import { ScreenHeader, ScreenHeaderAction } from "@components/ui";
+import { ErrorState, ScreenHeader, ScreenHeaderAction } from "@components/ui";
 import { useNotifications, getSectionTitle } from "../hooks/useNotifications";
 import {
   NotificationItem,
@@ -293,20 +292,11 @@ export default function NotificationsScreen() {
           showsVerticalScrollIndicator={false}
         />
       ) : isError ? (
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorTitle}>Couldn't Load Notifications</Text>
-          <Text style={styles.errorSubtitle}>
-            Please check your connection and try again.
-          </Text>
-          <TouchableOpacity
-            style={styles.retryButton}
-            onPress={() => refetch()}
-            accessibilityRole="button"
-            accessibilityLabel="Retry loading notifications"
-          >
-            <Text style={styles.retryButtonText}>Try Again</Text>
-          </TouchableOpacity>
-        </View>
+        <ErrorState
+          title="Couldn't Load Notifications"
+          message="Please check your connection and try again."
+          onRetry={() => refetch()}
+        />
       ) : (
         <NotificationsEmptyState />
       )}
@@ -351,33 +341,5 @@ const styles = StyleSheet.create({
   },
   footerLoader: {
     paddingVertical: theme.spacing.lg,
-  },
-  errorContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingHorizontal: theme.spacing.xl,
-  },
-  errorTitle: {
-    ...typography.subtitle,
-    color: theme.colors.textPrimary,
-    marginBottom: theme.spacing.sm,
-  },
-  errorSubtitle: {
-    ...typography.body,
-    color: theme.colors.neutral[500],
-    textAlign: "center",
-    marginBottom: theme.spacing.lg,
-  },
-  retryButton: {
-    paddingVertical: theme.spacing.sm,
-    paddingHorizontal: theme.spacing.xl,
-    borderRadius: theme.borderRadius.sm,
-    backgroundColor: theme.colors.primary[500],
-  },
-  retryButtonText: {
-    ...typography.button,
-    fontSize: 14,
-    color: theme.colors.onPrimary,
   },
 });

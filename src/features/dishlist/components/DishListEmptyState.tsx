@@ -1,8 +1,7 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
 import { Plus } from 'lucide-react-native';
 import Button from '@components/ui/Button';
-import { typography } from '@styles/typography';
+import { EmptyState } from '@components/ui';
 import { theme } from '@styles/theme';
 import type { DishListTabLabel } from '../types';
 
@@ -21,49 +20,25 @@ export function DishListEmptyState({
   const hasSearchQuery = !!searchQuery?.trim();
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>
-        {hasSearchQuery ? 'No Results Found' : 'No DishLists Yet'}
-      </Text>
-      
-      <Text style={styles.text}>
-        {hasSearchQuery
+    <EmptyState
+      title={hasSearchQuery ? 'No Results Found' : 'No DishLists Yet'}
+      message={
+        hasSearchQuery
           ? `No DishLists match "${searchQuery}"`
           : isMyDishListsTab
           ? 'Tap the + button to create your first DishList'
-          : `You don't have any in ${activeTab.toLowerCase()} yet`}
-      </Text>
-
-      {!hasSearchQuery && isMyDishListsTab && onCreatePress && (
-        <Button
-          title="Create DishList"
-          onPress={onCreatePress}
-          size="sm"
-          leadingIcon={<Plus size={18} color={theme.colors.onPrimary} />}
-        />
-      )}
-    </View>
+          : `You don't have any in ${activeTab.toLowerCase()} yet`
+      }
+      action={
+        !hasSearchQuery && isMyDishListsTab && onCreatePress ? (
+          <Button
+            title="Create DishList"
+            onPress={onCreatePress}
+            size="sm"
+            leadingIcon={<Plus size={18} color={theme.colors.onPrimary} />}
+          />
+        ) : undefined
+      }
+    />
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: theme.spacing["4xl"],
-    paddingVertical: theme.spacing["4xl"],
-  },
-  title: {
-    ...typography.subtitle,
-    color: theme.colors.neutral[900],
-    marginBottom: theme.spacing.sm,
-    textAlign: 'center',
-  },
-  text: {
-    ...typography.body,
-    color: theme.colors.neutral[500],
-    textAlign: 'center',
-    marginBottom: theme.spacing.lg,
-  },
-});

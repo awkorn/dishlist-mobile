@@ -48,6 +48,7 @@ import * as Haptics from "expo-haptics";
 import { ShareModal } from "@features/share";
 import { ReportContentModal } from "@components/moderation/ReportContentModal";
 import Button from "@components/ui/Button";
+import { ErrorState } from "@components/ui";
 
 type Props = NativeStackScreenProps<RootStackParamList, "RecipeDetail">;
 
@@ -289,18 +290,14 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
   if (isError || !recipe) {
     return (
       <SafeAreaView style={styles.container}>
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorTitle}>Unable to load recipe</Text>
-          <Text style={styles.errorText}>
-            {getErrorMessage(error, "Something went wrong. Please try again.")}
-          </Text>
-          <TouchableOpacity
-            style={styles.retryButton}
-            onPress={() => refetch()}
-          >
-            <Text style={styles.retryButtonText}>Try Again</Text>
-          </TouchableOpacity>
-        </View>
+        <ErrorState
+          title="Unable to load recipe"
+          message={getErrorMessage(
+            error,
+            "Something went wrong. Please try again."
+          )}
+          onRetry={() => refetch()}
+        />
       </SafeAreaView>
     );
   }
@@ -648,34 +645,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
-  },
-  errorContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingHorizontal: theme.spacing["4xl"],
-  },
-  errorTitle: {
-    ...typography.heading3,
-    color: theme.colors.error,
-    marginBottom: theme.spacing.sm,
-    textAlign: "center",
-  },
-  errorText: {
-    ...typography.body,
-    color: theme.colors.neutral[500],
-    marginBottom: theme.spacing.lg,
-    textAlign: "center",
-  },
-  retryButton: {
-    backgroundColor: theme.colors.primary[500],
-    paddingHorizontal: theme.spacing.xl,
-    paddingVertical: theme.spacing.md,
-    borderRadius: theme.borderRadius.md,
-  },
-  retryButtonText: {
-    ...typography.button,
-    color: theme.colors.onPrimary,
   },
   header: {
     flexDirection: "row",

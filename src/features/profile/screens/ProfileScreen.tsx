@@ -27,6 +27,7 @@ import { ProfileSkeleton } from "../components/ProfileSkeleton";
 import { ShareModal } from "@features/share";
 import { ReportContentModal } from "@components/moderation/ReportContentModal";
 import Button from "@components/ui/Button";
+import { ErrorState } from "@components/ui";
 import { theme } from "@styles/theme";
 import { typography } from "@styles/typography";
 import { getErrorMessage } from "@utils";
@@ -184,27 +185,19 @@ export default function ProfileScreen({ navigation, route }: Props) {
   };
 
   const renderRecipesError = () => (
-    <View style={styles.tabErrorContainer}>
-      <Text style={styles.errorTitle}>Unable to load recipes</Text>
-      <Text style={styles.errorText}>
-        {getErrorMessage(
-          recipesError,
-          "Something went wrong while loading recipes. Please try again."
-        )}
-      </Text>
-      <TouchableOpacity
-        style={[
-          styles.retryButton,
-          isRecipesFetching && styles.retryButtonDisabled,
-        ]}
-        onPress={() => void refetchRecipes()}
-        disabled={isRecipesFetching}
-      >
-        <Text style={styles.retryButtonText}>
-          {isRecipesFetching ? "Trying..." : "Try Again"}
-        </Text>
-      </TouchableOpacity>
-    </View>
+    <ErrorState
+      title="Unable to load recipes"
+      message={getErrorMessage(
+        recipesError,
+        "Something went wrong while loading recipes. Please try again."
+      )}
+      onRetry={() => {
+        if (!isRecipesFetching) {
+          void refetchRecipes();
+        }
+      }}
+      retryLabel={isRecipesFetching ? "Trying..." : "Try Again"}
+    />
   );
 
   // Dynamic search placeholder based on active tab
@@ -238,18 +231,14 @@ export default function ProfileScreen({ navigation, route }: Props) {
     return (
       <View style={styles.loadingWrapper}>
         <SafeAreaView style={styles.loadingSafeArea} edges={["top"]} />
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorTitle}>Unable to load profile</Text>
-          <Text style={styles.errorText}>
-            {getErrorMessage(error, "Something went wrong. Please try again.")}
-          </Text>
-          <TouchableOpacity
-            style={styles.retryButton}
-            onPress={() => refetch()}
-          >
-            <Text style={styles.retryButtonText}>Try Again</Text>
-          </TouchableOpacity>
-        </View>
+        <ErrorState
+          title="Unable to load profile"
+          message={getErrorMessage(
+            error,
+            "Something went wrong. Please try again."
+          )}
+          onRetry={() => refetch()}
+        />
       </View>
     );
   }
@@ -483,46 +472,10 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 20,
   },
-  errorContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 20,
-  },
   tabLoadingContainer: {
     paddingVertical: 24,
     alignItems: "center",
     justifyContent: "center",
-  },
-  tabErrorContainer: {
-    paddingHorizontal: 20,
-    paddingVertical: 40,
-    alignItems: "center",
-  },
-  errorTitle: {
-    ...typography.subtitle,
-    color: theme.colors.neutral[900],
-    marginBottom: 8,
-  },
-  errorText: {
-    ...typography.body,
-    color: theme.colors.neutral[600],
-    textAlign: "center",
-    marginBottom: 20,
-  },
-  retryButton: {
-    backgroundColor: theme.colors.primary[500],
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
-  },
-  retryButtonDisabled: {
-    opacity: 0.6,
-  },
-  retryButtonText: {
-    ...typography.body,
-    fontWeight: "600",
-    color: theme.colors.onPrimary,
   },
   searchInfo: {
     paddingHorizontal: 20,

@@ -36,7 +36,7 @@ import type { ImportRecipeResponse } from "@features/recipe/types";
 import { ShareModal } from "@features/share";
 import { InviteCollaboratorModal, CollaboratorPreview } from "@features/invite";
 import { CollaboratorsModal } from "@features/invite";
-import { AnimatedSearchInput } from "@components/ui";
+import { AnimatedSearchInput, EmptyState, ErrorState } from "@components/ui";
 import { ReportContentModal } from "@components/moderation/ReportContentModal";
 import Button from "@components/ui/Button";
 import {
@@ -243,15 +243,14 @@ export default function DishListDetailScreen({
   if (isError || !dishList) {
     return (
       <SafeAreaView style={styles.container}>
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorTitle}>Unable to load DishList</Text>
-          <Text style={styles.errorMessage}>
-            {getErrorMessage(error, "Check your connection and try again.")}
-          </Text>
-          <TouchableOpacity style={styles.retryButton} onPress={handleRefresh}>
-            <Text style={styles.retryButtonText}>Try Again</Text>
-          </TouchableOpacity>
-        </View>
+        <ErrorState
+          title="Unable to load DishList"
+          message={getErrorMessage(
+            error,
+            "Check your connection and try again."
+          )}
+          onRetry={handleRefresh}
+        />
       </SafeAreaView>
     );
   }
@@ -362,28 +361,28 @@ export default function DishListDetailScreen({
           onEndReached={handleEndReached}
           onEndReachedThreshold={0.5}
           ListEmptyComponent={
-            <View style={styles.emptyContainer}>
-              <Text style={styles.emptyTitle}>
-                {searchQuery ? "No Recipes Found" : "No Recipes Yet"}
-              </Text>
-              <Text style={styles.emptyText}>
-                {searchQuery
+            <EmptyState
+              title={searchQuery ? "No Recipes Found" : "No Recipes Yet"}
+              message={
+                searchQuery
                   ? `No recipes match "${searchQuery}"`
-                  : "Add your first recipe to this DishList"}
-              </Text>
-              {!searchQuery && dishList.isOwner && (
-                <Button
-                  title="Add Recipe"
-                  size="sm"
-                  onPress={() =>
-                    navigation.navigate("AddRecipe", { dishListId })
-                  }
-                  leadingIcon={
-                    <Plus size={18} color={theme.colors.onPrimary} />
-                  }
-                />
-              )}
-            </View>
+                  : "Add your first recipe to this DishList"
+              }
+              action={
+                !searchQuery && dishList.isOwner ? (
+                  <Button
+                    title="Add Recipe"
+                    size="sm"
+                    onPress={() =>
+                      navigation.navigate("AddRecipe", { dishListId })
+                    }
+                    leadingIcon={
+                      <Plus size={18} color={theme.colors.onPrimary} />
+                    }
+                  />
+                ) : undefined
+              }
+            />
           }
           ListFooterComponent={
             isFetchingNextPage ? (
@@ -451,33 +450,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: theme.colors.background,
   },
-  errorContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingHorizontal: theme.spacing.xl,
-  },
-  errorTitle: {
-    ...typography.subtitle,
-    color: theme.colors.neutral[900],
-    marginBottom: theme.spacing.sm,
-  },
-  errorMessage: {
-    ...typography.body,
-    color: theme.colors.neutral[500],
-    textAlign: "center",
-    marginBottom: theme.spacing.lg,
-  },
-  retryButton: {
-    backgroundColor: theme.colors.primary[500],
-    paddingVertical: theme.spacing.sm,
-    paddingHorizontal: theme.spacing.xl,
-    borderRadius: theme.borderRadius.md,
-  },
-  retryButtonText: {
-    ...typography.button,
-    color: theme.colors.onPrimary,
-  },
   header: {
     paddingHorizontal: theme.spacing.lg,
     paddingVertical: theme.spacing.lg,
@@ -524,24 +496,6 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: theme.spacing.lg,
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingVertical: theme.spacing["4xl"],
-    marginTop: theme.spacing["4xl"],
-  },
-  emptyTitle: {
-    ...typography.subtitle,
-    color: theme.colors.textPrimary,
-    marginBottom: theme.spacing.sm,
-  },
-  emptyText: {
-    ...typography.body,
-    color: theme.colors.neutral[500],
-    textAlign: "center",
-    marginBottom: theme.spacing.lg,
   },
   recipeRow: {
     gap: theme.spacing.lg,

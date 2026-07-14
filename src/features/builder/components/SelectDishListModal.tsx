@@ -11,6 +11,7 @@ import { Crown, Handshake } from "lucide-react-native";
 import { theme } from "@styles/theme";
 import { typography } from "@styles/typography";
 import Modal from "@components/ui/Modal";
+import { EmptyState } from "@components/ui";
 import { useDishLists } from "@features/dishlist/hooks";
 import type { DishList } from "@features/dishlist/types";
 
@@ -75,12 +76,10 @@ export function SelectDishListModal({
             <Text style={styles.loadingText}>Loading your DishLists...</Text>
           </View>
         ) : eligibleDishLists.length === 0 ? (
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyTitle}>No DishLists Available</Text>
-            <Text style={styles.emptyText}>
-              Create a DishList first to save recipes to it.
-            </Text>
-          </View>
+          <EmptyState
+            title="No DishLists Available"
+            message="Create a DishList first to save recipes to it."
+          />
         ) : (
           <FlatList
             data={eligibleDishLists}
@@ -129,24 +128,6 @@ const styles = StyleSheet.create({
     ...typography.body,
     color: theme.colors.neutral[600],
     marginTop: theme.spacing.lg,
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingVertical: theme.spacing["4xl"],
-    paddingHorizontal: theme.spacing.xl,
-  },
-  emptyTitle: {
-    ...typography.subtitle,
-    color: theme.colors.neutral[800],
-    marginBottom: theme.spacing.sm,
-    textAlign: "center",
-  },
-  emptyText: {
-    ...typography.body,
-    color: theme.colors.neutral[500],
-    textAlign: "center",
   },
   listContent: {
     padding: theme.spacing.xl,

@@ -19,7 +19,7 @@ import {
 import { theme } from '@styles/theme';
 import { typography } from '@styles/typography';
 import Avatar from '@components/ui/Avatar';
-import { ScreenHeader, ScreenHeaderAction } from '@components/ui';
+import { ErrorState, ScreenHeader, ScreenHeaderAction } from '@components/ui';
 import { useCollaborators } from '../hooks/useCollaborators';
 import type { Collaborator, PendingInvite } from '../types';
 
@@ -287,20 +287,12 @@ export function CollaboratorsModal({
             <ActivityIndicator size="large" color={theme.colors.primary[500]} />
           </View>
         ) : isError ? (
-          <View style={styles.errorContainer}>
-            <Text style={styles.errorTitle}>Couldn't load collaborators</Text>
-            <Text style={styles.errorText}>
-              Check your connection and try again.
-            </Text>
-            <TouchableOpacity
-              style={styles.retryButton}
-              onPress={() => refetch()}
-              accessibilityRole="button"
-              accessibilityLabel="Retry loading collaborators"
-            >
-              <Text style={styles.retryButtonText}>Retry</Text>
-            </TouchableOpacity>
-          </View>
+          <ErrorState
+            title="Couldn't load collaborators"
+            message="Check your connection and try again."
+            onRetry={() => refetch()}
+            retryLabel="Retry"
+          />
         ) : (
           <FlatList
             data={listData}
@@ -407,37 +399,6 @@ const styles = StyleSheet.create({
   emptyText: {
     ...typography.body,
     color: theme.colors.neutral[500],
-  },
-  errorContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: theme.spacing.xl,
-  },
-  errorTitle: {
-    ...typography.subtitle,
-    color: theme.colors.textPrimary,
-    marginBottom: theme.spacing.sm,
-    textAlign: 'center',
-  },
-  errorText: {
-    ...typography.body,
-    color: theme.colors.neutral[500],
-    textAlign: 'center',
-    marginBottom: theme.spacing.xl,
-  },
-  retryButton: {
-    paddingHorizontal: theme.spacing.xl,
-    paddingVertical: theme.spacing.md,
-    borderRadius: theme.borderRadius.md,
-    backgroundColor: theme.colors.primary[500],
-    minHeight: 44,
-    justifyContent: 'center',
-  },
-  retryButtonText: {
-    ...typography.body,
-    color: theme.colors.onPrimary,
-    fontWeight: '600',
   },
 });
 
