@@ -47,7 +47,7 @@ export const typography = {
   },
   editorialPageTitle: {
     fontFamily: "PlayfairDisplay-SemiBold",
-    fontSize: 30,
+    fontSize: 32,
     lineHeight: 36,
     letterSpacing: -0.5,
   },

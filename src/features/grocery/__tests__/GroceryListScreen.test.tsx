@@ -1,5 +1,5 @@
 import React from "react";
-import { FlatList } from "react-native";
+import { FlatList, StyleSheet } from "react-native";
 import {
   fireEvent,
   render,
@@ -78,6 +78,18 @@ describe("GroceryListScreen", () => {
     expect(getByText("Milk")).toBeTruthy();
     expect(getByText("Bread")).toBeTruthy();
     expect(queryByText("Your list is empty")).toBeNull();
+  });
+
+  it("centers the empty state within the available list space", () => {
+    (useGroceryList as jest.Mock).mockReturnValue(createHookValue());
+
+    const { UNSAFE_getByType, getByText } = render(<GroceryListScreen />);
+    const list = UNSAFE_getByType(FlatList);
+
+    expect(getByText("Your list is empty")).toBeTruthy();
+    expect(StyleSheet.flatten(list.props.contentContainerStyle)).toMatchObject({
+      flexGrow: 1,
+    });
   });
 
   it("keeps the add row open when saving fails", async () => {

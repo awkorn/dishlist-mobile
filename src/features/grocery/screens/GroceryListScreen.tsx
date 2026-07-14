@@ -212,6 +212,7 @@ export default function GroceryListScreen() {
         style={styles.list}
         contentContainerStyle={[
           styles.listContent,
+          items.length === 0 && !isAddingItem && styles.emptyListContent,
           { paddingBottom: insets.bottom + 20 },
         ]}
         keyboardShouldPersistTaps="handled"
@@ -273,6 +274,9 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingHorizontal: theme.spacing.md,
+  },
+  emptyListContent: {
+    flexGrow: 1,
   },
   divider: {
     height: 1,

@@ -31,7 +31,7 @@ export function PreferencesButton({
 
 const styles = StyleSheet.create({
   button: {
-    minHeight: 44,
+    minHeight: 36,
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
