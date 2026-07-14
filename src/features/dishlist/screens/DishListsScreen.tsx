@@ -169,14 +169,14 @@ export default function DishListsScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={handleRefresh}
-            colors={["#2563eb"]}
-            tintColor="#2563eb"
+            colors={[theme.colors.primary[500]]}
+            tintColor={theme.colors.primary[500]}
             title={
               refreshing
                 ? "Updating..."
                 : getDataFreshness() || "Pull to refresh"
             }
-            titleColor="#666"
+            titleColor={theme.colors.neutral[500]}
           />
         }
         onEndReached={handleEndReached}
@@ -185,7 +185,7 @@ export default function DishListsScreen() {
             {isFetchingNextPage && (
               <ActivityIndicator
                 size="small"
-                color="#2563eb"
+                color={theme.colors.primary[500]}
                 style={styles.footerLoader}
               />
             )}
@@ -214,7 +214,7 @@ export default function DishListsScreen() {
           {refreshing && (
             <ActivityIndicator
               size="small"
-              color="#2563eb"
+              color={theme.colors.primary[500]}
               style={styles.headerLoader}
             />
           )}
@@ -222,7 +222,7 @@ export default function DishListsScreen() {
             style={styles.addButton}
             onPress={handleCreateDishList}
           >
-            <Plus size={24} color="#2563eb" />
+            <Plus size={24} color={theme.colors.primary[500]} />
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.profileButton}

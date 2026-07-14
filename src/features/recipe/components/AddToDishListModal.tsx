@@ -270,13 +270,13 @@ const styles = StyleSheet.create({
   },
   errorContainer: {
     padding: theme.spacing.lg,
-    backgroundColor: '#FEF2F2',
+    backgroundColor: theme.colors.errorBg,
     borderRadius: theme.borderRadius.md,
     margin: theme.spacing.xl,
   },
   errorText: {
     ...typography.caption,
-    color: '#991B1B',
+    color: theme.colors.errorText,
     textAlign: 'center',
   },
 });

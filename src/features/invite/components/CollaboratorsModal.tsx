@@ -454,7 +454,7 @@ const styles = StyleSheet.create({
   },
   retryButtonText: {
     ...typography.body,
-    color: 'white',
+    color: theme.colors.onPrimary,
     fontWeight: '600',
   },
 });

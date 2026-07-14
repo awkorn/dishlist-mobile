@@ -307,7 +307,11 @@ export function PreferencesModal({
                       <Text style={[styles.chipText, styles.chipTextSelected]}>
                         {preference}
                       </Text>
-                      <X size={12} color="#FFFFFF" strokeWidth={2.5} />
+                      <X
+                        size={12}
+                        color={theme.colors.onPrimary}
+                        strokeWidth={2.5}
+                      />
                     </TouchableOpacity>
                   ))}
                 </View>
@@ -337,7 +341,7 @@ export function PreferencesModal({
                     size={18}
                     color={
                       customText.trim()
-                        ? "#FFFFFF"
+                        ? theme.colors.onPrimary
                         : theme.colors.primary[500]
                     }
                     strokeWidth={2.2}
@@ -476,7 +480,7 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
   },
   chipTextSelected: {
-    color: "#FFFFFF",
+    color: theme.colors.onPrimary,
   },
   customChip: {
     paddingRight: theme.spacing.sm,
@@ -519,6 +523,6 @@ const styles = StyleSheet.create({
   },
   saveButtonText: {
     ...typography.button,
-    color: "#FFFFFF",
+    color: theme.colors.onPrimary,
   },
 });

@@ -57,7 +57,9 @@ export function BuilderChatInput({
         >
           <ArrowUp
             size={20}
-            color={canSend ? "#FFFFFF" : theme.colors.neutral[400]}
+            color={
+              canSend ? theme.colors.onPrimary : theme.colors.neutral[400]
+            }
             strokeWidth={2.5}
           />
         </TouchableOpacity>

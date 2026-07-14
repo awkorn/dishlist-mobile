@@ -149,7 +149,7 @@ export default function ResetPasswordScreen() {
           accessibilityState={{ disabled: !isValid || loading, busy: loading }}
         >
           {loading ? (
-            <ActivityIndicator color="#fff" />
+            <ActivityIndicator color={theme.colors.onPrimary} />
           ) : (
             <Text style={styles.buttonText}>Update Password</Text>
           )}
@@ -192,8 +192,8 @@ const styles = StyleSheet.create({
     color: theme.colors.neutral[800],
   },
   errorBanner: {
-    backgroundColor: theme.colors.error + "15",
-    borderColor: theme.colors.error + "30",
+    backgroundColor: theme.colors.errorBg,
+    borderColor: theme.colors.errorText,
     borderWidth: 1,
     borderRadius: theme.borderRadius.sm,
     padding: theme.spacing.md,
@@ -221,7 +221,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     ...typography.body,
-    color: "#fff",
+    color: theme.colors.onPrimary,
     fontWeight: "600",
   },
 });

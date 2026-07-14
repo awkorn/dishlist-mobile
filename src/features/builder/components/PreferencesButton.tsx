@@ -19,7 +19,7 @@ export function PreferencesButton({
       onPress={onPress}
       activeOpacity={0.7}
     >
-      <SlidersHorizontal size={14} color="#FFFFFF" />
+      <SlidersHorizontal size={14} color={theme.colors.onPrimary} />
       <Text style={styles.text}>
         Preferences{activeCount > 0 ? ` (${activeCount})` : ""}
       </Text>
@@ -40,7 +40,7 @@ const styles = StyleSheet.create({
   text: {
     ...typography.caption,
     fontFamily: "Inter-Medium",
-    color: "#FFFFFF",
+    color: theme.colors.onPrimary,
     fontSize: 13,
   },
 });

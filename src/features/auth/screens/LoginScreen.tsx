@@ -279,19 +279,19 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing['3xl'],
   },
   successBanner: {
-    backgroundColor: '#ECFDF5',
+    backgroundColor: theme.colors.successBg,
     borderRadius: theme.borderRadius.sm,
     padding: theme.spacing.md,
     marginBottom: theme.spacing.lg,
   },
   successTitle: {
     ...typography.body,
-    color: '#065F46',
+    color: theme.colors.successText,
     fontWeight: '600',
   },
   successText: {
     ...typography.caption,
-    color: '#047857',
+    color: theme.colors.successText,
     marginTop: theme.spacing.xs,
   },
   input: {

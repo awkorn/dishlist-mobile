@@ -143,7 +143,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.primary[500],
   },
   followBackButtonText: {
-    color: "white",
+    color: theme.colors.onPrimary,
   },
   // Requested - disabled state
   requestedButton: {

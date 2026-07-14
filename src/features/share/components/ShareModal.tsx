@@ -100,7 +100,11 @@ export function ShareModal({
             {/* Selection checkmark overlay */}
             {isSelected && (
               <View style={styles.checkOverlay}>
-                <Check size={20} color="white" strokeWidth={3} />
+                <Check
+                  size={20}
+                  color={theme.colors.onPrimary}
+                  strokeWidth={3}
+                />
               </View>
             )}
           </View>
@@ -246,7 +250,11 @@ export function ShareModal({
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
               >
                 <View style={[styles.externalShareIcon, styles.messageIcon]}>
-                  <MessageCircle size={24} color="white" fill="white" />
+                  <MessageCircle
+                    size={24}
+                    color={theme.colors.onPrimary}
+                    fill={theme.colors.onPrimary}
+                  />
                 </View>
               </TouchableOpacity>
 

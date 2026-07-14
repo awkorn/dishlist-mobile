@@ -354,8 +354,8 @@ export default function DishListDetailScreen({
             <RefreshControl
               refreshing={isRefetching}
               onRefresh={handleRefresh}
-              colors={["#2563eb"]}
-              tintColor="#2563eb"
+              colors={[theme.colors.primary[500]]}
+              tintColor={theme.colors.primary[500]}
             />
           }
           onEndReached={handleEndReached}
@@ -377,7 +377,7 @@ export default function DishListDetailScreen({
                     navigation.navigate("AddRecipe", { dishListId })
                   }
                 >
-                  <Plus size={20} color="white" />
+                  <Plus size={20} color={theme.colors.onPrimary} />
                   <Text style={styles.addRecipeButtonText}>Add Recipe</Text>
                 </TouchableOpacity>
               )}
@@ -474,7 +474,7 @@ const styles = StyleSheet.create({
   },
   retryButtonText: {
     ...typography.button,
-    color: "white",
+    color: theme.colors.onPrimary,
   },
   header: {
     paddingHorizontal: theme.spacing.lg,
@@ -552,7 +552,7 @@ const styles = StyleSheet.create({
   },
   addRecipeButtonText: {
     ...typography.button,
-    color: "white",
+    color: theme.colors.onPrimary,
   },
   recipeRow: {
     gap: theme.spacing.lg,

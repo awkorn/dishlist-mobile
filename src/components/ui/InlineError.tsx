@@ -49,7 +49,7 @@ export default function InlineError({
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    backgroundColor: '#FEF2F2', 
+    backgroundColor: theme.colors.errorBg,
     borderRadius: theme.borderRadius.sm,
     padding: theme.spacing.md,
     marginBottom: theme.spacing.lg,
@@ -64,7 +64,7 @@ const styles = StyleSheet.create({
   message: {
     ...typography.body,
     fontSize: 14,
-    color: '#991B1B', 
+    color: theme.colors.errorText,
     lineHeight: 20,
   },
   actionText: {

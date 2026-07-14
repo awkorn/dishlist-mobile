@@ -560,7 +560,7 @@ export default function AddRecipeScreen({ route, navigation }: Props) {
                       onPress={() => removeImage(index)}
                       accessibilityLabel={`Remove photo ${index + 1}`}
                     >
-                      <X size={14} color="white" />
+                      <X size={14} color={theme.colors.onPrimary} />
                     </TouchableOpacity>
                     <View style={styles.photoIndexPill}>
                       <Text style={styles.photoIndexText}>{index + 1}</Text>
@@ -817,7 +817,7 @@ const styles = StyleSheet.create({
   },
   photoIndexText: {
     ...typography.caption,
-    color: "white",
+    color: theme.colors.onPrimary,
     fontWeight: "700",
   },
   imagePickerText: {

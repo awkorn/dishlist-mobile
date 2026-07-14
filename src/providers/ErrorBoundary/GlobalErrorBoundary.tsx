@@ -70,7 +70,7 @@ export class GlobalErrorBoundary extends Component<Props, State> {
               style={styles.retryButton}
               onPress={this.handleRetry}
             >
-              <RefreshCw size={20} color="white" />
+              <RefreshCw size={20} color={theme.colors.onPrimary} />
               <Text style={styles.retryText}>Try Again</Text>
             </TouchableOpacity>
 
@@ -125,7 +125,7 @@ const styles = StyleSheet.create({
   },
   retryText: {
     ...typography.button,
-    color: "white",
+    color: theme.colors.onPrimary,
   },
   stackTrace: {
     marginTop: theme.spacing["3xl"],

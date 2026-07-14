@@ -219,7 +219,7 @@ export default function NotificationsScreen() {
     <View style={styles.container}>
       {/* Header */}
       <LinearGradient
-        colors={["#FFFFFF", theme.colors.background]}
+        colors={[theme.colors.surface, theme.colors.background]}
         locations={[0, 1]}
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
@@ -236,7 +236,10 @@ export default function NotificationsScreen() {
             accessibilityState={{ disabled: !hasNotifications || isClearing }}
           >
             {isClearing ? (
-              <ActivityIndicator size="small" color="#FFFFFF" />
+              <ActivityIndicator
+                size="small"
+                color={theme.colors.onPrimary}
+              />
             ) : (
               <Text
                 style={[
@@ -373,6 +376,6 @@ const styles = StyleSheet.create({
   retryButtonText: {
     ...typography.button,
     fontSize: 14,
-    color: "#FFFFFF",
+    color: theme.colors.onPrimary,
   },
 });

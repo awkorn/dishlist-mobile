@@ -289,7 +289,7 @@ const styles = StyleSheet.create({
   },
   saveButtonText: {
     ...typography.button,
-    color: "#FFFFFF",
+    color: theme.colors.onPrimary,
     fontSize: 16,
   },
 });

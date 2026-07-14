@@ -86,7 +86,9 @@ export function FollowButton({ userId, followStatus, fullWidth = false }: Follow
   };
 
   const getSpinnerColor = () => {
-    return followStatus === "NONE" ? "white" : theme.colors.neutral[600];
+    return followStatus === "NONE"
+      ? theme.colors.onPrimary
+      : theme.colors.neutral[600];
   };
 
   return (
@@ -145,7 +147,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   followText: {
-    color: "white",
+    color: theme.colors.onPrimary,
   },
   followingText: {
     color: theme.colors.neutral[600],

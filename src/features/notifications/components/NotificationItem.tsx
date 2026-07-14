@@ -189,7 +189,7 @@ export function NotificationItem({
       accessibilityRole="button"
       accessibilityLabel="Delete notification"
     >
-      <Trash2 size={20} color="white" />
+      <Trash2 size={20} color={theme.colors.onPrimary} />
     </TouchableOpacity>
   );
 
@@ -302,7 +302,10 @@ export function NotificationItem({
                   accessibilityState={{ disabled: isActionInProgress }}
                 >
                   {currentlyAccepting ? (
-                    <ActivityIndicator size="small" color="#FFFFFF" />
+                    <ActivityIndicator
+                      size="small"
+                      color={theme.colors.onPrimary}
+                    />
                   ) : (
                     <Text style={styles.acceptButtonText}>Accept</Text>
                   )}
@@ -379,7 +382,7 @@ const styles = StyleSheet.create({
   acceptButtonText: {
     ...typography.button,
     fontSize: 14,
-    color: "#FFFFFF",
+    color: theme.colors.onPrimary,
   },
   arrow: {
     marginLeft: theme.spacing.sm,

@@ -403,7 +403,7 @@ const styles = StyleSheet.create({
   },
   userBubbleText: {
     ...typography.body,
-    color: "#FFFFFF",
+    color: theme.colors.onPrimary,
   },
   // Assistant bubble
   assistantBubble: {
@@ -450,7 +450,7 @@ const styles = StyleSheet.create({
   },
   // Error
   errorContainer: {
-    backgroundColor: "#FEF2F2",
+    backgroundColor: theme.colors.errorBg,
     borderRadius: theme.borderRadius.sm,
     padding: theme.spacing.md,
     marginTop: theme.spacing.sm,

@@ -128,7 +128,7 @@ export function EditProfileSheet({
                   size={100}
                 />
                 <View style={styles.cameraIcon}>
-                  <Camera size={16} color="white" />
+                  <Camera size={16} color={theme.colors.onPrimary} />
                 </View>
               </TouchableOpacity>
               <Text style={styles.avatarLabel}>Change Profile Picture</Text>
@@ -292,7 +292,7 @@ const styles = StyleSheet.create({
   },
   input: {
     ...typography.body,
-    backgroundColor: "white",
+    backgroundColor: theme.colors.surface,
     borderWidth: 1,
     borderColor: theme.colors.neutral[300],
     borderRadius: 8,

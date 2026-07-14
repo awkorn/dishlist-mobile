@@ -328,7 +328,7 @@ const styles = StyleSheet.create({
     borderRightColor: theme.colors.neutral[300],
   },
   macroText: {
-    color: 'white',
+    color: theme.colors.onPrimary,
     fontWeight: '700',
     textShadowColor: 'rgba(0,0,0,0.4)',
     textShadowOffset: { width: 0.5, height: 0.5 },

@@ -60,7 +60,11 @@ export default function Button({
         <ActivityIndicator
           testID="button-loading"
           size="small"
-          color={variant === "primary" ? "white" : theme.colors.primary[500]}
+          color={
+            variant === "primary"
+              ? theme.colors.onPrimary
+              : theme.colors.primary[500]
+          }
         />
       ) : (
         <Text style={textStyles}>{title}</Text>
@@ -109,10 +113,10 @@ const styles = StyleSheet.create({
     ...typography.button,
   },
   primaryText: {
-    color: "white",
+    color: theme.colors.onPrimary,
   },
   secondaryText: {
-    color: "white",
+    color: theme.colors.onPrimary,
   },
   outlineText: {
     color: theme.colors.primary[500],

@@ -54,7 +54,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
   },
   badgeText: {
-    color: "#FFFFFF",
+    color: theme.colors.onPrimary,
     fontSize: 10,
     fontWeight: "700",
   },

@@ -498,7 +498,7 @@ const styles = StyleSheet.create({
   },
   unblockButtonText: {
     ...typography.body,
-    color: "white",
+    color: theme.colors.onPrimary,
     fontWeight: "600",
   },
   errorContainer: {
@@ -540,7 +540,7 @@ const styles = StyleSheet.create({
   retryButtonText: {
     ...typography.body,
     fontWeight: "600",
-    color: "white",
+    color: theme.colors.onPrimary,
   },
   searchInfo: {
     paddingHorizontal: 20,

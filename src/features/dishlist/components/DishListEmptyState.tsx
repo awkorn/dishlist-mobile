@@ -35,7 +35,7 @@ export function DishListEmptyState({
 
       {!hasSearchQuery && isMyDishListsTab && onCreatePress && (
         <TouchableOpacity style={styles.createButton} onPress={onCreatePress}>
-          <Plus size={20} color="white" />
+          <Plus size={20} color={theme.colors.onPrimary} />
           <Text style={styles.createButtonText}>Create DishList</Text>
         </TouchableOpacity>
       )}
@@ -74,6 +74,6 @@ const styles = StyleSheet.create({
   },
   createButtonText: {
     ...typography.button,
-    color: 'white',
+    color: theme.colors.onPrimary,
   },
 });

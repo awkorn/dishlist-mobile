@@ -203,7 +203,7 @@ export default function ChangePasswordScreen({ navigation }: Props) {
             activeOpacity={0.8}
           >
             {loading ? (
-              <ActivityIndicator color="#fff" />
+              <ActivityIndicator color={theme.colors.onPrimary} />
             ) : (
               <Text style={styles.buttonText}>Update Password</Text>
             )}
@@ -271,12 +271,12 @@ const styles = StyleSheet.create({
     paddingVertical: theme.spacing.md,
   },
   errorBanner: {
-    backgroundColor: theme.colors.error + "15",
+    backgroundColor: theme.colors.errorBg,
     borderRadius: 12,
     padding: theme.spacing.md,
     marginBottom: theme.spacing.lg,
     borderWidth: 1,
-    borderColor: theme.colors.error + "30",
+    borderColor: theme.colors.errorText,
   },
   errorText: {
     ...typography.body,
@@ -304,7 +304,7 @@ const styles = StyleSheet.create({
   buttonText: {
     ...typography.body,
     fontWeight: "600",
-    color: "#fff",
+    color: theme.colors.onPrimary,
     fontSize: 16,
   },
 });

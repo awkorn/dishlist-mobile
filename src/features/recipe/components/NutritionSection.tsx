@@ -87,10 +87,13 @@ export default function NutritionSection({
             disabled={calculateNutritionMutation.isPending}
           >
             {calculateNutritionMutation.isPending ? (
-              <ActivityIndicator size="small" color="white" />
+              <ActivityIndicator
+                size="small"
+                color={theme.colors.onPrimary}
+              />
             ) : (
               <>
-                <Calculator size={20} color="white" />
+                <Calculator size={20} color={theme.colors.onPrimary} />
                 <Text style={styles.nutritionButtonText}>Calculate Nutrition</Text>
               </>
             )}
@@ -130,6 +133,6 @@ const styles = StyleSheet.create({
   },
   nutritionButtonText: {
     ...typography.button,
-    color: 'white',
+    color: theme.colors.onPrimary,
   },
 });

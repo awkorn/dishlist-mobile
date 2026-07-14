@@ -382,7 +382,7 @@ const styles = StyleSheet.create({
   },
   retryButtonText: {
     ...typography.button,
-    color: "white",
+    color: theme.colors.onPrimary,
   },
   footerContainer: {
     alignItems: "center",

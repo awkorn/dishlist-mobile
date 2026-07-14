@@ -239,7 +239,7 @@ export default function ChangeEmailScreen({ navigation }: Props) {
             activeOpacity={0.8}
           >
             {loading ? (
-              <ActivityIndicator color="#fff" />
+              <ActivityIndicator color={theme.colors.onPrimary} />
             ) : (
               <Text style={styles.buttonText}>Update Email</Text>
             )}
@@ -359,7 +359,7 @@ const styles = StyleSheet.create({
   buttonText: {
     ...typography.body,
     fontWeight: "600",
-    color: "#fff",
+    color: theme.colors.onPrimary,
     fontSize: 16,
   },
   // Success state
@@ -407,7 +407,7 @@ const styles = StyleSheet.create({
   doneButtonText: {
     ...typography.body,
     fontWeight: "600",
-    color: "#fff",
+    color: theme.colors.onPrimary,
     fontSize: 16,
   },
 });

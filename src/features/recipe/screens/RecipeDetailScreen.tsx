@@ -409,7 +409,7 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
             accessibilityRole="button"
             accessibilityLabel="Start Cooking"
           >
-            <PlayCircle size={20} color="white" />
+            <PlayCircle size={20} color={theme.colors.onPrimary} />
             <Text style={styles.cookModeButtonText}>Start Cooking</Text>
           </TouchableOpacity>
 
@@ -673,7 +673,7 @@ const styles = StyleSheet.create({
   },
   retryButtonText: {
     ...typography.button,
-    color: "white",
+    color: theme.colors.onPrimary,
   },
   header: {
     flexDirection: "row",
@@ -782,7 +782,7 @@ const styles = StyleSheet.create({
   },
   cookModeButtonText: {
     ...typography.button,
-    color: "white",
+    color: theme.colors.onPrimary,
   },
   section: {
     paddingHorizontal: theme.spacing.xl,

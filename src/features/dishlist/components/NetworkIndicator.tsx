@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Animated } from 'react-native';
 import { Wifi, WifiOff } from 'lucide-react-native';
 import { typography } from '@styles/typography';
+import { theme } from '@styles/theme';
 
 interface NetworkIndicatorProps {
   isOnline: boolean;
@@ -29,18 +30,18 @@ export function NetworkIndicator({ isOnline }: NetworkIndicatorProps) {
         styles.container,
         {
           transform: [{ translateY }],
-          backgroundColor: isOnline ? '#10B981' : '#EF4444',
+          backgroundColor: isOnline ? theme.colors.success : theme.colors.error,
         },
       ]}
     >
       {isOnline ? (
         <>
-          <Wifi size={16} color="white" />
+          <Wifi size={16} color={theme.colors.onPrimary} />
           <Text style={styles.text}>Back Online</Text>
         </>
       ) : (
         <>
-          <WifiOff size={16} color="white" />
+          <WifiOff size={16} color={theme.colors.onPrimary} />
           <Text style={styles.text}>No Connection - Showing Cached Data</Text>
         </>
       )}
@@ -64,7 +65,7 @@ const styles = StyleSheet.create({
   },
   text: {
     ...typography.caption,
-    color: 'white',
+    color: theme.colors.onPrimary,
     fontWeight: '600',
   },
 });

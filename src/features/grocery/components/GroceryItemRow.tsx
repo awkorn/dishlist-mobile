@@ -68,7 +68,7 @@ export function GroceryItemRow({
       onPress={() => onDelete(item.id)}
       testID={`delete-${item.id}`}
     >
-      <Trash2 size={20} color="white" />
+      <Trash2 size={20} color={theme.colors.onPrimary} />
     </TouchableOpacity>
   );
 

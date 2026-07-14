@@ -81,7 +81,7 @@ export function SettingsRow(props: SettingsRowProps) {
             false: theme.colors.neutral[200],
             true: theme.colors.primary[500],
           }}
-          thumbColor="white"
+          thumbColor={theme.colors.surface}
           accessibilityLabel={label}
         />
       ) : (

@@ -239,7 +239,9 @@ export default function CookModeModal({
             {!isLastStep && (
               <ChevronRight size={24} color={theme.colors.primary[500]} />
             )}
-            {isLastStep && <CheckCircle2 size={24} color="white" />}
+            {isLastStep && (
+              <CheckCircle2 size={24} color={theme.colors.onPrimary} />
+            )}
           </TouchableOpacity>
         </View>
       </View>
@@ -415,7 +417,7 @@ const styles = StyleSheet.create({
     color: theme.colors.neutral[400],
   },
   doneButtonText: {
-    color: "white",
+    color: theme.colors.onPrimary,
   },
   subsectionBadge: {
     alignSelf: "flex-start",
