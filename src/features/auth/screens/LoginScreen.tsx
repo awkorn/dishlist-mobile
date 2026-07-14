@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   StyleSheet,
   Image,
@@ -14,11 +13,15 @@ import { typography } from '@styles/typography';
 import { theme } from '@styles/theme';
 import Button from '@components/ui/Button';
 import InlineError from '@components/ui/InlineError';
+import { TextField } from '@components/ui';
 import type { LoginScreenProps } from '@app-types/navigation';
+
+type LoginField = 'email' | 'password';
 
 interface Feedback {
   message: string;
   action?: string;
+  fields?: Partial<Record<LoginField, true>>;
 }
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -51,6 +54,7 @@ export default function LoginScreen({
       setError({
         message: 'Email is required',
         action: 'Please enter your email address',
+        fields: { email: true },
       });
       return;
     }
@@ -59,6 +63,7 @@ export default function LoginScreen({
       setError({
         message: 'Password is required',
         action: 'Please enter your password',
+        fields: { password: true },
       });
       return;
     }
@@ -70,14 +75,15 @@ export default function LoginScreen({
 
       if (result.error) {
         const errorInfo = getAuthErrorMessage(result.error);
-        setError(errorInfo);
+        setError({ ...errorInfo, fields: { email: true, password: true } });
       }
     } catch (err: unknown) {
-      setError(
-        getAuthErrorMessage(
+      setError({
+        ...getAuthErrorMessage(
           err instanceof Error ? err.message : 'Unable to sign in'
-        )
-      );
+        ),
+        fields: { email: true, password: true },
+      });
     } finally {
       setLoginLoading(false);
     }
@@ -93,6 +99,7 @@ export default function LoginScreen({
       setError({
         message: "Enter your email first",
         action: "Type your email above, then tap forgot password",
+        fields: { email: true },
       });
       return;
     }
@@ -101,6 +108,7 @@ export default function LoginScreen({
       setError({
         message: "Enter a valid email address",
         action: "Check the address for typos and try again",
+        fields: { email: true },
       });
       return;
     }
@@ -169,13 +177,10 @@ export default function LoginScreen({
         )}
 
         <View style={styles.form}>
-          <TextInput
-            style={[
-              styles.input,
-              error?.message.toLowerCase().includes('email') && styles.inputError,
-            ]}
+          <TextField
+            containerStyle={styles.field}
+            invalid={Boolean(error?.fields?.email)}
             placeholder="Email"
-            placeholderTextColor={theme.colors.neutral[400]}
             value={email}
             onChangeText={(text) => {
               setEmail(text);
@@ -191,13 +196,10 @@ export default function LoginScreen({
             testID="email-input"
           />
 
-          <TextInput
-            style={[
-              styles.input,
-              error?.message.toLowerCase().includes('password') && styles.inputError,
-            ]}
+          <TextField
+            containerStyle={styles.field}
+            invalid={Boolean(error?.fields?.password)}
             placeholder="Password"
-            placeholderTextColor={theme.colors.neutral[400]}
             value={password}
             onChangeText={(text) => {
               setPassword(text);
@@ -294,19 +296,8 @@ const styles = StyleSheet.create({
     color: theme.colors.successText,
     marginTop: theme.spacing.xs,
   },
-  input: {
-    borderWidth: 1,
-    borderColor: theme.colors.neutral[300],
-    borderRadius: theme.borderRadius.sm,
-    padding: theme.spacing.lg,
+  field: {
     marginBottom: theme.spacing.lg,
-    fontSize: 16,
-    backgroundColor: theme.colors.surface,
-    color: theme.colors.neutral[800],
-  },
-  inputError: {
-    borderColor: theme.colors.error,
-    borderWidth: 1,
   },
   loginButton: {
     marginTop: theme.spacing.sm,

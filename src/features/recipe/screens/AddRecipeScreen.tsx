@@ -2,7 +2,6 @@ import React, { useState, useMemo, useEffect } from "react";
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   StyleSheet,
   ScrollView,
@@ -17,7 +16,7 @@ import * as ImagePicker from "expo-image-picker";
 import { theme } from "@styles/theme";
 import { typography } from "@styles/typography";
 import Button from "@components/ui/Button";
-import { ScreenHeader, ScreenHeaderAction } from "@components/ui";
+import { ScreenHeader, ScreenHeaderAction, TextField } from "@components/ui";
 import { uploadImage } from "@services/image";
 import { useCreateRecipe, useUpdateRecipe } from "../hooks";
 import { NutritionSection, TagInput, DraggableRecipeList } from "../components";
@@ -72,7 +71,7 @@ const TimeInput: React.FC<TimeInputProps> = ({
   return (
     <View style={styles.timeInputContainer}>
       <Text style={styles.timeLabel}>{label}</Text>
-      <TextInput
+      <TextField
         style={styles.timeInput}
         value={inputValue}
         onChangeText={handleTextChange}
@@ -431,18 +430,16 @@ export default function AddRecipeScreen({ route, navigation }: Props) {
             {/* Recipe Title */}
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Title</Text>
-              <TextInput
-                style={[styles.titleInput, errors.title && styles.inputError]}
+              <TextField
+                style={styles.titleInput}
+                error={errors.title}
                 placeholder="Recipe title"
-                placeholderTextColor={theme.colors.neutral[400]}
                 value={title}
                 onChangeText={setTitle}
                 returnKeyType="next"
                 maxLength={100}
+                showCharacterCount
               />
-              {errors.title && (
-                <Text style={styles.errorText}>{errors.title}</Text>
-              )}
             </View>
 
             {/* Time & Servings */}
@@ -507,10 +504,10 @@ export default function AddRecipeScreen({ route, navigation }: Props) {
               <Text style={styles.sectionTitle}>Notes (Optional)</Text>
               {notes.map((note, index) => (
                 <View key={index} style={styles.noteInputRow}>
-                  <TextInput
+                  <TextField
+                    containerStyle={styles.noteField}
                     style={styles.noteInput}
                     placeholder={`Note ${index + 1}`}
-                    placeholderTextColor={theme.colors.neutral[400]}
                     value={note}
                     onChangeText={(text) =>
                       setNotes((current) =>
@@ -645,22 +642,7 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.lg,
   },
   titleInput: {
-    ...typography.body,
     fontSize: 18,
-    padding: theme.spacing.lg,
-    borderWidth: 1,
-    borderColor: theme.colors.neutral[200],
-    borderRadius: theme.borderRadius.md,
-    backgroundColor: theme.colors.surface,
-    color: theme.colors.neutral[800],
-  },
-  inputError: {
-    borderColor: theme.colors.error,
-  },
-  errorText: {
-    ...typography.caption,
-    color: theme.colors.error,
-    marginTop: theme.spacing.xs,
   },
   timeSection: {
     flexDirection: "row",
@@ -677,37 +659,14 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.xs,
   },
   timeInput: {
-    ...typography.body,
     width: "100%",
     textAlign: "center",
     padding: theme.spacing.md,
-    borderWidth: 1,
-    borderColor: theme.colors.neutral[200],
-    borderRadius: theme.borderRadius.md,
-    backgroundColor: theme.colors.surface,
   },
   timeUnit: {
     ...typography.caption,
     color: theme.colors.neutral[500],
     marginTop: theme.spacing.xs,
-  },
-  dynamicInputRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: theme.spacing.md,
-    gap: theme.spacing.sm,
-  },
-  dynamicInput: {
-    ...typography.body,
-    padding: theme.spacing.md,
-    borderWidth: 1,
-    borderColor: theme.colors.neutral[200],
-    borderRadius: theme.borderRadius.md,
-    backgroundColor: theme.colors.surface,
-  },
-  instructionInput: {
-    minHeight: 60,
-    textAlignVertical: "top",
   },
   noteInputRow: {
     flexDirection: "row",
@@ -715,16 +674,12 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.md,
     gap: theme.spacing.sm,
   },
-  noteInput: {
-    ...typography.body,
+  noteField: {
     flex: 1,
+  },
+  noteInput: {
     minHeight: 72,
     padding: theme.spacing.md,
-    borderWidth: 1,
-    borderColor: theme.colors.neutral[200],
-    borderRadius: theme.borderRadius.md,
-    backgroundColor: theme.colors.surface,
-    color: theme.colors.neutral[800],
   },
   removeButton: {
     padding: theme.spacing.sm,

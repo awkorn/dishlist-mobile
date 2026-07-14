@@ -3,12 +3,12 @@ import {
   Alert,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
 import AppModal from "@components/ui/Modal";
 import Button from "@components/ui/Button";
+import { TextField } from "@components/ui";
 import {
   ReportReason,
   ReportTargetType,
@@ -164,21 +164,19 @@ export function ReportContentModal({
           })}
         </View>
 
-        <Text style={styles.detailsLabel}>Details</Text>
-        <TextInput
+        <TextField
+          containerStyle={styles.detailsField}
+          label="Details"
           style={styles.detailsInput}
           value={details}
           onChangeText={setDetails}
           placeholder={`Tell us what is wrong with this ${targetLabel}`}
-          placeholderTextColor={theme.colors.neutral[400]}
           multiline
           maxLength={1000}
           textAlignVertical="top"
+          helperText={`${selectedReason?.label || "Report"} reports are reviewed by the DishList team.`}
+          showCharacterCount
         />
-        <Text style={styles.helperText}>
-          {selectedReason?.label || "Report"} reports are reviewed by the
-          DishList team.
-        </Text>
 
         <Button
           title="Submit Report"
@@ -252,26 +250,11 @@ const styles = StyleSheet.create({
     color: theme.colors.neutral[600],
     marginTop: 2,
   },
-  detailsLabel: {
-    ...typography.subtitle,
-    color: theme.colors.textPrimary,
+  detailsField: {
     marginTop: theme.spacing.xl,
-    marginBottom: theme.spacing.sm,
   },
   detailsInput: {
     minHeight: 112,
-    borderWidth: 1,
-    borderColor: theme.colors.neutral[200],
-    borderRadius: theme.borderRadius.md,
-    padding: theme.spacing.md,
-    backgroundColor: theme.colors.surface,
-    ...typography.body,
-    color: theme.colors.textPrimary,
-  },
-  helperText: {
-    ...typography.caption,
-    color: theme.colors.neutral[500],
-    marginTop: theme.spacing.sm,
   },
   submitButton: {
     marginTop: theme.spacing.xl,

@@ -2,7 +2,6 @@ import React, { useState, useCallback } from "react";
 import {
   View,
   Text,
-  TextInput,
   StyleSheet,
   Alert,
   TouchableOpacity,
@@ -18,7 +17,7 @@ import { changePassword } from "@features/auth/services/authService";
 import { getAuthErrorMessage } from "@lib/errors";
 import { theme } from "@styles/theme";
 import { typography } from "@styles/typography";
-import { ScreenHeader, ScreenHeaderAction } from "@components/ui";
+import { ScreenHeader, ScreenHeaderAction, TextField } from "@components/ui";
 import Button from "@components/ui/Button";
 
 type Props = NativeStackScreenProps<RootStackParamList, "ChangePassword">;
@@ -51,7 +50,9 @@ export default function ChangePasswordScreen({ navigation }: Props) {
       return;
     }
     if (newPassword.length < MIN_PASSWORD_LENGTH) {
-      setError(`New password must be at least ${MIN_PASSWORD_LENGTH} characters`);
+      setError(
+        `New password must be at least ${MIN_PASSWORD_LENGTH} characters`,
+      );
       return;
     }
     if (newPassword !== confirmPassword) {
@@ -73,9 +74,11 @@ export default function ChangePasswordScreen({ navigation }: Props) {
         return;
       }
 
-      Alert.alert("Password Changed", "Your password has been updated successfully.", [
-        { text: "OK", onPress: () => navigation.goBack() },
-      ]);
+      Alert.alert(
+        "Password Changed",
+        "Your password has been updated successfully.",
+        [{ text: "OK", onPress: () => navigation.goBack() }],
+      );
     } catch (err: any) {
       setError("Something went wrong. Please try again.");
     } finally {
@@ -90,26 +93,23 @@ export default function ChangePasswordScreen({ navigation }: Props) {
     show: boolean,
     toggleShow: () => void,
     placeholder: string,
-    autoComplete: "password" | "password-new" = "password"
+    autoComplete: "password" | "password-new" = "password",
   ) => (
-    <View style={styles.fieldContainer}>
-      <Text style={styles.label}>{label}</Text>
-      <View style={styles.inputWrapper}>
-        <TextInput
-          style={styles.input}
-          value={value}
-          onChangeText={(text) => {
-            onChangeText(text);
-            setError(null);
-          }}
-          placeholder={placeholder}
-          placeholderTextColor={theme.colors.neutral[400]}
-          secureTextEntry={!show}
-          autoCapitalize="none"
-          autoCorrect={false}
-          autoComplete={autoComplete}
-          editable={!loading}
-        />
+    <TextField
+      containerStyle={styles.fieldContainer}
+      label={label}
+      value={value}
+      onChangeText={(text) => {
+        onChangeText(text);
+        setError(null);
+      }}
+      placeholder={placeholder}
+      secureTextEntry={!show}
+      autoCapitalize="none"
+      autoCorrect={false}
+      autoComplete={autoComplete}
+      editable={!loading}
+      rightElement={
         <TouchableOpacity
           style={styles.eyeButton}
           onPress={toggleShow}
@@ -123,8 +123,8 @@ export default function ChangePasswordScreen({ navigation }: Props) {
             <Eye size={20} color={theme.colors.neutral[400]} />
           )}
         </TouchableOpacity>
-      </View>
-    </View>
+      }
+    />
   );
 
   return (
@@ -165,7 +165,7 @@ export default function ChangePasswordScreen({ navigation }: Props) {
             setCurrentPassword,
             showCurrent,
             () => setShowCurrent((prev) => !prev),
-            "Enter current password"
+            "Enter current password",
           )}
 
           {renderPasswordField(
@@ -175,7 +175,7 @@ export default function ChangePasswordScreen({ navigation }: Props) {
             showNew,
             () => setShowNew((prev) => !prev),
             `At least ${MIN_PASSWORD_LENGTH} characters`,
-            "password-new"
+            "password-new",
           )}
 
           {renderPasswordField(
@@ -185,7 +185,7 @@ export default function ChangePasswordScreen({ navigation }: Props) {
             showConfirm,
             () => setShowConfirm((prev) => !prev),
             "Re-enter new password",
-            "password-new"
+            "password-new",
           )}
 
           {/* Hint */}
@@ -224,27 +224,6 @@ const styles = StyleSheet.create({
   },
   fieldContainer: {
     marginBottom: theme.spacing.lg,
-  },
-  label: {
-    ...typography.body,
-    fontWeight: "600",
-    color: theme.colors.neutral[700],
-    marginBottom: theme.spacing.sm,
-  },
-  inputWrapper: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: theme.colors.surface,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: theme.colors.neutral[200],
-  },
-  input: {
-    flex: 1,
-    ...typography.body,
-    color: theme.colors.textPrimary,
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.md,
   },
   eyeButton: {
     paddingHorizontal: theme.spacing.md,

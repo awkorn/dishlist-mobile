@@ -2,9 +2,12 @@
 // Supabase Auth Error Mapping
 // ============================================================================
 
+export type AuthFieldName = "email" | "password" | "username";
+
 interface ErrorMapping {
   message: string;
   action?: string;
+  field?: AuthFieldName;
 }
 
 const authErrorMap: Record<string, ErrorMapping> = {
@@ -15,18 +18,22 @@ const authErrorMap: Record<string, ErrorMapping> = {
   "Email not confirmed": {
     message: "Please verify your email address",
     action: "Check your inbox for a verification link",
+    field: "email",
   },
   "User already registered": {
     message: "An account with this email already exists",
     action: "Try logging in instead",
+    field: "email",
   },
   "Username already taken": {
     message: "That username is taken",
     action: "Please choose another username",
+    field: "username",
   },
   "Password should be at least 6 characters": {
     message: "Password is too weak",
     action: "Use at least 6 characters",
+    field: "password",
   },
   "Email rate limit exceeded": {
     message: "Too many attempts",
@@ -38,6 +45,7 @@ const authErrorMap: Record<string, ErrorMapping> = {
   },
   "Unable to validate email address: invalid format": {
     message: "Please enter a valid email address",
+    field: "email",
   },
   "Auth session missing": {
     message: "This password reset link is invalid or expired",
@@ -62,14 +70,17 @@ const authErrorMap: Record<string, ErrorMapping> = {
   "same password": {
     message: "Choose a different password",
     action: "Your new password must be different from your current password",
+    field: "password",
   },
   "different from the old password": {
     message: "Choose a different password",
     action: "Your new password must be different from your current password",
+    field: "password",
   },
   "weak password": {
     message: "Password is too weak",
     action: "Choose a stronger password and try again",
+    field: "password",
   },
   "Network request failed": {
     message: "Unable to connect",

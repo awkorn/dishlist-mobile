@@ -5,6 +5,7 @@ describe("getAuthErrorMessage", () => {
     expect(getAuthErrorMessage("Username already taken")).toEqual({
       message: "That username is taken",
       action: "Please choose another username",
+      field: "username",
     });
   });
 

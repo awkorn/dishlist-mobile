@@ -3,7 +3,6 @@ import {
   Alert,
   StyleSheet,
   Text,
-  TextInput,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -13,6 +12,7 @@ import { getAuthErrorMessage } from "@lib/errors";
 import { theme } from "@styles/theme";
 import { typography } from "@styles/typography";
 import Button from "@components/ui/Button";
+import { TextField } from "@components/ui";
 
 interface Feedback {
   message: string;
@@ -105,10 +105,9 @@ export default function ResetPasswordScreen() {
           </View>
         )}
 
-        <TextInput
-          style={styles.input}
+        <TextField
+          containerStyle={styles.field}
           placeholder={`New password (${VALIDATION.PASSWORD_MIN_LENGTH}+ characters)`}
-          placeholderTextColor={theme.colors.neutral[400]}
           value={password}
           onChangeText={(value) => {
             setPassword(value);
@@ -121,10 +120,9 @@ export default function ResetPasswordScreen() {
           editable={!loading}
           accessibilityLabel="New password"
         />
-        <TextInput
-          style={styles.input}
+        <TextField
+          containerStyle={styles.field}
           placeholder="Confirm new password"
-          placeholderTextColor={theme.colors.neutral[400]}
           value={confirmation}
           onChangeText={(value) => {
             setConfirmation(value);
@@ -175,15 +173,8 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: theme.spacing["3xl"],
   },
-  input: {
-    borderWidth: 1,
-    borderColor: theme.colors.neutral[300],
-    borderRadius: theme.borderRadius.sm,
-    padding: theme.spacing.lg,
+  field: {
     marginBottom: theme.spacing.lg,
-    fontSize: 16,
-    backgroundColor: theme.colors.surface,
-    color: theme.colors.neutral[800],
   },
   errorBanner: {
     backgroundColor: theme.colors.errorBg,

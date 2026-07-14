@@ -26,7 +26,7 @@ import { useAuth } from "@providers/AuthProvider/AuthContext";
 import { getAuthErrorMessage } from "@lib/errors";
 import { theme } from "@styles/theme";
 import { typography } from "@styles/typography";
-import { ScreenHeader, ScreenHeaderAction } from "@components/ui";
+import { ScreenHeader, ScreenHeaderAction, TextField } from "@components/ui";
 
 type Props = NativeStackScreenProps<RootStackParamList, "ChangeEmail">;
 
@@ -107,7 +107,9 @@ export default function ChangeEmailScreen({ navigation }: Props) {
           <Text style={styles.successTitle}>Check your inbox</Text>
           <Text style={styles.successMessage}>
             We sent a confirmation link to{"\n"}
-            <Text style={styles.successEmail}>{newEmail.trim().toLowerCase()}</Text>
+            <Text style={styles.successEmail}>
+              {newEmail.trim().toLowerCase()}
+            </Text>
           </Text>
           <Text style={styles.successHint}>
             Your email will be updated once you confirm the link. If you don't
@@ -165,32 +167,29 @@ export default function ChangeEmailScreen({ navigation }: Props) {
           )}
 
           {/* New Email Field */}
-          <View style={styles.fieldContainer}>
-            <Text style={styles.label}>New Email</Text>
-            <View style={styles.inputWrapper}>
-              <TextInput
-                ref={emailRef}
-                style={styles.input}
-                value={newEmail}
-                onChangeText={(text) => {
-                  setNewEmail(text);
-                  setError(null);
-                }}
-                placeholder="Enter new email address"
-                placeholderTextColor={theme.colors.neutral[400]}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoCorrect={false}
-                autoComplete="email"
-                editable={!loading}
-                returnKeyType="next"
-                onSubmitEditing={() => passwordRef.current?.focus()}
-              />
+          <TextField
+            containerStyle={styles.fieldContainer}
+            label="New Email"
+            ref={emailRef}
+            value={newEmail}
+            onChangeText={(text) => {
+              setNewEmail(text);
+              setError(null);
+            }}
+            placeholder="Enter new email address"
+            keyboardType="email-address"
+            autoCapitalize="none"
+            autoCorrect={false}
+            autoComplete="email"
+            editable={!loading}
+            returnKeyType="next"
+            onSubmitEditing={() => passwordRef.current?.focus()}
+            rightElement={
               <View style={styles.iconRight}>
                 <Mail size={20} color={theme.colors.neutral[400]} />
               </View>
-            </View>
-          </View>
+            }
+          />
 
           {/* Same email hint */}
           {isSameEmail && newEmail.length > 0 && (
@@ -200,33 +199,32 @@ export default function ChangeEmailScreen({ navigation }: Props) {
           )}
 
           {/* Password Field */}
-          <View style={styles.fieldContainer}>
-            <Text style={styles.label}>Confirm Password</Text>
-            <View style={styles.inputWrapper}>
-              <TextInput
-                ref={passwordRef}
-                style={styles.input}
-                value={password}
-                onChangeText={(text) => {
-                  setPassword(text);
-                  setError(null);
-                }}
-                placeholder="Enter your password"
-                placeholderTextColor={theme.colors.neutral[400]}
-                secureTextEntry={!showPassword}
-                autoCapitalize="none"
-                autoCorrect={false}
-                autoComplete="password"
-                editable={!loading}
-                returnKeyType="done"
-                onSubmitEditing={isValid ? handleSubmit : undefined}
-              />
+          <TextField
+            containerStyle={styles.fieldContainer}
+            label="Confirm Password"
+            ref={passwordRef}
+            value={password}
+            onChangeText={(text) => {
+              setPassword(text);
+              setError(null);
+            }}
+            placeholder="Enter your password"
+            secureTextEntry={!showPassword}
+            autoCapitalize="none"
+            autoCorrect={false}
+            autoComplete="password"
+            editable={!loading}
+            returnKeyType="done"
+            onSubmitEditing={isValid ? handleSubmit : undefined}
+            rightElement={
               <TouchableOpacity
                 style={styles.eyeButton}
                 onPress={() => setShowPassword((prev) => !prev)}
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                 accessibilityRole="button"
-                accessibilityLabel={showPassword ? "Hide password" : "Show password"}
+                accessibilityLabel={
+                  showPassword ? "Hide password" : "Show password"
+                }
               >
                 {showPassword ? (
                   <EyeOff size={20} color={theme.colors.neutral[400]} />
@@ -234,8 +232,8 @@ export default function ChangeEmailScreen({ navigation }: Props) {
                   <Eye size={20} color={theme.colors.neutral[400]} />
                 )}
               </TouchableOpacity>
-            </View>
-          </View>
+            }
+          />
 
           {/* Submit Button */}
           <TouchableOpacity
@@ -286,27 +284,6 @@ const styles = StyleSheet.create({
   },
   fieldContainer: {
     marginBottom: theme.spacing.lg,
-  },
-  label: {
-    ...typography.body,
-    fontWeight: "600",
-    color: theme.colors.neutral[700],
-    marginBottom: theme.spacing.sm,
-  },
-  inputWrapper: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: theme.colors.surface,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: theme.colors.neutral[200],
-  },
-  input: {
-    flex: 1,
-    ...typography.body,
-    color: theme.colors.textPrimary,
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.md,
   },
   iconRight: {
     paddingHorizontal: theme.spacing.md,

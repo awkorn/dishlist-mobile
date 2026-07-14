@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   StyleSheet,
   Alert,
@@ -15,9 +14,19 @@ import { typography } from '@styles/typography';
 import { theme } from '@styles/theme';
 import Button from '@components/ui/Button';
 import InlineError from '@components/ui/InlineError';
+import { TextField } from '@components/ui';
 
 interface SignUpScreenProps {
   navigation: any;
+}
+
+type SignUpField = 'firstName' | 'lastName' | 'username' | 'email' | 'password';
+
+interface SignUpError {
+  message: string;
+  action?: string;
+  fields?: Partial<Record<SignUpField, true>>;
+  navigateToLogin?: boolean;
 }
 
 export default function SignUpScreen({ navigation }: SignUpScreenProps) {
@@ -27,7 +36,7 @@ export default function SignUpScreen({ navigation }: SignUpScreenProps) {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<{ message: string; action?: string } | null>(null);
+  const [error, setError] = useState<SignUpError | null>(null);
   const { signUp } = useAuth();
 
   const handleSignUp = async () => {
@@ -37,6 +46,7 @@ export default function SignUpScreen({ navigation }: SignUpScreenProps) {
       setError({
         message: 'First name is required',
         action: 'Please enter your first name',
+        fields: { firstName: true },
       });
       return;
     }
@@ -45,6 +55,7 @@ export default function SignUpScreen({ navigation }: SignUpScreenProps) {
       setError({
         message: 'Last name is required',
         action: 'Please enter your last name',
+        fields: { lastName: true },
       });
       return;
     }
@@ -53,6 +64,7 @@ export default function SignUpScreen({ navigation }: SignUpScreenProps) {
       setError({
         message: 'Username is required',
         action: 'Please choose a username',
+        fields: { username: true },
       });
       return;
     }
@@ -61,6 +73,7 @@ export default function SignUpScreen({ navigation }: SignUpScreenProps) {
       setError({
         message: 'Email is required',
         action: 'Please enter your email address',
+        fields: { email: true },
       });
       return;
     }
@@ -70,6 +83,7 @@ export default function SignUpScreen({ navigation }: SignUpScreenProps) {
       setError({
         message: 'Invalid email address',
         action: 'Please enter a valid email',
+        fields: { email: true },
       });
       return;
     }
@@ -78,6 +92,7 @@ export default function SignUpScreen({ navigation }: SignUpScreenProps) {
       setError({
         message: 'Password is required',
         action: 'Please create a password',
+        fields: { password: true },
       });
       return;
     }
@@ -86,6 +101,7 @@ export default function SignUpScreen({ navigation }: SignUpScreenProps) {
       setError({
         message: 'Password is too short',
         action: `Use at least ${VALIDATION.PASSWORD_MIN_LENGTH} characters`,
+        fields: { password: true },
       });
       return;
     }
@@ -101,7 +117,16 @@ export default function SignUpScreen({ navigation }: SignUpScreenProps) {
 
       if (result.error) {
         const errorInfo = getAuthErrorMessage(result.error);
-        setError(errorInfo);
+        const fields = errorInfo.field
+          ? { [errorInfo.field]: true }
+          : undefined;
+        setError({
+          message: errorInfo.message,
+          action: errorInfo.action,
+          fields,
+          navigateToLogin:
+            errorInfo.message === 'An account with this email already exists',
+        });
       } else if (result.requiresEmailConfirmation) {
         Alert.alert(
           "Check your email",
@@ -132,12 +157,10 @@ export default function SignUpScreen({ navigation }: SignUpScreenProps) {
           <InlineError
             message={error.message}
             action={
-              error.message.includes('account with this email')
-                ? 'Go to Login'
-                : undefined
+              error.navigateToLogin ? 'Go to Login' : error.action
             }
             onActionPress={
-              error.message.includes('account with this email')
+              error.navigateToLogin
                 ? () => navigation.navigate('Login')
                 : undefined
             }
@@ -145,12 +168,11 @@ export default function SignUpScreen({ navigation }: SignUpScreenProps) {
         )}
 
         <View style={styles.form}>
-          <TextInput
-            style={[
-              styles.input,
-              error?.message.toLowerCase().includes('first name') && styles.inputError,
-            ]}
+          <TextField
+            containerStyle={styles.field}
+            invalid={Boolean(error?.fields?.firstName)}
             placeholder="First Name"
+            placeholderTextColor={theme.colors.neutral[400]}
             value={firstName}
             onChangeText={(text) => {
               setFirstName(text);
@@ -161,12 +183,11 @@ export default function SignUpScreen({ navigation }: SignUpScreenProps) {
             testID="firstName-input"
           />
 
-          <TextInput
-            style={[
-              styles.input,
-              error?.message.toLowerCase().includes('last name') && styles.inputError,
-            ]}
+          <TextField
+            containerStyle={styles.field}
+            invalid={Boolean(error?.fields?.lastName)}
             placeholder="Last Name"
+            placeholderTextColor={theme.colors.neutral[400]}
             value={lastName}
             onChangeText={(text) => {
               setLastName(text);
@@ -177,12 +198,11 @@ export default function SignUpScreen({ navigation }: SignUpScreenProps) {
             testID="lastName-input"
           />
 
-          <TextInput
-            style={[
-              styles.input,
-              error?.message.toLowerCase().includes('username') && styles.inputError,
-            ]}
+          <TextField
+            containerStyle={styles.field}
+            invalid={Boolean(error?.fields?.username)}
             placeholder="Username"
+            placeholderTextColor={theme.colors.neutral[400]}
             value={username}
             onChangeText={(text) => {
               setUsername(text);
@@ -194,12 +214,11 @@ export default function SignUpScreen({ navigation }: SignUpScreenProps) {
             testID="username-input"
           />
 
-          <TextInput
-            style={[
-              styles.input,
-              error?.message.toLowerCase().includes('email') && styles.inputError,
-            ]}
+          <TextField
+            containerStyle={styles.field}
+            invalid={Boolean(error?.fields?.email)}
             placeholder="Email"
+            placeholderTextColor={theme.colors.neutral[400]}
             value={email}
             onChangeText={(text) => {
               setEmail(text);
@@ -213,12 +232,11 @@ export default function SignUpScreen({ navigation }: SignUpScreenProps) {
             testID="email-input"
           />
 
-          <TextInput
-            style={[
-              styles.input,
-              error?.message.toLowerCase().includes('password') && styles.inputError,
-            ]}
+          <TextField
+            containerStyle={styles.field}
+            invalid={Boolean(error?.fields?.password)}
             placeholder={`Password (min ${VALIDATION.PASSWORD_MIN_LENGTH} characters)`}
+            placeholderTextColor={theme.colors.neutral[400]}
             value={password}
             onChangeText={(text) => {
               setPassword(text);
@@ -275,19 +293,8 @@ const styles = StyleSheet.create({
   form: {
     marginBottom: theme.spacing['3xl'],
   },
-  input: {
-    borderWidth: 1,
-    borderColor: theme.colors.neutral[300],
-    borderRadius: theme.borderRadius.sm,
-    padding: theme.spacing.lg,
+  field: {
     marginBottom: theme.spacing.lg,
-    fontSize: 16,
-    backgroundColor: theme.colors.surface,
-    color: theme.colors.neutral[800],
-  },
-  inputError: {
-    borderColor: theme.colors.error,
-    borderWidth: 1,
   },
   signUpButton: {
     marginTop: theme.spacing.sm,

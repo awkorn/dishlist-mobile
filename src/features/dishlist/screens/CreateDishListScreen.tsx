@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   StyleSheet,
   Alert,
@@ -15,6 +14,7 @@ import { X, Globe, Lock } from "lucide-react-native";
 import { typography } from "@styles/typography";
 import { theme } from "@styles/theme";
 import Button from "@components/ui/Button";
+import { TextField } from "@components/ui";
 import { useCreateDishList, useUpdateDishList } from "../hooks";
 
 interface CreateDishListScreenProps {
@@ -155,11 +155,11 @@ export default function CreateDishListScreen({
         >
           {/* Title Input */}
           <View style={styles.inputSection}>
-            <Text style={styles.label}>Title *</Text>
-            <TextInput
-              style={[styles.input, titleError ? styles.inputError : null]}
+            <TextField
+              label="Title"
+              required
+              error={titleError || undefined}
               placeholder="Enter DishList title"
-              placeholderTextColor={theme.colors.neutral[400]}
               value={title}
               onChangeText={handleTitleChange}
               onBlur={() => validateTitle(title)}
@@ -167,11 +167,8 @@ export default function CreateDishListScreen({
               returnKeyType="next"
               autoFocus
               editable={!isLoading}
+              showCharacterCount
             />
-            {titleError ? (
-              <Text style={styles.errorText}>{titleError}</Text>
-            ) : null}
-            <Text style={styles.characterCount}>{title.length}/50</Text>
           </View>
 
           {/* Visibility Selector */}
@@ -309,29 +306,6 @@ const styles = StyleSheet.create({
     ...typography.subtitle,
     color: theme.colors.neutral[700],
     marginBottom: theme.spacing.sm,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: theme.colors.neutral[200],
-    borderRadius: theme.borderRadius.md,
-    padding: theme.spacing.lg,
-    fontSize: 16,
-    backgroundColor: theme.colors.surface,
-    color: theme.colors.neutral[800],
-  },
-  inputError: {
-    borderColor: theme.colors.error,
-  },
-  errorText: {
-    ...typography.caption,
-    color: theme.colors.error,
-    marginTop: theme.spacing.xs,
-  },
-  characterCount: {
-    ...typography.caption,
-    color: theme.colors.neutral[500],
-    textAlign: "right",
-    marginTop: theme.spacing.xs,
   },
   visibilityOptions: {
     gap: theme.spacing.md,

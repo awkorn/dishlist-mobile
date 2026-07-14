@@ -5,7 +5,6 @@ import {
   StyleSheet,
   Modal,
   TouchableOpacity,
-  TextInput,
   ScrollView,
   KeyboardAvoidingView,
   Platform,
@@ -18,6 +17,7 @@ import { typography } from "@styles/typography";
 import { useEditProfile } from "../hooks/useEditProfile";
 import type { UserProfile } from "../types";
 import Avatar from "@components/ui/Avatar";
+import { TextField } from "@components/ui";
 
 interface EditProfileSheetProps {
   visible: boolean;
@@ -135,71 +135,56 @@ export function EditProfileSheet({
             </View>
 
             {/* First Name */}
-            <View style={styles.inputSection}>
-              <Text style={styles.label}>
-                First Name <Text style={styles.required}>*</Text>
-              </Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Enter first name"
-                placeholderTextColor={theme.colors.neutral[400]}
-                value={formState.firstName}
-                onChangeText={setFirstName}
-                maxLength={50}
-                editable={!isLoading}
-              />
-            </View>
+            <TextField
+              containerStyle={styles.inputSection}
+              label="First Name"
+              required
+              placeholder="Enter first name"
+              value={formState.firstName}
+              onChangeText={setFirstName}
+              maxLength={50}
+              editable={!isLoading}
+            />
 
             {/* Last Name */}
-            <View style={styles.inputSection}>
-              <Text style={styles.label}>Last Name</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Enter last name"
-                placeholderTextColor={theme.colors.neutral[400]}
-                value={formState.lastName}
-                onChangeText={setLastName}
-                maxLength={50}
-                editable={!isLoading}
-              />
-            </View>
+            <TextField
+              containerStyle={styles.inputSection}
+              label="Last Name"
+              placeholder="Enter last name"
+              value={formState.lastName}
+              onChangeText={setLastName}
+              maxLength={50}
+              editable={!isLoading}
+            />
 
             {/* Username */}
-            <View style={styles.inputSection}>
-              <Text style={styles.label}>
-                Username <Text style={styles.required}>*</Text>
-              </Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Enter username"
-                placeholderTextColor={theme.colors.neutral[400]}
-                value={formState.username}
-                onChangeText={setUsername}
-                maxLength={30}
-                autoCapitalize="none"
-                editable={!isLoading}
-              />
-            </View>
+            <TextField
+              containerStyle={styles.inputSection}
+              label="Username"
+              required
+              placeholder="Enter username"
+              value={formState.username}
+              onChangeText={setUsername}
+              maxLength={30}
+              autoCapitalize="none"
+              editable={!isLoading}
+            />
 
             {/* Bio */}
-            <View style={styles.inputSection}>
-              <Text style={styles.label}>Bio</Text>
-              <TextInput
-                style={[styles.input, styles.bioInput]}
-                placeholder="Tell us about yourself"
-                placeholderTextColor={theme.colors.neutral[400]}
-                value={formState.bio}
-                onChangeText={setBio}
-                multiline
-                numberOfLines={4}
-                maxLength={160}
-                textAlignVertical="top"
-                editable={!isLoading}
-              />
-              <Text style={styles.characterCount}>
-                {formState.bio.length}/160
-              </Text>
-            </View>
+            <TextField
+              containerStyle={styles.inputSection}
+              label="Bio"
+              style={styles.bioInput}
+              placeholder="Tell us about yourself"
+              value={formState.bio}
+              onChangeText={setBio}
+              multiline
+              numberOfLines={4}
+              maxLength={160}
+              textAlignVertical="top"
+              editable={!isLoading}
+              showCharacterCount
+            />
           </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>
@@ -281,33 +266,8 @@ const styles = StyleSheet.create({
   inputSection: {
     marginBottom: 20,
   },
-  label: {
-    ...typography.body,
-    fontWeight: "600",
-    color: theme.colors.neutral[700],
-    marginBottom: 8,
-  },
-  required: {
-    color: theme.colors.error,
-  },
-  input: {
-    ...typography.body,
-    backgroundColor: theme.colors.surface,
-    borderWidth: 1,
-    borderColor: theme.colors.neutral[300],
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    color: theme.colors.neutral[900],
-  },
   bioInput: {
     height: 100,
     paddingTop: 12,
-  },
-  characterCount: {
-    ...typography.body,
-    color: theme.colors.neutral[500],
-    textAlign: "right",
-    marginTop: 4,
   },
 });

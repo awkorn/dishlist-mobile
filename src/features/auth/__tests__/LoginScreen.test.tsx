@@ -1,8 +1,10 @@
 import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import { NavigationContainer } from '@react-navigation/native';
+import { StyleSheet } from 'react-native';
 import LoginScreen from '../screens/LoginScreen';
 import type { LoginScreenProps } from '@app-types/navigation';
+import { theme } from '@styles/theme';
 
 // Mock the auth context
 const mockSignIn = jest.fn();
@@ -51,12 +53,20 @@ describe('LoginScreen', () => {
   });
 
   it('shows error when email is empty', async () => {
-    const { getByText } = renderLoginScreen();
+    const { getByTestId, getByText } = renderLoginScreen();
 
     fireEvent.press(getByText('Login'));
 
     await waitFor(() => {
       expect(getByText('Email is required')).toBeTruthy();
+      expect(
+        StyleSheet.flatten(getByTestId('email-input-container').props.style)
+          .borderColor
+      ).toBe(theme.colors.error);
+      expect(
+        StyleSheet.flatten(getByTestId('password-input-container').props.style)
+          .borderColor
+      ).toBe(theme.colors.neutral[200]);
     });
   });
 
