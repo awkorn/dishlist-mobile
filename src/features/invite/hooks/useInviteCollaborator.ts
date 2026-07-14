@@ -29,6 +29,7 @@ export function useInviteCollaborator({
   const {
     data: mutuals = [],
     isLoading: isLoadingMutuals,
+    isError: isMutualsError,
     refetch: refetchMutuals,
   } = useQuery({
     queryKey: queryKeys.users.mutuals(searchQuery),
@@ -169,6 +170,7 @@ export function useInviteCollaborator({
 
     // Loading states
     isLoadingMutuals,
+    isMutualsError,
     isSending: inviteMutation.isPending,
     isGeneratingLink: activeExternalShareMethod !== null,
     isSharingViaMessage: activeExternalShareMethod === 'message',

@@ -3,14 +3,11 @@ import {
   View,
   Text,
   StyleSheet,
-  Modal,
   TouchableOpacity,
   FlatList,
   ActivityIndicator,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import {
-  X,
   Crown,
   Clock,
   Trash2,
@@ -19,7 +16,8 @@ import {
 import { theme } from '@styles/theme';
 import { typography } from '@styles/typography';
 import Avatar from '@components/ui/Avatar';
-import { ErrorState, ScreenHeader, ScreenHeaderAction } from '@components/ui';
+import { ErrorState } from '@components/ui';
+import Modal from '@components/ui/Modal';
 import { useCollaborators } from '../hooks/useCollaborators';
 import type { Collaborator, PendingInvite } from '../types';
 
@@ -260,28 +258,8 @@ export function CollaboratorsModal({
   }, []);
 
   return (
-    <Modal
-      visible={visible}
-      animationType="slide"
-      presentationStyle="pageSheet"
-      onRequestClose={onClose}
-    >
-      <SafeAreaView style={styles.container} edges={['top']}>
-        <ScreenHeader
-          title={dishListTitle}
-          style={styles.header}
-          leftSlot={
-            <ScreenHeaderAction
-              onPress={onClose}
-              accessibilityRole="button"
-              accessibilityLabel="Close"
-            >
-              <X size={24} color={theme.colors.neutral[700]} />
-            </ScreenHeaderAction>
-          }
-        />
-
-        {/* Content */}
+    <Modal visible={visible} onClose={onClose} title={dishListTitle}>
+      <View style={styles.container}>
         {isLoading ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color={theme.colors.primary[500]} />
@@ -302,7 +280,7 @@ export function CollaboratorsModal({
             showsVerticalScrollIndicator={false}
           />
         )}
-      </SafeAreaView>
+      </View>
     </Modal>
   );
 }
@@ -310,10 +288,6 @@ export function CollaboratorsModal({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.surface,
-  },
-  header: {
-    paddingHorizontal: theme.spacing.lg,
     backgroundColor: theme.colors.surface,
   },
   loadingContainer: {

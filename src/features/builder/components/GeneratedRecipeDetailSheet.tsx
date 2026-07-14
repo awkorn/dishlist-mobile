@@ -5,13 +5,10 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Modal,
-  Dimensions,
 } from "react-native";
-import { X } from "lucide-react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { theme } from "@styles/theme";
 import { typography } from "@styles/typography";
+import Modal from "@components/ui/Modal";
 import type { GeneratedRecipe } from "../types";
 
 interface GeneratedRecipeDetailSheetProps {
@@ -21,16 +18,12 @@ interface GeneratedRecipeDetailSheetProps {
   onSave: (recipe: GeneratedRecipe) => void;
 }
 
-const { height: SCREEN_HEIGHT } = Dimensions.get("window");
-
 export function GeneratedRecipeDetailSheet({
   recipe,
   visible,
   onClose,
   onSave,
 }: GeneratedRecipeDetailSheetProps) {
-  const insets = useSafeAreaInsets();
-
   if (!recipe) return null;
 
   const totalTime = (recipe.prepTime || 0) + (recipe.cookTime || 0);
@@ -38,24 +31,8 @@ export function GeneratedRecipeDetailSheet({
   const itemInstructions = recipe.instructions.filter((i) => i.type === "item");
 
   return (
-    <Modal
-      visible={visible}
-      animationType="slide"
-      presentationStyle="pageSheet"
-      onRequestClose={onClose}
-    >
-      <View style={[styles.container, { paddingBottom: insets.bottom }]}>
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <X size={24} color={theme.colors.neutral[700]} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle} numberOfLines={1}>
-            {recipe.title}
-          </Text>
-          <View style={styles.headerSpacer} />
-        </View>
-
+    <Modal visible={visible} onClose={onClose} title={recipe.title}>
+      <View style={styles.container}>
         {/* Scrollable Content */}
         <ScrollView
           style={styles.scrollView}
@@ -159,27 +136,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: theme.spacing.xl,
-    paddingVertical: theme.spacing.md,
-    backgroundColor: theme.colors.surface,
-  },
-  closeButton: {
-    padding: 4,
-  },
-  headerTitle: {
-    ...typography.editorialNavigationTitle,
-    color: theme.colors.textPrimary,
-    flex: 1,
-    textAlign: "center",
-    marginHorizontal: theme.spacing.md,
-  },
-  headerSpacer: {
-    width: 32,
   },
   scrollView: {
     flex: 1,

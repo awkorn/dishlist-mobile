@@ -3,14 +3,12 @@ import {
   View,
   Text,
   StyleSheet,
-  Modal,
   TouchableOpacity,
   ScrollView,
   KeyboardAvoidingView,
   Platform,
   Keyboard,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { Camera } from "lucide-react-native";
 import { theme } from "@styles/theme";
 import { typography } from "@styles/typography";
@@ -18,6 +16,7 @@ import { useEditProfile } from "../hooks/useEditProfile";
 import type { UserProfile } from "../types";
 import Avatar from "@components/ui/Avatar";
 import { TextField } from "@components/ui";
+import Modal from "@components/ui/Modal";
 
 interface EditProfileSheetProps {
   visible: boolean;
@@ -67,42 +66,33 @@ export function EditProfileSheet({
   return (
     <Modal
       visible={visible}
-      animationType="slide"
-      presentationStyle="pageSheet"
-      onRequestClose={handleCancel}
+      onClose={handleCancel}
+      title="Edit Profile"
+      rightAction={
+        <TouchableOpacity
+          onPress={handleSubmit}
+          disabled={isLoading}
+          style={styles.headerAction}
+          accessibilityRole="button"
+          accessibilityLabel="Save profile"
+        >
+          <Text
+            style={[
+              styles.headerSaveText,
+              isLoading && styles.headerActionDisabled,
+            ]}
+          >
+            {isLoading ? "Saving" : "Save"}
+          </Text>
+        </TouchableOpacity>
+      }
     >
-      <SafeAreaView style={styles.container} edges={["top", "bottom"]}>
+      <View style={styles.container}>
         <KeyboardAvoidingView
           style={styles.keyboardView}
           behavior={Platform.OS === "ios" ? "padding" : "height"}
           keyboardVerticalOffset={Platform.OS === "ios" ? 12 : 0}
         >
-          {/* Header */}
-          <View style={styles.header}>
-            <TouchableOpacity
-              onPress={handleCancel}
-              disabled={isLoading}
-              style={styles.headerAction}
-            >
-              <Text style={styles.headerCancelText}>Cancel</Text>
-            </TouchableOpacity>
-            <Text style={styles.headerTitle}>Edit Profile</Text>
-            <TouchableOpacity
-              onPress={handleSubmit}
-              disabled={isLoading}
-              style={styles.headerAction}
-            >
-              <Text
-                style={[
-                  styles.headerSaveText,
-                  isLoading && styles.headerActionDisabled,
-                ]}
-              >
-                {isLoading ? "Saving" : "Save"}
-              </Text>
-            </TouchableOpacity>
-          </View>
-
           <ScrollView
             style={styles.content}
             contentContainerStyle={styles.contentContainer}
@@ -187,7 +177,7 @@ export function EditProfileSheet({
             />
           </ScrollView>
         </KeyboardAvoidingView>
-      </SafeAreaView>
+      </View>
     </Modal>
   );
 }
@@ -200,27 +190,9 @@ const styles = StyleSheet.create({
   keyboardView: {
     flex: 1,
   },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.neutral[200],
-  },
-  headerTitle: {
-    ...typography.editorialNavigationTitle,
-    color: theme.colors.neutral[900],
-  },
   headerAction: {
-    minWidth: 64,
     minHeight: 44,
     justifyContent: "center",
-  },
-  headerCancelText: {
-    ...typography.body,
-    color: theme.colors.neutral[700],
   },
   headerSaveText: {
     ...typography.body,

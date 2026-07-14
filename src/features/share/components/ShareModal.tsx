@@ -1,40 +1,11 @@
 import React, { useCallback } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  Modal,
-  TouchableOpacity,
-  TextInput,
-  FlatList,
-  ActivityIndicator,
-  Dimensions,
-  KeyboardAvoidingView,
-  Platform,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import {
-  Search,
-  User as UserIcon,
-  MessageCircle,
-  Link2,
-  Check,
-} from "lucide-react-native";
+import { StyleSheet, Text, View } from "react-native";
+import { User as UserIcon } from "lucide-react-native";
+import { UserPickerSheet } from "@components/ui";
 import { theme } from "@styles/theme";
 import { typography } from "@styles/typography";
-import Button from "@components/ui/Button";
-import Avatar from "@components/ui/Avatar";
 import { useShareModal } from "../hooks/useShareModal";
 import type { ShareModalProps } from "../types";
-import type { MutualUser } from "../types";
-
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
-const AVATAR_SIZE = 64;
-const GRID_COLUMNS = 3;
-const GRID_GAP = theme.spacing.lg;
-const ITEM_WIDTH =
-  (SCREEN_WIDTH - theme.spacing.xl * 2 - GRID_GAP * (GRID_COLUMNS - 1)) /
-  GRID_COLUMNS;
 
 export function ShareModal({
   visible,
@@ -51,13 +22,14 @@ export function ShareModal({
     isLoadingMutuals,
     isMutualsError,
     isSending,
+    isSharingViaMessage,
+    isCopyingLink,
     toggleUserSelection,
     clearSelection,
     handleSendToSelected,
     handleShareViaMessage,
     handleCopyLink,
     refetchMutuals,
-    hasSelection,
     selectionCount,
     supportsDirectShare,
   } = useShareModal({
@@ -72,323 +44,50 @@ export function ShareModal({
     onClose();
   }, [clearSelection, onClose]);
 
-  const renderUserItem = useCallback(
-    ({ item }: { item: MutualUser }) => {
-      const isSelected = selectedUserIds.has(item.uid);
-      const displayName = item.firstName
-        ? `${item.firstName} ${item.lastName || ""}`.trim()
-        : item.username || "User";
-
-      return (
-        <TouchableOpacity
-          style={styles.userItem}
-          onPress={() => toggleUserSelection(item.uid)}
-          activeOpacity={0.7}
-          accessibilityRole="checkbox"
-          accessibilityState={{ checked: isSelected }}
-          accessibilityLabel={displayName}
-        >
-          <View style={styles.avatarContainer}>
-            <Avatar
-              avatarUrl={item.avatarUrl}
-              firstName={item.firstName}
-              lastName={item.lastName}
-              username={item.username}
-              size={AVATAR_SIZE}
-            />
-
-            {/* Selection checkmark overlay */}
-            {isSelected && (
-              <View style={styles.checkOverlay}>
-                <Check
-                  size={20}
-                  color={theme.colors.onPrimary}
-                  strokeWidth={3}
-                />
-              </View>
-            )}
-          </View>
-
-          <Text
-            style={[styles.userName, isSelected && styles.userNameSelected]}
-            numberOfLines={1}
-          >
-            {displayName}
-          </Text>
-        </TouchableOpacity>
-      );
-    },
-    [selectedUserIds, toggleUserSelection]
-  );
-
-  const renderEmptyState = useCallback(() => {
-    if (isLoadingMutuals) {
-      return (
-        <View style={styles.emptyContainer}>
-          <ActivityIndicator size="large" color={theme.colors.primary[500]} />
-          <Text style={styles.emptyText}>Loading...</Text>
-        </View>
-      );
-    }
-
-    if (isMutualsError) {
-      return (
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyTitle}>Couldn't Load People</Text>
-          <Text style={styles.emptyText}>
-            Something went wrong. Check your connection and try again.
-          </Text>
-          <Button
-            title="Try Again"
-            onPress={() => refetchMutuals()}
-            variant="secondary"
-            style={styles.retryButton}
-          />
-        </View>
-      );
-    }
-
-    if (searchQuery && filteredMutuals.length === 0) {
-      return (
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyTitle}>No Results</Text>
-          <Text style={styles.emptyText}>
-            No mutuals found matching "{searchQuery}"
-          </Text>
-        </View>
-      );
-    }
-
-    if (filteredMutuals.length === 0) {
-      return (
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyTitle}>No Mutuals Yet</Text>
-          <Text style={styles.emptyText}>
-            Follow users who follow you back to share directly with them
-          </Text>
-        </View>
-      );
-    }
-
-    return null;
-  }, [
-    isLoadingMutuals,
-    isMutualsError,
-    refetchMutuals,
-    searchQuery,
-    filteredMutuals.length,
-  ]);
-
   return (
-    <Modal
+    <UserPickerSheet
       visible={visible}
-      animationType="slide"
-      presentationStyle="pageSheet"
-      onRequestClose={handleClose}
-    >
-      <SafeAreaView style={styles.container} edges={["top"]}>
-        <KeyboardAvoidingView
-          style={styles.keyboardView}
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-        >
-          {/* Header Handle */}
-          <View style={styles.handleContainer}>
-            <View style={styles.handle} />
-          </View>
-
-          {supportsDirectShare ? (
-            <>
-              {/* Search Bar */}
-              <View style={styles.searchContainer}>
-                <Search size={20} color={theme.colors.neutral[400]} />
-                <TextInput
-                  style={styles.searchInput}
-                  placeholder="Search"
-                  placeholderTextColor={theme.colors.neutral[400]}
-                  value={searchQuery}
-                  onChangeText={setSearchQuery}
-                  returnKeyType="search"
-                  autoCorrect={false}
-                  autoCapitalize="none"
-                />
-              </View>
-
-              {/* Mutuals Grid */}
-              <FlatList
-                data={filteredMutuals}
-                renderItem={renderUserItem}
-                keyExtractor={(item) => item.uid}
-                numColumns={GRID_COLUMNS}
-                columnWrapperStyle={styles.gridRow}
-                contentContainerStyle={styles.gridContent}
-                showsVerticalScrollIndicator={false}
-                ListEmptyComponent={renderEmptyState}
-                keyboardShouldPersistTaps="handled"
-              />
-            </>
-          ) : (
-            <View style={styles.linkOnlyContent}>
-              <View style={styles.profileShareIcon}>
-                <UserIcon size={32} color={theme.colors.neutral[500]} />
-              </View>
-              <Text style={styles.linkOnlyTitle}>Share Profile</Text>
-              <Text style={styles.linkOnlySubtitle} numberOfLines={2}>
-                {contentTitle}
-              </Text>
+      onClose={handleClose}
+      title="Share"
+      actionLabel={`Send to ${selectionCount} ${
+        selectionCount === 1 ? "person" : "people"
+      }`}
+      onAction={handleSendToSelected}
+      users={filteredMutuals}
+      selectedUserIds={selectedUserIds}
+      onToggleUser={toggleUserSelection}
+      searchQuery={searchQuery}
+      onSearchQueryChange={setSearchQuery}
+      onShareViaMessage={handleShareViaMessage}
+      onCopyLink={handleCopyLink}
+      searchPlaceholder="Search mutuals"
+      isLoadingUsers={isLoadingMutuals}
+      isUsersError={isMutualsError}
+      onRetryUsers={() => refetchMutuals()}
+      isActionLoading={isSending}
+      isSharingViaMessage={isSharingViaMessage}
+      isCopyingLink={isCopyingLink}
+      emptyTitle="No Mutuals Yet"
+      emptyMessage="Follow users who follow you back to share directly with them"
+      linkOnlyContent={
+        supportsDirectShare ? undefined : (
+          <View style={styles.profileContent}>
+            <View style={styles.profileShareIcon}>
+              <UserIcon size={32} color={theme.colors.neutral[500]} />
             </View>
-          )}
-
-          {/* Bottom Action Buttons */}
-          <View style={styles.bottomActions}>
-            {/* External Share Options */}
-            <View style={styles.externalShareRow}>
-              <TouchableOpacity
-                style={styles.externalShareButton}
-                onPress={handleShareViaMessage}
-                accessibilityRole="button"
-                accessibilityLabel="Share via message"
-                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-              >
-                <View style={[styles.externalShareIcon, styles.messageIcon]}>
-                  <MessageCircle
-                    size={24}
-                    color={theme.colors.onPrimary}
-                    fill={theme.colors.onPrimary}
-                  />
-                </View>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.externalShareButton}
-                onPress={handleCopyLink}
-                accessibilityRole="button"
-                accessibilityLabel="Copy link"
-                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-              >
-                <View style={[styles.externalShareIcon, styles.linkIcon]}>
-                  <Link2 size={24} color={theme.colors.neutral[600]} />
-                </View>
-              </TouchableOpacity>
-            </View>
-
-            {/* Send Button - Only show when users are selected */}
-            {supportsDirectShare && hasSelection && (
-              <Button
-                title={`Send to ${selectionCount} ${
-                  selectionCount === 1 ? "person" : "people"
-                }`}
-                onPress={handleSendToSelected}
-                loading={isSending}
-                disabled={isSending}
-                style={styles.sendButton}
-              />
-            )}
+            <Text style={styles.profileTitle}>Share Profile</Text>
+            <Text style={styles.profileSubtitle} numberOfLines={2}>
+              {contentTitle}
+            </Text>
           </View>
-        </KeyboardAvoidingView>
-      </SafeAreaView>
-    </Modal>
+        )
+      }
+    />
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: theme.colors.surface,
-  },
-  keyboardView: {
-    flex: 1,
-  },
-  handleContainer: {
-    alignItems: "center",
-    paddingTop: theme.spacing.lg,
-    paddingBottom: theme.spacing.lg,
-    backgroundColor: theme.colors.surface,
-  },
-  handle: {
-    width: 36,
-    height: 4,
-    backgroundColor: theme.colors.neutral[300],
-    borderRadius: 2,
-  },
-  searchContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: theme.colors.neutral[100],
-    borderRadius: theme.borderRadius.md,
-    paddingHorizontal: theme.spacing.md,
-    marginHorizontal: theme.spacing.xl,
-    marginVertical: theme.spacing.sm,
-    height: 40,
-  },
-  searchInput: {
-    flex: 1,
-    ...typography.body,
-    color: theme.colors.textPrimary,
-    marginLeft: theme.spacing.sm,
-    paddingVertical: 0,
-  },
-  gridContent: {
-    paddingHorizontal: theme.spacing.xl,
-    paddingTop: theme.spacing.md,
-    paddingBottom: theme.spacing.xl,
-  },
-  gridRow: {
-    justifyContent: "flex-start",
-    gap: GRID_GAP,
-    marginBottom: theme.spacing.lg,
-  },
-  userItem: {
-    width: ITEM_WIDTH,
-    alignItems: "center",
-  },
-  avatarContainer: {
-    position: "relative",
-    marginBottom: theme.spacing.sm,
-  },
-  checkOverlay: {
-    position: "absolute",
-    bottom: 0,
-    right: 0,
-    width: 20,
-    height: 20,
-    borderRadius: 12,
-    backgroundColor: theme.colors.primary[500],
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  userName: {
-    ...typography.caption,
-    color: theme.colors.textPrimary,
-    textAlign: "center",
-    width: "100%",
-  },
-  userNameSelected: {
-    fontWeight: "600",
-    color: theme.colors.primary[600],
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    marginTop: theme.spacing["4xl"],
-    paddingVertical: theme.spacing["4xl"],
-    paddingHorizontal: theme.spacing.xl,
-  },
-  emptyTitle: {
-    ...typography.subtitle,
-    color: theme.colors.neutral[800],
-    marginBottom: theme.spacing.sm,
-    textAlign: "center",
-  },
-  emptyText: {
-    ...typography.body,
-    color: theme.colors.neutral[500],
-    textAlign: "center",
-  },
-  retryButton: {
-    marginTop: theme.spacing.lg,
-  },
-  linkOnlyContent: {
+  profileContent: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
@@ -397,55 +96,22 @@ const styles = StyleSheet.create({
   profileShareIcon: {
     width: 72,
     height: 72,
-    borderRadius: 36,
-    backgroundColor: theme.colors.neutral[100],
     alignItems: "center",
     justifyContent: "center",
     marginBottom: theme.spacing.lg,
+    borderRadius: 36,
+    backgroundColor: theme.colors.neutral[100],
   },
-  linkOnlyTitle: {
+  profileTitle: {
     ...typography.heading3,
+    marginBottom: theme.spacing.xs,
     color: theme.colors.neutral[900],
     textAlign: "center",
-    marginBottom: theme.spacing.xs,
   },
-  linkOnlySubtitle: {
+  profileSubtitle: {
     ...typography.body,
     color: theme.colors.neutral[500],
     textAlign: "center",
-  },
-  bottomActions: {
-    paddingHorizontal: theme.spacing.xl,
-    paddingVertical: theme.spacing.lg,
-    backgroundColor: theme.colors.surface,
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.neutral[200],
-  },
-  externalShareRow: {
-    flexDirection: "row",
-    gap: theme.spacing.md,
-    marginBottom: theme.spacing.md,
-  },
-  externalShareButton: {
-    padding: theme.spacing.xs,
-  },
-  externalShareIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  messageIcon: {
-    backgroundColor: "#34C759",
-  },
-  linkIcon: {
-    backgroundColor: theme.colors.neutral[200],
-  },
-  sendButton: {
-    height: 48,
-    marginTop: theme.spacing.sm,
-    marginBottom: theme.spacing.xl,
   },
 });
 

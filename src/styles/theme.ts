@@ -22,6 +22,7 @@ export const theme = {
       900: "#111827",
     },
     success: "#10B981",
+    message: "#34C759",
     successBg: "#ECFDF5",
     successText: "#065F46",
     error: "#EF4444",

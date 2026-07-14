@@ -6,3 +6,4 @@ export { ScreenHeader, ScreenHeaderAction } from "./ScreenHeader";
 export { ErrorState } from "./ErrorState";
 export { EmptyState } from "./EmptyState";
 export { TextField } from "./TextField";
+export { UserPickerSheet, type UserPickerUser } from "./UserPickerSheet";

@@ -2,7 +2,6 @@ import React, { useCallback } from 'react';
 import {
   View,
   Text,
-  Modal,
   StyleSheet,
   TouchableOpacity,
   Image,
@@ -10,11 +9,11 @@ import {
   ActivityIndicator,
   Dimensions,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { X, Camera, ImageIcon, Plus, Trash2 } from 'lucide-react-native';
+import { X, Camera, ImageIcon, Plus } from 'lucide-react-native';
 import { theme } from '@styles/theme';
 import { typography } from '@styles/typography';
 import Button from '@components/ui/Button';
+import Modal from '@components/ui/Modal';
 import { useImportRecipe } from '../hooks/useImportRecipe';
 import type { ImportRecipeResponse } from '../types';
 
@@ -63,26 +62,11 @@ export default function ImportRecipeModal({
   return (
     <Modal
       visible={visible}
-      animationType="slide"
-      presentationStyle="pageSheet"
-      onRequestClose={handleClose}
+      onClose={handleClose}
+      title="Import Recipe"
+      closeButtonDisabled={isProcessing}
     >
-      <SafeAreaView style={styles.container}>
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity
-            onPress={handleClose}
-            disabled={isProcessing}
-            style={styles.closeButton}
-            accessibilityRole="button"
-            accessibilityLabel="Close"
-          >
-            <X size={24} color={theme.colors.neutral[700]} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Import Recipe</Text>
-          <View style={styles.headerSpacer} />
-        </View>
-
+      <View style={styles.container}>
         {/* Processing Overlay */}
         {isProcessing && (
           <View style={styles.processingOverlay}>
@@ -198,7 +182,7 @@ export default function ImportRecipeModal({
             style={styles.extractButton}
           />
         </View>
-      </SafeAreaView>
+      </View>
     </Modal>
   );
 }
@@ -207,23 +191,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: theme.spacing.lg,
-    paddingVertical: theme.spacing.lg,
-  },
-  closeButton: {
-    padding: theme.spacing.xs,
-  },
-  headerTitle: {
-    ...typography.editorialNavigationTitle,
-    color: theme.colors.neutral[800],
-  },
-  headerSpacer: {
-    width: 32,
   },
   content: {
     flex: 1,

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { type ReactNode } from 'react';
 import {
   Modal as RNModal,
   View,
@@ -15,8 +15,11 @@ interface ModalProps {
   visible: boolean;
   onClose: () => void;
   title?: string;
-  children: React.ReactNode;
+  children: ReactNode;
   showCloseButton?: boolean;
+  closeButtonDisabled?: boolean;
+  rightAction?: ReactNode;
+  showDragHandle?: boolean;
 }
 
 export default function Modal({
@@ -25,6 +28,9 @@ export default function Modal({
   title,
   children,
   showCloseButton = true,
+  closeButtonDisabled = false,
+  rightAction,
+  showDragHandle = false,
 }: ModalProps) {
   return (
     <RNModal
@@ -34,22 +40,39 @@ export default function Modal({
       onRequestClose={onClose}
     >
       <SafeAreaView style={styles.container}>
-        {(title || showCloseButton) && (
+        {showDragHandle && (
+          <View style={styles.dragHandleContainer} testID="modal-drag-handle">
+            <View style={styles.dragHandle} />
+          </View>
+        )}
+        {(title || showCloseButton || rightAction) && (
           <View style={styles.header}>
-            <View style={styles.headerLeft}>
+            <View style={styles.headerLeft} testID="modal-header-left-slot">
               {showCloseButton && (
                 <TouchableOpacity
                   onPress={onClose}
+                  disabled={closeButtonDisabled}
                   style={styles.closeButton}
                   accessibilityRole="button"
                   accessibilityLabel="Close modal"
+                  accessibilityState={{ disabled: closeButtonDisabled }}
                 >
                   <X size={24} color={theme.colors.neutral[600]} />
                 </TouchableOpacity>
               )}
             </View>
-            {title && <Text style={styles.title}>{title}</Text>}
-            <View style={styles.headerRight} />
+            {title && (
+              <Text
+                style={styles.title}
+                numberOfLines={1}
+                accessibilityRole="header"
+              >
+                {title}
+              </Text>
+            )}
+            <View style={styles.headerRight} testID="modal-header-right-slot">
+              {rightAction}
+            </View>
           </View>
         )}
         <View style={styles.content}>{children}</View>
@@ -64,18 +87,25 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surface,
   },
   header: {
+    minHeight: 56,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
     paddingHorizontal: theme.spacing.xl,
-    paddingVertical: theme.spacing.lg,
     backgroundColor: theme.colors.surface,
   },
   headerLeft: {
-    width: 32,
+    flex: 1,
+    minWidth: 44,
+    minHeight: 44,
+    alignItems: 'flex-start',
+    justifyContent: 'center',
   },
   headerRight: {
-    width: 32,
+    flex: 1,
+    minWidth: 44,
+    minHeight: 44,
+    alignItems: 'flex-end',
+    justifyContent: 'center',
   },
   closeButton: {
     width: 44,
@@ -86,10 +116,24 @@ const styles = StyleSheet.create({
   },
   title: {
     ...typography.editorialNavigationTitle,
+    flexShrink: 1,
     color: theme.colors.textPrimary,
+    textAlign: 'center',
   },
   content: {
     flex: 1,
     backgroundColor: theme.colors.surface,
+  },
+  dragHandleContainer: {
+    alignItems: 'center',
+    paddingTop: theme.spacing.md,
+    paddingBottom: theme.spacing.xs,
+    backgroundColor: theme.colors.surface,
+  },
+  dragHandle: {
+    width: 36,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: theme.colors.neutral[300],
   },
 });

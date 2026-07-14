@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useRef } from 'react';
 import { Alert, Share } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 import { useQuery, useMutation } from '@tanstack/react-query';
@@ -13,6 +13,8 @@ interface UseShareModalOptions {
   onShareSuccess?: () => void;
 }
 
+type ExternalShareMethod = 'message' | 'link';
+
 export function useShareModal({
   shareType,
   contentId,
@@ -21,6 +23,9 @@ export function useShareModal({
 }: UseShareModalOptions) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(new Set());
+  const [activeExternalShareMethod, setActiveExternalShareMethod] =
+    useState<ExternalShareMethod | null>(null);
+  const isExternalShareActiveRef = useRef(false);
   const supportsDirectShare = shareType !== 'profile';
 
   // Fetch mutuals
@@ -134,6 +139,10 @@ export function useShareModal({
 
   // Dynamic share message based on content type
   const handleShareViaMessage = useCallback(async () => {
+    if (isExternalShareActiveRef.current) return;
+
+    isExternalShareActiveRef.current = true;
+    setActiveExternalShareMethod('message');
     try {
       const message = shareType === 'dishlist'
         ? `Check out this DishList: ${contentTitle}\n${shareLink}`
@@ -147,16 +156,26 @@ export function useShareModal({
       });
     } catch (error) {
       console.error('Share error:', error);
+    } finally {
+      isExternalShareActiveRef.current = false;
+      setActiveExternalShareMethod(null);
     }
   }, [shareType, contentTitle, shareLink]);
 
   const handleCopyLink = useCallback(async () => {
+    if (isExternalShareActiveRef.current) return;
+
+    isExternalShareActiveRef.current = true;
+    setActiveExternalShareMethod('link');
     try {
       await Clipboard.setStringAsync(shareLink);
       Alert.alert('Link Copied', 'The link has been copied to your clipboard.');
     } catch (error) {
       console.error('Copy link error:', error);
       Alert.alert('Error', 'Could not copy the link. Please try again.');
+    } finally {
+      isExternalShareActiveRef.current = false;
+      setActiveExternalShareMethod(null);
     }
   }, [shareLink]);
 
@@ -168,6 +187,8 @@ export function useShareModal({
     isLoadingMutuals,
     isMutualsError,
     isSending: shareMutation.isPending,
+    isSharingViaMessage: activeExternalShareMethod === 'message',
+    isCopyingLink: activeExternalShareMethod === 'link',
     toggleUserSelection,
     clearSelection,
     handleSendToSelected,

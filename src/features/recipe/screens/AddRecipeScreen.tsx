@@ -11,7 +11,7 @@ import {
   Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { ChevronLeft, X, Camera, AlertCircle, Plus } from "lucide-react-native";
+import { X, Camera, AlertCircle, Plus } from "lucide-react-native";
 import * as ImagePicker from "expo-image-picker";
 import { theme } from "@styles/theme";
 import { typography } from "@styles/typography";
@@ -413,9 +413,9 @@ export default function AddRecipeScreen({ route, navigation }: Props) {
               <ScreenHeaderAction
                 onPress={handleCancel}
                 accessibilityRole="button"
-                accessibilityLabel="Go back"
+                accessibilityLabel="Close"
               >
-                <ChevronLeft size={24} color={theme.colors.neutral[700]} />
+                <X size={24} color={theme.colors.neutral[700]} />
               </ScreenHeaderAction>
             }
           />
