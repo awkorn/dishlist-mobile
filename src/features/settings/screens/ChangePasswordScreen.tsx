@@ -6,7 +6,6 @@ import {
   StyleSheet,
   Alert,
   TouchableOpacity,
-  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -20,6 +19,7 @@ import { getAuthErrorMessage } from "@lib/errors";
 import { theme } from "@styles/theme";
 import { typography } from "@styles/typography";
 import { ScreenHeader, ScreenHeaderAction } from "@components/ui";
+import Button from "@components/ui/Button";
 
 type Props = NativeStackScreenProps<RootStackParamList, "ChangePassword">;
 
@@ -196,18 +196,14 @@ export default function ChangePasswordScreen({ navigation }: Props) {
           )}
 
           {/* Submit Button */}
-          <TouchableOpacity
-            style={[styles.button, !isValid && styles.buttonDisabled]}
+          <Button
+            title="Update Password"
+            style={styles.submitButton}
+            size="lg"
             onPress={handleChangePassword}
             disabled={!isValid || loading}
-            activeOpacity={0.8}
-          >
-            {loading ? (
-              <ActivityIndicator color={theme.colors.onPrimary} />
-            ) : (
-              <Text style={styles.buttonText}>Update Password</Text>
-            )}
-          </TouchableOpacity>
+            loading={loading}
+          />
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -273,22 +269,7 @@ const styles = StyleSheet.create({
     marginTop: -theme.spacing.sm,
     marginBottom: theme.spacing.lg,
   },
-  button: {
-    backgroundColor: theme.colors.primary[500],
-    borderRadius: 12,
-    paddingVertical: theme.spacing.md,
-    alignItems: "center",
-    justifyContent: "center",
+  submitButton: {
     marginTop: theme.spacing.lg,
-    height: 50,
-  },
-  buttonDisabled: {
-    opacity: 0.5,
-  },
-  buttonText: {
-    ...typography.body,
-    fontWeight: "600",
-    color: theme.colors.onPrimary,
-    fontSize: 16,
   },
 });

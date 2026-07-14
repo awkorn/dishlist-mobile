@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { Plus } from 'lucide-react-native';
+import Button from '@components/ui/Button';
 import { typography } from '@styles/typography';
 import { theme } from '@styles/theme';
 import type { DishListTabLabel } from '../types';
@@ -34,10 +35,12 @@ export function DishListEmptyState({
       </Text>
 
       {!hasSearchQuery && isMyDishListsTab && onCreatePress && (
-        <TouchableOpacity style={styles.createButton} onPress={onCreatePress}>
-          <Plus size={20} color={theme.colors.onPrimary} />
-          <Text style={styles.createButtonText}>Create DishList</Text>
-        </TouchableOpacity>
+        <Button
+          title="Create DishList"
+          onPress={onCreatePress}
+          size="sm"
+          leadingIcon={<Plus size={18} color={theme.colors.onPrimary} />}
+        />
       )}
     </View>
   );
@@ -62,18 +65,5 @@ const styles = StyleSheet.create({
     color: theme.colors.neutral[500],
     textAlign: 'center',
     marginBottom: theme.spacing.lg,
-  },
-  createButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.primary[500],
-    paddingVertical: theme.spacing.sm,
-    paddingHorizontal: theme.spacing.lg,
-    borderRadius: theme.borderRadius.md,
-    gap: theme.spacing.xs,
-  },
-  createButtonText: {
-    ...typography.button,
-    color: theme.colors.onPrimary,
   },
 });

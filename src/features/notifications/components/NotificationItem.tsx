@@ -4,7 +4,6 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  ActivityIndicator,
 } from "react-native";
 import { Swipeable } from "react-native-gesture-handler";
 import { Trash2, ChevronRight } from "lucide-react-native";
@@ -19,6 +18,7 @@ import type {
 } from "../types";
 import { parseNotificationData, isNavigableNotification } from "../types";
 import Avatar from "@components/ui/Avatar";
+import Button from "@components/ui/Button";
 
 interface NotificationItemProps {
   notification: Notification;
@@ -271,45 +271,30 @@ export function NotificationItem({
             {/* Action buttons for invitations and follow requests */}
             {isActionable && (
               <View style={styles.actionButtons}>
-                <TouchableOpacity
-                  style={[styles.actionButton, styles.declineButton]}
+                <Button
+                  title="Decline"
+                  style={styles.actionButton}
+                  variant="outline"
+                  size="sm"
                   onPress={handleDecline}
                   disabled={isActionInProgress}
-                  accessibilityRole="button"
+                  loading={currentlyDeclining}
                   accessibilityLabel={
                     isFollowRequest ? "Decline follow request" : "Decline invitation"
                   }
-                  accessibilityState={{ disabled: isActionInProgress }}
-                >
-                  {currentlyDeclining ? (
-                    <ActivityIndicator
-                      size="small"
-                      color={theme.colors.neutral[600]}
-                    />
-                  ) : (
-                    <Text style={styles.declineButtonText}>Decline</Text>
-                  )}
-                </TouchableOpacity>
+                />
 
-                <TouchableOpacity
-                  style={[styles.actionButton, styles.acceptButton]}
+                <Button
+                  title="Accept"
+                  style={styles.actionButton}
+                  size="sm"
                   onPress={handleAccept}
                   disabled={isActionInProgress}
-                  accessibilityRole="button"
+                  loading={currentlyAccepting}
                   accessibilityLabel={
                     isFollowRequest ? "Accept follow request" : "Accept invitation"
                   }
-                  accessibilityState={{ disabled: isActionInProgress }}
-                >
-                  {currentlyAccepting ? (
-                    <ActivityIndicator
-                      size="small"
-                      color={theme.colors.onPrimary}
-                    />
-                  ) : (
-                    <Text style={styles.acceptButtonText}>Accept</Text>
-                  )}
-                </TouchableOpacity>
+                />
               </View>
             )}
           </View>
@@ -362,27 +347,7 @@ const styles = StyleSheet.create({
     gap: theme.spacing.sm,
   },
   actionButton: {
-    paddingVertical: theme.spacing.sm,
-    paddingHorizontal: theme.spacing.lg,
-    borderRadius: theme.borderRadius.sm,
     minWidth: 80,
-    alignItems: "center",
-  },
-  declineButton: {
-    backgroundColor: theme.colors.neutral[200],
-  },
-  acceptButton: {
-    backgroundColor: theme.colors.primary[500],
-  },
-  declineButtonText: {
-    ...typography.button,
-    fontSize: 14,
-    color: theme.colors.neutral[700],
-  },
-  acceptButtonText: {
-    ...typography.button,
-    fontSize: 14,
-    color: theme.colors.onPrimary,
   },
   arrow: {
     marginLeft: theme.spacing.sm,

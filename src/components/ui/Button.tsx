@@ -13,10 +13,13 @@ import { typography } from "../../styles/typography";
 interface ButtonProps {
   title: string;
   onPress: () => void;
-  variant?: "primary" | "secondary" | "outline" | "ghost";
+  variant?: "primary" | "secondary" | "outline" | "ghost" | "destructive";
   size?: "sm" | "md" | "lg";
   disabled?: boolean;
   loading?: boolean;
+  leadingIcon?: React.ReactNode;
+  trailingIcon?: React.ReactNode;
+  accessibilityLabel?: string;
   style?: ViewStyle;
   textStyle?: TextStyle;
 }
@@ -28,6 +31,9 @@ export default function Button({
   size = "md",
   disabled = false,
   loading = false,
+  leadingIcon,
+  trailingIcon,
+  accessibilityLabel,
   style,
   textStyle,
 }: ButtonProps) {
@@ -35,7 +41,7 @@ export default function Button({
     styles.base,
     styles[variant],
     styles[size],
-    disabled && styles.disabled,
+    disabled && styles[`${variant}Disabled`],
     style,
   ];
 
@@ -54,6 +60,7 @@ export default function Button({
       disabled={disabled || loading}
       activeOpacity={0.7}
       accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
       accessibilityState={{ disabled: disabled || loading, busy: loading }}
     >
       {loading ? (
@@ -61,13 +68,19 @@ export default function Button({
           testID="button-loading"
           size="small"
           color={
-            variant === "primary"
+            variant === "primary" ||
+            variant === "secondary" ||
+            variant === "destructive"
               ? theme.colors.onPrimary
               : theme.colors.primary[500]
           }
         />
       ) : (
-        <Text style={textStyles}>{title}</Text>
+        <>
+          {leadingIcon}
+          <Text style={textStyles}>{title}</Text>
+          {trailingIcon}
+        </>
       )}
     </TouchableOpacity>
   );
@@ -79,6 +92,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     flexDirection: "row",
+    gap: theme.spacing.sm,
   },
   // Variants
   primary: {
@@ -95,18 +109,21 @@ const styles = StyleSheet.create({
   ghost: {
     backgroundColor: "transparent",
   },
+  destructive: {
+    backgroundColor: theme.colors.error,
+  },
   // Sizes
   sm: {
+    height: 36,
     paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
   },
   md: {
+    height: 44,
     paddingHorizontal: theme.spacing.lg,
-    paddingVertical: theme.spacing.md,
   },
   lg: {
+    height: 50,
     paddingHorizontal: theme.spacing.xl,
-    paddingVertical: theme.spacing.lg,
   },
   // Text styles
   text: {
@@ -124,6 +141,9 @@ const styles = StyleSheet.create({
   ghostText: {
     color: theme.colors.primary[500],
   },
+  destructiveText: {
+    color: theme.colors.onPrimary,
+  },
   smText: {
     fontSize: 14,
   },
@@ -134,7 +154,20 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
   // States
-  disabled: {
+  primaryDisabled: {
+    backgroundColor: theme.colors.neutral[200],
+  },
+  secondaryDisabled: {
+    backgroundColor: theme.colors.neutral[200],
+  },
+  outlineDisabled: {
+    backgroundColor: "transparent",
+    borderColor: theme.colors.neutral[300],
+  },
+  ghostDisabled: {
+    backgroundColor: "transparent",
+  },
+  destructiveDisabled: {
     backgroundColor: theme.colors.neutral[200],
   },
   disabledText: {

@@ -38,6 +38,7 @@ import { InviteCollaboratorModal, CollaboratorPreview } from "@features/invite";
 import { CollaboratorsModal } from "@features/invite";
 import { AnimatedSearchInput } from "@components/ui";
 import { ReportContentModal } from "@components/moderation/ReportContentModal";
+import Button from "@components/ui/Button";
 import {
   useDishListDetail,
   useTogglePinDishList,
@@ -371,15 +372,16 @@ export default function DishListDetailScreen({
                   : "Add your first recipe to this DishList"}
               </Text>
               {!searchQuery && dishList.isOwner && (
-                <TouchableOpacity
-                  style={styles.addRecipeButton}
+                <Button
+                  title="Add Recipe"
+                  size="sm"
                   onPress={() =>
                     navigation.navigate("AddRecipe", { dishListId })
                   }
-                >
-                  <Plus size={20} color={theme.colors.onPrimary} />
-                  <Text style={styles.addRecipeButtonText}>Add Recipe</Text>
-                </TouchableOpacity>
+                  leadingIcon={
+                    <Plus size={18} color={theme.colors.onPrimary} />
+                  }
+                />
               )}
             </View>
           }
@@ -540,19 +542,6 @@ const styles = StyleSheet.create({
     color: theme.colors.neutral[500],
     textAlign: "center",
     marginBottom: theme.spacing.lg,
-  },
-  addRecipeButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: theme.colors.primary[500],
-    paddingVertical: theme.spacing.sm,
-    paddingHorizontal: theme.spacing.lg,
-    borderRadius: theme.borderRadius.md,
-    gap: theme.spacing.xs,
-  },
-  addRecipeButtonText: {
-    ...typography.button,
-    color: theme.colors.onPrimary,
   },
   recipeRow: {
     gap: theme.spacing.lg,

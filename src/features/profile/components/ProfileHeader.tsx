@@ -15,6 +15,7 @@ import { theme } from "@styles/theme";
 import { typography } from "@styles/typography";
 import { InlineSearchInput } from "@components/ui";
 import Avatar from "@components/ui/Avatar";
+import Button from "@components/ui/Button";
 import type { UserProfile } from "../types";
 import { FollowButton } from "./FollowButton";
 
@@ -179,29 +180,22 @@ export function ProfileHeader({
 
         {isOwnProfile ? (
           <View style={styles.actionButtonsRow}>
-            <TouchableOpacity
-              style={[styles.actionButton, styles.editActionButton]}
-              onPress={onEditPress}
-              activeOpacity={0.7}
-              accessibilityRole="button"
-              accessibilityLabel="Edit profile"
-            >
-              <Text
-                style={[styles.actionButtonText, styles.editActionButtonText]}
-              >
-                Edit Profile
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
+            <Button
+              title="Edit Profile"
               style={styles.actionButton}
-              onPress={onSharePress}
-              activeOpacity={0.7}
-              accessibilityRole="button"
+              variant="outline"
+              size="sm"
+              onPress={() => onEditPress?.()}
+              accessibilityLabel="Edit profile"
+            />
+
+            <Button
+              title="Share Profile"
+              style={styles.actionButton}
+              size="sm"
+              onPress={() => onSharePress?.()}
               accessibilityLabel="Share profile"
-            >
-              <Text style={styles.actionButtonText}>Share Profile</Text>
-            </TouchableOpacity>
+            />
           </View>
         ) : (
           <View style={styles.followButtonRow}>
@@ -307,27 +301,6 @@ const styles = StyleSheet.create({
   },
   actionButton: {
     flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    backgroundColor: theme.colors.primary[500],
-    minHeight: 34,
-    paddingVertical: 8,
-    borderRadius: 10,
-  },
-  editActionButton: {
-    backgroundColor: theme.colors.surface,
-    borderWidth: 1,
-    borderColor: theme.colors.primary[500],
-  },
-  actionButtonText: {
-    ...typography.button,
-    fontSize: 14,
-    color: theme.colors.neutral[50],
-  },
-  editActionButtonText: {
-    color: theme.colors.primary[500],
   },
   followButtonRow: {
     alignSelf: "stretch",

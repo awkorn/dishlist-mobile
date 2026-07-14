@@ -22,6 +22,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { theme } from "@styles/theme";
 import { typography } from "@styles/typography";
+import Button from "@components/ui/Button";
 
 interface PreferenceOption {
   label: string;
@@ -351,15 +352,12 @@ export function PreferencesModal({
             </View>
           </ScrollView>
 
-          <TouchableOpacity
-            style={styles.saveButton}
+          <Button
+            title="Save"
             onPress={handleSave}
-            activeOpacity={0.75}
-            accessibilityRole="button"
+            size="md"
             accessibilityLabel="Save preferences"
-          >
-            <Text style={styles.saveButtonText}>Save</Text>
-          </TouchableOpacity>
+          />
         </View>
       </KeyboardAvoidingView>
     </Modal>
@@ -513,16 +511,5 @@ const styles = StyleSheet.create({
   addCustomButtonActive: {
     backgroundColor: theme.colors.primary[500],
     borderColor: theme.colors.primary[500],
-  },
-  saveButton: {
-    height: 46,
-    borderRadius: theme.borderRadius.sm,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: theme.colors.primary[500],
-  },
-  saveButtonText: {
-    ...typography.button,
-    color: theme.colors.onPrimary,
   },
 });

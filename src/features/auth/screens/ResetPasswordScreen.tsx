@@ -1,11 +1,9 @@
 import React, { useState } from "react";
 import {
-  ActivityIndicator,
   Alert,
   StyleSheet,
   Text,
   TextInput,
-  TouchableOpacity,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -14,6 +12,7 @@ import { VALIDATION } from "@lib/constants";
 import { getAuthErrorMessage } from "@lib/errors";
 import { theme } from "@styles/theme";
 import { typography } from "@styles/typography";
+import Button from "@components/ui/Button";
 
 interface Feedback {
   message: string;
@@ -140,20 +139,15 @@ export default function ResetPasswordScreen() {
           accessibilityLabel="Confirm new password"
         />
 
-        <TouchableOpacity
-          style={[styles.button, !isValid && styles.buttonDisabled]}
+        <Button
+          title="Update Password"
+          style={styles.submitButton}
+          size="lg"
           disabled={!isValid || loading}
+          loading={loading}
           onPress={handleSubmit}
-          accessibilityRole="button"
           accessibilityLabel="Update password"
-          accessibilityState={{ disabled: !isValid || loading, busy: loading }}
-        >
-          {loading ? (
-            <ActivityIndicator color={theme.colors.onPrimary} />
-          ) : (
-            <Text style={styles.buttonText}>Update Password</Text>
-          )}
-        </TouchableOpacity>
+        />
       </View>
     </SafeAreaView>
   );
@@ -208,20 +202,7 @@ const styles = StyleSheet.create({
     color: theme.colors.error,
     marginTop: theme.spacing.xs,
   },
-  button: {
-    height: 50,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: theme.borderRadius.sm,
-    backgroundColor: theme.colors.primary[500],
+  submitButton: {
     marginTop: theme.spacing.sm,
-  },
-  buttonDisabled: {
-    opacity: 0.5,
-  },
-  buttonText: {
-    ...typography.body,
-    color: theme.colors.onPrimary,
-    fontWeight: "600",
   },
 });

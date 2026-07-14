@@ -26,6 +26,7 @@ import { ProfileEmptyState } from "../components/ProfileEmptyState";
 import { ProfileSkeleton } from "../components/ProfileSkeleton";
 import { ShareModal } from "@features/share";
 import { ReportContentModal } from "@components/moderation/ReportContentModal";
+import Button from "@components/ui/Button";
 import { theme } from "@styles/theme";
 import { typography } from "@styles/typography";
 import { getErrorMessage } from "@utils";
@@ -278,18 +279,13 @@ export default function ProfileScreen({ navigation, route }: Props) {
               : "You cannot view or interact with this profile."}
           </Text>
           {blockedByCurrentUser && (
-            <TouchableOpacity
-              style={[
-                styles.unblockButton,
-                isBlockPending && styles.unblockButtonDisabled,
-              ]}
+            <Button
+              title="Unblock"
               onPress={handleUnblockUser}
               disabled={isBlockPending}
-            >
-              <Text style={styles.unblockButtonText}>
-                {isBlockPending ? "Unblocking..." : "Unblock"}
-              </Text>
-            </TouchableOpacity>
+              loading={isBlockPending}
+              size="md"
+            />
           )}
         </View>
       </View>
@@ -486,20 +482,6 @@ const styles = StyleSheet.create({
     color: theme.colors.neutral[600],
     textAlign: "center",
     marginBottom: 20,
-  },
-  unblockButton: {
-    backgroundColor: theme.colors.primary[500],
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
-  },
-  unblockButtonDisabled: {
-    opacity: 0.6,
-  },
-  unblockButtonText: {
-    ...typography.body,
-    color: theme.colors.onPrimary,
-    fontWeight: "600",
   },
   errorContainer: {
     flex: 1,

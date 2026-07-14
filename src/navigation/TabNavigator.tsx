@@ -1,5 +1,6 @@
 import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   BookOpen,
   ShoppingCart,
@@ -18,6 +19,7 @@ import {
 } from "@features/notifications";
 
 const Tab = createBottomTabNavigator();
+const TAB_BAR_CONTENT_HEIGHT = 60;
 
 // Wrapper component for notification icon with badge
 function NotificationTabIcon({ color, size }: { color: string; size: number }) {
@@ -26,6 +28,8 @@ function NotificationTabIcon({ color, size }: { color: string; size: number }) {
 }
 
 export default function TabNavigator() {
+  const insets = useSafeAreaInsets();
+
   return (
     <Tab.Navigator
       screenOptions={{
@@ -36,12 +40,9 @@ export default function TabNavigator() {
           backgroundColor: theme.colors.surface,
           borderTopWidth: 1,
           borderTopColor: theme.colors.neutral[200],
-          height: 90,
-          paddingBottom: 30,
+          height: TAB_BAR_CONTENT_HEIGHT + insets.bottom,
+          paddingBottom: insets.bottom,
           paddingTop: 12,
-        },
-        tabBarLabelStyle: {
-          fontSize: 0,
         },
         tabBarShowLabel: false,
       }}

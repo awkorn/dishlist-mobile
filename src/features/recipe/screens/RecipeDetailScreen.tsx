@@ -47,6 +47,7 @@ import { convertLegacyToStructured, extractItemTexts } from "../types";
 import * as Haptics from "expo-haptics";
 import { ShareModal } from "@features/share";
 import { ReportContentModal } from "@components/moderation/ReportContentModal";
+import Button from "@components/ui/Button";
 
 type Props = NativeStackScreenProps<RootStackParamList, "RecipeDetail">;
 
@@ -403,15 +404,16 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
           )}
 
           {/* Cook Mode Button */}
-          <TouchableOpacity
+          <Button
+            title="Start Cooking"
             style={styles.cookModeButton}
+            size="lg"
             onPress={() => setShowCookMode(true)}
-            accessibilityRole="button"
             accessibilityLabel="Start Cooking"
-          >
-            <PlayCircle size={20} color={theme.colors.onPrimary} />
-            <Text style={styles.cookModeButtonText}>Start Cooking</Text>
-          </TouchableOpacity>
+            leadingIcon={
+              <PlayCircle size={20} color={theme.colors.onPrimary} />
+            }
+          />
 
           {/* Recipe Description */}
           {recipe.description ? (
@@ -770,19 +772,8 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   cookModeButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: theme.colors.primary[500],
     marginHorizontal: theme.spacing.xl,
     marginVertical: theme.spacing.xl,
-    padding: theme.spacing.lg,
-    borderRadius: theme.borderRadius.md,
-    gap: theme.spacing.sm,
-  },
-  cookModeButtonText: {
-    ...typography.button,
-    color: theme.colors.onPrimary,
   },
   section: {
     paddingHorizontal: theme.spacing.xl,
