@@ -4,7 +4,6 @@ import {
   Text,
   StyleSheet,
   FlatList,
-  TouchableOpacity,
   ActivityIndicator,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -19,6 +18,7 @@ import {
   GroceryInputRow,
 } from "../components";
 import InlineError from "@components/ui/InlineError";
+import { ScreenHeader, ScreenHeaderAction } from "@components/ui";
 
 export default function GroceryListScreen() {
   const insets = useSafeAreaInsets();
@@ -98,9 +98,11 @@ export default function GroceryListScreen() {
           end={{ x: 0, y: 1 }}
           style={{ paddingTop: insets.top }}
         >
-          <View style={styles.header}>
-            <Text style={styles.title}>Grocery List</Text>
-          </View>
+          <ScreenHeader
+            title="Grocery List"
+            style={styles.header}
+            titleStyle={styles.title}
+          />
         </LinearGradient>
 
         <View style={styles.errorContainer}>
@@ -123,43 +125,49 @@ export default function GroceryListScreen() {
         end={{ x: 0, y: 1 }}
         style={{ paddingTop: insets.top }}
       >
-        <View style={styles.header}>
-          <Text style={styles.title}>Grocery List</Text>
-          <View style={styles.headerButtons}>
-            <TouchableOpacity
+        <ScreenHeader
+          title="Grocery List"
+          style={styles.header}
+          titleStyle={styles.title}
+        />
+        <View style={styles.headerButtons}>
+          <ScreenHeaderAction
+            style={styles.headerButton}
+            onPress={handleToggleAll}
+            disabled={items.length === 0}
+            testID="toggle-all-button"
+            accessibilityRole="button"
+          >
+            <Text
+              style={[
+                styles.headerButtonText,
+                items.length === 0 && styles.disabledText,
+              ]}
+            >
+              {allChecked ? "Uncheck All" : "Check All"}
+            </Text>
+          </ScreenHeaderAction>
+
+          {checkedCount === 0 ? null : (
+            <ScreenHeaderAction
               style={styles.headerButton}
-              onPress={handleToggleAll}
-              disabled={items.length === 0}
-              testID="toggle-all-button"
+              onPress={handleClearChecked}
+              testID="clear-checked-button"
+              accessibilityRole="button"
             >
-              <Text
-                style={[
-                  styles.headerButtonText,
-                  items.length === 0 && styles.disabledText,
-                ]}
-              >
-                {allChecked ? "Uncheck All" : "Check All"}
-              </Text>
-            </TouchableOpacity>
+              <Text style={styles.headerButtonText}>Clear Checked</Text>
+            </ScreenHeaderAction>
+          )}
 
-            {checkedCount === 0 ? null : (
-              <TouchableOpacity
-                style={styles.headerButton}
-                onPress={handleClearChecked}
-                testID="clear-checked-button"
-              >
-                <Text style={styles.headerButtonText}>Clear Checked</Text>
-              </TouchableOpacity>
-            )}
-
-            <TouchableOpacity
-              style={styles.addButton}
-              onPress={handleStartAdding}
-              testID="add-item-button"
-            >
-              <Plus size={20} color={theme.colors.primary[500]} />
-            </TouchableOpacity>
-          </View>
+          <ScreenHeaderAction
+            style={styles.addButton}
+            onPress={handleStartAdding}
+            testID="add-item-button"
+            accessibilityRole="button"
+            accessibilityLabel="Add grocery item"
+          >
+            <Plus size={20} color={theme.colors.primary[500]} />
+          </ScreenHeaderAction>
         </View>
       </LinearGradient>
 
@@ -228,18 +236,18 @@ const styles = StyleSheet.create({
     paddingTop: theme.spacing.xl,
   },
   header: {
-    paddingHorizontal: theme.spacing.xl,
-    paddingVertical: theme.spacing.lg,
+    backgroundColor: "transparent",
   },
   title: {
     ...typography.heading4,
     color: theme.colors.textPrimary,
-    marginBottom: theme.spacing.xs,
   },
   headerButtons: {
     flexDirection: "row",
     alignItems: "center",
     gap: theme.spacing.md,
+    paddingHorizontal: theme.spacing.xl,
+    paddingBottom: theme.spacing.lg,
   },
   headerButton: {
     paddingHorizontal: theme.spacing.xs,

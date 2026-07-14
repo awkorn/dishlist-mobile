@@ -17,6 +17,7 @@ import * as ImagePicker from "expo-image-picker";
 import { theme } from "@styles/theme";
 import { typography } from "@styles/typography";
 import Button from "@components/ui/Button";
+import { ScreenHeader, ScreenHeaderAction } from "@components/ui";
 import { uploadImage } from "@services/image";
 import { useCreateRecipe, useUpdateRecipe } from "../hooks";
 import { NutritionSection, TagInput, DraggableRecipeList } from "../components";
@@ -400,20 +401,26 @@ export default function AddRecipeScreen({ route, navigation }: Props) {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
         <View style={styles.main}>
-          {/* Header */}
-          <View style={styles.header}>
-            <TouchableOpacity onPress={handleCancel} style={styles.backButton}>
-              <ChevronLeft size={24} color={theme.colors.neutral[700]} />
-            </TouchableOpacity>
-            <Text style={styles.headerTitle}>
-              {isEditMode
+          <ScreenHeader
+            title={
+              isEditMode
                 ? "Edit Recipe"
                 : isImportMode
                   ? "Review Imported Recipe"
-                  : "Add Recipe"}
-            </Text>
-            <View style={styles.headerSpacer} />
-          </View>
+                  : "Add Recipe"
+            }
+            style={styles.header}
+            titleStyle={styles.headerTitle}
+            leftSlot={
+              <ScreenHeaderAction
+                onPress={handleCancel}
+                accessibilityRole="button"
+                accessibilityLabel="Go back"
+              >
+                <ChevronLeft size={24} color={theme.colors.neutral[700]} />
+              </ScreenHeaderAction>
+            }
+          />
 
           {/* Scrollable content */}
           <ScrollView
@@ -616,24 +623,14 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: theme.spacing.xl,
-    paddingVertical: theme.spacing.lg,
+    minHeight: 64,
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.neutral[200],
     backgroundColor: theme.colors.surface,
   },
-  backButton: {
-    padding: theme.spacing.xs,
-  },
   headerTitle: {
     ...typography.heading3,
     color: theme.colors.textPrimary,
-  },
-  headerSpacer: {
-    width: 32,
   },
   scrollView: {
     flex: 1,

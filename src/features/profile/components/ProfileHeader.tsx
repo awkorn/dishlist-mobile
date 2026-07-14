@@ -7,7 +7,7 @@ import {
   Animated,
 } from "react-native";
 import {
-  MoveLeft,
+  ChevronLeft,
   Search,
   EllipsisVertical,
 } from "lucide-react-native";
@@ -80,7 +80,7 @@ export function ProfileHeader({
           accessibilityRole="button"
           accessibilityLabel="Go back"
         >
-          <MoveLeft size={24} color={theme.colors.neutral[700]} />
+          <ChevronLeft size={24} color={theme.colors.neutral[700]} />
         </TouchableOpacity>
 
         <InlineSearchInput

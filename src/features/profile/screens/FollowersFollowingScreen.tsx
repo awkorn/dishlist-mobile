@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import PagerView from "react-native-pager-view";
-import { MoveLeft } from "lucide-react-native";
+import { ChevronLeft } from "lucide-react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "@app-types/navigation";
 import { theme } from "@styles/theme";
@@ -171,7 +171,7 @@ export default function FollowersFollowingScreen({ navigation, route }: Props) {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-          <MoveLeft size={24} color={theme.colors.neutral[700]} />
+          <ChevronLeft size={24} color={theme.colors.neutral[700]} />
         </TouchableOpacity>
         <Text style={styles.headerTitle} numberOfLines={1}>
           {displayName || "User"}

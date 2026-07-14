@@ -19,6 +19,7 @@ import {
 import { theme } from '@styles/theme';
 import { typography } from '@styles/typography';
 import Avatar from '@components/ui/Avatar';
+import { ScreenHeader, ScreenHeaderAction } from '@components/ui';
 import { useCollaborators } from '../hooks/useCollaborators';
 import type { Collaborator, PendingInvite } from '../types';
 
@@ -266,22 +267,20 @@ export function CollaboratorsModal({
       onRequestClose={onClose}
     >
       <SafeAreaView style={styles.container} edges={['top']}>
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity
-            onPress={onClose}
-            style={styles.closeButton}
-            accessibilityRole="button"
-            accessibilityLabel="Close"
-            hitSlop={8}
-          >
-            <X size={24} color={theme.colors.neutral[700]} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle} numberOfLines={1}>
-            {dishListTitle}
-          </Text>
-          <View style={styles.headerSpacer} />
-        </View>
+        <ScreenHeader
+          title={dishListTitle}
+          style={styles.header}
+          titleStyle={styles.headerTitle}
+          leftSlot={
+            <ScreenHeaderAction
+              onPress={onClose}
+              accessibilityRole="button"
+              accessibilityLabel="Close"
+            >
+              <X size={24} color={theme.colors.neutral[700]} />
+            </ScreenHeaderAction>
+          }
+        />
 
         {/* Content */}
         {isLoading ? (
@@ -323,24 +322,12 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surface,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
     paddingHorizontal: theme.spacing.lg,
-    paddingVertical: theme.spacing.md,
-  },
-  closeButton: {
-    padding: theme.spacing.xs,
+    backgroundColor: theme.colors.surface,
   },
   headerTitle: {
     ...typography.heading3,
     color: theme.colors.textPrimary,
-    flex: 1,
-    textAlign: 'center',
-    marginHorizontal: theme.spacing.md,
-  },
-  headerSpacer: {
-    width: 32,
   },
   loadingContainer: {
     flex: 1,

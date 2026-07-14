@@ -23,6 +23,7 @@ import { queryKeys } from "@lib/queryKeys";
 import { profileService } from "@features/profile/services/profileService";
 import { RootStackParamList } from "@app-types/navigation";
 import Avatar from "@components/ui/Avatar";
+import { ScreenHeader, ScreenHeaderAction } from "@components/ui";
 import { useDishLists } from "../hooks";
 import {
   DishListGrid,
@@ -207,37 +208,44 @@ export default function DishListsScreen() {
     <SafeAreaView style={styles.container}>
       {showNetworkIndicator && <NetworkIndicator isOnline={isOnline} />}
 
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.title}>DishLists</Text>
-        <View style={styles.headerActions}>
-          {refreshing && (
-            <ActivityIndicator
-              size="small"
-              color={theme.colors.primary[500]}
-              style={styles.headerLoader}
-            />
-          )}
-          <TouchableOpacity
-            style={styles.addButton}
-            onPress={handleCreateDishList}
-          >
-            <Plus size={24} color={theme.colors.primary[500]} />
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.profileButton}
-            onPress={handleProfilePress}
-          >
-            <Avatar
-              avatarUrl={headerAvatarUrl}
-              firstName={headerProfile?.firstName}
-              lastName={headerProfile?.lastName}
-              username={headerProfile?.username}
-              size={32}
-            />
-          </TouchableOpacity>
-        </View>
-      </View>
+      <ScreenHeader
+        title="DishLists"
+        style={styles.header}
+        titleStyle={styles.title}
+        rightSlot={
+          <View style={styles.headerActions}>
+            {refreshing && (
+              <ActivityIndicator
+                size="small"
+                color={theme.colors.primary[500]}
+                style={styles.headerLoader}
+              />
+            )}
+            <ScreenHeaderAction
+              style={styles.addButton}
+              onPress={handleCreateDishList}
+              accessibilityRole="button"
+              accessibilityLabel="Create DishList"
+            >
+              <Plus size={24} color={theme.colors.primary[500]} />
+            </ScreenHeaderAction>
+            <ScreenHeaderAction
+              style={styles.profileButton}
+              onPress={handleProfilePress}
+              accessibilityRole="button"
+              accessibilityLabel="Open profile"
+            >
+              <Avatar
+                avatarUrl={headerAvatarUrl}
+                firstName={headerProfile?.firstName}
+                lastName={headerProfile?.lastName}
+                username={headerProfile?.username}
+                size={32}
+              />
+            </ScreenHeaderAction>
+          </View>
+        }
+      />
 
       {/* Search */}
       <View style={styles.searchContainer}>
@@ -299,11 +307,7 @@ export default function DishListsScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: theme.colors.background },
   header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: theme.spacing.xl,
-    paddingVertical: theme.spacing.lg,
+    minHeight: 72,
   },
   title: {
     ...typography.editorialPageTitle,
@@ -312,9 +316,7 @@ const styles = StyleSheet.create({
   headerActions: { flexDirection: "row", alignItems: "center" },
   headerLoader: { marginRight: theme.spacing.md },
   addButton: { padding: theme.spacing.sm },
-  profileButton: {
-    padding: theme.spacing.xs,
-  },
+  profileButton: { padding: theme.spacing.xs },
   searchContainer: {
     flexDirection: "row",
     alignItems: "center",

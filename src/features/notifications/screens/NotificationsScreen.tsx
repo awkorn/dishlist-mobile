@@ -15,6 +15,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { theme } from "@styles/theme";
 import { typography } from "@styles/typography";
 import { RootStackParamList } from "@app-types/navigation";
+import { ScreenHeader, ScreenHeaderAction } from "@components/ui";
 import { useNotifications, getSectionTitle } from "../hooks/useNotifications";
 import {
   NotificationItem,
@@ -225,33 +226,37 @@ export default function NotificationsScreen() {
         end={{ x: 0, y: 1 }}
         style={{ paddingTop: insets.top }}
       >
-        <View style={styles.header}>
-          <Text style={styles.title}>Notifications</Text>
-          <TouchableOpacity
-            style={[styles.clearAllButton]}
-            onPress={handleClearAll}
-            disabled={!hasNotifications || isClearing}
-            accessibilityRole="button"
-            accessibilityLabel="Clear all notifications"
-            accessibilityState={{ disabled: !hasNotifications || isClearing }}
-          >
-            {isClearing ? (
-              <ActivityIndicator
-                size="small"
-                color={theme.colors.onPrimary}
-              />
-            ) : (
-              <Text
-                style={[
-                  styles.clearAllText,
-                  !hasNotifications && styles.clearAllTextDisabled,
-                ]}
-              >
-                Clear All
-              </Text>
-            )}
-          </TouchableOpacity>
-        </View>
+        <ScreenHeader
+          title="Notifications"
+          style={styles.header}
+          titleStyle={styles.title}
+          rightSlot={
+            <ScreenHeaderAction
+              style={styles.clearAllButton}
+              onPress={handleClearAll}
+              disabled={!hasNotifications || isClearing}
+              accessibilityRole="button"
+              accessibilityLabel="Clear all notifications"
+              accessibilityState={{ disabled: !hasNotifications || isClearing }}
+            >
+              {isClearing ? (
+                <ActivityIndicator
+                  size="small"
+                  color={theme.colors.onPrimary}
+                />
+              ) : (
+                <Text
+                  style={[
+                    styles.clearAllText,
+                    !hasNotifications && styles.clearAllTextDisabled,
+                  ]}
+                >
+                  Clear All
+                </Text>
+              )}
+            </ScreenHeaderAction>
+          }
+        />
       </LinearGradient>
 
       {/* Notification List */}
@@ -319,11 +324,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: theme.spacing.xl,
-    paddingVertical: theme.spacing.lg,
+    minHeight: 68,
+    backgroundColor: "transparent",
   },
   title: {
     ...typography.heading4,

@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import PagerView from "react-native-pager-view";
-import { MoveLeft } from "lucide-react-native";
+import { ChevronLeft } from "lucide-react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "@app-types/navigation";
 import { useAuth } from "@providers/AuthProvider/AuthContext";
@@ -262,7 +262,7 @@ export default function ProfileScreen({ navigation, route }: Props) {
         <SafeAreaView style={styles.safeArea} edges={["top"]} />
         <View style={styles.blockedHeader}>
           <TouchableOpacity onPress={handleBack} style={styles.blockedBackButton}>
-            <MoveLeft size={24} color={theme.colors.neutral[700]} />
+            <ChevronLeft size={24} color={theme.colors.neutral[700]} />
           </TouchableOpacity>
         </View>
 

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { Animated, StyleSheet, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { MoveLeft } from "lucide-react-native";
+import { ChevronLeft } from "lucide-react-native";
 import { theme } from "@styles/theme";
 
 interface ProfileSkeletonProps {
@@ -47,7 +47,7 @@ export function ProfileSkeleton({ onBack }: ProfileSkeletonProps) {
           accessibilityRole="button"
           accessibilityLabel="Go back"
         >
-          <MoveLeft size={24} color={theme.colors.neutral[700]} />
+          <ChevronLeft size={24} color={theme.colors.neutral[700]} />
         </TouchableOpacity>
         <View style={styles.headerActions} accessibilityElementsHidden>
           <Animated.View style={[styles.headerAction, { opacity }]} />

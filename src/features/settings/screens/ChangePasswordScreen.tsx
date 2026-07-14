@@ -12,13 +12,14 @@ import {
   ScrollView,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { ArrowLeft, Eye, EyeOff } from "lucide-react-native";
+import { ChevronLeft, Eye, EyeOff } from "lucide-react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "@app-types/navigation";
 import { changePassword } from "@features/auth/services/authService";
 import { getAuthErrorMessage } from "@lib/errors";
 import { theme } from "@styles/theme";
 import { typography } from "@styles/typography";
+import { ScreenHeader, ScreenHeaderAction } from "@components/ui";
 
 type Props = NativeStackScreenProps<RootStackParamList, "ChangePassword">;
 
@@ -128,19 +129,19 @@ export default function ChangePasswordScreen({ navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-          accessibilityRole="button"
-          accessibilityLabel="Go back"
-        >
-          <ArrowLeft size={24} color={theme.colors.neutral[800]} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Change Password</Text>
-        <View style={styles.headerSpacer} />
-      </View>
+      <ScreenHeader
+        title="Change Password"
+        titleStyle={styles.headerTitle}
+        leftSlot={
+          <ScreenHeaderAction
+            onPress={() => navigation.goBack()}
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
+          >
+            <ChevronLeft size={24} color={theme.colors.neutral[700]} />
+          </ScreenHeaderAction>
+        }
+      />
 
       <KeyboardAvoidingView
         style={styles.flex}
@@ -222,21 +223,10 @@ const styles = StyleSheet.create({
   flex: {
     flex: 1,
   },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: theme.spacing.xl,
-    paddingVertical: theme.spacing.md,
-    backgroundColor: theme.colors.background,
-  },
   headerTitle: {
     ...typography.heading3,
     fontSize: 20,
     color: theme.colors.textPrimary,
-  },
-  headerSpacer: {
-    width: 24,
   },
   scrollContent: {
     padding: theme.spacing.xl,

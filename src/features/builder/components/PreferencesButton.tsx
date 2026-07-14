@@ -18,6 +18,8 @@ export function PreferencesButton({
       style={styles.button}
       onPress={onPress}
       activeOpacity={0.7}
+      accessibilityRole="button"
+      accessibilityLabel="Open recipe preferences"
     >
       <SlidersHorizontal size={14} color={theme.colors.onPrimary} />
       <Text style={styles.text}>
@@ -29,6 +31,7 @@ export function PreferencesButton({
 
 const styles = StyleSheet.create({
   button: {
+    minHeight: 44,
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
