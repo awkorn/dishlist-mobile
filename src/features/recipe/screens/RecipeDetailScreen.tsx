@@ -711,7 +711,7 @@ const styles = StyleSheet.create({
   dishListTitle: {
     ...typography.caption,
     color: theme.colors.recipeAccent,
-    fontFamily: typography.primarySemiBold,
+    fontFamily: "Inter-SemiBold",
     marginBottom: theme.spacing.md,
   },
   recipeTitle: {
@@ -885,7 +885,7 @@ const styles = StyleSheet.create({
   },
   noteAttribution: {
     ...typography.caption,
-    fontFamily: typography.primarySemiBold,
+    fontFamily: "Inter-SemiBold",
     color: theme.colors.noteAccent,
     letterSpacing: 0.6,
     marginBottom: theme.spacing.sm,
