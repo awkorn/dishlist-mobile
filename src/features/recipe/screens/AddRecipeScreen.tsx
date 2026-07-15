@@ -72,6 +72,8 @@ const TimeInput: React.FC<TimeInputProps> = ({
     <View style={styles.timeInputContainer}>
       <Text style={styles.timeLabel}>{label}</Text>
       <TextField
+        containerStyle={styles.timeField}
+        inputContainerStyle={styles.timeInputField}
         style={styles.timeInput}
         value={inputValue}
         onChangeText={handleTextChange}
@@ -81,8 +83,11 @@ const TimeInput: React.FC<TimeInputProps> = ({
         maxLength={3}
         selectTextOnFocus
         placeholder="0"
+        accessibilityLabel={label}
+        rightElement={
+          unit ? <Text style={styles.timeUnit}>{unit}</Text> : undefined
+        }
       />
-      <Text style={styles.timeUnit}>{unit}</Text>
     </View>
   );
 };
@@ -596,6 +601,7 @@ export default function AddRecipeScreen({ route, navigation }: Props) {
             <Button
               title={isEditMode ? "Update Recipe" : "Add Recipe"}
               onPress={handleSave}
+              size="lg"
               loading={isLoading}
               disabled={isLoading}
               style={styles.saveButton}
@@ -645,28 +651,38 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
   timeSection: {
-    flexDirection: "row",
-    justifyContent: "space-between",
     gap: theme.spacing.md,
   },
   timeInputContainer: {
-    flex: 1,
+    flexDirection: "row",
     alignItems: "center",
+    gap: theme.spacing.md,
   },
   timeLabel: {
-    ...typography.caption,
-    color: theme.colors.neutral[600],
-    marginBottom: theme.spacing.xs,
+    ...typography.body,
+    color: theme.colors.neutral[700],
+    width: 84,
+  },
+  timeField: {
+    flex: 1,
+  },
+  timeInputField: {
+    minHeight: 52,
+    borderColor: theme.colors.neutral[300],
+    backgroundColor: theme.colors.neutral[50],
   },
   timeInput: {
-    width: "100%",
-    textAlign: "center",
-    padding: theme.spacing.md,
+    fontFamily: "Inter-Medium",
+    fontSize: 18,
+    lineHeight: 24,
+    textAlign: "right",
+    paddingHorizontal: theme.spacing.lg,
+    paddingVertical: theme.spacing.md,
   },
   timeUnit: {
     ...typography.caption,
     color: theme.colors.neutral[500],
-    marginTop: theme.spacing.xs,
+    paddingRight: theme.spacing.lg,
   },
   noteInputRow: {
     flexDirection: "row",
@@ -774,7 +790,6 @@ const styles = StyleSheet.create({
   },
   saveButton: {
     width: "100%",
-    paddingVertical: theme.spacing.lg,
     marginBottom: theme.spacing.xl,
   },
   warningBanner: {

@@ -7,6 +7,7 @@ import {
   Alert,
   Platform,
   Animated,
+  Linking,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
@@ -264,6 +265,12 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
     () => (recipe ? (recipe.prepTime || 0) + (recipe.cookTime || 0) : 0),
     [recipe],
   );
+  const hasRecipeMetadata = Boolean(
+    recipe &&
+      ((recipe.prepTime ?? 0) > 0 ||
+        (recipe.cookTime ?? 0) > 0 ||
+        (recipe.servings ?? 0) > 0),
+  );
   const recipeImages = useMemo(() => {
     if (!recipe) return [];
     if (recipe.imageUrls?.length) return recipe.imageUrls;
@@ -370,34 +377,38 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
             </Text>
             <Text style={styles.recipeTitle}>{recipe.title}</Text>
 
-            <View style={styles.metaSection}>
-              <View style={styles.metaRow}>
-                {recipe.prepTime && recipe.prepTime > 0 && (
-                  <View style={styles.metaItem}>
-                    <Text style={styles.metaLabel}>Prep Time</Text>
-                    <Text style={styles.metaValue}>{recipe.prepTime} min</Text>
-                  </View>
-                )}
-                {recipe.cookTime && recipe.cookTime > 0 && (
-                  <View style={styles.metaItem}>
-                    <Text style={styles.metaLabel}>Cook Time</Text>
-                    <Text style={styles.metaValue}>{recipe.cookTime} min</Text>
-                  </View>
-                )}
-                {totalTime > 0 && (
-                  <View style={styles.metaItem}>
-                    <Text style={styles.metaLabel}>Total Time</Text>
-                    <Text style={styles.metaValue}>{totalTime} min</Text>
-                  </View>
-                )}
-                {recipe.servings && recipe.servings > 0 && (
-                  <View style={styles.metaItem}>
-                    <Text style={styles.metaLabel}>Servings</Text>
-                    <Text style={styles.metaValue}>{recipe.servings}</Text>
-                  </View>
-                )}
+            {hasRecipeMetadata ? (
+              <View style={styles.metaSection}>
+                <View style={styles.metaRow}>
+                  {recipe.prepTime && recipe.prepTime > 0 && (
+                    <View style={styles.metaItem}>
+                      <Text style={styles.metaLabel}>Prep Time</Text>
+                      <Text style={styles.metaValue}>{recipe.prepTime} min</Text>
+                    </View>
+                  )}
+                  {recipe.cookTime && recipe.cookTime > 0 && (
+                    <View style={styles.metaItem}>
+                      <Text style={styles.metaLabel}>Cook Time</Text>
+                      <Text style={styles.metaValue}>{recipe.cookTime} min</Text>
+                    </View>
+                  )}
+                  {totalTime > 0 && (
+                    <View style={styles.metaItem}>
+                      <Text style={styles.metaLabel}>Total Time</Text>
+                      <Text style={styles.metaValue}>{totalTime} min</Text>
+                    </View>
+                  )}
+                  {recipe.servings && recipe.servings > 0 && (
+                    <View style={styles.metaItem}>
+                      <Text style={styles.metaLabel}>Servings</Text>
+                      <Text style={styles.metaValue}>{recipe.servings}</Text>
+                    </View>
+                  )}
+                </View>
               </View>
-            </View>
+            ) : (
+              <View style={styles.metadataDivider} />
+            )}
           </View>
 
           {recipe.originalRecipe && (
@@ -409,6 +420,29 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
                   : recipe.originalRecipe.creator.firstName || "another cook"}
               </Text>
             </View>
+          )}
+
+          {/* Social-import attribution: links back to the original post */}
+          {recipe.sourceUrl && (
+            <TouchableOpacity
+              style={styles.attribution}
+              onPress={() => void Linking.openURL(recipe.sourceUrl!)}
+              accessibilityRole="link"
+              accessibilityLabel="Open the original post"
+            >
+              <Text style={styles.attributionText}>
+                Saved from{" "}
+                {recipe.sourcePlatform === "TIKTOK"
+                  ? "TikTok"
+                  : recipe.sourcePlatform === "INSTAGRAM"
+                    ? "Instagram"
+                    : recipe.sourcePlatform === "FACEBOOK"
+                      ? "Facebook"
+                      : "the web"}
+                {recipe.sourceAuthor ? ` • ${recipe.sourceAuthor}` : ""}{" "}
+                <Text style={styles.attributionLink}>View original</Text>
+              </Text>
+            </TouchableOpacity>
           )}
 
           {/* Cook Mode Button */}
@@ -719,6 +753,10 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.neutral[300],
   },
+  metadataDivider: {
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: theme.colors.neutral[300],
+  },
   attribution: {
     paddingHorizontal: theme.spacing.xl,
     paddingTop: theme.spacing.lg,
@@ -727,6 +765,11 @@ const styles = StyleSheet.create({
     ...typography.caption,
     color: theme.colors.neutral[600],
     lineHeight: 18,
+  },
+  attributionLink: {
+    ...typography.caption,
+    color: theme.colors.primary[500],
+    fontWeight: "600",
   },
   metaRow: {
     flexDirection: "row",

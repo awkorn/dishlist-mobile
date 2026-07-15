@@ -6,6 +6,7 @@ import type {
   ImportRecipeResponse,
   ImageData,
   AddRecipeToDishListResult,
+  SocialImportStatus,
 } from "../types";
 
 export const recipeService = {
@@ -62,6 +63,16 @@ export const recipeService = {
    * @param images Array of image data (base64 encoded)
    * @returns Extracted recipe data with any warnings
    */
+  /**
+   * Poll the status of a social-media import started by the share extension
+   */
+  async getImportStatus(importId: string): Promise<SocialImportStatus> {
+    const response = await api.get<SocialImportStatus>(
+      `/recipes/imports/${importId}`
+    );
+    return response.data;
+  },
+
   async importFromImages(images: ImageData[]): Promise<ImportRecipeResponse> {
     const payload = {
       images: images.map((img) => ({

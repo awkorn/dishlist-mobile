@@ -47,9 +47,8 @@ export const typography = {
   },
   editorialPageTitle: {
     fontFamily: "PlayfairDisplay-SemiBold",
-    fontSize: 32,
-    lineHeight: 36,
-    letterSpacing: -0.5,
+    fontSize: 36,
+    lineHeight: 40,
   },
   recipeDetailTitle: {
     fontFamily: "PlayfairDisplay-SemiBold",

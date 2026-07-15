@@ -21,7 +21,7 @@ export const theme = {
       800: "#1F2937",
       900: "#111827",
     },
-    success: "#10B981",
+    success: "#28af1b",
     message: "#34C759",
     successBg: "#ECFDF5",
     successText: "#065F46",

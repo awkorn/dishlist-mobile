@@ -16,8 +16,16 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.dishlist.app",
+      "entitlements": {
+        "com.apple.security.application-groups": [
+          "group.com.dishlist.app"
+        ]
+      },
       "infoPlist": {
-        "UIBackgroundModes": ["remote-notification"]
+        "UIBackgroundModes": [
+          "remote-notification"
+        ],
+        "AppGroup": "group.com.dishlist.app"
       }
     },
     "android": {
@@ -38,7 +46,36 @@
           "icon": "./assets/icon.png",
           "color": "#2563eb"
         }
-      ]
+      ],
+      [
+        "expo-share-extension",
+        {
+          "activationRules": [
+            { "type": "url", "max": 1 },
+            { "type": "text" }
+          ],
+          "backgroundColor": {
+            "red": 247,
+            "green": 245,
+            "blue": 243,
+            "alpha": 1
+          },
+          "height": 260,
+          "excludedPackages": [
+            "expo-dev-client",
+            "expo-splash-screen",
+            "expo-updates",
+            "expo-notifications",
+            "expo-image-picker",
+            "expo-image-manipulator",
+            "expo-linear-gradient",
+            "expo-haptics",
+            "expo-clipboard",
+            "expo-device"
+          ]
+        }
+      ],
+      "./plugins/withShareExtensionLocalNetworking"
     ],
     "assetBundlePatterns": [
       "assets/fonts/*"
