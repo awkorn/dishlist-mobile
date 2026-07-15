@@ -74,7 +74,8 @@
             "expo-device"
           ]
         }
-      ]
+      ],
+      "./plugins/withShareExtensionLocalNetworking"
     ],
     "assetBundlePatterns": [
       "assets/fonts/*"

@@ -2,6 +2,7 @@
 // extension bundle must stay small and cold-start fast.
 
 import { appendPendingImportId } from "./sharedStorage";
+import { shareLog } from "./logger";
 
 const REQUEST_TIMEOUT_MS = 10_000;
 
@@ -38,11 +39,17 @@ export async function startSocialImport(
 ): Promise<StartImportResult> {
   const apiBaseUrl = process.env.EXPO_PUBLIC_API_URL;
   if (!apiBaseUrl) {
-    return { status: "error" };
+    shareLog.error(
+      "EXPO_PUBLIC_API_URL is undefined in the extension bundle — rebuild the dev client after setting it in .env"
+    );
+    return { status: "error", message: "API URL not configured" };
   }
 
+  const endpoint = `${apiBaseUrl}/recipes/import-from-social`;
+  shareLog.info(`POST ${endpoint}`);
+
   try {
-    const response = await fetch(`${apiBaseUrl}/recipes/import-from-social`, {
+    const response = await fetch(endpoint, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -51,6 +58,8 @@ export async function startSocialImport(
       body: JSON.stringify({ url }),
       signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     });
+
+    shareLog.info(`Response status: ${response.status}`);
 
     if (response.status === 401 || response.status === 403) {
       return { status: "auth-failed" };
@@ -61,19 +70,34 @@ export async function startSocialImport(
       .catch(() => ({}))) as { importId?: string; error?: string };
 
     if (response.status === 400) {
+      shareLog.warn(`400 from server: ${data?.error ?? "no message"}`);
       return { status: "unsupported-url" };
     }
     if (!response.ok) {
+      shareLog.error(
+        `Server error ${response.status}: ${data?.error ?? "no message"}`
+      );
       return { status: "error", message: data?.error };
     }
 
     if (data.importId) {
+      shareLog.info(`Import accepted: ${data.importId}`);
       // Queue for main-app foreground reconciliation (covers users who
       // declined push permission).
       appendPendingImportId(data.importId);
     }
     return { status: "accepted" };
-  } catch {
-    return { status: "error" };
+  } catch (error) {
+    // Most commonly: EXPO_PUBLIC_API_URL points at localhost (unreachable from
+    // a physical device — use the Mac's LAN IP), the API server isn't running,
+    // or the 10s timeout fired.
+    const name = (error as Error)?.name;
+    const message = (error as Error)?.message ?? String(error);
+    if (name === "TimeoutError") {
+      shareLog.error(`Request timed out after ${REQUEST_TIMEOUT_MS}ms → ${endpoint}`);
+    } else {
+      shareLog.error(`Network request failed (${name}): ${message} → ${endpoint}`);
+    }
+    return { status: "error", message };
   }
 }

@@ -20,6 +20,7 @@ import {
   isSupportedSocialUrl,
   startSocialImport,
 } from "./shareExtensionApi";
+import { shareLog } from "./logger";
 
 const colors = {
   background: "#F7F5F3",
@@ -53,21 +54,26 @@ export default function ShareExtensionRoot(initialProps: {
 
     const url = extractSharedUrl(initialProps);
     if (!url || !isSupportedSocialUrl(url)) {
+      shareLog.warn(`Unsupported or missing URL: ${url ?? "none"}`);
       setState("unsupported");
       return;
     }
+    shareLog.info(`Starting import for ${url}`);
 
     const auth = await getShareExtensionAccessToken();
     if (auth.status === "signed-out") {
+      shareLog.info("Auth: signed-out → needs-signin");
       setState("needs-signin");
       return;
     }
     if (auth.status === "error") {
+      shareLog.error("Auth: error → showing error state");
       setState("error");
       return;
     }
 
     const result = await startSocialImport(url, auth.accessToken);
+    shareLog.info(`Import result: ${result.status}`);
     switch (result.status) {
       case "accepted":
         setState("saved");
