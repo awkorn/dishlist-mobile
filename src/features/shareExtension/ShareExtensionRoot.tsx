@@ -28,7 +28,7 @@ const colors = {
   primary: "#2563eb",
   textPrimary: "#00295B",
   textMuted: "#6B7280",
-  success: "#10B981",
+  success: "#28af1b",
   error: "#EF4444",
 };
 

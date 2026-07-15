@@ -9,8 +9,10 @@ import React, {
 } from "react";
 import { Alert } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { useQueryClient } from "@tanstack/react-query";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "@app-types/navigation";
+import { queryKeys } from "@lib/queryKeys";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useAuth } from "@providers/AuthProvider/AuthContext";
 import {
@@ -53,7 +55,14 @@ export function PushNotificationsProvider({
   const [pushEnabled, setPushEnabled] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const navigation = useNavigation<Nav>();
+  const queryClient = useQueryClient();
   const tokenRef = useRef<string | null>(null);
+
+  const refreshNotificationQueries = useCallback(() => {
+    void queryClient.invalidateQueries({
+      queryKey: queryKeys.notifications.all,
+    });
+  }, [queryClient]);
 
   // Restore saved preference on mount
   useEffect(() => {
@@ -104,11 +113,13 @@ export function PushNotificationsProvider({
   // Set up notification listeners
   useEffect(() => {
     const receivedSub = addNotificationReceivedListener(() => {
-      // Notification received in foreground — no action needed,
-      // the notification handler in pushService already shows the alert
+      // Keep both the tab badge and the already-mounted notification list in
+      // sync as soon as a foreground push arrives.
+      refreshNotificationQueries();
     });
 
     const responseSub = addNotificationResponseListener((response) => {
+      refreshNotificationQueries();
       const data = response.notification.request.content.data;
       if (!data?.type) return;
 
@@ -152,7 +163,7 @@ export function PushNotificationsProvider({
       receivedSub.remove();
       responseSub.remove();
     };
-  }, [navigation]);
+  }, [navigation, refreshNotificationQueries]);
 
   const togglePush = useCallback(
     async (enable: boolean) => {

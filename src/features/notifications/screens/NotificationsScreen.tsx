@@ -8,11 +8,13 @@ import {
   RefreshControl,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { useQueryClient } from "@tanstack/react-query";
 import { LinearGradient } from "expo-linear-gradient";
 import { theme } from "@styles/theme";
 import { typography } from "@styles/typography";
+import { queryKeys } from "@lib/queryKeys";
 import { RootStackParamList } from "@app-types/navigation";
 import { ErrorState, ScreenHeader, ScreenHeaderAction } from "@components/ui";
 import { useNotifications, getSectionTitle } from "../hooks/useNotifications";
@@ -61,6 +63,7 @@ function buildSections(grouped: GroupedNotifications): SectionData[] {
 export default function NotificationsScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<NavigationProp>();
+  const queryClient = useQueryClient();
 
   const {
     groupedNotifications,
@@ -85,6 +88,17 @@ export default function NotificationsScreen() {
     isAcceptingFollow,
     isDecliningFollow,
   } = useNotifications();
+
+  // Bottom-tab screens stay mounted after their first visit, so React Query's
+  // mount/window-focus settings do not run when the user returns to this tab.
+  // Refresh both the list and badge every time Notifications gains focus.
+  useFocusEffect(
+    useCallback(() => {
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.notifications.all,
+      });
+    }, [queryClient])
+  );
 
   // Build sections for SectionList
   const sections = useMemo(
