@@ -17,6 +17,7 @@ import { PushNotificationsProvider } from '@features/notifications';
 import { theme } from '@styles/theme';
 import { initSharedSessionSync } from '@services/sharedSession';
 import { useSocialImportStatus } from '@features/recipe/hooks/useSocialImportStatus';
+import { ToastViewport } from '@components/ui';
 
 // Mirror the Supabase session into App Group storage for the share extension
 // (and adopt sessions the extension refreshed). Module-level like the api.ts
@@ -102,6 +103,7 @@ export default function App() {
                     style="dark"
                     backgroundColor={theme.colors.background}
                   />
+                  <ToastViewport />
                 </PushNotificationsProvider>
               </NavigationContainer>
             </AuthProvider>

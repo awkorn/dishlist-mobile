@@ -50,6 +50,7 @@ import { ShareModal } from "@features/share";
 import { ReportContentModal } from "@components/moderation/ReportContentModal";
 import Button from "@components/ui/Button";
 import { ErrorState } from "@components/ui";
+import { toast } from "@components/ui/toast";
 
 type Props = NativeStackScreenProps<RootStackParamList, "RecipeDetail">;
 
@@ -206,11 +207,10 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
 
         addToGroceryMutation.mutate(unchecked, {
           onSuccess: () => {
-            Alert.alert(
-              "Added to Grocery List",
+            toast.success(
               `${unchecked.length} ${
                 unchecked.length === 1 ? "ingredient" : "ingredients"
-              } added to your grocery list.`,
+              } added to Grocery List`,
             );
           },
         });

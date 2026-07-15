@@ -5,13 +5,14 @@
 // and surface the outcome in-app.
 
 import { useCallback, useEffect, useRef } from "react";
-import { Alert, AppState } from "react-native";
+import { AppState } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "@app-types/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@providers/AuthProvider/AuthContext";
 import { queryKeys } from "@lib/queryKeys";
+import { toast } from "@components/ui/toast";
 import { recipeService } from "../services/recipeService";
 import {
   readPendingImportIds,
@@ -38,25 +39,18 @@ export function useSocialImportStatus(): void {
           queryKey: queryKeys.dishLists.all,
         });
         void queryClient.invalidateQueries({ queryKey: queryKeys.recipes.all });
-        Alert.alert(
-          "Recipe saved",
-          "Your recipe was added to My Recipes.",
-          recipeId
-            ? [
-                { text: "Later", style: "cancel" },
-                {
-                  text: "View",
-                  onPress: () =>
-                    navigation.navigate("RecipeDetail", { recipeId }),
-                },
-              ]
-            : undefined
-        );
+        toast.success("Recipe saved to My Recipes", {
+          duration: 5000,
+          action: recipeId
+            ? {
+                label: "View",
+                onPress: () =>
+                  navigation.navigate("RecipeDetail", { recipeId }),
+              }
+            : undefined,
+        });
       } else {
-        Alert.alert(
-          "Couldn't save recipe",
-          detail ?? "Something went wrong importing that post."
-        );
+        toast.error(detail ?? "Couldn't import recipe", { duration: 4500 });
       }
     },
     [navigation, queryClient]

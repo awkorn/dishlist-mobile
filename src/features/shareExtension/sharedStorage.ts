@@ -5,14 +5,45 @@
 // two processes safe.
 //
 // This module is imported by the share-extension bundle — keep its import
-// graph to react-native-mmkv only.
+// graph limited to React Native and react-native-mmkv.
 
+import { NativeModules } from "react-native";
 import { MMKV, Mode } from "react-native-mmkv";
 
-export const sharedStorage = new MMKV({
-  id: "dishlist-shared",
-  mode: Mode.MULTI_PROCESS,
-});
+interface SharedKeyValueStorage {
+  getString(key: string): string | undefined;
+  set(key: string, value: string): void;
+  delete(key: string): void;
+}
+
+function isExpoGo(): boolean {
+  // Keep this check dependency-free because expo-constants is intentionally
+  // excluded from the share-extension target. This is the same ownership
+  // signal Expo-aware native libraries use to identify Expo Go.
+  return (
+    NativeModules.NativeUnimoduleProxy?.modulesConstants?.ExponentConstants
+      ?.appOwnership === "expo"
+  );
+}
+
+function createMemoryStorage(): SharedKeyValueStorage {
+  const values = new Map<string, string>();
+  return {
+    getString: (key) => values.get(key),
+    set: (key, value) => values.set(key, value),
+    delete: (key) => values.delete(key),
+  };
+}
+
+// Expo Go cannot load custom native modules such as MMKV or an iOS share
+// extension. Keep the main app usable there for ordinary UI development; real
+// dev/production builds and the extension continue to use App-Group MMKV.
+export const sharedStorage: SharedKeyValueStorage = isExpoGo()
+  ? createMemoryStorage()
+  : new MMKV({
+      id: "dishlist-shared",
+      mode: Mode.MULTI_PROCESS,
+    });
 
 const SESSION_KEY = "supabase.sharedSession";
 const PENDING_IMPORTS_KEY = "socialImport.pendingIds";

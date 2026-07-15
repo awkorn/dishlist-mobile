@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { Alert } from "react-native";
+import { toast } from "@components/ui/toast";
 import * as ImagePicker from "expo-image-picker";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { uploadImage } from "@services/image";
@@ -61,6 +62,7 @@ export function useEditProfile({
         queryKey: [PROFILE_QUERY_KEY, user.uid],
       });
       queryClient.invalidateQueries({ queryKey: queryKeys.users.me() });
+      toast.success("Profile updated");
       onSuccess?.();
     },
     onError: (error: any) => {

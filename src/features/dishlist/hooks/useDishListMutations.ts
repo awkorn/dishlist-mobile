@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Alert } from 'react-native';
+import { toast } from '@components/ui/toast';
 import { queryKeys } from '@lib/queryKeys';
 import { dishlistService } from '../services';
 import {
@@ -91,6 +92,7 @@ export function useCreateDishList() {
         );
       queryClient.setQueryData<DishListsCache>(queryKeys.dishLists.list('my'), replaceTemp);
       queryClient.setQueryData<DishListsCache>(queryKeys.dishLists.list('all'), replaceTemp);
+      toast.success('DishList created');
     },
 
     onSettled: () => {
@@ -170,6 +172,7 @@ export function useUpdateDishList() {
         (current) =>
           mapDishListDetailCache(current, (page) => ({ ...page, ...data }))
       );
+      toast.success('Changes saved');
     },
 
     onSettled: () => {
@@ -240,6 +243,10 @@ export function useTogglePinDishList() {
       Alert.alert('Error', 'Failed to update pin status. Please try again.');
     },
 
+    onSuccess: (_, variables) => {
+      toast.success(variables.isPinned ? 'DishList unpinned' : 'DishList pinned');
+    },
+
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.dishLists.all });
     },
@@ -261,6 +268,7 @@ export function useToggleFollowDishList() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.dishLists.detail(variables.dishListId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.dishLists.all });
+      toast.success(variables.isFollowing ? 'DishList unfollowed' : 'Following DishList');
     },
 
     onError: () => {
@@ -311,6 +319,7 @@ export function useDeleteDishList() {
     onSuccess: (_, dishListId) => {
       queryClient.removeQueries({ queryKey: queryKeys.dishLists.detail(dishListId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.dishLists.all });
+      toast.success('DishList deleted');
     },
   });
 }
@@ -351,6 +360,7 @@ export function useRemoveRecipeFromDishList() {
       queryClient.invalidateQueries({ queryKey: queryKeys.dishLists.detail(variables.dishListId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.dishLists.all });
       queryClient.invalidateQueries({ queryKey: ['recipe', variables.recipeId, 'dishlists'] });
+      toast.success('Recipe removed from DishList');
     },
   });
 }

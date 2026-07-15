@@ -4,6 +4,7 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { shareService } from '@features/share/services';
 import { inviteService } from '../services/inviteService';
 import { queryKeys } from '@lib/queryKeys';
+import { toast } from '@components/ui/toast';
 import type { MutualUser } from '@features/share/types';
 
 interface UseInviteCollaboratorOptions {
@@ -71,7 +72,7 @@ export function useInviteCollaborator({
 
       const message = parts.length > 0 ? parts.join(', ') : 'Invites processed';
 
-      Alert.alert('Invites Sent!', message);
+      toast.success(message);
       setSelectedUserIds(new Set());
       onInviteSuccess?.();
     },
@@ -151,7 +152,7 @@ export function useInviteCollaborator({
     try {
       const result = await generateLinkMutation.mutateAsync();
       Clipboard.setString(result.link);
-      Alert.alert('Link Copied', 'The invite link has been copied to your clipboard.');
+      toast.success('Link copied');
     } catch (error) {
       // Error handled in mutation
       console.error('Copy link error:', error);

@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Alert } from 'react-native';
+import { toast } from '@components/ui/toast';
 import { recipeService } from '../services';
 import { queryKeys } from '@lib/queryKeys';
 import type { Recipe, CreateRecipeData, UpdateRecipeData } from '../types';
@@ -95,6 +96,7 @@ export function useCreateRecipe() {
       });
       // Background invalidation for list views
       queryClient.invalidateQueries({ queryKey: queryKeys.dishLists.all });
+      toast.success('Recipe added to DishList');
     },
 
     onError: (error: any) => {
@@ -176,6 +178,7 @@ export function useUpdateRecipe() {
       // Refetch in the background while keeping the confirmed title visible.
       queryClient.invalidateQueries({ queryKey: [RECIPE_QUERY_KEY, variables.recipeId] });
       queryClient.invalidateQueries({ queryKey: queryKeys.dishLists.all });
+      toast.success('Recipe updated');
     },
   });
 }

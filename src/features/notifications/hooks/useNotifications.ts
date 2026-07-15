@@ -7,6 +7,7 @@ import {
   type QueryClient,
 } from "@tanstack/react-query";
 import { Alert } from "react-native";
+import { toast } from "@components/ui/toast";
 import { queryKeys } from "@lib/queryKeys";
 import { notificationService } from "../services/notificationService";
 import type {
@@ -349,6 +350,9 @@ export function useNotifications() {
       restoreNotificationContext(queryClient, context);
       Alert.alert("Error", "Failed to clear notifications. Please try again.");
     },
+    onSuccess: () => {
+      toast.success("Notifications cleared");
+    },
   });
 
   // Accept invitation mutation
@@ -372,6 +376,7 @@ export function useNotifications() {
       queryClient.invalidateQueries({
         queryKey: queryKeys.dishLists.all,
       });
+      toast.success("Invitation accepted");
     },
     onError: (error: any, _id, context) => {
       restoreNotificationContext(queryClient, context);
@@ -402,6 +407,9 @@ export function useNotifications() {
       restoreNotificationContext(queryClient, context);
       Alert.alert("Error", "Failed to decline invitation.");
     },
+    onSuccess: () => {
+      toast.success("Invitation declined");
+    },
   });
 
   // Accept follow request mutation
@@ -424,6 +432,9 @@ export function useNotifications() {
       restoreNotificationContext(queryClient, context);
       Alert.alert("Error", "Failed to accept follow request.");
     },
+    onSuccess: () => {
+      toast.success("Follow request accepted");
+    },
   });
 
   // Decline follow request mutation
@@ -445,6 +456,9 @@ export function useNotifications() {
     onError: (_err, _id, context) => {
       restoreNotificationContext(queryClient, context);
       Alert.alert("Error", "Failed to decline follow request.");
+    },
+    onSuccess: () => {
+      toast.success("Follow request declined");
     },
   });
 

@@ -31,7 +31,7 @@ import RecipeTile from "@features/recipe/components/RecipeTile";
 import ActionSheet, { ActionSheetOption } from "@components/ui/ActionSheet";
 import { QueryErrorBoundary } from "@providers/ErrorBoundary";
 import { DishListDetailScreenProps } from "@app-types/navigation";
-import { ImportRecipeModal } from "@features/recipe/components";
+import ImportRecipeModal from "@features/recipe/components/ImportRecipeModal";
 import type { ImportRecipeResponse } from "@features/recipe/types";
 import { ShareModal } from "@features/share";
 import { InviteCollaboratorModal, CollaboratorPreview } from "@features/invite";

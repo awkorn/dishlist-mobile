@@ -9,6 +9,7 @@ import {
 import AppModal from "@components/ui/Modal";
 import Button from "@components/ui/Button";
 import { TextField } from "@components/ui";
+import { toast } from "@components/ui/toast";
 import {
   ReportReason,
   ReportTargetType,
@@ -107,7 +108,7 @@ export function ReportContentModal({
       setDetails("");
       onClose();
       onSubmitted?.();
-      Alert.alert("Report Submitted", "Thanks. We'll review it soon.");
+      toast.success("Report submitted. Thanks—we'll review it.");
     } catch (error: any) {
       Alert.alert(
         "Error",

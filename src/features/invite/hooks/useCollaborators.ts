@@ -3,6 +3,7 @@ import { Alert } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { inviteService } from '../services/inviteService';
 import { queryKeys } from '@lib/queryKeys';
+import { toast } from '@components/ui/toast';
 import type { CollaboratorsResponse } from '../types';
 
 interface UseCollaboratorsOptions {
@@ -36,7 +37,7 @@ export function useCollaborators({ dishListId, enabled = true }: UseCollaborator
       // Invalidate queries
       queryClient.invalidateQueries({ queryKey: collaboratorsQueryKey });
       queryClient.invalidateQueries({ queryKey: queryKeys.dishLists.detail(dishListId) });
-      Alert.alert('Success', 'Collaborator removed');
+      toast.success('Collaborator removed');
     },
     onError: (error: any) => {
       Alert.alert('Error', error?.response?.data?.error || 'Failed to remove collaborator');
@@ -48,7 +49,7 @@ export function useCollaborators({ dishListId, enabled = true }: UseCollaborator
     mutationFn: (inviteId: string) => inviteService.revokeInvite(dishListId, inviteId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: collaboratorsQueryKey });
-      Alert.alert('Success', 'Invite revoked');
+      toast.success('Invite revoked');
     },
     onError: (error: any) => {
       Alert.alert('Error', error?.response?.data?.error || 'Failed to revoke invite');
@@ -60,7 +61,7 @@ export function useCollaborators({ dishListId, enabled = true }: UseCollaborator
     mutationFn: (inviteId: string) => inviteService.resendInvite(dishListId, inviteId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: collaboratorsQueryKey });
-      Alert.alert('Success', 'Invite resent');
+      toast.success('Invite resent');
     },
     onError: (error: any) => {
       Alert.alert('Error', error?.response?.data?.error || 'Failed to resend invite');

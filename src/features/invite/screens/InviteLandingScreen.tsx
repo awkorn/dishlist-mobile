@@ -11,6 +11,7 @@ import { theme } from '@styles/theme';
 import { typography } from '@styles/typography';
 import Button from '@components/ui/Button';
 import Avatar from '@components/ui/Avatar';
+import { toast } from '@components/ui/toast';
 import { inviteService } from '../services/inviteService';
 import { useAuth } from '@providers/AuthProvider/AuthContext';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -96,6 +97,7 @@ export default function InviteLandingScreen({ route, navigation }: Props) {
           onPress: async () => {
             try {
               await inviteService.declineInvite(token);
+              toast.success('Invitation declined');
             } catch (error) {
               // Still navigate away even if decline fails
             } finally {

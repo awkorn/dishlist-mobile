@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Alert } from "react-native";
+import { toast } from "@components/ui/toast";
 import { queryKeys } from "@lib/queryKeys";
 import { profileService } from "../services/profileService";
 import { PROFILE_QUERY_KEY } from "./useProfile";
@@ -48,6 +49,7 @@ export function useBlockUser({ userId }: UseBlockUserOptions) {
             : previousData
       );
       invalidateBlockedUserCaches();
+      toast.success("User blocked");
     },
     onError: (error: any) => {
       Alert.alert(
@@ -59,7 +61,10 @@ export function useBlockUser({ userId }: UseBlockUserOptions) {
 
   const unblockMutation = useMutation({
     mutationFn: () => profileService.unblockUser(userId),
-    onSuccess: invalidateBlockedUserCaches,
+    onSuccess: () => {
+      invalidateBlockedUserCaches();
+      toast.success("User unblocked");
+    },
     onError: (error: any) => {
       Alert.alert(
         "Error",

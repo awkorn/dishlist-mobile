@@ -4,6 +4,7 @@ import * as Clipboard from 'expo-clipboard';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { shareService } from '../services/shareService';
 import { queryKeys } from '@lib/queryKeys';
+import { toast } from '@components/ui/toast';
 import type { ShareType } from '../types';
 
 interface UseShareModalOptions {
@@ -80,9 +81,8 @@ export function useShareModal({
       throw new Error('Profiles can only be shared by link or message.');
     },
     onSuccess: (data) => {
-      Alert.alert(
-        'Shared!',
-        `${contentTypeLabel} shared with ${data.notificationsSent} ${data.notificationsSent === 1 ? 'person' : 'people'}.`
+      toast.success(
+        `${contentTypeLabel} shared with ${data.notificationsSent} ${data.notificationsSent === 1 ? 'person' : 'people'}`
       );
       setSelectedUserIds(new Set());
       onShareSuccess?.();
@@ -169,7 +169,7 @@ export function useShareModal({
     setActiveExternalShareMethod('link');
     try {
       await Clipboard.setStringAsync(shareLink);
-      Alert.alert('Link Copied', 'The link has been copied to your clipboard.');
+      toast.success('Link copied');
     } catch (error) {
       console.error('Copy link error:', error);
       Alert.alert('Error', 'Could not copy the link. Please try again.');

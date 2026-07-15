@@ -115,7 +115,7 @@ export default function RecipeBuilderScreen() {
           onSuccess: () => {
             setShowDishListPicker(false);
             setRecipeToSave(null);
-            Alert.alert("Saved!", "Recipe has been added to your DishList.");
+            // useCreateRecipe presents the global success toast.
           },
           onError: () => {
             // Keep the picker open so the user can retry; surface the failure.

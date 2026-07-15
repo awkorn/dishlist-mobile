@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Alert } from 'react-native';
+import { toast } from '@components/ui/toast';
 import { profileService } from '../services/profileService';
 import { PROFILE_QUERY_KEY } from './useProfile';
 import { invalidateFollowRelatedCaches } from '@lib/cacheInvalidation';
@@ -46,6 +47,10 @@ export function useFollowUser({ userId }: UseFollowUserOptions) {
       );
     },
 
+    onSuccess: () => {
+      toast.success('Follow request sent');
+    },
+
     onSettled: () => {
       invalidateFollowRelatedCaches(queryClient, userId);
     },
@@ -87,6 +92,11 @@ export function useFollowUser({ userId }: UseFollowUserOptions) {
         'Error',
         error?.response?.data?.error || 'Failed to update follow status'
       );
+    },
+
+    onSuccess: (_data, _variables, context) => {
+      const wasFollowing = context?.previousData?.user.followStatus === 'ACCEPTED';
+      toast.success(wasFollowing ? 'User unfollowed' : 'Follow request canceled');
     },
 
     onSettled: () => {

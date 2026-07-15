@@ -4,6 +4,7 @@ import { act, renderHook, waitFor } from "@testing-library/react-native";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useShareModal } from "../hooks/useShareModal";
 import { shareService } from "../services/shareService";
+import { toast } from "@components/ui/toast";
 
 jest.mock("../services/shareService", () => ({
   shareService: {
@@ -18,6 +19,14 @@ jest.mock("../services/shareService", () => ({
 
 jest.mock("expo-clipboard", () => ({
   setStringAsync: jest.fn(() => Promise.resolve()),
+}));
+
+jest.mock("@components/ui/toast", () => ({
+  toast: {
+    success: jest.fn(),
+    error: jest.fn(),
+    info: jest.fn(),
+  },
 }));
 
 const mockShareService = shareService as jest.Mocked<typeof shareService>;
@@ -61,7 +70,7 @@ describe("useShareModal", () => {
     expect(result.current.hasSelection).toBe(false);
   });
 
-  it("dispatches a dishlist share and alerts success", async () => {
+  it("dispatches a dishlist share and toasts success", async () => {
     mockShareService.shareDishList.mockResolvedValueOnce({
       success: true,
       notificationsSent: 2,
@@ -88,10 +97,7 @@ describe("useShareModal", () => {
       recipientIds: ["u-2"],
     });
     expect(mockShareService.shareRecipe).not.toHaveBeenCalled();
-    expect(Alert.alert).toHaveBeenCalledWith(
-      "Shared!",
-      "DishList shared with 2 people."
-    );
+    expect(toast.success).toHaveBeenCalledWith("DishList shared with 2 people");
   });
 
   it("dispatches a recipe share for recipe content", async () => {

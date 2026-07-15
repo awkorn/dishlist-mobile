@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { DishListPickerModal } from "@features/dishlist";
 import { typography } from "@styles/typography";
 import { theme } from "@styles/theme";
+import { toast } from "@components/ui/toast";
 import { getErrorMessage } from "@utils";
 import { useAddRecipeToDishList } from "../hooks";
 import { recipeService } from "../services";
@@ -34,7 +35,14 @@ export default function AddToDishListModal({
   const handleSelectDishList = (dishListId: string) => {
     addMutation.mutate(
       { dishListId, recipeId },
-      { onSuccess: () => onClose() },
+      {
+        onSuccess: () => {
+          toast.success(
+            createsCopy ? "Recipe saved to DishList" : "Recipe added to DishList",
+          );
+          onClose();
+        },
+      },
     );
   };
 
