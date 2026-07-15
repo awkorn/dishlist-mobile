@@ -48,6 +48,15 @@ export async function startSocialImport(
   const endpoint = `${apiBaseUrl}/recipes/import-from-social`;
   shareLog.info(`POST ${endpoint}`);
 
+  // Manual AbortController + setTimeout instead of AbortSignal.timeout, which
+  // is undefined in React Native's Hermes runtime.
+  const controller = new AbortController();
+  let timedOut = false;
+  const timeoutId = setTimeout(() => {
+    timedOut = true;
+    controller.abort();
+  }, REQUEST_TIMEOUT_MS);
+
   try {
     const response = await fetch(endpoint, {
       method: "POST",
@@ -56,7 +65,7 @@ export async function startSocialImport(
         Authorization: `Bearer ${accessToken}`,
       },
       body: JSON.stringify({ url }),
-      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+      signal: controller.signal,
     });
 
     shareLog.info(`Response status: ${response.status}`);
@@ -88,16 +97,17 @@ export async function startSocialImport(
     }
     return { status: "accepted" };
   } catch (error) {
-    // Most commonly: EXPO_PUBLIC_API_URL points at localhost (unreachable from
-    // a physical device — use the Mac's LAN IP), the API server isn't running,
-    // or the 10s timeout fired.
+    // Most commonly: the API server isn't running/reachable at that LAN IP,
+    // or the request exceeded REQUEST_TIMEOUT_MS (controller.abort → AbortError).
     const name = (error as Error)?.name;
     const message = (error as Error)?.message ?? String(error);
-    if (name === "TimeoutError") {
+    if (timedOut) {
       shareLog.error(`Request timed out after ${REQUEST_TIMEOUT_MS}ms → ${endpoint}`);
     } else {
       shareLog.error(`Network request failed (${name}): ${message} → ${endpoint}`);
     }
     return { status: "error", message };
+  } finally {
+    clearTimeout(timeoutId);
   }
 }
