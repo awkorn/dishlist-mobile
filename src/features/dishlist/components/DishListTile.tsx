@@ -6,7 +6,15 @@ import {
   StyleSheet,
   Dimensions,
 } from "react-native";
-import { Eye, Lock, Crown, Handshake, Heart, Pin } from "lucide-react-native";
+import {
+  Crown,
+  Globe2,
+  Handshake,
+  Heart,
+  Lock,
+  Pin,
+  type LucideIcon,
+} from "lucide-react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { typography } from "@styles/typography";
@@ -25,8 +33,27 @@ interface DishListTileProps {
 const { width } = Dimensions.get("window");
 const TILE_WIDTH = (width - theme.spacing.xl * 2 - theme.spacing.lg) / 2;
 
+function getPrimaryStatus(dishList: DishList): {
+  label: string;
+  Icon: LucideIcon;
+} {
+  if (dishList.isOwner) return { label: "Owner", Icon: Crown };
+  if (dishList.isCollaborator) return { label: "Shared", Icon: Handshake };
+  if (dishList.isFollowing) return { label: "Following", Icon: Heart };
+  return { label: "Community", Icon: Globe2 };
+}
+
 function DishListTileContent({ dishList, onPress }: DishListTileProps) {
   const navigation = useNavigation<NavigationProp>();
+  const { label: statusLabel, Icon: StatusIcon } = getPrimaryStatus(dishList);
+  const VisibilityIcon =
+    dishList.visibility === "PUBLIC" ? Globe2 : Lock;
+  const visibilityLabel =
+    dishList.visibility === "PUBLIC" ? "Public" : "Private";
+  const visibilityColor =
+    dishList.visibility === "PUBLIC"
+      ? theme.colors.textPrimary
+      : theme.colors.textPrimary;
 
   const handlePress = () => {
     if (onPress) {
@@ -36,72 +63,51 @@ function DishListTileContent({ dishList, onPress }: DishListTileProps) {
     }
   };
 
-  const getBadges = () => {
-    const badges = [];
-
-    // The default "My Recipes" list is permanently pinned even when reading
-    // data cached from an older API response.
-    if (dishList.isDefault || dishList.isPinned) {
-      badges.push({
-        type: "pinned",
-        icon: Pin,
-        color: theme.colors.secondary[50],
-      });
-    }
-
-    if (dishList.isOwner) {
-      badges.push({ type: "owner", icon: Crown, color: theme.colors.warning });
-    } else if (dishList.isCollaborator) {
-      badges.push({
-        type: "collaborator",
-        icon: Handshake,
-        color: theme.colors.success,
-      });
-    } else if (dishList.isFollowing) {
-      badges.push({
-        type: "following",
-        icon: Heart,
-        color: theme.colors.error,
-      });
-    }
-
-    if (dishList.visibility === "PUBLIC") {
-      badges.push({
-        type: "public",
-        icon: Eye,
-        color: theme.colors.neutral[500],
-      });
-    } else {
-      badges.push({
-        type: "private",
-        icon: Lock,
-        color: theme.colors.neutral[500],
-      });
-    }
-
-    return badges;
-  };
-
   return (
-    <TouchableOpacity style={styles.container} onPress={handlePress}>
+    <TouchableOpacity
+      style={styles.container}
+      onPress={handlePress}
+      activeOpacity={0.82}
+      accessibilityRole="button"
+      accessibilityLabel={`${dishList.title}, ${dishList.recipeCount} ${
+        dishList.recipeCount === 1 ? "recipe" : "recipes"
+      }, ${statusLabel}, ${visibilityLabel}`}
+    >
+      <View style={styles.cover}>
+        <View style={styles.titleCopy}>
+          <Text style={styles.coverTitle} numberOfLines={2}>
+            {dishList.title}
+          </Text>
+          <Text style={styles.recipeCount}>
+            {dishList.recipeCount}{" "}
+            {dishList.recipeCount === 1 ? "recipe" : "recipes"}
+          </Text>
+        </View>
+        {(dishList.isDefault || dishList.isPinned) && (
+          <Pin
+            size={14}
+            color={theme.colors.textPrimary}
+            fill={theme.colors.textPrimary}
+            style={styles.pinIcon}
+          />
+        )}
+      </View>
+
       <View style={styles.content}>
-        <Text style={styles.title} numberOfLines={2}>
-          {dishList.title}
-        </Text>
-
-        <Text style={styles.recipeCount}>
-          {dishList.recipeCount} {dishList.recipeCount === 1 ? "Recipe" : "Recipes"}
-        </Text>
-
         <View style={styles.badges}>
-          {getBadges().map((badge, index) => (
-            <View
-              key={badge.type}
-              style={[styles.badge, index > 0 && styles.badgeSpacing]}
-            >
-              <badge.icon size={14} color={badge.color} />
-            </View>
-          ))}
+          <View style={styles.statusBadge}>
+            <StatusIcon size={12} color={theme.colors.textPrimary} />
+            <Text style={styles.statusText}>{statusLabel}</Text>
+          </View>
+
+          <Text style={styles.infoDot}>•</Text>
+
+          <View style={styles.visibilityBadge}>
+            <VisibilityIcon size={11} color={visibilityColor} />
+            <Text style={[styles.visibilityText, { color: visibilityColor }]}>
+              {visibilityLabel}
+            </Text>
+          </View>
         </View>
       </View>
     </TouchableOpacity>
@@ -128,31 +134,76 @@ const styles = StyleSheet.create({
     width: TILE_WIDTH,
     marginBottom: theme.spacing.lg,
     backgroundColor: theme.colors.surface,
-    borderRadius: theme.borderRadius.md,
-    ...theme.shadows.sm,
+    borderRadius: theme.borderRadius.lg,
+    borderWidth: 1,
+    borderColor: theme.colors.navyBorder,
+    ...theme.shadows.collectionCard,
   },
-  content: {
-    padding: theme.spacing.lg,
+  cover: {
+    minHeight: 55,
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    gap: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
+    backgroundColor: theme.colors.surface,
+    overflow: "hidden",
+    borderTopLeftRadius: theme.borderRadius.lg - 1,
+    borderTopRightRadius: theme.borderRadius.lg - 1,
+    marginTop: theme.spacing.sm,
   },
-  title: {
+  coverTitle: {
     ...typography.subtitle,
     color: theme.colors.textPrimary,
-    marginBottom: theme.spacing.sm,
+  },
+  titleCopy: {
+    flex: 1,
+    gap: 2,
+  },
+  pinIcon: {
+    marginTop: 2,
+    transform: [{ rotate: "32deg" }],
+  },
+  content: {
+    minHeight: 50,
+    justifyContent: "center",
+    padding: theme.spacing.md,
   },
   recipeCount: {
-    ...typography.body,
+    ...typography.utilityCaption,
     color: theme.colors.neutral[500],
-    marginBottom: theme.spacing.xl,
   },
   badges: {
     flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  infoDot: {
+    color: theme.colors.neutral[500],
+  },
+  statusBadge: {
+    flexDirection: "row",
+    alignItems: "center",
     gap: theme.spacing.xs,
+    minHeight: 24,
   },
-  badge: {
-    padding: theme.spacing.xs,
+  statusText: {
+    ...typography.label,
+    fontSize: 11,
+    lineHeight: 15,
+    color: theme.colors.textPrimary,
   },
-  badgeSpacing: {
-    marginLeft: 0,
+  visibilityBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: theme.spacing.xs,
+    minHeight: 24,
+  },
+  visibilityText: {
+    ...typography.label,
+    fontSize: 11,
+    lineHeight: 15,
   },
   errorContainer: {
     justifyContent: "center",

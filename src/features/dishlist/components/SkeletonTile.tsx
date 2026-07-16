@@ -3,7 +3,7 @@ import { View, StyleSheet, Animated, Dimensions } from 'react-native';
 import { theme } from '@styles/theme';
 
 const { width } = Dimensions.get('window');
-const tileWidth = (width - 60) / 2;
+const tileWidth = (width - theme.spacing.xl * 2 - theme.spacing.lg) / 2;
 
 interface SkeletonTileProps {
   index?: number;
@@ -40,11 +40,13 @@ export function SkeletonTile({ index = 0 }: SkeletonTileProps) {
 
   return (
     <Animated.View style={[styles.container, { width: tileWidth, opacity }]}>
-      <View style={styles.content}>
+      <View style={styles.cover}>
         <View style={styles.title} />
         <View style={styles.text} />
+      </View>
+      <View style={styles.content}>
         <View style={styles.badges}>
-          <View style={styles.badge} />
+          <View style={styles.badgeWide} />
           <View style={styles.badge} />
         </View>
       </View>
@@ -56,36 +58,49 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: theme.colors.neutral[100],
     borderRadius: theme.borderRadius.lg,
-    padding: theme.spacing.md,
-    marginBottom: theme.spacing.md,
-    minHeight: 120,
+    borderWidth: 1,
+    borderColor: theme.colors.navyBorder,
+    marginBottom: theme.spacing.lg,
+    overflow: 'hidden',
+  },
+  cover: {
+    height: 88,
+    backgroundColor: theme.colors.neutral[200],
+    justifyContent: 'flex-end',
+    padding: theme.spacing.lg,
+    gap: 4,
   },
   content: {
-    flex: 1,
-    justifyContent: 'space-between',
+    height: 52,
+    justifyContent: 'center',
+    padding: theme.spacing.md,
   },
   title: {
     height: 20,
-    backgroundColor: theme.colors.neutral[200],
+    backgroundColor: theme.colors.neutral[100],
     borderRadius: theme.borderRadius.sm,
     width: '80%',
-    marginBottom: theme.spacing.sm,
   },
   text: {
     height: 14,
-    backgroundColor: theme.colors.neutral[200],
-    borderRadius: theme.borderRadius.sm,
-    width: '50%',
-    marginBottom: theme.spacing.md,
+    backgroundColor: theme.colors.neutral[100],
+    width: '42%',
+    borderRadius: 7,
   },
   badges: {
     flexDirection: 'row',
-    gap: theme.spacing.xs,
+    gap: 6,
   },
-  badge: {
-    width: 24,
+  badgeWide: {
+    width: 58,
     height: 24,
     backgroundColor: theme.colors.neutral[200],
-    borderRadius: 6,
+    borderRadius: 12,
+  },
+  badge: {
+    width: 64,
+    height: 24,
+    backgroundColor: theme.colors.neutral[200],
+    borderRadius: 12,
   },
 });

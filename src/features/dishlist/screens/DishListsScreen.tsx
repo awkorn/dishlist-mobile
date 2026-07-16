@@ -192,7 +192,7 @@ export default function DishListsScreen() {
             )}
             {!isOnline && dishLists.length > 0 && (
               <View style={styles.offlineMessage}>
-                <WifiOff size={16} color="#666" />
+                <WifiOff size={16} color={theme.colors.neutral[500]} />
                 <Text style={styles.offlineText}>
                   Showing cached data • Last updated {getDataFreshness()}
                 </Text>
@@ -225,7 +225,6 @@ export default function DishListsScreen() {
             <ScreenHeaderAction
               style={styles.addButton}
               onPress={handleCreateDishList}
-              accessibilityRole="button"
               accessibilityLabel="Create DishList"
             >
               <Plus size={24} color={theme.colors.primary[500]} />
@@ -233,7 +232,6 @@ export default function DishListsScreen() {
             <ScreenHeaderAction
               style={styles.profileButton}
               onPress={handleProfilePress}
-              accessibilityRole="button"
               accessibilityLabel="Open profile"
             >
               <Avatar
@@ -257,12 +255,13 @@ export default function DishListsScreen() {
         />
         <TextInput
           style={styles.searchInput}
-          placeholder="Search DishLists"
+          placeholder="Search dishlists"
           placeholderTextColor={theme.colors.neutral[400]}
           value={searchQuery}
           onChangeText={setSearchQuery}
           returnKeyType="search"
           clearButtonMode="while-editing"
+          accessibilityLabel="Search DishLists"
         />
       </View>
 
@@ -273,6 +272,8 @@ export default function DishListsScreen() {
             key={tab}
             style={[styles.tab, activeTab === index && styles.activeTab]}
             onPress={() => handleTabPress(index)}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: activeTab === index }}
           >
             <Text
               style={[
@@ -314,7 +315,10 @@ const styles = StyleSheet.create({
     ...typography.editorialPageTitle,
     color: theme.colors.textPrimary,
   },
-  headerActions: { flexDirection: "row", alignItems: "center" },
+  headerActions: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
   headerLoader: { marginRight: theme.spacing.md },
   addButton: { padding: theme.spacing.sm },
   profileButton: { padding: theme.spacing.xs },
@@ -323,17 +327,20 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: theme.colors.surface,
     marginHorizontal: theme.spacing.xl,
-    marginBottom: theme.spacing.md,
-    borderRadius: theme.borderRadius.md,
+    marginBottom: theme.spacing.lg,
+    minHeight: 48,
+    borderRadius: theme.borderRadius.lg,
+    borderWidth: 1,
+    borderColor: theme.colors.navyBorder,
     paddingHorizontal: theme.spacing.lg,
-    paddingVertical: theme.spacing.md,
+    ...theme.shadows.collectionCard,
   },
   searchIcon: {
     marginRight: theme.spacing.sm,
   },
   searchInput: {
     flex: 1,
-    ...typography.body,
+    ...typography.recipeReading,
     color: theme.colors.neutral[800],
     padding: 0,
   },
@@ -344,12 +351,18 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.xl,
     flexWrap: "wrap",
   },
-  tab: { paddingHorizontal: 14, paddingVertical: theme.spacing.sm },
+  tab: {
+    paddingHorizontal: 14,
+    paddingVertical: theme.spacing.sm,
+  },
   activeTab: {
     borderBottomWidth: 2,
     borderBottomColor: theme.colors.primary[600],
   },
-  tabText: { ...typography.body, color: theme.colors.neutral[500] },
+  tabText: {
+    ...typography.body,
+    color: theme.colors.neutral[500],
+  },
   activeTabText: {
     fontFamily: typography.families.uiSemiBold,
     color: theme.colors.primary[600],

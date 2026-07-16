@@ -43,6 +43,18 @@ export const theme = {
     nutritionAccent: "#327C16",
     nutritionSelected: "#D8E5D3",
     noteAccent: "#5B85E1",
+    collection: {
+      tomato: "#D96645",
+      tomatoSoft: "#F7E2DA",
+      sage: "#667B5B",
+      sageSoft: "#E2E9DE",
+      navy: "#173F70",
+      navySoft: "#DEE9F6",
+      sky: "#9CB9D7",
+      skySoft: "#E7F0F8",
+      cream: "#FFF9F5",
+    },
+    navyBorder: "rgba(0, 41, 91, 0.11)",
     overlay: "rgba(0, 0, 0, 0.5)",
   },
   spacing: {
@@ -77,6 +89,13 @@ export const theme = {
       shadowOpacity: 0.1,
       shadowRadius: 4,
       elevation: 3,
+    },
+    collectionCard: {
+      shadowColor: "#00295B",
+      shadowOffset: { width: 0, height: 8 },
+      shadowOpacity: 0.07,
+      shadowRadius: 16,
+      elevation: 2,
     },
   },
 };
