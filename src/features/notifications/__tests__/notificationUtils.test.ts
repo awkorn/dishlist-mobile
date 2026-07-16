@@ -244,7 +244,12 @@ describe('NotificationType coverage', () => {
     'COLLABORATION_ACCEPTED',
     'COLLABORATION_DECLINED',
     'USER_FOLLOWED',
+    'FOLLOW_REQUEST',
+    'FOLLOW_ACCEPTED',
+    'REPORT_RESOLVED',
     'SYSTEM_UPDATE',
+    'RECIPE_IMPORT_COMPLETED',
+    'RECIPE_IMPORT_FAILED',
   ];
 
   it('all notification types are handled by isActionableNotification', () => {
@@ -259,14 +264,23 @@ describe('NotificationType coverage', () => {
     });
   });
 
-  it('only DISHLIST_INVITATION is actionable', () => {
+  it('only invitation and follow-request notifications are actionable', () => {
     const actionable = allNotificationTypes.filter(isActionableNotification);
-    expect(actionable).toEqual(['DISHLIST_INVITATION']);
+    expect(actionable.sort()).toEqual(
+      ['DISHLIST_INVITATION', 'FOLLOW_REQUEST'].sort()
+    );
   });
 
-  it('only DISHLIST_SHARED, RECIPE_SHARED, RECIPE_ADDED are navigable', () => {
+  it('only content notifications with a destination are navigable', () => {
     const navigable = allNotificationTypes.filter(isNavigableNotification);
-    expect(navigable.sort()).toEqual(['DISHLIST_SHARED', 'RECIPE_ADDED', 'RECIPE_SHARED'].sort());
+    expect(navigable.sort()).toEqual(
+      [
+        'DISHLIST_SHARED',
+        'RECIPE_ADDED',
+        'RECIPE_IMPORT_COMPLETED',
+        'RECIPE_SHARED',
+      ].sort()
+    );
   });
 
   it('actionable and navigable are mutually exclusive', () => {

@@ -161,6 +161,7 @@ export interface SocialImportStatus {
   errorCode: string | null;
   errorMessage: string | null;
   recipeId: string | null;
+  recipeTitle: string | null;
   sourceUrl: string;
   platform: "TIKTOK" | "INSTAGRAM" | "FACEBOOK";
   createdAt: string;

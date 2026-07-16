@@ -10,7 +10,9 @@ export type NotificationType =
   | "FOLLOW_REQUEST"
   | "FOLLOW_ACCEPTED"
   | "REPORT_RESOLVED"
-  | "SYSTEM_UPDATE";
+  | "SYSTEM_UPDATE"
+  | "RECIPE_IMPORT_COMPLETED"
+  | "RECIPE_IMPORT_FAILED";
 
 export interface FollowRequestData {
   odUserId: string;
@@ -111,6 +113,11 @@ export interface ReportResolvedData {
   resolution: "REVIEWED" | "ACTIONED";
 }
 
+export interface RecipeImportCompletedData {
+  recipeId: string;
+  importId: string;
+}
+
 // Union type for all notification data
 export type NotificationData =
   | DishListInvitationData
@@ -122,6 +129,7 @@ export type NotificationData =
   | UserFollowedData
   | FollowRequestData
   | FollowAcceptedData
+  | RecipeImportCompletedData
   | ReportResolvedData
   | SystemUpdateData;
 
@@ -172,7 +180,12 @@ export const isActionableNotification = (type: NotificationType): boolean => {
 
 // Helper to check if notification is navigable (can tap to go somewhere)
 export const isNavigableNotification = (type: NotificationType): boolean => {
-  return ["DISHLIST_SHARED", "RECIPE_SHARED", "RECIPE_ADDED"].includes(type);
+  return [
+    "DISHLIST_SHARED",
+    "RECIPE_SHARED",
+    "RECIPE_ADDED",
+    "RECIPE_IMPORT_COMPLETED",
+  ].includes(type);
 };
 
 export const showsAvatarNotification = (type: NotificationType): boolean => {

@@ -141,6 +141,40 @@ describe('NotificationItem', () => {
       expect(getByText('New Features Available')).toBeTruthy();
     });
 
+    it('renders the full social import success message', () => {
+      const notification = createMockNotification({
+        type: 'RECIPE_IMPORT_COMPLETED',
+        title: 'Recipe saved',
+        message: '"Garlic Noodles" was successfully added to My Recipes.',
+        sender: null,
+      });
+
+      const { getByText } = render(
+        <TestWrapper>
+          <NotificationItem notification={notification} onDelete={mockOnDelete} />
+        </TestWrapper>
+      );
+
+      expect(getByText('"Garlic Noodles" was successfully added to My Recipes.')).toBeTruthy();
+    });
+
+    it('renders the full social import failure message', () => {
+      const notification = createMockNotification({
+        type: 'RECIPE_IMPORT_FAILED',
+        title: 'Recipe not added',
+        message: "The recipe wasn't added to My Recipes. We couldn't read that post.",
+        sender: null,
+      });
+
+      const { getByText } = render(
+        <TestWrapper>
+          <NotificationItem notification={notification} onDelete={mockOnDelete} />
+        </TestWrapper>
+      );
+
+      expect(getByText("The recipe wasn't added to My Recipes. We couldn't read that post.")).toBeTruthy();
+    });
+
     it('uses firstName when username is null', () => {
       const notification = createMockNotification({
         type: 'USER_FOLLOWED',

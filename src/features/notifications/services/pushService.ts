@@ -10,13 +10,22 @@ export const PUSH_ENABLED_KEY = "@dishlist/pushEnabled";
 
 // Configure how notifications are presented when the app is in the foreground
 Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: true,
-    shouldShowBanner: true,
-    shouldShowList: true,
-  }),
+  handleNotification: async (notification) => {
+    const type = notification.request.content.data?.type;
+    const isImportResult =
+      type === "RECIPE_IMPORT_COMPLETED" || type === "RECIPE_IMPORT_FAILED";
+
+    return {
+      // Import results already appear as an in-app toast while DishList is
+      // foregrounded. Keep them in Notification Center without showing a
+      // duplicate banner or playing a second sound.
+      shouldShowAlert: !isImportResult,
+      shouldPlaySound: !isImportResult,
+      shouldSetBadge: true,
+      shouldShowBanner: !isImportResult,
+      shouldShowList: true,
+    };
+  },
 });
 
 /**

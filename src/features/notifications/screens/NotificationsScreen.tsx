@@ -29,6 +29,7 @@ import type {
   DishListSharedData,
   RecipeSharedData,
   RecipeAddedData,
+  RecipeImportCompletedData,
 } from "../types";
 import { parseNotificationData } from "../types";
 
@@ -140,6 +141,16 @@ export default function NotificationsScreen() {
 
         case "RECIPE_ADDED": {
           const data = parseNotificationData<RecipeAddedData>(
+            notification.data
+          );
+          if (data?.recipeId) {
+            navigation.navigate("RecipeDetail", { recipeId: data.recipeId });
+          }
+          break;
+        }
+
+        case "RECIPE_IMPORT_COMPLETED": {
+          const data = parseNotificationData<RecipeImportCompletedData>(
             notification.data
           );
           if (data?.recipeId) {

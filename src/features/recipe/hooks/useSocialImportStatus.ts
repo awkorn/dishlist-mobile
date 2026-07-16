@@ -31,7 +31,13 @@ export function useSocialImportStatus(): void {
   const isPollingRef = useRef(false);
 
   const settleImport = useCallback(
-    (importId: string, outcome: "completed" | "failed", detail?: string | null, recipeId?: string | null) => {
+    (
+      importId: string,
+      outcome: "completed" | "failed",
+      detail?: string | null,
+      recipeId?: string | null,
+      recipeTitle?: string | null
+    ) => {
       removePendingImportId(importId);
 
       if (outcome === "completed") {
@@ -39,16 +45,21 @@ export function useSocialImportStatus(): void {
           queryKey: queryKeys.dishLists.all,
         });
         void queryClient.invalidateQueries({ queryKey: queryKeys.recipes.all });
-        toast.success("Recipe saved to My Recipes", {
-          duration: 5000,
-          action: recipeId
-            ? {
-                label: "View",
-                onPress: () =>
-                  navigation.navigate("RecipeDetail", { recipeId }),
-              }
-            : undefined,
-        });
+        toast.success(
+          recipeTitle
+            ? `"${recipeTitle}" was successfully added to My Recipes.`
+            : "Recipe was successfully added to My Recipes.",
+          {
+            duration: 5000,
+            action: recipeId
+              ? {
+                  label: "View",
+                  onPress: () =>
+                    navigation.navigate("RecipeDetail", { recipeId }),
+                }
+              : undefined,
+          }
+        );
       } else {
         toast.error(detail ?? "Couldn't import recipe", { duration: 4500 });
       }
@@ -72,7 +83,13 @@ export function useSocialImportStatus(): void {
             const status = await recipeService.getImportStatus(importId);
             if (status.status === "COMPLETED") {
               remaining.delete(importId);
-              settleImport(importId, "completed", null, status.recipeId);
+              settleImport(
+                importId,
+                "completed",
+                null,
+                status.recipeId,
+                status.recipeTitle
+              );
             } else if (status.status === "FAILED") {
               remaining.delete(importId);
               settleImport(importId, "failed", status.errorMessage);

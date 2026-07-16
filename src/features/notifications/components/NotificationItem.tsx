@@ -111,6 +111,10 @@ function buildNotificationMessage(notification: Notification): string {
     case "REPORT_RESOLVED":
       return message;
 
+    case "RECIPE_IMPORT_COMPLETED":
+    case "RECIPE_IMPORT_FAILED":
+      return message;
+
     default:
       return notification.title;
   }
