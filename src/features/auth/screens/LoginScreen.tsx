@@ -4,9 +4,7 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  Image,
 } from 'react-native';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { useAuth } from '@providers/AuthProvider/AuthContext';
 import { getAuthErrorMessage } from '@lib/errors';
 import { typography } from '@styles/typography';
@@ -15,6 +13,10 @@ import Button from '@components/ui/Button';
 import InlineError from '@components/ui/InlineError';
 import { TextField } from '@components/ui';
 import type { LoginScreenProps } from '@app-types/navigation';
+import {
+  AuthCard,
+  AuthScreenLayout,
+} from '../components/AuthScreenLayout';
 
 type LoginField = 'email' | 'password';
 
@@ -138,24 +140,27 @@ export default function LoginScreen({
   };
 
   return (
-    <KeyboardAwareScrollView
-      contentContainerStyle={styles.container}
-      enableOnAndroid={true}
-      extraScrollHeight={10}
-      keyboardShouldPersistTaps="handled"
-    >
-      <View style={styles.content}>
-        <View style={styles.header}>
-          <View style={styles.logoContainer}>
-            <Image
-              source={require('../../../../assets/images/dishlist-logo.png')}
-              style={styles.logo}
-              resizeMode="contain"
-            />
-          </View>
-          <Text style={styles.title}>DishList</Text>
+    <AuthScreenLayout
+      eyebrow="Collect · Collaborate · Discover"
+      title="Welcome back."
+      description="Keep the recipes worth passing down—and the stories that belong with them."
+      footer={
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>New to DishList? </Text>
+          <TouchableOpacity
+            onPress={() => navigation.navigate('SignUp')}
+            disabled={isBusy}
+            testID="signup-link"
+            accessibilityRole="button"
+            accessibilityState={{ disabled: isBusy }}
+            hitSlop={8}
+          >
+            <Text style={styles.linkText}>Sign up</Text>
+          </TouchableOpacity>
         </View>
-
+      }
+    >
+      <AuthCard>
         {displayedError && (
           <InlineError
             message={displayedError.message}
@@ -176,9 +181,11 @@ export default function LoginScreen({
           </View>
         )}
 
-        <View style={styles.form}>
+        <View>
           <TextField
             containerStyle={styles.field}
+            inputContainerStyle={styles.input}
+            label="Email address"
             invalid={Boolean(error?.fields?.email)}
             placeholder="Email"
             value={email}
@@ -198,6 +205,8 @@ export default function LoginScreen({
 
           <TextField
             containerStyle={styles.field}
+            inputContainerStyle={styles.input}
+            label="Password"
             invalid={Boolean(error?.fields?.password)}
             placeholder="Password"
             value={password}
@@ -213,76 +222,38 @@ export default function LoginScreen({
             testID="password-input"
           />
 
-          <Button
-            title="Login"
-            onPress={handleLogin}
-            loading={loginLoading}
-            disabled={isBusy}
-            style={styles.loginButton}
-          />
-
           <TouchableOpacity
             onPress={handleForgotPassword}
             style={styles.forgotPassword}
             disabled={isBusy}
             accessibilityRole="button"
             accessibilityState={{ disabled: isBusy, busy: resetLoading }}
+            hitSlop={8}
           >
             <Text style={styles.forgotPasswordText}>
               {resetLoading ? 'Sending reset email…' : 'Forgot password?'}
             </Text>
           </TouchableOpacity>
-        </View>
 
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>New user? </Text>
-          <TouchableOpacity
-            onPress={() => navigation.navigate('SignUp')}
+          <Button
+            title="Login"
+            onPress={handleLogin}
+            loading={loginLoading}
             disabled={isBusy}
-            testID="signup-link"
-            accessibilityRole="button"
-            accessibilityState={{ disabled: isBusy }}
-          >
-            <Text style={styles.linkText}>Sign up</Text>
-          </TouchableOpacity>
+            variant="secondary"
+            size="lg"
+            style={styles.loginButton}
+          />
         </View>
-      </View>
-    </KeyboardAwareScrollView>
+      </AuthCard>
+    </AuthScreenLayout>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flexGrow: 1,
-    backgroundColor: theme.colors.background,
-    justifyContent: 'center',
-    paddingHorizontal: theme.spacing['4xl'],
-  },
-  content: {
-    flex: 1,
-    justifyContent: 'center',
-    marginTop: -150,
-  },
-  header: {
-    alignItems: 'center',
-    marginBottom: theme.spacing['4xl'],
-  },
-  logoContainer: {
-    marginBottom: 15,
-  },
-  logo: {
-    height: 80,
-  },
-  title: {
-    ...typography.heading1,
-    color: theme.colors.textPrimary,
-  },
-  form: {
-    marginBottom: theme.spacing['3xl'],
-  },
   successBanner: {
     backgroundColor: theme.colors.successBg,
-    borderRadius: theme.borderRadius.sm,
+    borderRadius: theme.borderRadius.lg,
     padding: theme.spacing.md,
     marginBottom: theme.spacing.lg,
   },
@@ -299,28 +270,36 @@ const styles = StyleSheet.create({
   field: {
     marginBottom: theme.spacing.lg,
   },
+  input: {
+    minHeight: 54,
+    borderRadius: theme.borderRadius.lg,
+  },
   loginButton: {
-    marginTop: theme.spacing.sm,
+    borderRadius: 26,
   },
   forgotPassword: {
-    alignItems: 'center',
-    marginTop: theme.spacing.lg,
+    alignSelf: 'flex-end',
+    marginTop: -theme.spacing.xs,
+    marginBottom: theme.spacing.xl,
   },
   forgotPasswordText: {
-    ...typography.body,
-    color: theme.colors.primary[500],
+    ...typography.label,
+    color: theme.colors.textPrimary,
     fontSize: 14,
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: theme.spacing['2xl'],
   },
   footerText: {
     ...typography.body,
-    color: theme.colors.neutral[500],
+    color: theme.colors.neutral[600],
   },
   linkText: {
     fontFamily: typography.families.uiSemiBold,
-    color: theme.colors.primary[500],
+    fontSize: 16,
+    color: theme.colors.textPrimary,
   },
 });

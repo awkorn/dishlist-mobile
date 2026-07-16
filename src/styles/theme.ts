@@ -33,6 +33,7 @@ export const theme = {
     background: "#F7F5F3",
     surface: "#FFFFFF",
     textPrimary: "#00295B",
+    authBorder: "rgba(0, 41, 91, 0.12)",
     avatarDefault: "#D7E3F7",
     avatarWarm: "#F1D9C7",
     avatarSage: "#D8E5D3",

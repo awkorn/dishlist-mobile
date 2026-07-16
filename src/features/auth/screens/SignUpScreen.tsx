@@ -6,7 +6,6 @@ import {
   StyleSheet,
   Alert,
 } from 'react-native';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { useAuth } from '@providers/AuthProvider/AuthContext';
 import { getAuthErrorMessage } from '@lib/errors';
 import { VALIDATION } from '@lib/constants';
@@ -15,10 +14,11 @@ import { theme } from '@styles/theme';
 import Button from '@components/ui/Button';
 import InlineError from '@components/ui/InlineError';
 import { TextField } from '@components/ui';
-
-interface SignUpScreenProps {
-  navigation: any;
-}
+import type { SignUpScreenProps } from '@app-types/navigation';
+import {
+  AuthCard,
+  AuthScreenLayout,
+} from '../components/AuthScreenLayout';
 
 type SignUpField = 'firstName' | 'lastName' | 'username' | 'email' | 'password';
 
@@ -29,7 +29,9 @@ interface SignUpError {
   navigateToLogin?: boolean;
 }
 
-export default function SignUpScreen({ navigation }: SignUpScreenProps) {
+export default function SignUpScreen({
+  navigation,
+}: Pick<SignUpScreenProps, 'navigation'>) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
@@ -145,14 +147,28 @@ export default function SignUpScreen({ navigation }: SignUpScreenProps) {
   };
 
   return (
-    <KeyboardAwareScrollView
-      contentContainerStyle={styles.container}
-      enableOnAndroid={true}
-      extraScrollHeight={20}
+    <AuthScreenLayout
+      eyebrow="Collect · Collaborate · Discover"
+      title="Start your collection."
+      description="Bring together the recipes, notes, and people you never want to lose."
+      extraScrollHeight={24}
+      footer={
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>Already have an account? </Text>
+          <TouchableOpacity
+            onPress={() => navigation.navigate('Login')}
+            disabled={loading}
+            testID="login-link"
+            accessibilityRole="button"
+            accessibilityState={{ disabled: loading }}
+            hitSlop={8}
+          >
+            <Text style={styles.linkText}>Login</Text>
+          </TouchableOpacity>
+        </View>
+      }
     >
-      <View style={styles.content}>
-        <Text style={styles.title}>Create Account</Text>
-
+      <AuthCard>
         {error && (
           <InlineError
             message={error.message}
@@ -167,39 +183,49 @@ export default function SignUpScreen({ navigation }: SignUpScreenProps) {
           />
         )}
 
-        <View style={styles.form}>
-          <TextField
-            containerStyle={styles.field}
-            invalid={Boolean(error?.fields?.firstName)}
-            placeholder="First Name"
-            placeholderTextColor={theme.colors.neutral[400]}
-            value={firstName}
-            onChangeText={(text) => {
-              setFirstName(text);
-              setError(null);
-            }}
-            autoCapitalize="words"
-            editable={!loading}
-            testID="firstName-input"
-          />
+        <View>
+          <View style={styles.nameRow}>
+            <TextField
+              containerStyle={[styles.field, styles.nameField]}
+              inputContainerStyle={styles.input}
+              label="First name"
+              invalid={Boolean(error?.fields?.firstName)}
+              placeholder="First Name"
+              placeholderTextColor={theme.colors.neutral[400]}
+              value={firstName}
+              onChangeText={(text) => {
+                setFirstName(text);
+                setError(null);
+              }}
+              autoCapitalize="words"
+              autoComplete="given-name"
+              editable={!loading}
+              testID="firstName-input"
+            />
+
+            <TextField
+              containerStyle={[styles.field, styles.nameField]}
+              inputContainerStyle={styles.input}
+              label="Last name"
+              invalid={Boolean(error?.fields?.lastName)}
+              placeholder="Last Name"
+              placeholderTextColor={theme.colors.neutral[400]}
+              value={lastName}
+              onChangeText={(text) => {
+                setLastName(text);
+                setError(null);
+              }}
+              autoCapitalize="words"
+              autoComplete="family-name"
+              editable={!loading}
+              testID="lastName-input"
+            />
+          </View>
 
           <TextField
             containerStyle={styles.field}
-            invalid={Boolean(error?.fields?.lastName)}
-            placeholder="Last Name"
-            placeholderTextColor={theme.colors.neutral[400]}
-            value={lastName}
-            onChangeText={(text) => {
-              setLastName(text);
-              setError(null);
-            }}
-            autoCapitalize="words"
-            editable={!loading}
-            testID="lastName-input"
-          />
-
-          <TextField
-            containerStyle={styles.field}
+            inputContainerStyle={styles.input}
+            label="Username"
             invalid={Boolean(error?.fields?.username)}
             placeholder="Username"
             placeholderTextColor={theme.colors.neutral[400]}
@@ -210,12 +236,15 @@ export default function SignUpScreen({ navigation }: SignUpScreenProps) {
             }}
             autoCapitalize="none"
             autoCorrect={false}
+            autoComplete="username-new"
             editable={!loading}
             testID="username-input"
           />
 
           <TextField
             containerStyle={styles.field}
+            inputContainerStyle={styles.input}
+            label="Email address"
             invalid={Boolean(error?.fields?.email)}
             placeholder="Email"
             placeholderTextColor={theme.colors.neutral[400]}
@@ -234,8 +263,10 @@ export default function SignUpScreen({ navigation }: SignUpScreenProps) {
 
           <TextField
             containerStyle={styles.field}
+            inputContainerStyle={styles.input}
+            label="Password"
             invalid={Boolean(error?.fields?.password)}
-            placeholder={`Password (min ${VALIDATION.PASSWORD_MIN_LENGTH} characters)`}
+            placeholder="Password"
             placeholderTextColor={theme.colors.neutral[400]}
             value={password}
             onChangeText={(text) => {
@@ -246,6 +277,7 @@ export default function SignUpScreen({ navigation }: SignUpScreenProps) {
             autoComplete="password-new"
             editable={!loading}
             testID="password-input"
+            helperText={`Use at least ${VALIDATION.PASSWORD_MIN_LENGTH} characters`}
           />
 
           <Button
@@ -253,62 +285,48 @@ export default function SignUpScreen({ navigation }: SignUpScreenProps) {
             onPress={handleSignUp}
             loading={loading}
             disabled={loading}
+            variant="secondary"
+            size="lg"
             style={styles.signUpButton}
           />
         </View>
-
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>Already have an account? </Text>
-          <TouchableOpacity
-            onPress={() => navigation.navigate('Login')}
-            disabled={loading}
-            testID="login-link"
-          >
-            <Text style={styles.linkText}>Login</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </KeyboardAwareScrollView>
+      </AuthCard>
+    </AuthScreenLayout>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flexGrow: 1,
-    backgroundColor: theme.colors.background,
-    justifyContent: 'center',
-    paddingHorizontal: theme.spacing['4xl'],
-    marginTop: -40,
-  },
-  content: {
-    flex: 1,
-    justifyContent: 'center',
-  },
-  title: {
-    ...typography.heading4,
-    color: theme.colors.textPrimary,
-    textAlign: 'center',
-    marginBottom: theme.spacing['4xl'],
-  },
-  form: {
-    marginBottom: theme.spacing['3xl'],
+  nameRow: {
+    flexDirection: 'row',
+    gap: theme.spacing.md,
   },
   field: {
     marginBottom: theme.spacing.lg,
   },
+  nameField: {
+    flex: 1,
+  },
+  input: {
+    minHeight: 54,
+    borderRadius: theme.borderRadius.lg,
+  },
   signUpButton: {
-    marginTop: theme.spacing.sm,
+    marginTop: theme.spacing.xs,
+    borderRadius: 26,
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: theme.spacing['2xl'],
   },
   footerText: {
     ...typography.body,
-    color: theme.colors.neutral[500],
+    color: theme.colors.neutral[600],
   },
   linkText: {
     fontFamily: typography.families.uiSemiBold,
-    color: theme.colors.primary[500],
+    fontSize: 16,
+    color: theme.colors.textPrimary,
   },
 });
