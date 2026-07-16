@@ -61,7 +61,7 @@ const styles = StyleSheet.create({
     color: theme.colors.neutral[500],
   },
   activeTabText: {
+    fontFamily: typography.families.uiSemiBold,
     color: theme.colors.primary[600],
-    fontWeight: '600',
   },
 });

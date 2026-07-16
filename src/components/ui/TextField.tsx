@@ -109,8 +109,8 @@ export const TextField = forwardRef<TextInput, TextFieldProps>(
 
 const styles = StyleSheet.create({
   label: {
-    ...typography.body,
-    fontWeight: "600",
+    ...typography.label,
+    fontSize: 16,
     color: theme.colors.neutral[700],
     marginBottom: theme.spacing.sm,
   },

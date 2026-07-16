@@ -276,7 +276,7 @@ const styles = StyleSheet.create({
     width: 36,
   },
   recipeTitle: {
-    ...typography.editorialNavigationTitle,
+    ...typography.navigationTitle,
     color: theme.colors.textPrimary,
     marginBottom: theme.spacing.xs,
   },
@@ -285,7 +285,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   stepCounter: {
-    ...typography.caption,
+    ...typography.utilityCaption,
     color: theme.colors.neutral[500],
     marginBottom: theme.spacing.xs,
   },
@@ -327,9 +327,8 @@ const styles = StyleSheet.create({
     borderRadius: theme.borderRadius.sm,
   },
   finalStepText: {
-    ...typography.caption,
+    ...typography.label,
     color: theme.colors.success,
-    fontWeight: "600",
   },
   instructionSection: {
     marginBottom: theme.spacing.xl,
@@ -347,7 +346,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   instructionText: {
-    ...typography.body,
+    ...typography.recipeReading,
     fontSize: 18,
     lineHeight: 28,
     color: theme.colors.neutral[800],
@@ -372,7 +371,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.neutral[600],
   },
   ingredientText: {
-    ...typography.body,
+    ...typography.recipeReading,
     color: theme.colors.neutral[700],
     fontSize: 16,
     flex: 1,
@@ -428,9 +427,8 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.md,
   },
   subsectionBadgeText: {
-    ...typography.caption,
+    ...typography.label,
     fontSize: 13,
     color: theme.colors.primary[50],
-    fontWeight: "600",
   },
 });

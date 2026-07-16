@@ -5,6 +5,8 @@ import {
   StyleSheet,
   TouchableOpacity,
   Text,
+  type StyleProp,
+  type TextStyle,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { X } from 'lucide-react-native';
@@ -15,6 +17,7 @@ interface ModalProps {
   visible: boolean;
   onClose: () => void;
   title?: string;
+  titleStyle?: StyleProp<TextStyle>;
   children: ReactNode;
   showCloseButton?: boolean;
   closeButtonDisabled?: boolean;
@@ -26,6 +29,7 @@ export default function Modal({
   visible,
   onClose,
   title,
+  titleStyle,
   children,
   showCloseButton = true,
   closeButtonDisabled = false,
@@ -63,7 +67,7 @@ export default function Modal({
             </View>
             {title && (
               <Text
-                style={styles.title}
+                style={[styles.title, titleStyle]}
                 numberOfLines={1}
                 accessibilityRole="header"
               >
@@ -115,7 +119,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   title: {
-    ...typography.editorialNavigationTitle,
+    ...typography.navigationTitle,
     flexShrink: 1,
     color: theme.colors.textPrimary,
     textAlign: 'center',

@@ -517,14 +517,12 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.primary[500],
   },
   reorderButtonText: {
-    ...typography.caption,
+    ...typography.label,
     color: theme.colors.primary[500],
-    fontWeight: '600',
   },
   reorderButtonTextActive: {
-    ...typography.caption,
+    ...typography.label,
     color: theme.colors.surface,
-    fontWeight: '600',
   },
   reorderHint: {
     ...typography.caption,
@@ -574,7 +572,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   input: {
-    ...typography.body,
+    ...typography.recipeReading,
     flex: 1,
     padding: theme.spacing.md,
     borderWidth: 1,
@@ -590,7 +588,7 @@ const styles = StyleSheet.create({
     borderStyle: 'dashed',
     borderColor: theme.colors.primary[500],
     borderWidth: 1.5,
-    fontWeight: '600',
+    fontFamily: typography.families.uiSemiBold,
   },
   instructionInput: {
     minHeight: 60,

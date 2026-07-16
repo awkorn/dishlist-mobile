@@ -12,11 +12,14 @@ describe("ScreenHeader", () => {
 
     expect(getByText("Grocery List")).toBeTruthy();
     expect(StyleSheet.flatten(getByText("Grocery List").props.style)).toMatchObject(
-      typography.editorialNavigationTitle,
+      typography.navigationTitle,
     );
     expect(
       StyleSheet.flatten(getByText("Grocery List").props.style),
-    ).toMatchObject({ fontFamily: "Inter-Medium", textAlign: "center" });
+    ).toMatchObject({
+      fontFamily: typography.families.uiSemiBold,
+      textAlign: "center",
+    });
     expect(
       StyleSheet.flatten(getByTestId("screen-header-left-slot").props.style),
     ).toMatchObject({ flex: 1, minWidth: 44 });

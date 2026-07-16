@@ -251,7 +251,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   displayName: {
-    ...typography.editorialTitle,
+    ...typography.heading3,
     fontSize: 30,
     lineHeight: 38,
     color: theme.colors.textPrimary,
@@ -274,7 +274,7 @@ const styles = StyleSheet.create({
     minWidth: 72,
   },
   statNumber: {
-    fontFamily: "GeneralSans-SemiBold",
+    fontFamily: typography.families.uiSemiBold,
     fontSize: 17,
     lineHeight: 22,
     color: theme.colors.textPrimary,

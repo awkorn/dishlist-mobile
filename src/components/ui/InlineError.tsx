@@ -68,9 +68,8 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   actionText: {
-    ...typography.caption,
+    ...typography.label,
     color: theme.colors.error,
-    fontWeight: '600',
     fontSize: 13,
     marginTop: theme.spacing.xs,
   },

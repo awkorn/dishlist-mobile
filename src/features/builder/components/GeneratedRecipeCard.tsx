@@ -90,9 +90,9 @@ const styles = StyleSheet.create({
     padding: theme.spacing.md,
   },
   title: {
-    ...typography.body,
-    fontFamily: "Inter-Medium",
+    ...typography.recipeCardTitle,
     fontSize: 14,
+    lineHeight: 19,
     color: theme.colors.textPrimary,
     marginBottom: 4,
   },
@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
     gap: 3,
   },
   metaText: {
-    ...typography.caption,
+    ...typography.utilityCaption,
     fontSize: 11,
     color: theme.colors.neutral[500],
   },

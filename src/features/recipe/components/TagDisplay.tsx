@@ -46,8 +46,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.spacing.md,
   },
   tagText: {
-    ...typography.caption,
+    ...typography.label,
     color: theme.colors.neutral[700],
-    fontWeight: '500',
   },
 });

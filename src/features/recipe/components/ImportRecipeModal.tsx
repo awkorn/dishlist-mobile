@@ -296,9 +296,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   imageIndexText: {
-    ...typography.caption,
+    ...typography.label,
     color: theme.colors.surface,
-    fontWeight: '600',
     fontSize: 11,
   },
   addMoreButton: {

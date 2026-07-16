@@ -287,9 +287,9 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.lg,
   },
   successTitle: {
-    ...typography.body,
+    ...typography.label,
+    fontSize: 16,
     color: theme.colors.successText,
-    fontWeight: '600',
   },
   successText: {
     ...typography.caption,
@@ -316,10 +316,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   footerText: {
+    ...typography.body,
     color: theme.colors.neutral[500],
   },
   linkText: {
+    fontFamily: typography.families.uiSemiBold,
     color: theme.colors.primary[500],
-    fontWeight: '600',
   },
 });

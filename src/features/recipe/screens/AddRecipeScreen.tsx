@@ -672,7 +672,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.neutral[50],
   },
   timeInput: {
-    fontFamily: "Inter-Medium",
+    fontFamily: typography.families.readingMedium,
     fontSize: 18,
     lineHeight: 24,
     textAlign: "right",
@@ -680,7 +680,7 @@ const styles = StyleSheet.create({
     paddingVertical: theme.spacing.md,
   },
   timeUnit: {
-    ...typography.caption,
+    ...typography.utilityCaption,
     color: theme.colors.neutral[500],
     paddingRight: theme.spacing.lg,
   },
@@ -694,6 +694,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   noteInput: {
+    ...typography.recipeReading,
     minHeight: 72,
     padding: theme.spacing.md,
   },
@@ -729,7 +730,7 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.lg,
   },
   photoCount: {
-    ...typography.caption,
+    ...typography.utilityCaption,
     color: theme.colors.neutral[500],
   },
   photoSectionTitle: {
@@ -779,9 +780,8 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.55)",
   },
   photoIndexText: {
-    ...typography.caption,
+    ...typography.label,
     color: theme.colors.onPrimary,
-    fontWeight: "700",
   },
   imagePickerText: {
     ...typography.body,

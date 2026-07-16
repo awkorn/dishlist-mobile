@@ -1,10 +1,32 @@
-export const typography = {
-  // Font families
-  primary: "Bricolage-Regular",
-  primarySemiBold: "Bricolage-SemiBold",
-  primaryBold: "Bricolage-Bold",
+const fontFamilies = {
+  ui: "Bricolage-Regular",
+  uiSemiBold: "Bricolage-SemiBold",
+  uiBold: "Bricolage-Bold",
+  reading: "Inter-Regular",
+  readingMedium: "Inter-Medium",
+  readingSemiBold: "Inter-SemiBold",
+  editorial: "PlayfairDisplay-Regular",
+  editorialMedium: "PlayfairDisplay-Medium",
+  editorialSemiBold: "PlayfairDisplay-SemiBold",
+} as const;
 
-  // Font sizes
+/**
+ * DishList typography roles
+ *
+ * - Playfair introduces featured culinary content.
+ * - Bricolage organizes the product and communicates actions.
+ * - Inter supports sustained recipe reading and dense factual metadata.
+ *
+ * Keep a component or visual region to two typefaces whenever possible.
+ */
+export const typography = {
+  families: fontFamilies,
+
+  // Backwards-compatible family aliases. Prefer `families` in new styles.
+  primary: fontFamilies.ui,
+  primarySemiBold: fontFamilies.uiSemiBold,
+  primaryBold: fontFamilies.uiBold,
+
   sizes: {
     xs: 12,
     sm: 14,
@@ -16,75 +38,111 @@ export const typography = {
     "4xl": 36,
   },
 
-  // Text styles
+  // Product hierarchy: Bricolage is the default interface voice.
   heading1: {
-    fontFamily: "Inter-SemiBold",
+    fontFamily: fontFamilies.uiSemiBold,
     fontSize: 48,
     lineHeight: 56,
   },
   heading2: {
-    fontFamily: "Inter-SemiBold",
+    fontFamily: fontFamilies.uiSemiBold,
     fontSize: 36,
-    lineHeight: 38,
+    lineHeight: 40,
   },
   heading3: {
-    fontFamily: "Inter-SemiBold",
+    fontFamily: fontFamilies.uiSemiBold,
     fontSize: 24,
     lineHeight: 32,
     letterSpacing: -0.5,
   },
   heading4: {
-    fontFamily: "Inter-SemiBold",
+    fontFamily: fontFamilies.uiSemiBold,
     fontSize: 30,
-    lineHeight: 36,
+    lineHeight: 38,
     letterSpacing: -0.5,
   },
   pageTitle: {
-    fontFamily: "Inter-SemiBold",
+    fontFamily: fontFamilies.uiSemiBold,
     fontSize: 28,
-    lineHeight: 33,
+    lineHeight: 34,
     letterSpacing: -0.5,
   },
+  navigationTitle: {
+    fontFamily: fontFamilies.uiSemiBold,
+    fontSize: 20,
+    lineHeight: 26,
+  },
+  subtitle: {
+    fontFamily: fontFamilies.uiSemiBold,
+    fontSize: 19,
+    lineHeight: 25,
+    letterSpacing: -0.25,
+  },
+  recipeCardTitle: {
+    fontFamily: fontFamilies.uiSemiBold,
+    fontSize: 17,
+    lineHeight: 22,
+    letterSpacing: -0.2,
+  },
+  body: {
+    fontFamily: fontFamilies.ui,
+    fontSize: 16,
+    lineHeight: 22,
+  },
+  button: {
+    fontFamily: fontFamilies.uiSemiBold,
+    fontSize: 16,
+    lineHeight: 21,
+  },
+  caption: {
+    fontFamily: fontFamilies.ui,
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  label: {
+    fontFamily: fontFamilies.uiSemiBold,
+    fontSize: 14,
+    lineHeight: 20,
+  },
+
+  // Editorial hierarchy: intentionally rare.
   editorialPageTitle: {
-    fontFamily: "PlayfairDisplay-SemiBold",
+    fontFamily: fontFamilies.editorialSemiBold,
     fontSize: 36,
     lineHeight: 40,
   },
   recipeDetailTitle: {
-    fontFamily: "PlayfairDisplay-SemiBold",
+    fontFamily: fontFamilies.editorialSemiBold,
     fontSize: 36,
-    lineHeight: 38,
+    lineHeight: 40,
   },
-  editorialTitle: {
-    fontFamily: "PlayfairDisplay-Medium",
-    fontSize: 26,
-    lineHeight: 32,
-    letterSpacing: -0.25,
-  },
-  editorialNavigationTitle: {
-    fontFamily: "Inter-Medium",
+  recipeSheetTitle: {
+    fontFamily: fontFamilies.editorialMedium,
     fontSize: 20,
     lineHeight: 25,
+    letterSpacing: -0.2,
   },
-  subtitle: {
-    fontFamily: "Inter-Medium",
-    fontSize: 19,
+
+  // Reading and data hierarchy: Inter is used only where density earns it.
+  recipeReading: {
+    fontFamily: fontFamilies.reading,
+    fontSize: 16,
     lineHeight: 24,
-    letterSpacing: -0.5,
   },
-  body: {
-    fontFamily: "Inter-Regular",
-    fontSize: 16,
-    lineHeight: 20,
+  recipeReadingCompact: {
+    fontFamily: fontFamilies.reading,
+    fontSize: 15,
+    lineHeight: 22,
   },
-  button: {
-    fontFamily: "Inter-Medium",
-    fontSize: 16,
-    lineHeight: 20,
-  },
-  caption: {
-    fontFamily: "Inter-Regular",
+  utilityCaption: {
+    fontFamily: fontFamilies.reading,
     fontSize: 14,
     lineHeight: 20,
   },
+  utilityCaptionEmphasis: {
+    fontFamily: fontFamilies.readingMedium,
+    fontSize: 14,
+    lineHeight: 20,
+  },
+
 };

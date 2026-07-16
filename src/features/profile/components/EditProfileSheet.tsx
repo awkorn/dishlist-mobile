@@ -195,9 +195,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   headerSaveText: {
-    ...typography.body,
+    ...typography.button,
     color: theme.colors.primary[500],
-    fontWeight: "600",
     textAlign: "right",
   },
   headerActionDisabled: {

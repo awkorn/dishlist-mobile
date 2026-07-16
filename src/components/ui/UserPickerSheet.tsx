@@ -363,8 +363,8 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   userNameSelected: {
+    fontFamily: typography.families.uiSemiBold,
     color: theme.colors.primary[600],
-    fontWeight: "600",
   },
   emptyContainer: {
     flex: 1,

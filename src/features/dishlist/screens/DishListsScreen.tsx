@@ -350,7 +350,10 @@ const styles = StyleSheet.create({
     borderBottomColor: theme.colors.primary[600],
   },
   tabText: { ...typography.body, color: theme.colors.neutral[500] },
-  activeTabText: { color: theme.colors.primary[600], fontWeight: "600" },
+  activeTabText: {
+    fontFamily: typography.families.uiSemiBold,
+    color: theme.colors.primary[600],
+  },
   pager: {
     flex: 1,
   },

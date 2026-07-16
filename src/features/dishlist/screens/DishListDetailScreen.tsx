@@ -477,7 +477,7 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
   },
   headerTitle: {
-    ...typography.editorialNavigationTitle,
+    ...typography.navigationTitle,
     color: theme.colors.textPrimary,
   },
   infoRow: {
@@ -537,8 +537,7 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   collaboratorText: {
-    ...typography.caption,
+    ...typography.label,
     color: theme.colors.primary[600],
-    fontWeight: "600",
   },
 });

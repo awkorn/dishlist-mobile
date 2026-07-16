@@ -343,10 +343,9 @@ const styles = StyleSheet.create({
     borderRadius: theme.borderRadius.lg,
   },
   ownerText: {
-    ...typography.caption,
+    ...typography.label,
     color: theme.colors.warning,
     marginLeft: 4,
-    fontWeight: '600',
   },
   pendingBadge: {
     flexDirection: 'row',

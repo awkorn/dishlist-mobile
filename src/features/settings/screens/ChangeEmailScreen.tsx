@@ -278,9 +278,9 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   currentEmailValue: {
-    ...typography.body,
+    ...typography.label,
+    fontSize: 16,
     color: theme.colors.textPrimary,
-    fontWeight: "500",
   },
   fieldContainer: {
     marginBottom: theme.spacing.lg,
@@ -324,8 +324,7 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   buttonText: {
-    ...typography.body,
-    fontWeight: "600",
+    ...typography.button,
     color: theme.colors.onPrimary,
     fontSize: 16,
   },
@@ -353,7 +352,7 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.sm,
   },
   successEmail: {
-    fontWeight: "600",
+    fontFamily: typography.families.uiSemiBold,
     color: theme.colors.textPrimary,
   },
   successHint: {
@@ -372,8 +371,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   doneButtonText: {
-    ...typography.body,
-    fontWeight: "600",
+    ...typography.button,
     color: theme.colors.onPrimary,
     fontSize: 16,
   },

@@ -726,9 +726,8 @@ const styles = StyleSheet.create({
     paddingTop: theme.spacing.md,
   },
   dishListTitle: {
-    ...typography.caption,
+    ...typography.label,
     color: theme.colors.recipeAccent,
-    fontFamily: "Inter-SemiBold",
     marginBottom: theme.spacing.md,
   },
   recipeTitle: {
@@ -762,14 +761,13 @@ const styles = StyleSheet.create({
     paddingTop: theme.spacing.lg,
   },
   attributionText: {
-    ...typography.caption,
+    ...typography.utilityCaption,
     color: theme.colors.neutral[600],
     lineHeight: 18,
   },
   attributionLink: {
-    ...typography.caption,
+    ...typography.utilityCaptionEmphasis,
     color: theme.colors.primary[500],
-    fontWeight: "600",
   },
   metaRow: {
     flexDirection: "row",
@@ -783,14 +781,15 @@ const styles = StyleSheet.create({
     minWidth: 72,
   },
   metaLabel: {
-    ...typography.caption,
+    ...typography.utilityCaption,
     color: theme.colors.neutral[500],
     marginTop: theme.spacing.xs,
     textAlign: "center",
   },
   metaValue: {
-    ...typography.body,
-    fontWeight: "600",
+    ...typography.utilityCaptionEmphasis,
+    fontSize: 16,
+    lineHeight: 22,
     color: theme.colors.neutral[700],
     marginTop: theme.spacing.xs,
     textAlign: "center",
@@ -826,7 +825,7 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.primary[500],
   },
   ingredientText: {
-    ...typography.body,
+    ...typography.recipeReading,
     color: theme.colors.neutral[800],
     flex: 1,
   },
@@ -859,7 +858,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   stepNumberText: {
-    ...typography.subtitle,
+    ...typography.label,
     fontSize: 14,
     color: theme.colors.primary[600],
   },
@@ -867,7 +866,7 @@ const styles = StyleSheet.create({
     color: theme.colors.neutral[400],
   },
   instructionText: {
-    ...typography.body,
+    ...typography.recipeReading,
     color: theme.colors.neutral[800],
     flex: 1,
     lineHeight: 24,
@@ -884,10 +883,9 @@ const styles = StyleSheet.create({
     borderBottomColor: theme.colors.neutral[200],
   },
   subsectionHeaderText: {
-    ...typography.subtitle,
+    ...typography.label,
     fontSize: 15,
     color: theme.colors.primary[600],
-    fontWeight: "600",
   },
   notesList: {
     gap: theme.spacing.md,
@@ -899,14 +897,13 @@ const styles = StyleSheet.create({
     padding: theme.spacing.lg,
   },
   noteAttribution: {
-    ...typography.caption,
-    fontFamily: "Inter-SemiBold",
+    ...typography.label,
     color: theme.colors.noteAccent,
     letterSpacing: 0.6,
     marginBottom: theme.spacing.sm,
   },
   noteText: {
-    ...typography.body,
+    ...typography.recipeReading,
     color: theme.colors.textPrimary,
     lineHeight: 24,
   },

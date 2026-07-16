@@ -64,8 +64,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   text: {
-    ...typography.caption,
+    ...typography.label,
     color: theme.colors.onPrimary,
-    fontWeight: '600',
   },
 });

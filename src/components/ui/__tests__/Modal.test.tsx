@@ -1,6 +1,7 @@
 import React from "react";
 import { StyleSheet, Text } from "react-native";
 import { fireEvent, render } from "@testing-library/react-native";
+import { typography } from "@styles/typography";
 import Modal from "../Modal";
 
 describe("Modal", () => {
@@ -38,6 +39,23 @@ describe("Modal", () => {
 
     fireEvent.press(getByLabelText("Close modal"));
     expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it("supports a contextual title style without changing other modals", () => {
+    const { getByText } = render(
+      <Modal
+        visible
+        onClose={() => {}}
+        title="Roasted Tomato Pasta"
+        titleStyle={typography.recipeSheetTitle}
+      >
+        <Text>Content</Text>
+      </Modal>,
+    );
+
+    expect(
+      StyleSheet.flatten(getByText("Roasted Tomato Pasta").props.style),
+    ).toMatchObject({ fontFamily: typography.families.editorialMedium });
   });
 
   it("can hide or disable the close action", () => {

@@ -442,8 +442,7 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.lg,
   },
   sectionTitle: {
-    ...typography.caption,
-    fontFamily: "Inter-SemiBold",
+    ...typography.label,
     color: theme.colors.textPrimary,
     fontSize: 13,
   },
@@ -470,8 +469,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.textPrimary,
   },
   chipText: {
-    ...typography.caption,
-    fontFamily: "Inter-SemiBold",
+    ...typography.label,
     color: theme.colors.textPrimary,
     fontSize: 11,
     lineHeight: 15,

@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { Bell } from "lucide-react-native";
 import { theme } from "@styles/theme";
+import { typography } from "@styles/typography";
 
 interface NotificationBadgeProps {
   count: number;
@@ -54,8 +55,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
   },
   badgeText: {
+    fontFamily: typography.families.uiBold,
     color: theme.colors.onPrimary,
     fontSize: 10,
-    fontWeight: "700",
   },
 });

@@ -11,8 +11,6 @@ export const useCustomFonts = () => {
         'Inter-Medium': Inter_500Medium,
         'Inter-SemiBold': Inter_600SemiBold,
 
-        'GeneralSans-SemiBold': require('../../assets/fonts/GeneralSans-Semibold.ttf'),
-
         'Bricolage-Regular': require('../../assets/fonts/BricolageGrotesque-Regular.ttf'),
         'Bricolage-SemiBold': require('../../assets/fonts/BricolageGrotesque-SemiBold.ttf'),
         'Bricolage-Bold': require('../../assets/fonts/BricolageGrotesque-Bold.ttf'),

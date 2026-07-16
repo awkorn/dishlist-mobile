@@ -22,8 +22,7 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.xl,
   },
   title: {
-    ...typography.caption,
-    fontFamily: "Inter-Medium",
+    ...typography.label,
     color: theme.colors.neutral[500],
     textTransform: "uppercase",
     letterSpacing: 0.5,

@@ -342,7 +342,7 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.xs,
   },
   time: {
-    ...typography.caption,
+    ...typography.utilityCaption,
     color: theme.colors.neutral[500],
   },
   actionButtons: {

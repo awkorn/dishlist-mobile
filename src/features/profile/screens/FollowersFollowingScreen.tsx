@@ -297,7 +297,7 @@ const styles = StyleSheet.create({
     padding: theme.spacing.xs,
   },
   headerTitle: {
-    ...typography.editorialNavigationTitle,
+    ...typography.navigationTitle,
     flex: 1,
     textAlign: "center",
     color: theme.colors.neutral[900],

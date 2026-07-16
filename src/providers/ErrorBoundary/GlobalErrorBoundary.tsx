@@ -135,8 +135,7 @@ const styles = StyleSheet.create({
     maxHeight: 200,
   },
   stackTitle: {
-    ...typography.caption,
-    fontWeight: "600",
+    ...typography.label,
     marginBottom: theme.spacing.sm,
   },
   stackText: {

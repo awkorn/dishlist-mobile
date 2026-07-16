@@ -22,8 +22,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.background,
   },
   title: {
-    ...typography.caption,
-    fontWeight: "600",
+    ...typography.label,
     color: theme.colors.neutral[600],
     textTransform: "uppercase",
     letterSpacing: 0.5,

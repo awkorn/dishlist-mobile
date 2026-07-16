@@ -113,7 +113,7 @@ const styles = StyleSheet.create({
     marginLeft: theme.spacing.md,
   },
   title: {
-    ...typography.editorialNavigationTitle,
+    ...typography.navigationTitle,
     flexShrink: 1,
     color: theme.colors.textPrimary,
     textAlign: "center",

@@ -166,7 +166,7 @@ const styles = StyleSheet.create({
     paddingTop: theme.spacing.md,
   },
   viewerCount: {
-    ...typography.caption,
+    ...typography.utilityCaption,
     color: theme.colors.surface,
   },
   closeButton: {

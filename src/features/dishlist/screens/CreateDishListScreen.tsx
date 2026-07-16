@@ -287,7 +287,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   headerTitle: {
-    ...typography.editorialNavigationTitle,
+    ...typography.navigationTitle,
     color: theme.colors.textPrimary,
   },
   headerSpacer: {
@@ -327,8 +327,8 @@ const styles = StyleSheet.create({
     gap: theme.spacing.sm,
   },
   visibilityTitle: {
-    ...typography.body,
-    fontWeight: "600",
+    ...typography.label,
+    fontSize: 16,
     color: theme.colors.neutral[700],
   },
   visibilityTitleActive: {

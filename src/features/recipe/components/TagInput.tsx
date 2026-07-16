@@ -134,9 +134,8 @@ const styles = StyleSheet.create({
     gap: theme.spacing.xs,
   },
   tagText: {
-    ...typography.caption,
+    ...typography.label,
     color: theme.colors.primary[600],
-    fontWeight: '500',
   },
   inputRow: {
     flexDirection: 'row',

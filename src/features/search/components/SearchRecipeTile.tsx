@@ -108,8 +108,9 @@ const styles = StyleSheet.create({
     padding: theme.spacing.md,
   },
   title: {
-    ...typography.body,
+    ...typography.recipeCardTitle,
     fontSize: 14,
+    lineHeight: 19,
     color: theme.colors.textPrimary,
     marginBottom: theme.spacing.xs,
   },
@@ -124,7 +125,8 @@ const styles = StyleSheet.create({
     gap: theme.spacing.xs,
   },
   metaText: {
-    ...typography.caption,
+    ...typography.utilityCaption,
+    fontSize: 12,
     color: theme.colors.neutral[500],
   },
 });

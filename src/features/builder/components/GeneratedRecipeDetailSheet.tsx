@@ -31,7 +31,12 @@ export function GeneratedRecipeDetailSheet({
   const itemInstructions = recipe.instructions.filter((i) => i.type === "item");
 
   return (
-    <Modal visible={visible} onClose={onClose} title={recipe.title}>
+    <Modal
+      visible={visible}
+      onClose={onClose}
+      title={recipe.title}
+      titleStyle={styles.recipeTitle}
+    >
       <View style={styles.container}>
         {/* Scrollable Content */}
         <ScrollView
@@ -133,6 +138,9 @@ export function GeneratedRecipeDetailSheet({
 }
 
 const styles = StyleSheet.create({
+  recipeTitle: {
+    ...typography.recipeSheetTitle,
+  },
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
@@ -157,12 +165,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   statValue: {
-    ...typography.caption,
-    fontFamily: "Inter-Medium",
+    ...typography.utilityCaptionEmphasis,
     color: theme.colors.neutral[800],
   },
   statLabel: {
-    ...typography.caption,
+    ...typography.utilityCaption,
     fontSize: 11,
     color: theme.colors.neutral[500],
   },
@@ -182,11 +189,9 @@ const styles = StyleSheet.create({
     borderBottomColor: theme.colors.neutral[200],
   },
   subsectionHeaderText: {
-    ...typography.caption,
-    fontFamily: "Inter-Medium",
+    ...typography.label,
     fontSize: 14,
     color: theme.colors.primary[600],
-    fontWeight: "600",
   },
   ingredientRow: {
     flexDirection: "row",
@@ -202,7 +207,7 @@ const styles = StyleSheet.create({
     marginTop: 7,
   },
   ingredientText: {
-    ...typography.body,
+    ...typography.recipeReading,
     color: theme.colors.neutral[800],
     flex: 1,
   },
@@ -221,13 +226,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   stepNumberText: {
-    ...typography.caption,
-    fontFamily: "Inter-Medium",
+    ...typography.label,
     fontSize: 13,
     color: theme.colors.primary[600],
   },
   instructionText: {
-    ...typography.body,
+    ...typography.recipeReading,
     color: theme.colors.neutral[800],
     flex: 1,
     lineHeight: 24,

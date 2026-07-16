@@ -41,8 +41,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   text: {
-    ...typography.caption,
-    fontFamily: "Inter-Medium",
+    ...typography.label,
     color: theme.colors.onPrimary,
     fontSize: 13,
   },

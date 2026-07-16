@@ -304,10 +304,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   footerText: {
+    ...typography.body,
     color: theme.colors.neutral[500],
   },
   linkText: {
+    fontFamily: typography.families.uiSemiBold,
     color: theme.colors.primary[500],
-    fontWeight: '600',
   },
 });

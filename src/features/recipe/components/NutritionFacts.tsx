@@ -247,9 +247,8 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surface,
   },
   title: {
-    ...typography.subtitle,
+    ...typography.navigationTitle,
     fontSize: 18,
-    fontWeight: '900',
     color: theme.colors.neutral[800],
     letterSpacing: 0.5,
   },
@@ -257,7 +256,7 @@ const styles = StyleSheet.create({
     padding: theme.spacing.lg,
   },
   servingInfo: {
-    ...typography.caption,
+    ...typography.utilityCaption,
     fontSize: 12,
     color: theme.colors.neutral[600],
     marginBottom: theme.spacing.md,
@@ -269,15 +268,14 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.lg,
   },
   caloriesLabel: {
-    ...typography.body,
+    ...typography.utilityCaptionEmphasis,
     fontSize: 16,
-    fontWeight: '600',
     color: theme.colors.neutral[800],
   },
   caloriesValue: {
-    ...typography.body,
+    ...typography.utilityCaptionEmphasis,
+    fontFamily: typography.families.readingSemiBold,
     fontSize: 18,
-    fontWeight: '900',
     color: theme.colors.neutral[800],
   },
   nutrientRow: {
@@ -289,15 +287,14 @@ const styles = StyleSheet.create({
     borderBottomColor: theme.colors.neutral[200],
   },
   nutrientName: {
-    ...typography.body,
+    ...typography.utilityCaption,
     fontSize: 14,
-    fontWeight: '500',
     color: theme.colors.neutral[700],
   },
   nutrientValue: {
-    ...typography.body,
+    ...typography.utilityCaptionEmphasis,
+    fontFamily: typography.families.readingSemiBold,
     fontSize: 14,
-    fontWeight: '700',
     color: theme.colors.neutral[800],
   },
   indented: {
@@ -328,8 +325,10 @@ const styles = StyleSheet.create({
     borderRightColor: theme.colors.neutral[300],
   },
   macroText: {
+    ...typography.utilityCaptionEmphasis,
+    fontFamily: typography.families.readingSemiBold,
+    fontSize: 11,
     color: theme.colors.onPrimary,
-    fontWeight: '700',
     textShadowColor: 'rgba(0,0,0,0.4)',
     textShadowOffset: { width: 0.5, height: 0.5 },
     textShadowRadius: 2,
@@ -358,9 +357,8 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   legendText: {
-    ...typography.caption,
+    ...typography.utilityCaption,
     fontSize: 11,
     color: theme.colors.neutral[600],
-    fontWeight: '500',
   },
 });
