@@ -457,13 +457,6 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
             }
           />
 
-          {/* Recipe Description */}
-          {recipe.description ? (
-            <View style={styles.recipeIntro}>
-              <Text style={styles.recipeDescription}>{recipe.description}</Text>
-            </View>
-          ) : null}
-
           {/* Ingredients */}
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
@@ -734,16 +727,6 @@ const styles = StyleSheet.create({
     ...typography.recipeDetailTitle,
     color: theme.colors.textPrimary,
     marginBottom: theme.spacing.xl,
-  },
-  recipeIntro: {
-    paddingHorizontal: theme.spacing.xl,
-    paddingTop: theme.spacing.xl,
-    paddingBottom: theme.spacing.lg,
-  },
-  recipeDescription: {
-    ...typography.body,
-    color: theme.colors.neutral[700],
-    lineHeight: 24,
   },
   metaSection: {
     paddingVertical: theme.spacing.lg,
