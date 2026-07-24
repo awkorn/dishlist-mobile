@@ -96,8 +96,6 @@ function DishListTileContent({ dishList, onPress }: DishListTileProps) {
             <Text style={styles.statusText}>{statusLabel}</Text>
           </View>
 
-          <Text style={styles.infoDot}>|</Text>
-
           <View style={styles.visibilityBadge}>
             <VisibilityIcon size={11} color={theme.colors.secondary[50]} />
             <Text style={styles.visibilityText}>{visibilityLabel}</Text>
@@ -128,7 +126,7 @@ const styles = StyleSheet.create({
     width: TILE_WIDTH,
     marginBottom: theme.spacing.lg,
     backgroundColor: theme.colors.surface,
-    borderRadius: theme.borderRadius.lg,
+    borderRadius: theme.borderRadius.md,
     ...theme.shadows.collectionCard,
   },
   cover: {
@@ -141,8 +139,8 @@ const styles = StyleSheet.create({
     paddingVertical: theme.spacing.sm,
     backgroundColor: theme.colors.surface,
     overflow: "hidden",
-    borderTopLeftRadius: theme.borderRadius.lg - 1,
-    borderTopRightRadius: theme.borderRadius.lg - 1,
+    borderTopLeftRadius: theme.borderRadius.md - 1,
+    borderTopRightRadius: theme.borderRadius.md - 1,
     marginTop: theme.spacing.sm,
   },
   coverTitle: {
@@ -170,9 +168,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
-  },
-  infoDot: {
-    color: theme.colors.secondary[50],
   },
   statusBadge: {
     flexDirection: "row",
