@@ -41,13 +41,15 @@ export function SkeletonTile({ index = 0 }: SkeletonTileProps) {
   return (
     <Animated.View style={[styles.container, { width: tileWidth, opacity }]}>
       <View style={styles.cover}>
-        <View style={styles.title} />
-        <View style={styles.text} />
+        <View style={styles.titleCopy}>
+          <View style={styles.title} />
+          <View style={styles.recipeCount} />
+        </View>
       </View>
       <View style={styles.content}>
         <View style={styles.badges}>
-          <View style={styles.badgeWide} />
-          <View style={styles.badge} />
+          <View style={styles.status} />
+          <View style={styles.visibility} />
         </View>
       </View>
     </Animated.View>
@@ -56,51 +58,59 @@ export function SkeletonTile({ index = 0 }: SkeletonTileProps) {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: theme.colors.neutral[100],
-    borderRadius: theme.borderRadius.lg,
-    borderWidth: 1,
-    borderColor: theme.colors.navyBorder,
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.borderRadius.md,
     marginBottom: theme.spacing.lg,
-    overflow: 'hidden',
+    ...theme.shadows.collectionCard,
   },
   cover: {
-    height: 88,
-    backgroundColor: theme.colors.neutral[200],
-    justifyContent: 'flex-end',
-    padding: theme.spacing.lg,
-    gap: 4,
+    minHeight: 55,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
+    backgroundColor: theme.colors.surface,
+    overflow: 'hidden',
+    borderTopLeftRadius: theme.borderRadius.md - 1,
+    borderTopRightRadius: theme.borderRadius.md - 1,
+    marginTop: theme.spacing.sm,
   },
   content: {
-    height: 52,
+    minHeight: 50,
     justifyContent: 'center',
     padding: theme.spacing.md,
   },
-  title: {
-    height: 20,
-    backgroundColor: theme.colors.neutral[100],
-    borderRadius: theme.borderRadius.sm,
-    width: '80%',
+  titleCopy: {
+    flex: 1,
+    gap: 2,
   },
-  text: {
-    height: 14,
-    backgroundColor: theme.colors.neutral[100],
-    width: '42%',
-    borderRadius: 7,
+  title: {
+    height: 18,
+    backgroundColor: theme.colors.neutral[200],
+    borderRadius: 9,
+    width: '72%',
+  },
+  recipeCount: {
+    height: 11,
+    backgroundColor: theme.colors.neutral[200],
+    width: '38%',
+    borderRadius: 6,
   },
   badges: {
     flexDirection: 'row',
+    alignItems: 'center',
     gap: 6,
   },
-  badgeWide: {
-    width: 58,
-    height: 24,
+  status: {
+    width: 52,
+    height: 12,
     backgroundColor: theme.colors.neutral[200],
-    borderRadius: 12,
+    borderRadius: 6,
   },
-  badge: {
-    width: 64,
-    height: 24,
+  visibility: {
+    width: 48,
+    height: 12,
     backgroundColor: theme.colors.neutral[200],
-    borderRadius: 12,
+    borderRadius: 6,
   },
 });

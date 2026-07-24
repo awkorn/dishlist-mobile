@@ -335,7 +335,6 @@ export default function ProfileScreen({ navigation, route }: Props) {
             numColumns={2}
             columnWrapperStyle={styles.row}
             contentContainerStyle={styles.listContent}
-            ItemSeparatorComponent={() => <View style={styles.separator} />}
             ListEmptyComponent={
               <ProfileEmptyState message={getEmptyMessage(false)} />
             }
