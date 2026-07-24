@@ -17,7 +17,7 @@ describe("ScreenHeader", () => {
     expect(
       StyleSheet.flatten(getByText("Grocery List").props.style),
     ).toMatchObject({
-      fontFamily: typography.families.uiSemiBold,
+      fontFamily: typography.families.uiMedium,
       textAlign: "center",
     });
     expect(

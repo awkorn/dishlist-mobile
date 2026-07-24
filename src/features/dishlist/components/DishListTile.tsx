@@ -50,10 +50,6 @@ function DishListTileContent({ dishList, onPress }: DishListTileProps) {
     dishList.visibility === "PUBLIC" ? Globe2 : Lock;
   const visibilityLabel =
     dishList.visibility === "PUBLIC" ? "Public" : "Private";
-  const visibilityColor =
-    dishList.visibility === "PUBLIC"
-      ? theme.colors.textPrimary
-      : theme.colors.textPrimary;
 
   const handlePress = () => {
     if (onPress) {
@@ -96,17 +92,15 @@ function DishListTileContent({ dishList, onPress }: DishListTileProps) {
       <View style={styles.content}>
         <View style={styles.badges}>
           <View style={styles.statusBadge}>
-            <StatusIcon size={12} color={theme.colors.textPrimary} />
+            <StatusIcon size={12} color={theme.colors.secondary[50]} />
             <Text style={styles.statusText}>{statusLabel}</Text>
           </View>
 
-          <Text style={styles.infoDot}>•</Text>
+          <Text style={styles.infoDot}>|</Text>
 
           <View style={styles.visibilityBadge}>
-            <VisibilityIcon size={11} color={visibilityColor} />
-            <Text style={[styles.visibilityText, { color: visibilityColor }]}>
-              {visibilityLabel}
-            </Text>
+            <VisibilityIcon size={11} color={theme.colors.secondary[50]} />
+            <Text style={styles.visibilityText}>{visibilityLabel}</Text>
           </View>
         </View>
       </View>
@@ -135,8 +129,6 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.lg,
     backgroundColor: theme.colors.surface,
     borderRadius: theme.borderRadius.lg,
-    borderWidth: 1,
-    borderColor: theme.colors.navyBorder,
     ...theme.shadows.collectionCard,
   },
   cover: {
@@ -180,7 +172,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   infoDot: {
-    color: theme.colors.neutral[500],
+    color: theme.colors.secondary[50],
   },
   statusBadge: {
     flexDirection: "row",
@@ -192,7 +184,7 @@ const styles = StyleSheet.create({
     ...typography.label,
     fontSize: 11,
     lineHeight: 15,
-    color: theme.colors.textPrimary,
+    color: theme.colors.secondary[50],
   },
   visibilityBadge: {
     flexDirection: "row",
@@ -204,6 +196,7 @@ const styles = StyleSheet.create({
     ...typography.label,
     fontSize: 11,
     lineHeight: 15,
+    color: theme.colors.secondary[50],
   },
   errorContainer: {
     justifyContent: "center",

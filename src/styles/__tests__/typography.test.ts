@@ -1,16 +1,18 @@
 import { typography } from "../typography";
 
 describe("typography roles", () => {
-  it("uses Bricolage as the product voice", () => {
-    expect(typography.pageTitle.fontFamily).toBe(typography.families.uiSemiBold);
+  it("uses Geist as the product voice", () => {
+    expect(typography.families.uiMedium).toBe("Geist-Medium");
+    expect(typography.primaryMedium).toBe(typography.families.uiMedium);
+    expect(typography.pageTitle.fontFamily).toBe(typography.families.uiMedium);
     expect(typography.navigationTitle.fontFamily).toBe(
-      typography.families.uiSemiBold,
+      typography.families.uiMedium,
     );
     expect(typography.body.fontFamily).toBe(typography.families.ui);
     expect(typography.caption.fontFamily).toBe(typography.families.ui);
-    expect(typography.button.fontFamily).toBe(typography.families.uiSemiBold);
+    expect(typography.button.fontFamily).toBe(typography.families.uiMedium);
     expect(typography.recipeCardTitle.fontFamily).toBe(
-      typography.families.uiSemiBold,
+      typography.families.uiMedium,
     );
   });
 

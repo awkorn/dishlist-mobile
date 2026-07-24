@@ -4,6 +4,12 @@ import {
     Inter_500Medium,
     Inter_600SemiBold,
 } from "@expo-google-fonts/inter";
+import {
+    Geist_400Regular,
+    Geist_500Medium,
+    Geist_600SemiBold,
+    Geist_700Bold,
+} from "@expo-google-fonts/geist";
 
 export const useCustomFonts = () => {
     const [fontsLoaded] = useFonts({
@@ -11,9 +17,10 @@ export const useCustomFonts = () => {
         'Inter-Medium': Inter_500Medium,
         'Inter-SemiBold': Inter_600SemiBold,
 
-        'Bricolage-Regular': require('../../assets/fonts/BricolageGrotesque-Regular.ttf'),
-        'Bricolage-SemiBold': require('../../assets/fonts/BricolageGrotesque-SemiBold.ttf'),
-        'Bricolage-Bold': require('../../assets/fonts/BricolageGrotesque-Bold.ttf'),
+        'Geist-Regular': Geist_400Regular,
+        'Geist-Medium': Geist_500Medium,
+        'Geist-SemiBold': Geist_600SemiBold,
+        'Geist-Bold': Geist_700Bold,
 
         'PlayfairDisplay-Regular': require('../../assets/fonts/PlayfairDisplay-Regular.ttf'),
         'PlayfairDisplay-SemiBold': require('../../assets/fonts/PlayfairDisplay-SemiBold.ttf'),

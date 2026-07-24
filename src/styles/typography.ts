@@ -1,7 +1,8 @@
 const fontFamilies = {
-  ui: "Bricolage-Regular",
-  uiSemiBold: "Bricolage-SemiBold",
-  uiBold: "Bricolage-Bold",
+  ui: "Geist-Regular",
+  uiMedium: "Geist-Medium",
+  uiSemiBold: "Geist-SemiBold",
+  uiBold: "Geist-Bold",
   reading: "Inter-Regular",
   readingMedium: "Inter-Medium",
   readingSemiBold: "Inter-SemiBold",
@@ -14,7 +15,7 @@ const fontFamilies = {
  * DishList typography roles
  *
  * - Playfair introduces featured culinary content.
- * - Bricolage organizes the product and communicates actions.
+ * - Geist organizes the product and communicates actions.
  * - Inter supports sustained recipe reading and dense factual metadata.
  *
  * Keep a component or visual region to two typefaces whenever possible.
@@ -24,6 +25,7 @@ export const typography = {
 
   // Backwards-compatible family aliases. Prefer `families` in new styles.
   primary: fontFamilies.ui,
+  primaryMedium: fontFamilies.uiMedium,
   primarySemiBold: fontFamilies.uiSemiBold,
   primaryBold: fontFamilies.uiBold,
 
@@ -38,48 +40,48 @@ export const typography = {
     "4xl": 36,
   },
 
-  // Product hierarchy: Bricolage is the default interface voice.
+  // Product hierarchy: Geist is the default interface voice.
   heading1: {
-    fontFamily: fontFamilies.uiSemiBold,
+    fontFamily: fontFamilies.uiMedium,
     fontSize: 48,
     lineHeight: 56,
   },
   heading2: {
-    fontFamily: fontFamilies.uiSemiBold,
+    fontFamily: fontFamilies.uiMedium,
     fontSize: 36,
     lineHeight: 40,
   },
   heading3: {
-    fontFamily: fontFamilies.uiSemiBold,
+    fontFamily: fontFamilies.uiMedium,
     fontSize: 24,
     lineHeight: 32,
     letterSpacing: -0.5,
   },
   heading4: {
-    fontFamily: fontFamilies.uiSemiBold,
+    fontFamily: fontFamilies.uiMedium,
     fontSize: 30,
     lineHeight: 38,
     letterSpacing: -0.5,
   },
   pageTitle: {
-    fontFamily: fontFamilies.uiSemiBold,
+    fontFamily: fontFamilies.uiMedium,
     fontSize: 28,
     lineHeight: 34,
     letterSpacing: -0.5,
   },
   navigationTitle: {
-    fontFamily: fontFamilies.uiSemiBold,
+    fontFamily: fontFamilies.uiMedium,
     fontSize: 20,
     lineHeight: 26,
   },
   subtitle: {
-    fontFamily: fontFamilies.uiSemiBold,
+    fontFamily: fontFamilies.uiMedium,
     fontSize: 19,
     lineHeight: 25,
     letterSpacing: -0.25,
   },
   recipeCardTitle: {
-    fontFamily: fontFamilies.uiSemiBold,
+    fontFamily: fontFamilies.uiMedium,
     fontSize: 17,
     lineHeight: 22,
     letterSpacing: -0.2,
@@ -90,7 +92,7 @@ export const typography = {
     lineHeight: 22,
   },
   button: {
-    fontFamily: fontFamilies.uiSemiBold,
+    fontFamily: fontFamilies.uiMedium,
     fontSize: 16,
     lineHeight: 21,
   },
@@ -100,7 +102,7 @@ export const typography = {
     lineHeight: 20,
   },
   label: {
-    fontFamily: fontFamilies.uiSemiBold,
+    fontFamily: fontFamilies.uiMedium,
     fontSize: 14,
     lineHeight: 20,
   },
