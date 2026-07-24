@@ -7,16 +7,16 @@ import {
   Platform,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
-import { Check, Link2, MessageCircle, Search } from "lucide-react-native";
+import { Check, Link2, MessageCircle } from "lucide-react-native";
 import { theme } from "@styles/theme";
 import { typography } from "@styles/typography";
 import Avatar from "./Avatar";
 import Button from "./Button";
 import Modal from "./Modal";
+import { SearchInput } from "./SearchInput";
 
 export interface UserPickerUser {
   uid: string;
@@ -208,20 +208,13 @@ export function UserPickerSheet({
           <View style={styles.linkOnlyContent}>{linkOnlyContent}</View>
         ) : (
           <>
-            <View style={styles.searchContainer}>
-              <Search size={20} color={theme.colors.neutral[400]} />
-              <TextInput
-                style={styles.searchInput}
-                placeholder={searchPlaceholder}
-                placeholderTextColor={theme.colors.neutral[400]}
-                value={searchQuery}
-                onChangeText={onSearchQueryChange}
-                returnKeyType="search"
-                autoCorrect={false}
-                autoCapitalize="none"
-                accessibilityLabel={searchPlaceholder}
-              />
-            </View>
+            <SearchInput
+              containerStyle={styles.searchInput}
+              placeholder={searchPlaceholder}
+              value={searchQuery}
+              onChangeText={onSearchQueryChange}
+              accessibilityLabel={searchPlaceholder}
+            />
             <FlatList
               data={users}
               renderItem={renderUserItem}
@@ -310,23 +303,10 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: theme.colors.surface,
   },
-  searchContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    height: 40,
+  searchInput: {
     marginHorizontal: theme.spacing.xl,
     marginTop: theme.spacing.sm,
     marginBottom: theme.spacing.lg,
-    paddingHorizontal: theme.spacing.md,
-    borderRadius: theme.borderRadius.md,
-    backgroundColor: theme.colors.neutral[100],
-  },
-  searchInput: {
-    flex: 1,
-    ...typography.body,
-    marginLeft: theme.spacing.sm,
-    paddingVertical: 0,
-    color: theme.colors.textPrimary,
   },
   gridContent: {
     paddingHorizontal: theme.spacing.xl,

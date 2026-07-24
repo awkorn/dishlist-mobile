@@ -3,14 +3,13 @@ import {
   View,
   Text,
   StyleSheet,
-  TextInput,
   TouchableOpacity,
   RefreshControl,
   ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import PagerView from "react-native-pager-view";
-import { Search, Plus, WifiOff } from "lucide-react-native";
+import { Plus, WifiOff } from "lucide-react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import NetInfo from "@react-native-community/netinfo";
@@ -23,7 +22,7 @@ import { queryKeys } from "@lib/queryKeys";
 import { profileService } from "@features/profile/services/profileService";
 import { RootStackParamList } from "@app-types/navigation";
 import Avatar from "@components/ui/Avatar";
-import { ScreenHeader, ScreenHeaderAction } from "@components/ui";
+import { ScreenHeader, ScreenHeaderAction, SearchInput } from "@components/ui";
 import { useDishLists } from "../hooks";
 import {
   DishListGrid,
@@ -247,23 +246,13 @@ export default function DishListsScreen() {
       />
 
       {/* Search */}
-      <View style={styles.searchContainer}>
-        <Search
-          size={20}
-          color={theme.colors.neutral[400]}
-          style={styles.searchIcon}
-        />
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Search dishlists"
-          placeholderTextColor={theme.colors.neutral[400]}
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          returnKeyType="search"
-          clearButtonMode="while-editing"
-          accessibilityLabel="Search DishLists"
-        />
-      </View>
+      <SearchInput
+        containerStyle={styles.searchInput}
+        placeholder="Search DishLists"
+        value={searchQuery}
+        onChangeText={setSearchQuery}
+        accessibilityLabel="Search DishLists"
+      />
 
       {/* Tabs */}
       <View style={styles.tabContainer}>
@@ -322,27 +311,9 @@ const styles = StyleSheet.create({
   headerLoader: { marginRight: theme.spacing.md },
   addButton: { padding: theme.spacing.sm },
   profileButton: { padding: theme.spacing.xs },
-  searchContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: theme.colors.surface,
+  searchInput: {
     marginHorizontal: theme.spacing.xl,
     marginBottom: theme.spacing.lg,
-    minHeight: 48,
-    borderRadius: theme.borderRadius.lg,
-    borderWidth: 1,
-    borderColor: theme.colors.navyBorder,
-    paddingHorizontal: theme.spacing.lg,
-    ...theme.shadows.collectionCard,
-  },
-  searchIcon: {
-    marginRight: theme.spacing.sm,
-  },
-  searchInput: {
-    flex: 1,
-    ...typography.recipeReading,
-    color: theme.colors.neutral[800],
-    padding: 0,
   },
   tabContainer: {
     flexDirection: "row",

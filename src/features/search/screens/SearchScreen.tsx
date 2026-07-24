@@ -2,7 +2,6 @@ import React, { useCallback } from "react";
 import {
   View,
   Text,
-  TextInput,
   StyleSheet,
   FlatList,
   ActivityIndicator,
@@ -11,12 +10,12 @@ import {
   ScrollView,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Search, X } from "lucide-react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { theme } from "@styles/theme";
 import { typography } from "@styles/typography";
 import { RootStackParamList } from "@app-types/navigation";
+import { SearchInput } from "@components/ui";
 import { useSearch } from "../hooks/useSearch";
 import {
   SearchTabs,
@@ -323,33 +322,14 @@ export default function SearchScreen() {
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
       {/* Search Input */}
-      <View style={styles.searchContainer}>
-        <Search
-          size={20}
-          color={theme.colors.neutral[500]}
-          style={styles.searchIcon}
-        />
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Search"
-          placeholderTextColor={theme.colors.neutral[400]}
-          value={query}
-          onChangeText={setQuery}
-          returnKeyType="search"
-          autoCapitalize="none"
-          autoCorrect={false}
-        />
-        {query.length > 0 && (
-          <TouchableOpacity
-            onPress={clearSearch}
-            style={styles.clearButton}
-            accessibilityRole="button"
-            accessibilityLabel="Clear search"
-          >
-            <X size={18} color={theme.colors.neutral[500]} />
-          </TouchableOpacity>
-        )}
-      </View>
+      <SearchInput
+        containerStyle={styles.searchInput}
+        placeholder="Search"
+        value={query}
+        onChangeText={setQuery}
+        onClear={clearSearch}
+        accessibilityLabel="Search users, recipes, or DishLists"
+      />
 
       {/* Tabs */}
       <SearchTabs activeTab={activeTab} onTabChange={handleTabChange} />
@@ -365,26 +345,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: theme.colors.background,
   },
-  searchContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: theme.colors.surface,
+  searchInput: {
     marginHorizontal: theme.spacing.xl,
     marginVertical: theme.spacing.md,
-    borderRadius: theme.borderRadius.md,
-    paddingHorizontal: theme.spacing.md,
-  },
-  searchIcon: {
-    marginRight: theme.spacing.sm,
-  },
-  searchInput: {
-    flex: 1,
-    ...typography.body,
-    color: theme.colors.textPrimary,
-    paddingVertical: theme.spacing.md,
-  },
-  clearButton: {
-    padding: theme.spacing.xs,
   },
   content: {
     flex: 1,

@@ -161,7 +161,7 @@ const styles = StyleSheet.create({
   },
   search: {
     flex: 1,
-    height: 40,
+    height: 48,
     borderRadius: theme.borderRadius.md,
     backgroundColor: skeletonColor,
   },

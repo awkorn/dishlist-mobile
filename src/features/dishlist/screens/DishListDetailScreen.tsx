@@ -281,7 +281,6 @@ export default function DishListDetailScreen({
               onChangeText={setSearchQuery}
               prefix="Search"
               keywords={["recipes", "ingredients", "tags"]}
-              clearButtonMode="while-editing"
             />
           </View>
 

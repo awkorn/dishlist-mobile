@@ -3,12 +3,9 @@ import {
   Animated,
   TextInput,
   StyleSheet,
-  TouchableOpacity,
   Keyboard,
 } from "react-native";
-import { Search, X } from "lucide-react-native";
-import { theme } from "@styles/theme";
-import { typography } from "@styles/typography";
+import { SearchInput } from "./SearchInput";
 
 interface InlineSearchInputProps {
   isActive: boolean;
@@ -58,40 +55,26 @@ export function InlineSearchInput({
 
   return (
     <Animated.View style={[styles.container, containerStyle]}>
-      <Search size={18} color={theme.colors.neutral[400]} />
-      <TextInput
+      <SearchInput
         ref={inputRef}
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}
-        placeholderTextColor={theme.colors.neutral[400]}
-        style={styles.input}
-        returnKeyType="search"
-        autoCapitalize="none"
-        autoCorrect={false}
+        containerStyle={styles.input}
+        showClearButton
+        onClear={handleClose}
+        clearAccessibilityLabel="Close search"
       />
-      <TouchableOpacity onPress={handleClose} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-        <X size={18} color={theme.colors.neutral[500]} />
-      </TouchableOpacity>
     </Animated.View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: theme.colors.neutral[50],
-    borderRadius: theme.borderRadius.md,
-    paddingHorizontal: 10,
-    height: 40,
+    height: 48,
     overflow: "hidden",
   },
   input: {
     flex: 1,
-    marginHorizontal: 8,
-    ...typography.body,
-    color: theme.colors.neutral[800],
-    padding: 0,
   },
 });
