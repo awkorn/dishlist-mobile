@@ -92,12 +92,12 @@ function DishListTileContent({ dishList, onPress }: DishListTileProps) {
       <View style={styles.content}>
         <View style={styles.badges}>
           <View style={styles.statusBadge}>
-            <StatusIcon size={12} color={theme.colors.collection.tomato} />
+            <StatusIcon size={12} color={theme.colors.neutral[800]} />
             <Text style={styles.statusText}>{statusLabel}</Text>
           </View>
 
           <View style={styles.visibilityBadge}>
-            <VisibilityIcon size={11} color={theme.colors.collection.tomato} />
+            <VisibilityIcon size={11} color={theme.colors.neutral[800]} />
             <Text style={styles.visibilityText}>{visibilityLabel}</Text>
           </View>
         </View>
@@ -179,7 +179,7 @@ const styles = StyleSheet.create({
     ...typography.label,
     fontSize: 11,
     lineHeight: 15,
-    color: theme.colors.collection.tomato,
+    color: theme.colors.neutral[800],
   },
   visibilityBadge: {
     flexDirection: "row",
@@ -191,7 +191,7 @@ const styles = StyleSheet.create({
     ...typography.label,
     fontSize: 11,
     lineHeight: 15,
-    color: theme.colors.collection.tomato,
+    color: theme.colors.neutral[800],
   },
   errorContainer: {
     justifyContent: "center",

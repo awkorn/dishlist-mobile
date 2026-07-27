@@ -373,6 +373,7 @@ const styles = StyleSheet.create({
   },
   chatArea: {
     flex: 1,
+    marginTop: theme.spacing.md,
   },
   chatContent: {
     paddingHorizontal: theme.spacing.xl,

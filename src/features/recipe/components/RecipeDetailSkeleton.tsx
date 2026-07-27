@@ -7,17 +7,15 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { ChevronLeft } from "lucide-react-native";
+import { ChevronLeft, MoreHorizontal } from "lucide-react-native";
 import { theme } from "@styles/theme";
 
 interface RecipeDetailSkeletonProps {
   onBack: () => void;
 }
 
-const SKELETON_SECTIONS = [
-  { id: "ingredients", rows: 5, numbered: false },
-  { id: "instructions", rows: 4, numbered: true },
-] as const;
+const INGREDIENT_ROWS = 5;
+const INSTRUCTION_ROWS = 4;
 
 export function RecipeDetailSkeleton({
   onBack,
@@ -60,8 +58,10 @@ export function RecipeDetailSkeleton({
         >
           <ChevronLeft size={24} color={theme.colors.neutral[700]} />
         </TouchableOpacity>
-        <Animated.View style={[styles.headerTitle, { opacity }]} />
-        <View style={styles.headerButton} />
+        <View style={styles.headerSpacer} />
+        <View style={styles.headerButton}>
+          <MoreHorizontal size={24} color={theme.colors.neutral[300]} />
+        </View>
       </View>
 
       <View
@@ -78,42 +78,106 @@ export function RecipeDetailSkeleton({
           accessibilityElementsHidden
           importantForAccessibility="no-hide-descendants"
         >
-          <Animated.View style={[styles.hero, { opacity }]} />
+          <View style={styles.recipeHeading} testID="recipe-heading-skeleton">
+            <Animated.View style={[styles.dishListTitle, { opacity }]} />
+            <View style={styles.recipeTitle}>
+              <Animated.View style={[styles.recipeTitleLine, { opacity }]} />
+              <Animated.View
+                style={[
+                  styles.recipeTitleLine,
+                  styles.recipeTitleLineShort,
+                  { opacity },
+                ]}
+              />
+            </View>
 
-          <View style={styles.metaRow}>
-            {[0, 1, 2].map((item) => (
-              <View key={item} style={styles.metaItem}>
-                <Animated.View style={[styles.metaLabel, { opacity }]} />
-                <Animated.View style={[styles.metaValue, { opacity }]} />
+            <View
+              style={styles.metaSection}
+              testID="recipe-metadata-skeleton"
+            >
+              <View style={styles.metaRow}>
+                {[0, 1, 2, 3].map((item) => (
+                  <View key={item} style={styles.metaItem}>
+                    <Animated.View style={[styles.metaLabel, { opacity }]} />
+                    <Animated.View style={[styles.metaValue, { opacity }]} />
+                  </View>
+                ))}
+              </View>
+            </View>
+          </View>
+
+          <Animated.View
+            style={[styles.cookModeButton, { opacity }]}
+            testID="cook-mode-button-skeleton"
+          />
+
+          <View style={styles.section} testID="ingredients-skeleton">
+            <View style={styles.sectionHeader}>
+              <Animated.View style={[styles.sectionTitle, { opacity }]} />
+              <Animated.View style={[styles.resetLink, { opacity }]} />
+            </View>
+            {Array.from({ length: INGREDIENT_ROWS }, (_, index) => (
+              <View key={`ingredient-${index}`} style={styles.ingredientRow}>
+                <Animated.View
+                  style={[styles.checkPlaceholder, { opacity }]}
+                />
+                <Animated.View
+                  style={[
+                    styles.rowText,
+                    index === INGREDIENT_ROWS - 1 && styles.rowTextShort,
+                    { opacity },
+                  ]}
+                />
               </View>
             ))}
           </View>
 
-          <Animated.View style={[styles.primaryButton, { opacity }]} />
-          {SKELETON_SECTIONS.map((section) => (
-            <View key={section.id} style={styles.section}>
+          <View style={styles.section} testID="instructions-skeleton">
+            <View style={styles.sectionHeader}>
               <Animated.View style={[styles.sectionTitle, { opacity }]} />
-              {Array.from({ length: section.rows }, (_, index) => (
-                <View key={`${section.id}-${index}`} style={styles.row}>
-                  <Animated.View
-                    style={[
-                      section.numbered
-                        ? styles.stepPlaceholder
-                        : styles.checkPlaceholder,
-                      { opacity },
-                    ]}
-                  />
-                  <Animated.View
-                    style={[
-                      styles.rowText,
-                      index === section.rows - 1 && styles.rowTextShort,
-                      { opacity },
-                    ]}
-                  />
+              <Animated.View style={[styles.resetLink, { opacity }]} />
+            </View>
+            {Array.from({ length: INSTRUCTION_ROWS }, (_, index) => (
+              <View key={`instruction-${index}`} style={styles.instructionRow}>
+                <Animated.View style={[styles.stepPlaceholder, { opacity }]} />
+                <View style={styles.instructionText}>
+                  <Animated.View style={[styles.rowText, { opacity }]} />
+                  {index % 2 === 0 && (
+                    <Animated.View
+                      style={[
+                        styles.rowText,
+                        styles.instructionLineShort,
+                        { opacity },
+                      ]}
+                    />
+                  )}
                 </View>
+              </View>
+            ))}
+          </View>
+
+          <View style={styles.section}>
+            <Animated.View
+              style={[styles.nutritionTitle, { opacity }]}
+            />
+            <Animated.View style={[styles.bodyText, { opacity }]} />
+            <Animated.View
+              style={[styles.bodyText, styles.bodyTextShort, { opacity }]}
+            />
+            <Animated.View style={[styles.nutritionButton, { opacity }]} />
+          </View>
+
+          <View style={styles.gallerySection}>
+            <Animated.View style={[styles.galleryTitle, { opacity }]} />
+            <View style={styles.galleryRow}>
+              {[0, 1].map((item) => (
+                <Animated.View
+                  key={item}
+                  style={[styles.galleryImage, { opacity }]}
+                />
               ))}
             </View>
-          ))}
+          </View>
         </ScrollView>
       </View>
     </SafeAreaView>
@@ -129,23 +193,17 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: theme.spacing.xl,
     paddingVertical: theme.spacing.lg,
     backgroundColor: theme.colors.background,
   },
   headerButton: {
-    width: 32,
-    height: 32,
-    alignItems: "center",
-    justifyContent: "center",
+    padding: theme.spacing.xs,
   },
-  headerTitle: {
-    height: 20,
-    width: "42%",
-    marginHorizontal: "auto",
-    borderRadius: theme.borderRadius.sm,
-    backgroundColor: skeletonColor,
+  headerSpacer: {
+    flex: 1,
   },
   loadingContent: {
     flex: 1,
@@ -153,80 +211,173 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: theme.spacing["4xl"],
   },
-  hero: {
-    width: "100%",
-    height: 280,
+  recipeHeading: {
+    paddingHorizontal: theme.spacing.xl,
+    paddingTop: theme.spacing.md,
+  },
+  dishListTitle: {
+    width: 88,
+    height: 12,
+    marginBottom: theme.spacing.md,
+    borderRadius: theme.borderRadius.sm,
     backgroundColor: skeletonColor,
+  },
+  recipeTitle: {
+    gap: theme.spacing.sm,
+    marginBottom: theme.spacing.xl,
+  },
+  recipeTitleLine: {
+    width: "88%",
+    height: 30,
+    borderRadius: theme.borderRadius.sm,
+    backgroundColor: skeletonColor,
+  },
+  recipeTitleLineShort: {
+    width: "58%",
+  },
+  metaSection: {
+    paddingVertical: theme.spacing.lg,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: theme.colors.neutral[300],
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.neutral[300],
   },
   metaRow: {
     flexDirection: "row",
-    justifyContent: "space-around",
-    paddingHorizontal: theme.spacing.xl,
-    paddingVertical: theme.spacing["2xl"],
+    justifyContent: "space-between",
+    alignItems: "flex-start",
   },
   metaItem: {
     flex: 1,
+    minWidth: 72,
     alignItems: "center",
-    gap: theme.spacing.sm,
   },
   metaLabel: {
-    width: 64,
-    height: 12,
+    width: 56,
+    height: 10,
+    marginTop: theme.spacing.xs,
     borderRadius: theme.borderRadius.sm,
     backgroundColor: skeletonColor,
   },
   metaValue: {
-    width: 46,
+    width: 42,
     height: 16,
+    marginTop: theme.spacing.sm,
     borderRadius: theme.borderRadius.sm,
     backgroundColor: skeletonColor,
   },
-  primaryButton: {
-    height: 48,
+  cookModeButton: {
+    height: 50,
     marginHorizontal: theme.spacing.xl,
-    marginBottom: theme.spacing["2xl"],
+    marginVertical: theme.spacing.xl,
     borderRadius: theme.borderRadius.md,
     backgroundColor: skeletonColor,
   },
   section: {
-    marginHorizontal: theme.spacing.xl,
-    marginBottom: theme.spacing["2xl"],
-    padding: theme.spacing.xl,
-    borderRadius: theme.borderRadius.lg,
-    backgroundColor: theme.colors.surface,
+    paddingHorizontal: theme.spacing.xl,
+    paddingVertical: theme.spacing.md,
+  },
+  sectionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: theme.spacing.md,
   },
   sectionTitle: {
-    width: "38%",
+    width: 124,
     height: 24,
-    marginBottom: theme.spacing.xl,
     borderRadius: theme.borderRadius.sm,
     backgroundColor: skeletonColor,
   },
-  row: {
+  resetLink: {
+    width: 38,
+    height: 12,
+    borderRadius: theme.borderRadius.sm,
+    backgroundColor: skeletonColor,
+  },
+  ingredientRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: theme.spacing.md,
-    marginBottom: theme.spacing.lg,
+    paddingVertical: theme.spacing.sm,
+  },
+  instructionRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
+  },
+  instructionText: {
+    flex: 1,
+    gap: theme.spacing.sm,
+    paddingTop: 5,
   },
   checkPlaceholder: {
     width: 22,
     height: 22,
-    borderRadius: 6,
+    borderRadius: 4,
     backgroundColor: skeletonColor,
   },
   stepPlaceholder: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     backgroundColor: skeletonColor,
   },
   rowText: {
     flex: 1,
-    height: 15,
+    height: 14,
     borderRadius: theme.borderRadius.sm,
     backgroundColor: skeletonColor,
   },
   rowTextShort: {
     maxWidth: "62%",
+  },
+  instructionLineShort: {
+    maxWidth: "72%",
+  },
+  nutritionTitle: {
+    width: 210,
+    height: 24,
+    marginBottom: theme.spacing.lg,
+    borderRadius: theme.borderRadius.sm,
+    backgroundColor: skeletonColor,
+  },
+  bodyText: {
+    width: "100%",
+    height: 12,
+    marginBottom: theme.spacing.sm,
+    borderRadius: theme.borderRadius.sm,
+    backgroundColor: skeletonColor,
+  },
+  bodyTextShort: {
+    width: "68%",
+  },
+  nutritionButton: {
+    height: 50,
+    marginTop: theme.spacing.xs,
+    borderRadius: theme.borderRadius.md,
+    backgroundColor: skeletonColor,
+  },
+  gallerySection: {
+    paddingHorizontal: theme.spacing.xl,
+    paddingVertical: theme.spacing.md,
+  },
+  galleryTitle: {
+    width: 84,
+    height: 24,
+    marginBottom: theme.spacing.lg,
+    borderRadius: theme.borderRadius.sm,
+    backgroundColor: skeletonColor,
+  },
+  galleryRow: {
+    flexDirection: "row",
+    gap: theme.spacing.md,
+  },
+  galleryImage: {
+    width: 184,
+    height: 132,
+    borderRadius: theme.borderRadius.md,
+    backgroundColor: skeletonColor,
   },
 });
