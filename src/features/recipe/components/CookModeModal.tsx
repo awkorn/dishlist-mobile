@@ -19,9 +19,8 @@ import {
 } from "lucide-react-native";
 import { theme } from "@styles/theme";
 import { typography } from "@styles/typography";
-import { isIngredientInInstruction } from "@utils/ingredientParser";
 import type { RecipeItem } from "../types";
-import { getSubsectionForIndex } from "../types";
+import { getCookModeIngredientsForStep } from "../utils/cookModeIngredients";
 
 interface CookModeRecipe {
   title: string;
@@ -47,47 +46,40 @@ export default function CookModeModal({
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const insets = useSafeAreaInsets();
 
-  // Filter to only actual steps (not headers)
-  const actualSteps = useMemo(() => {
-    return recipe.instructions.filter((item) => item.type === "item");
+  const cookingSteps = useMemo(() => {
+    let subsection: string | null = null;
+
+    return recipe.instructions.flatMap((item) => {
+      if (item.type === "header") {
+        subsection = item.text;
+        return [];
+      }
+
+      return [{ instruction: item.text, subsection }];
+    });
   }, [recipe.instructions]);
 
-  // Get the original index in the full array for the current step
-  const getOriginalIndex = (stepIndex: number): number => {
-    let itemCount = 0;
-    for (let i = 0; i < recipe.instructions.length; i++) {
-      if (recipe.instructions[i].type === "item") {
-        if (itemCount === stepIndex) return i;
-        itemCount++;
-      }
-    }
-    return 0;
-  };
-
-  const originalIndex = getOriginalIndex(currentStepIndex);
-  const currentSubsection = getSubsectionForIndex(
-    recipe.instructions,
-    originalIndex
-  );
+  const currentSubsection =
+    cookingSteps[currentStepIndex]?.subsection ?? null;
 
   const handleClose = () => {
     setCurrentStepIndex(0);
     onClose();
   };
 
-  // Get ingredients for current step (only actual items, not headers)
-  const currentStepIngredients = useMemo(() => {
-    const ingredientItems = recipe.ingredients.filter(
-      (item) => item.type === "item"
-    );
-    const instruction = actualSteps[currentStepIndex]?.text || "";
-    return ingredientItems
-      .filter((item) => isIngredientInInstruction(item.text, instruction))
-      .map((item) => item.text);
-  }, [currentStepIndex, recipe.ingredients, actualSteps]);
+  // Resolve direct, grouped, broad, and remaining ingredient references.
+  const currentStepIngredients = useMemo(
+    () =>
+      getCookModeIngredientsForStep(
+        recipe.ingredients,
+        cookingSteps,
+        currentStepIndex
+      ),
+    [currentStepIndex, recipe.ingredients, cookingSteps]
+  );
 
   const goToStep = (stepIndex: number) => {
-    if (stepIndex < 0 || stepIndex >= actualSteps.length) return;
+    if (stepIndex < 0 || stepIndex >= cookingSteps.length) return;
 
     if (Platform.OS === "ios") {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -96,13 +88,14 @@ export default function CookModeModal({
     setCurrentStepIndex(stepIndex);
   };
 
-  const totalSteps = actualSteps.length;
+  const totalSteps = cookingSteps.length;
   const isFirstStep = currentStepIndex === 0;
   const isLastStep = currentStepIndex === totalSteps - 1;
   const progressPercentage =
     totalSteps > 0 ? ((currentStepIndex + 1) / totalSteps) * 100 : 0;
 
-  const currentInstruction = actualSteps[currentStepIndex]?.text || "";
+  const currentInstruction =
+    cookingSteps[currentStepIndex]?.instruction || "";
 
   return (
     <Modal
@@ -183,7 +176,7 @@ export default function CookModeModal({
           {/* Ingredients */}
           {currentStepIngredients.length > 0 && (
             <View style={styles.ingredientsSection}>
-              <Text style={styles.sectionLabel}>Ingredients for this step</Text>
+              <Text style={styles.sectionLabel}>Ingredients</Text>
               {currentStepIngredients.map((ingredient, index) => (
                 <View key={index} style={styles.ingredientItem}>
                   <View style={styles.ingredientBullet} />
@@ -260,8 +253,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: theme.spacing.xl,
     paddingVertical: theme.spacing.lg,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.neutral[200],
     backgroundColor: theme.colors.surface,
   },
   closeButton: {
@@ -381,13 +372,12 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: theme.spacing.xl,
     paddingVertical: theme.spacing.lg,
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.neutral[200],
     backgroundColor: theme.colors.surface,
   },
   navButton: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
     gap: theme.spacing.sm,
     paddingHorizontal: theme.spacing.xl,
     paddingVertical: theme.spacing.md,

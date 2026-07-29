@@ -45,7 +45,11 @@ export const isIngredientInInstruction = (
   instruction: string
 ): boolean => {
   const ingredientWords = extractIngredientCore(ingredient);
-  const instructionLower = instruction.toLowerCase();
+  const instructionWords = instruction
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .split(/\s+/)
+    .filter(Boolean);
 
   // Common cooking verbs that shouldn't trigger matches
   const cookingVerbs = [
@@ -72,20 +76,37 @@ export const isIngredientInInstruction = (
     "simmer",
   ];
 
-  // Check if any core ingredient words appear in instruction
+  const singularize = (word: string): string => {
+    if (word.length > 4 && word.endsWith("ies")) {
+      return `${word.slice(0, -3)}y`;
+    }
+    if (word.length > 4 && word.endsWith("oes")) {
+      return word.slice(0, -2);
+    }
+    if (word.length > 4 && /(ches|shes|xes|zes)$/.test(word)) {
+      return word.slice(0, -2);
+    }
+    if (word.length > 3 && word.endsWith("s") && !word.endsWith("ss")) {
+      return word.slice(0, -1);
+    }
+    return word;
+  };
+
+  const normalizedInstructionWords = new Set(
+    instructionWords.flatMap((word) => [word, singularize(word)])
+  );
+
+  // Check if any core ingredient words appear as complete words in instruction.
   return ingredientWords.some((word) => {
     // Skip if it's just a cooking verb
     if (cookingVerbs.includes(word)) return false;
 
-    // Look for the word or common variations
-    const variations = [
-      word,
-      word + "s", // plural
-      word + "ed", // past tense
-      word.slice(0, -1), // singular if word ends in 's'
-    ];
-
-    return variations.some((variant) => instructionLower.includes(variant));
+    const normalizedWord = word.replace(/[^a-z0-9]+/g, "");
+    return (
+      normalizedWord.length > 0 &&
+      (normalizedInstructionWords.has(normalizedWord) ||
+        normalizedInstructionWords.has(singularize(normalizedWord)))
+    );
   });
 };
 
