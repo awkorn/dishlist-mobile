@@ -19,15 +19,20 @@
       "entitlements": {
         "com.apple.security.application-groups": [
           "group.com.dishlist.app",
+          "group.com.dishlist.app",
+          "group.com.dishlist.app",
           "group.com.dishlist.app"
         ]
       },
       "infoPlist": {
         "UIBackgroundModes": [
           "remote-notification",
+          "remote-notification",
+          "remote-notification",
           "remote-notification"
         ],
-        "AppGroup": "group.com.dishlist.app"
+        "AppGroup": "group.com.dishlist.app",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
