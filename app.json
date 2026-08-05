@@ -18,11 +18,13 @@
       "bundleIdentifier": "com.dishlist.app",
       "entitlements": {
         "com.apple.security.application-groups": [
+          "group.com.dishlist.app",
           "group.com.dishlist.app"
         ]
       },
       "infoPlist": {
         "UIBackgroundModes": [
+          "remote-notification",
           "remote-notification"
         ],
         "AppGroup": "group.com.dishlist.app"
@@ -51,8 +53,13 @@
         "expo-share-extension",
         {
           "activationRules": [
-            { "type": "url", "max": 1 },
-            { "type": "text" }
+            {
+              "type": "url",
+              "max": 1
+            },
+            {
+              "type": "text"
+            }
           ],
           "backgroundColor": {
             "red": 247,
@@ -79,6 +86,35 @@
     ],
     "assetBundlePatterns": [
       "assets/fonts/*"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "build": {
+          "experimental": {
+            "ios": {
+              "appExtensions": [
+                {
+                  "targetName": "DishListShareExtension",
+                  "bundleIdentifier": "com.dishlist.app.ShareExtension",
+                  "entitlements": {
+                    "com.apple.security.application-groups": [
+                      "group.com.dishlist.app"
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "projectId": "6e5acc0f-1b74-4159-a4a2-f7a4561de465"
+      },
+      "appleApplicationGroup": "group.com.dishlist.app"
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/6e5acc0f-1b74-4159-a4a2-f7a4561de465"
+    }
   }
 }
