@@ -141,9 +141,7 @@ export default function LoginScreen({
 
   return (
     <AuthScreenLayout
-      eyebrow="Collect · Collaborate · Discover"
-      title="Welcome back."
-      description="Keep the recipes worth passing down—and the stories that belong with them."
+      title="Welcome back"
       footer={
         <View style={styles.footer}>
           <Text style={styles.footerText}>New to DishList? </Text>

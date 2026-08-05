@@ -11,18 +11,14 @@ import { theme } from "@styles/theme";
 import { typography } from "@styles/typography";
 
 interface AuthScreenLayoutProps {
-  eyebrow: string;
   title: string;
-  description: string;
   children: ReactNode;
   footer: ReactNode;
   extraScrollHeight?: number;
 }
 
 export function AuthScreenLayout({
-  eyebrow,
   title,
-  description,
   children,
   footer,
   extraScrollHeight = 16,
@@ -49,14 +45,7 @@ export function AuthScreenLayout({
           </View>
 
           <View style={styles.intro}>
-            <View style={styles.eyebrowRow}>
-              <Text style={styles.eyebrowStar} accessibilityElementsHidden>
-                ✦
-              </Text>
-              <Text style={styles.eyebrow}>{eyebrow}</Text>
-            </View>
             <Text style={styles.title}>{title}</Text>
-            <Text style={styles.description}>{description}</Text>
           </View>
 
           {children}
@@ -113,37 +102,12 @@ const styles = StyleSheet.create({
   intro: {
     marginBottom: theme.spacing["2xl"],
   },
-  eyebrowRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: theme.spacing.md,
-  },
-  eyebrowStar: {
-    fontFamily: typography.families.uiBold,
-    fontSize: 13,
-    color: theme.colors.recipeAccent,
-    marginRight: theme.spacing.sm,
-  },
-  eyebrow: {
-    fontFamily: typography.families.uiBold,
-    fontSize: 11,
-    lineHeight: 16,
-    letterSpacing: 1.25,
-    textTransform: "uppercase",
-    color: theme.colors.primary[600],
-  },
   title: {
     fontFamily: typography.families.editorialSemiBold,
     fontSize: 41,
     lineHeight: 45,
     letterSpacing: -1.25,
     color: theme.colors.textPrimary,
-  },
-  description: {
-    ...typography.body,
-    maxWidth: 350,
-    color: theme.colors.neutral[600],
-    marginTop: theme.spacing.md,
   },
   card: {
     padding: theme.spacing.xl,

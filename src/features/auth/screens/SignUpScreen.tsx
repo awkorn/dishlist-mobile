@@ -148,9 +148,7 @@ export default function SignUpScreen({
 
   return (
     <AuthScreenLayout
-      eyebrow="Collect · Collaborate · Discover"
-      title="Start your collection."
-      description="Bring together the recipes, notes, and people you never want to lose."
+      title="Start your collection"
       extraScrollHeight={24}
       footer={
         <View style={styles.footer}>
