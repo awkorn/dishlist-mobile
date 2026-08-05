@@ -626,8 +626,6 @@ const styles = StyleSheet.create({
   },
   header: {
     minHeight: 64,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.neutral[200],
     backgroundColor: theme.colors.surface,
   },
   scrollView: {
