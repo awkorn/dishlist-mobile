@@ -86,6 +86,12 @@ export const typography = {
     lineHeight: 22,
     letterSpacing: -0.2,
   },
+  recipeSheetTitle: {
+    fontFamily: fontFamilies.uiMedium,
+    fontSize: 20,
+    lineHeight: 25,
+    letterSpacing: -0.2,
+  },
   body: {
     fontFamily: fontFamilies.ui,
     fontSize: 16,
@@ -117,12 +123,6 @@ export const typography = {
     fontFamily: fontFamilies.editorialSemiBold,
     fontSize: 36,
     lineHeight: 40,
-  },
-  recipeSheetTitle: {
-    fontFamily: fontFamilies.editorialMedium,
-    fontSize: 20,
-    lineHeight: 25,
-    letterSpacing: -0.2,
   },
 
   // Reading and data hierarchy: Inter is used only where density earns it.

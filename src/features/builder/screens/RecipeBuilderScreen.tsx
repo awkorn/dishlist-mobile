@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import {
   View,
   Text,
@@ -7,7 +7,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
-  ActivityIndicator,
   TouchableOpacity,
 } from "react-native";
 import { RefreshCcw, SquarePen } from "lucide-react-native";
@@ -26,6 +25,7 @@ import {
   SelectDishListModal,
   CARD_GAP,
 } from "../components";
+import { GeneratedRecipesSkeleton } from "../components/GeneratedRecipesSkeleton";
 import type { GeneratedRecipe, BuilderMessage } from "../types";
 
 export default function RecipeBuilderScreen() {
@@ -137,6 +137,10 @@ export default function RecipeBuilderScreen() {
   const hasMessages = messages.length > 0;
   const latestRecipeMessageId = getLatestRecipeMessageId(messages);
 
+  useEffect(() => {
+    if (isGenerating) scrollToBottom();
+  }, [isGenerating, scrollToBottom]);
+
   return (
     <KeyboardAvoidingView
       style={styles.flex}
@@ -196,15 +200,7 @@ export default function RecipeBuilderScreen() {
           )}
 
           {/* Loading state */}
-          {isGenerating && (
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator
-                size="large"
-                color={theme.colors.primary[500]}
-              />
-              <Text style={styles.loadingText}>Loading recipes...</Text>
-            </View>
-          )}
+          {isGenerating && <GeneratedRecipesSkeleton />}
 
           {/* Error */}
           {error && (
@@ -303,7 +299,7 @@ function MessageBubble({
             activeOpacity={0.65}
           >
             <RefreshCcw
-              size={18}
+              size={16}
               color={
                 actionsDisabled
                   ? theme.colors.neutral[400]
@@ -325,7 +321,7 @@ function MessageBubble({
             activeOpacity={0.65}
           >
             <SquarePen
-              size={18}
+              size={16}
               color={
                 actionsDisabled
                   ? theme.colors.neutral[400]
@@ -427,7 +423,7 @@ const styles = StyleSheet.create({
   recipeActions: {
     flexDirection: "row",
     alignItems: "center",
-    gap: theme.spacing.sm,
+    gap: theme.spacing.xs,
     marginTop: theme.spacing.lg,
   },
   recipeActionButton: {
@@ -438,17 +434,6 @@ const styles = StyleSheet.create({
   },
   recipeActionButtonDisabled: {
     opacity: 0.5,
-  },
-  // Loading
-  loadingContainer: {
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: theme.spacing.xl,
-    gap: theme.spacing.md,
-  },
-  loadingText: {
-    ...typography.body,
-    color: theme.colors.neutral[600],
   },
   // Error
   errorContainer: {
