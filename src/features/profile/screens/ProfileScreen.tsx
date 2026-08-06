@@ -1,12 +1,14 @@
-import React, { useState, useRef } from "react";
+import React, { useMemo, useState, useRef } from "react";
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   ActivityIndicator,
-  FlatList,
   Alert,
+  Animated,
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import PagerView from "react-native-pager-view";
@@ -17,7 +19,7 @@ import { useAuth } from "@providers/AuthProvider/AuthContext";
 import { ProfileMenu } from "../components/ProfileMenu";
 import { useProfile } from "../hooks/useProfile";
 import { useBlockUser } from "../hooks/useBlockUser";
-import { ProfileHeader } from "../components/ProfileHeader";
+import { ProfileHeader, ProfileTopBar } from "../components/ProfileHeader";
 import { ProfileTabs } from "../components/ProfileTabs";
 import { EditProfileSheet } from "../components/EditProfileSheet";
 import { DishListTile } from "@features/dishlist";
@@ -31,6 +33,7 @@ import { ErrorState } from "@components/ui";
 import { theme } from "@styles/theme";
 import { typography } from "@styles/typography";
 import { getErrorMessage } from "@utils";
+import type { ProfileTab } from "../types";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Profile">;
 
@@ -44,6 +47,13 @@ export default function ProfileScreen({ navigation, route }: Props) {
   const { signOut, user: authUser } = useAuth();
 
   const pagerRef = useRef<PagerView>(null);
+  const profileScrollY = useRef(new Animated.Value(0)).current;
+  const scrollOffsets = useRef<Record<ProfileTab, number>>({
+    DishLists: 0,
+    Recipes: 0,
+  });
+  const [profileDetailsHeight, setProfileDetailsHeight] = useState(0);
+  const [collapsibleHeaderHeight, setCollapsibleHeaderHeight] = useState(0);
 
   const {
     user,
@@ -70,7 +80,6 @@ export default function ProfileScreen({ navigation, route }: Props) {
     setActiveTab,
     setSearchQuery,
     toggleSearch,
-    closeSearch,
   } = useProfile(userId);
   const { block, unblock, isPending: isBlockPending } = useBlockUser({ userId });
   const isBlockedProfile = user?.blockStatus && user.blockStatus !== "NONE";
@@ -146,7 +155,7 @@ export default function ProfileScreen({ navigation, route }: Props) {
   };
 
   // Handle tab press - programmatically change page
-  const handleTabChange = (tab: "DishLists" | "Recipes") => {
+  const handleTabChange = (tab: ProfileTab) => {
     const pageIndex = tab === "DishLists" ? 0 : 1;
     pagerRef.current?.setPage(pageIndex);
     setActiveTab(tab);
@@ -155,9 +164,45 @@ export default function ProfileScreen({ navigation, route }: Props) {
   // Handle page swipe - update active tab
   const handlePageSelected = (e: any) => {
     const position = e.nativeEvent.position;
-    const newTab = position === 0 ? "DishLists" : "Recipes";
+    const newTab: ProfileTab = position === 0 ? "DishLists" : "Recipes";
+    profileScrollY.stopAnimation();
+    profileScrollY.setValue(scrollOffsets.current[newTab]);
     setActiveTab(newTab);
   };
+
+  const dishListsScrollHandler = useMemo(
+    () =>
+      Animated.event(
+        [{ nativeEvent: { contentOffset: { y: profileScrollY } } }],
+        {
+          useNativeDriver: true,
+          listener: (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+            scrollOffsets.current.DishLists = Math.max(
+              0,
+              event.nativeEvent.contentOffset.y
+            );
+          },
+        }
+      ),
+    [profileScrollY]
+  );
+
+  const recipesScrollHandler = useMemo(
+    () =>
+      Animated.event(
+        [{ nativeEvent: { contentOffset: { y: profileScrollY } } }],
+        {
+          useNativeDriver: true,
+          listener: (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+            scrollOffsets.current.Recipes = Math.max(
+              0,
+              event.nativeEvent.contentOffset.y
+            );
+          },
+        }
+      ),
+    [profileScrollY]
+  );
 
   const handleFollowersPress = () => {
     if (user) {
@@ -205,6 +250,14 @@ export default function ProfileScreen({ navigation, route }: Props) {
     activeTab === "DishLists"
       ? "Search DishLists"
       : "Search recipes, tags, ingredients";
+
+  const collapseDistance = Math.max(profileDetailsHeight, 1);
+  const headerTranslateY = profileScrollY.interpolate({
+    inputRange: [0, collapseDistance],
+    outputRange: [0, -collapseDistance],
+    extrapolate: "clamp",
+  });
+  const isCollapsibleHeaderMeasured = collapsibleHeaderHeight > 0;
 
   // Get empty state message based on search and tab
   const getEmptyMessage = (isRecipeTab: boolean) => {
@@ -286,103 +339,144 @@ export default function ProfileScreen({ navigation, route }: Props) {
       {/* White safe area for status bar */}
       <SafeAreaView style={styles.safeArea} edges={["top"]} />
 
-      {/* Profile Header with icons, search, and user info */}
-      <ProfileHeader
-        user={user}
-        displayName={displayName}
-        isOwnProfile={isOwnProfile}
+      {/* Keep navigation and search available while profile content collapses. */}
+      <ProfileTopBar
         onBackPress={handleBack}
-        onEditPress={isOwnProfile ? handleEditProfile : undefined}
-        onSharePress={isOwnProfile ? handleShareProfile : undefined}
         onMenuPress={handleMenuPress}
         isSearchActive={isSearchActive}
         searchQuery={searchQuery}
         onSearchToggle={toggleSearch}
         onSearchChange={setSearchQuery}
         searchPlaceholder={searchPlaceholder}
-        onFollowersPress={handleFollowersPress}
-        onFollowingPress={handleFollowingPress}
       />
 
-      {/* Tabs */}
-      <ProfileTabs activeTab={activeTab} onTabChange={handleTabChange} />
+      <View style={styles.pagerContainer}>
+        {/* Each list uses the full remaining screen and scrolls under the header. */}
+        <PagerView
+          ref={pagerRef}
+          style={styles.pager}
+          initialPage={0}
+          onPageSelected={handlePageSelected}
+          scrollEnabled={true}
+        >
+          {/* DishLists Page */}
+          <View style={styles.page} key="0">
+            <Animated.FlatList
+              data={dishlists}
+              renderItem={({ item }) => <DishListTile dishList={item} />}
+              keyExtractor={(item) => item.id}
+              numColumns={2}
+              columnWrapperStyle={styles.row}
+              contentContainerStyle={[
+                styles.listContent,
+                { paddingTop: collapsibleHeaderHeight },
+              ]}
+              ListEmptyComponent={
+                <ProfileEmptyState message={getEmptyMessage(false)} />
+              }
+              onScroll={dishListsScrollHandler}
+              scrollEventThrottle={16}
+              keyboardDismissMode="on-drag"
+              showsVerticalScrollIndicator={false}
+              style={!isCollapsibleHeaderMeasured && styles.hiddenList}
+            />
+          </View>
 
-      {/* Search Results Info */}
-      {isSearchActive && searchQuery.trim() && (
-        <View style={styles.searchInfo}>
-          <Text style={styles.searchInfoText}>
-            {activeTab === "DishLists"
-              ? `${dishlists.length} of ${allDishListsCount} DishLists`
-              : `${recipes.length} of ${allRecipesCount} recipes`}
-          </Text>
-        </View>
-      )}
+          {/* Recipes Page */}
+          <View style={styles.page} key="1">
+            <Animated.FlatList
+              data={recipes}
+              renderItem={({ item }) => (
+                <RecipeTile
+                  recipe={item}
+                  onPress={() =>
+                    navigation.navigate("RecipeDetail", { recipeId: item.id })
+                  }
+                />
+              )}
+              keyExtractor={(item) => item.id}
+              numColumns={2}
+              columnWrapperStyle={styles.row}
+              contentContainerStyle={[
+                styles.listContent,
+                { paddingTop: collapsibleHeaderHeight },
+              ]}
+              ItemSeparatorComponent={() => <View style={styles.separator} />}
+              ListEmptyComponent={
+                isRecipesError ? (
+                  renderRecipesError()
+                ) : isRecipesLoading || isRecipesFetching ? (
+                  <View style={styles.tabLoadingContainer}>
+                    <ActivityIndicator
+                      size="small"
+                      color={theme.colors.primary[500]}
+                    />
+                  </View>
+                ) : (
+                  <ProfileEmptyState message={getEmptyMessage(true)} />
+                )
+              }
+              ListFooterComponent={
+                isFetchingNextRecipes ? (
+                  <View style={styles.tabLoadingContainer}>
+                    <ActivityIndicator
+                      size="small"
+                      color={theme.colors.primary[500]}
+                    />
+                  </View>
+                ) : null
+              }
+              onEndReached={handleLoadMoreRecipes}
+              onEndReachedThreshold={0.4}
+              onScroll={recipesScrollHandler}
+              scrollEventThrottle={16}
+              keyboardDismissMode="on-drag"
+              showsVerticalScrollIndicator={false}
+              style={!isCollapsibleHeaderMeasured && styles.hiddenList}
+            />
+          </View>
+        </PagerView>
 
-      {/* Swipeable Content with FlatList */}
-      <PagerView
-        ref={pagerRef}
-        style={styles.pager}
-        initialPage={0}
-        onPageSelected={handlePageSelected}
-        scrollEnabled={true}
-      >
-        {/* DishLists Page */}
-        <View style={styles.page} key="0">
-          <FlatList
-            data={dishlists}
-            renderItem={({ item }) => <DishListTile dishList={item} />}
-            keyExtractor={(item) => item.id}
-            numColumns={2}
-            columnWrapperStyle={styles.row}
-            contentContainerStyle={styles.listContent}
-            ListEmptyComponent={
-              <ProfileEmptyState message={getEmptyMessage(false)} />
+        <Animated.View
+          style={[
+            styles.collapsibleHeader,
+            { transform: [{ translateY: headerTranslateY }] },
+          ]}
+          onLayout={(event) =>
+            setCollapsibleHeaderHeight(
+              Math.ceil(event.nativeEvent.layout.height)
+            )
+          }
+        >
+          <View
+            onLayout={(event) =>
+              setProfileDetailsHeight(Math.ceil(event.nativeEvent.layout.height))
             }
-            showsVerticalScrollIndicator={false}
-          />
-        </View>
+          >
+            <ProfileHeader
+              user={user}
+              displayName={displayName}
+              isOwnProfile={isOwnProfile}
+              onEditPress={isOwnProfile ? handleEditProfile : undefined}
+              onSharePress={isOwnProfile ? handleShareProfile : undefined}
+              onFollowersPress={handleFollowersPress}
+              onFollowingPress={handleFollowingPress}
+            />
+          </View>
 
-        {/* Recipes Page */}
-        <View style={styles.page} key="1">
-          <FlatList
-            data={recipes}
-            renderItem={({ item }) => (
-              <RecipeTile
-                recipe={item}
-                onPress={() =>
-                  navigation.navigate("RecipeDetail", { recipeId: item.id })
-                }
-              />
-            )}
-            keyExtractor={(item) => item.id}
-            numColumns={2}
-            columnWrapperStyle={styles.row}
-            contentContainerStyle={styles.listContent}
-            ItemSeparatorComponent={() => <View style={styles.separator} />}
-            ListEmptyComponent={
-              isRecipesError ? (
-                renderRecipesError()
-              ) : isRecipesLoading || isRecipesFetching ? (
-                <View style={styles.tabLoadingContainer}>
-                  <ActivityIndicator size="small" color={theme.colors.primary[500]} />
-                </View>
-              ) : (
-                <ProfileEmptyState message={getEmptyMessage(true)} />
-              )
-            }
-            ListFooterComponent={
-              isFetchingNextRecipes ? (
-                <View style={styles.tabLoadingContainer}>
-                  <ActivityIndicator size="small" color={theme.colors.primary[500]} />
-                </View>
-              ) : null
-            }
-            onEndReached={handleLoadMoreRecipes}
-            onEndReachedThreshold={0.4}
-            showsVerticalScrollIndicator={false}
-          />
-        </View>
-      </PagerView>
+          <ProfileTabs activeTab={activeTab} onTabChange={handleTabChange} />
+
+          {isSearchActive && searchQuery.trim() ? (
+            <View style={styles.searchInfo}>
+              <Text style={styles.searchInfoText}>
+                {activeTab === "DishLists"
+                  ? `${dishlists.length} of ${allDishListsCount} DishLists`
+                  : `${recipes.length} of ${allRecipesCount} recipes`}
+              </Text>
+            </View>
+          ) : null}
+        </Animated.View>
+      </View>
 
       {/* Edit Profile Sheet */}
       {isOwnProfile && (
@@ -487,18 +581,33 @@ const styles = StyleSheet.create({
   pager: {
     flex: 1,
   },
+  pagerContainer: {
+    flex: 1,
+    overflow: "hidden",
+  },
   page: {
     flex: 1,
   },
   listContent: {
-    paddingHorizontal: theme.spacing.xl,
     paddingBottom: theme.spacing.xl + 20,
   },
   row: {
     justifyContent: "space-between",
     gap: theme.spacing.lg,
+    paddingHorizontal: theme.spacing.xl,
   },
   separator: {
     height: theme.spacing.lg,
+  },
+  collapsibleHeader: {
+    position: "absolute",
+    top: 0,
+    right: 0,
+    left: 0,
+    zIndex: 1,
+    backgroundColor: theme.colors.background,
+  },
+  hiddenList: {
+    opacity: 0,
   },
 });

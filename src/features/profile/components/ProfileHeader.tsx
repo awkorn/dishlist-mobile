@@ -21,16 +21,9 @@ import { FollowButton } from "./FollowButton";
 
 const AVATAR_SIZE = 104;
 
-interface ProfileHeaderProps {
-  user: UserProfile;
-  displayName: string;
-  isOwnProfile: boolean;
+interface ProfileTopBarProps {
   onBackPress: () => void;
-  onEditPress?: () => void;
-  onSharePress?: () => void;
   onMenuPress?: () => void;
-  onFollowersPress?: () => void;
-  onFollowingPress?: () => void;
   isSearchActive: boolean;
   searchQuery: string;
   onSearchToggle: () => void;
@@ -38,22 +31,25 @@ interface ProfileHeaderProps {
   searchPlaceholder: string;
 }
 
-export function ProfileHeader({
-  user,
-  displayName,
-  isOwnProfile,
+interface ProfileHeaderProps {
+  user: UserProfile;
+  displayName: string;
+  isOwnProfile: boolean;
+  onEditPress?: () => void;
+  onSharePress?: () => void;
+  onFollowersPress?: () => void;
+  onFollowingPress?: () => void;
+}
+
+export function ProfileTopBar({
   onBackPress,
-  onEditPress,
-  onSharePress,
   onMenuPress,
-  onFollowersPress,
-  onFollowingPress,
   isSearchActive,
   searchQuery,
   onSearchToggle,
   onSearchChange,
   searchPlaceholder,
-}: ProfileHeaderProps) {
+}: ProfileTopBarProps) {
   const iconsOpacity = useRef(new Animated.Value(1)).current;
   const iconsScale = useRef(new Animated.Value(1)).current;
 
@@ -70,151 +66,158 @@ export function ProfileHeader({
         useNativeDriver: true,
       }),
     ]).start();
-  }, [isSearchActive]);
+  }, [iconsOpacity, iconsScale, isSearchActive]);
 
   return (
-    <View style={styles.container}>
-      <View style={styles.topRow}>
-        <TouchableOpacity
-          onPress={onBackPress}
-          style={styles.iconBtn}
-          accessibilityRole="button"
-          accessibilityLabel="Go back"
+    <View style={styles.topRow}>
+      <TouchableOpacity
+        onPress={onBackPress}
+        style={styles.iconBtn}
+        accessibilityRole="button"
+        accessibilityLabel="Go back"
+      >
+        <ChevronLeft size={24} color={theme.colors.neutral[700]} />
+      </TouchableOpacity>
+
+      <InlineSearchInput
+        isActive={isSearchActive}
+        value={searchQuery}
+        onChangeText={onSearchChange}
+        onClose={onSearchToggle}
+        placeholder={searchPlaceholder}
+      />
+
+      {!isSearchActive && (
+        <Animated.View
+          style={[
+            styles.rightIcons,
+            {
+              opacity: iconsOpacity,
+              transform: [{ scale: iconsScale }],
+            },
+          ]}
         >
-          <ChevronLeft size={24} color={theme.colors.neutral[700]} />
-        </TouchableOpacity>
-
-        <InlineSearchInput
-          isActive={isSearchActive}
-          value={searchQuery}
-          onChangeText={onSearchChange}
-          onClose={onSearchToggle}
-          placeholder={searchPlaceholder}
-        />
-
-        {!isSearchActive && (
-          <Animated.View
-            style={[
-              styles.rightIcons,
-              {
-                opacity: iconsOpacity,
-                transform: [{ scale: iconsScale }],
-              },
-            ]}
+          <TouchableOpacity
+            onPress={onSearchToggle}
+            style={styles.iconBtn}
+            accessibilityRole="button"
+            accessibilityLabel="Search profile content"
           >
+            <Search size={22} color={theme.colors.neutral[700]} />
+          </TouchableOpacity>
+
+          {onMenuPress && (
             <TouchableOpacity
-              onPress={onSearchToggle}
+              onPress={onMenuPress}
               style={styles.iconBtn}
               accessibilityRole="button"
-              accessibilityLabel="Search profile content"
+              accessibilityLabel="Profile options"
             >
-              <Search size={22} color={theme.colors.neutral[700]} />
+              <EllipsisVertical
+                size={22}
+                color={theme.colors.neutral[700]}
+              />
             </TouchableOpacity>
+          )}
+        </Animated.View>
+      )}
+    </View>
+  );
+}
 
-            {onMenuPress && (
-              <TouchableOpacity
-                onPress={onMenuPress}
-                style={styles.iconBtn}
-                accessibilityRole="button"
-                accessibilityLabel="Profile options"
-              >
-                <EllipsisVertical
-                  size={22}
-                  color={theme.colors.neutral[700]}
-                />
-              </TouchableOpacity>
-            )}
-          </Animated.View>
+export function ProfileHeader({
+  user,
+  displayName,
+  isOwnProfile,
+  onEditPress,
+  onSharePress,
+  onFollowersPress,
+  onFollowingPress,
+}: ProfileHeaderProps) {
+  return (
+    <View style={styles.profileSection}>
+      <View style={styles.avatarContainer}>
+        <Avatar
+          {...user}
+          displayName={displayName}
+          size={AVATAR_SIZE}
+          style={styles.avatarBorder}
+          accessibilityLabel={`${displayName}'s profile photo`}
+        />
+      </View>
+
+      <View style={styles.nameSection}>
+        <Text
+          style={styles.displayName}
+          numberOfLines={1}
+          adjustsFontSizeToFit
+          minimumFontScale={0.8}
+        >
+          {displayName}
+        </Text>
+        {user.username && (
+          <Text style={styles.username}>@{user.username}</Text>
         )}
       </View>
 
-      <View style={styles.profileSection}>
-        <View style={styles.avatarContainer}>
-          <Avatar
-            {...user}
-            displayName={displayName}
-            size={AVATAR_SIZE}
-            style={styles.avatarBorder}
-            accessibilityLabel={`${displayName}'s profile photo`}
+      <View style={styles.statsSection}>
+        <TouchableOpacity
+          style={styles.stat}
+          onPress={onFollowersPress}
+          activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel={`${user.followerCount} followers`}
+        >
+          <Text style={styles.statNumber}>{user.followerCount}</Text>
+          <Text style={styles.statLabel}>Followers</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.stat}
+          onPress={onFollowingPress}
+          activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel={`${user.followingCount} following`}
+        >
+          <Text style={styles.statNumber}>{user.followingCount}</Text>
+          <Text style={styles.statLabel}>Following</Text>
+        </TouchableOpacity>
+      </View>
+
+      {user.bio && <Text style={styles.bio}>{user.bio}</Text>}
+
+      {isOwnProfile ? (
+        <View style={styles.actionButtonsRow}>
+          <Button
+            title="Edit Profile"
+            style={styles.actionButton}
+            variant="outline"
+            size="sm"
+            onPress={() => onEditPress?.()}
+            accessibilityLabel="Edit profile"
+          />
+
+          <Button
+            title="Share Profile"
+            style={styles.actionButton}
+            size="sm"
+            onPress={() => onSharePress?.()}
+            accessibilityLabel="Share profile"
           />
         </View>
-
-        <View style={styles.nameSection}>
-          <Text
-            style={styles.displayName}
-            numberOfLines={1}
-            adjustsFontSizeToFit
-            minimumFontScale={0.8}
-          >
-            {displayName}
-          </Text>
-          {user.username && (
-            <Text style={styles.username}>@{user.username}</Text>
-          )}
+      ) : (
+        <View style={styles.followButtonRow}>
+          <FollowButton
+            userId={user.uid}
+            followStatus={user.followStatus ?? "NONE"}
+            fullWidth
+          />
         </View>
-
-        <View style={styles.statsSection}>
-          <TouchableOpacity
-            style={styles.stat}
-            onPress={onFollowersPress}
-            activeOpacity={0.7}
-            accessibilityRole="button"
-            accessibilityLabel={`${user.followerCount} followers`}
-          >
-            <Text style={styles.statNumber}>{user.followerCount}</Text>
-            <Text style={styles.statLabel}>Followers</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.stat}
-            onPress={onFollowingPress}
-            activeOpacity={0.7}
-            accessibilityRole="button"
-            accessibilityLabel={`${user.followingCount} following`}
-          >
-            <Text style={styles.statNumber}>{user.followingCount}</Text>
-            <Text style={styles.statLabel}>Following</Text>
-          </TouchableOpacity>
-        </View>
-
-        {user.bio && <Text style={styles.bio}>{user.bio}</Text>}
-
-        {isOwnProfile ? (
-          <View style={styles.actionButtonsRow}>
-            <Button
-              title="Edit Profile"
-              style={styles.actionButton}
-              variant="outline"
-              size="sm"
-              onPress={() => onEditPress?.()}
-              accessibilityLabel="Edit profile"
-            />
-
-            <Button
-              title="Share Profile"
-              style={styles.actionButton}
-              size="sm"
-              onPress={() => onSharePress?.()}
-              accessibilityLabel="Share profile"
-            />
-          </View>
-        ) : (
-          <View style={styles.followButtonRow}>
-            <FollowButton
-              userId={user.uid}
-              followStatus={user.followStatus ?? "NONE"}
-              fullWidth
-            />
-          </View>
-        )}
-      </View>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    backgroundColor: theme.colors.background,
-  },
   topRow: {
     minHeight: 60,
     flexDirection: "row",
@@ -222,6 +225,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 8,
     paddingBottom: 4,
+    backgroundColor: theme.colors.background,
   },
   iconBtn: {
     padding: 8,
