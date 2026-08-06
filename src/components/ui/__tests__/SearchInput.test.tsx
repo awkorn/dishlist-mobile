@@ -5,7 +5,7 @@ import { theme } from "@styles/theme";
 import { SearchInput } from "../SearchInput";
 
 describe("SearchInput", () => {
-  it("uses the standard search bar dimensions and border without a shadow", () => {
+  it("uses the standard dimensions and subtle border without a shadow", () => {
     const { getByTestId } = render(
       <SearchInput testID="search-input" placeholder="Search" />,
     );
@@ -15,7 +15,7 @@ describe("SearchInput", () => {
 
     expect(containerStyle).toMatchObject({
       height: 48,
-      borderWidth: 1,
+      borderWidth: 0.3,
       borderColor: theme.colors.neutral[200],
       borderRadius: theme.borderRadius.md,
       backgroundColor: theme.colors.surface,

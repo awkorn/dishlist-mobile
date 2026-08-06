@@ -55,7 +55,7 @@ describe("Modal", () => {
 
     expect(
       StyleSheet.flatten(getByText("Roasted Tomato Pasta").props.style),
-    ).toMatchObject({ fontFamily: typography.families.editorialMedium });
+    ).toMatchObject({ fontFamily: typography.families.uiMedium });
   });
 
   it("can hide or disable the close action", () => {

@@ -14,17 +14,17 @@ describe("typography roles", () => {
     expect(typography.recipeCardTitle.fontFamily).toBe(
       typography.families.uiMedium,
     );
+    expect(typography.recipeSheetTitle.fontFamily).toBe(
+      typography.families.uiMedium,
+    );
   });
 
-  it("reserves Playfair for editorial and recipe titles", () => {
+  it("reserves Playfair for prominent editorial recipe titles", () => {
     expect(typography.editorialPageTitle.fontFamily).toBe(
       typography.families.editorialSemiBold,
     );
     expect(typography.recipeDetailTitle.fontFamily).toBe(
       typography.families.editorialSemiBold,
-    );
-    expect(typography.recipeSheetTitle.fontFamily).toBe(
-      typography.families.editorialMedium,
     );
   });
 
