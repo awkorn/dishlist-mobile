@@ -92,12 +92,14 @@ function DishListTileContent({ dishList, onPress }: DishListTileProps) {
       <View style={styles.content}>
         <View style={styles.badges}>
           <View style={styles.statusBadge}>
-            <StatusIcon size={12} color={theme.colors.neutral[800]} />
+            <StatusIcon size={12} color={theme.colors.primary[600]} />
             <Text style={styles.statusText}>{statusLabel}</Text>
           </View>
 
+          <View style={styles.badgeDivider} />
+
           <View style={styles.visibilityBadge}>
-            <VisibilityIcon size={11} color={theme.colors.neutral[800]} />
+            <VisibilityIcon size={11} color={theme.colors.primary[600]} />
             <Text style={styles.visibilityText}>{visibilityLabel}</Text>
           </View>
         </View>
@@ -161,7 +163,7 @@ const styles = StyleSheet.create({
     padding: theme.spacing.md,
   },
   recipeCount: {
-    ...typography.utilityCaption,
+    ...typography.recipeReadingCompact,
     color: theme.colors.neutral[500],
   },
   badges: {
@@ -179,7 +181,12 @@ const styles = StyleSheet.create({
     ...typography.label,
     fontSize: 11,
     lineHeight: 15,
-    color: theme.colors.neutral[800],
+    color: theme.colors.primary[600],
+  },
+  badgeDivider: {
+    width: 1,
+    height: 14,
+    backgroundColor: theme.colors.neutral[300],
   },
   visibilityBadge: {
     flexDirection: "row",
@@ -191,7 +198,7 @@ const styles = StyleSheet.create({
     ...typography.label,
     fontSize: 11,
     lineHeight: 15,
-    color: theme.colors.neutral[800],
+    color: theme.colors.primary[600],
   },
   errorContainer: {
     justifyContent: "center",
