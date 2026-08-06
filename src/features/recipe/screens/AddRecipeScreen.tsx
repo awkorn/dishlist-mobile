@@ -497,12 +497,14 @@ export default function AddRecipeScreen({ route, navigation }: Props) {
                 </Text>
               </View>
             )}
-            <NutritionSection
-              nutrition={ingredientsChanged ? null : calculatedNutrition}
-              ingredients={extractItemTexts(ingredients)}
-              servings={servings}
-              onNutritionCalculated={setCalculatedNutrition}
-            />
+            <View style={styles.nutritionSection}>
+              <NutritionSection
+                nutrition={ingredientsChanged ? null : calculatedNutrition}
+                ingredients={extractItemTexts(ingredients)}
+                servings={servings}
+                onNutritionCalculated={setCalculatedNutrition}
+              />
+            </View>
 
             {/* Notes */}
             <View style={styles.section}>
@@ -580,12 +582,14 @@ export default function AddRecipeScreen({ route, navigation }: Props) {
                     style={[styles.photoTile, styles.addPhotoTile]}
                     onPress={pickImage}
                   >
-                    {imageUris.length === 0 ? (
-                      <Camera size={32} color={theme.colors.neutral[400]} />
-                    ) : (
-                      <Plus size={28} color={theme.colors.primary[500]} />
-                    )}
-                    <Text style={styles.imagePickerText}>Add Photo</Text>
+                    <View style={styles.addPhotoContent}>
+                      {imageUris.length === 0 ? (
+                        <Camera size={32} color={theme.colors.neutral[400]} />
+                      ) : (
+                        <Plus size={28} color={theme.colors.primary[500]} />
+                      )}
+                      <Text style={styles.imagePickerText}>Add Photo</Text>
+                    </View>
                   </TouchableOpacity>
                 )}
               </View>
@@ -721,6 +725,9 @@ const styles = StyleSheet.create({
     ...typography.caption,
     color: theme.colors.warning,
   },
+  nutritionSection: {
+    marginBottom: theme.spacing["3xl"],
+  },
   photoSectionHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -749,9 +756,12 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.neutral[100],
   },
   addPhotoTile: {
-    justifyContent: "center",
-    alignItems: "center",
     borderStyle: "dashed",
+  },
+  addPhotoContent: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
   },
   selectedImage: {
     width: "100%",
@@ -785,6 +795,7 @@ const styles = StyleSheet.create({
     ...typography.body,
     color: theme.colors.neutral[400],
     marginTop: theme.spacing.sm,
+    textAlign: "center",
   },
   saveButton: {
     width: "100%",

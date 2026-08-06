@@ -81,7 +81,7 @@ function DishListTileContent({ dishList, onPress }: DishListTileProps) {
         </View>
         {(dishList.isDefault || dishList.isPinned) && (
           <Pin
-            size={14}
+            size={12}
             color={theme.colors.textPrimary}
             fill={theme.colors.textPrimary}
             style={styles.pinIcon}
