@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import { Image } from "expo-image";
 import { ImageIcon, X } from "lucide-react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { theme } from "@styles/theme";
 import { typography } from "@styles/typography";
 
@@ -25,6 +25,7 @@ export default function RecipeGallery({
   recipeTitle,
 }: RecipeGalleryProps) {
   const { width } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
   const [viewerIndex, setViewerIndex] = useState<number | null>(null);
   const viewabilityConfig = useRef({ itemVisiblePercentThreshold: 60 }).current;
   const onViewableItemsChanged = useRef(
@@ -75,7 +76,12 @@ export default function RecipeGallery({
         presentationStyle="fullScreen"
         onRequestClose={closeViewer}
       >
-        <SafeAreaView style={styles.viewer}>
+        <View
+          style={[
+            styles.viewer,
+            { paddingTop: insets.top, paddingBottom: insets.bottom },
+          ]}
+        >
           <View style={styles.viewerHeader}>
             <Text style={styles.viewerCount}>
               {(viewerIndex ?? 0) + 1} of {imageUrls.length}
@@ -117,7 +123,7 @@ export default function RecipeGallery({
               )}
             />
           )}
-        </SafeAreaView>
+        </View>
       </Modal>
     </View>
   );

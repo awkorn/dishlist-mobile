@@ -50,7 +50,7 @@ export const theme = {
       sageSoft: "#E2E9DE",
       navy: "#173F70",
       navySoft: "#DEE9F6",
-      sky: "#9CB9D7",
+      sky: "#6F96BD",
       skySoft: "#E7F0F8",
       cream: "#FFF9F5",
     },
