@@ -460,7 +460,8 @@ const styles = StyleSheet.create({
   },
   header: {
     paddingHorizontal: theme.spacing.lg,
-    paddingVertical: theme.spacing.lg,
+    paddingTop: theme.spacing.lg,
+    paddingBottom: theme.spacing.sm,
   },
   topRow: {
     flexDirection: "row",
