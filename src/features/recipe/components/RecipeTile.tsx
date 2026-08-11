@@ -92,7 +92,7 @@ const styles = StyleSheet.create({
   container: {
     width: TILE_WIDTH,
     backgroundColor: theme.colors.surface,
-    borderRadius: theme.borderRadius.lg,
+    borderRadius: theme.borderRadius.sm,
     overflow: "hidden",
     ...theme.shadows.sm,
   },

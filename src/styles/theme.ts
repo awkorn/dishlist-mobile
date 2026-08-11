@@ -68,7 +68,7 @@ export const theme = {
     "4xl": 40,
   },
   layout: {
-    pageHeaderMinHeight: 60,
+    pageHeaderMinHeight: 50,
   },
   borderRadius: {
     sm: 8,
