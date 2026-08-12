@@ -14,6 +14,7 @@ import {
 import { STALE_TIMES } from '@lib/constants';
 import { queryKeys } from '@lib/queryKeys';
 import { useAuth } from '@providers/AuthProvider/AuthContext';
+import { useGroceryLiveActivity } from './useGroceryLiveActivity';
 
 export function useGroceryList() {
   const { user } = useAuth();
@@ -46,6 +47,7 @@ export function useGroceryList() {
   const clearCheckedMutation = useClearCheckedGroceryItems();
   const checkAllMutation = useCheckAllGroceryItems();
   const uncheckAllMutation = useUncheckAllGroceryItems();
+  const liveActivity = useGroceryLiveActivity(items);
 
   // Computed values
   const allChecked = useMemo(
@@ -180,5 +182,6 @@ export function useGroceryList() {
     handleClearChecked,
     handleToggleAll,
     refresh: refetch,
+    liveActivity,
   };
 }

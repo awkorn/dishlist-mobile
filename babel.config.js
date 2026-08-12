@@ -19,6 +19,7 @@ module.exports = function (api) {
             "@app-types/*": "./src/types/*",
             "@styles": "./src/styles",
             "@utils": "./src/utils",
+            "@modules": "./modules",
           },
         },
         "react-native-reanimated/plugin",

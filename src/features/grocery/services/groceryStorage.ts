@@ -173,6 +173,18 @@ export const groceryStorage = {
     });
   },
 
+  async checkItems(userId: string, itemIds: string[]): Promise<GroceryItem[]> {
+    return enqueueMutation(userId, async () => {
+      const items = await this.loadItems(userId);
+      const ids = new Set(itemIds);
+      const updated = items.map((item) =>
+        ids.has(item.id) ? { ...item, checked: true } : item
+      );
+      await this.saveItems(userId, updated);
+      return updated;
+    });
+  },
+
   async uncheckAll(userId: string): Promise<GroceryItem[]> {
     return enqueueMutation(userId, async () => {
       const items = await this.loadItems(userId);

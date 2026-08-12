@@ -5,6 +5,8 @@ import {
   StyleSheet,
   FlatList,
   ActivityIndicator,
+  Alert,
+  Linking,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Plus } from "lucide-react-native";
@@ -16,6 +18,7 @@ import {
   GroceryItemRow,
   GroceryEmptyState,
   GroceryInputRow,
+  GroceryLiveActivityControl,
 } from "../components";
 import InlineError from "@components/ui/InlineError";
 import { ScreenHeader, ScreenHeaderAction } from "@components/ui";
@@ -43,7 +46,55 @@ export default function GroceryListScreen() {
     handleClearChecked,
     handleToggleAll,
     refresh,
+    liveActivity,
   } = useGroceryList();
+
+  const handleStartShoppingMode = () => {
+    if (!liveActivity.areActivitiesEnabled) {
+      Alert.alert(
+        "Turn On Live Activities",
+        "Allow Live Activities for DishList in Settings to keep your grocery list on the Lock Screen.",
+        [
+          { text: "Not Now", style: "cancel" },
+          {
+            text: "Open Settings",
+            onPress: () => void Linking.openSettings(),
+          },
+        ]
+      );
+      return;
+    }
+
+    Alert.alert(
+      "Add List to Lock Screen?",
+      "Your unchecked grocery items will be visible to anyone who can see your Lock Screen.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Start Shopping",
+          onPress: () => {
+            void liveActivity.start().catch((error) => {
+              console.error("Failed to start grocery Live Activity:", error);
+              Alert.alert(
+                "Couldn't Start Shopping Mode",
+                "Please try again. If this keeps happening, check that Live Activities are enabled for DishList."
+              );
+            });
+          },
+        },
+      ]
+    );
+  };
+
+  const handleEndShoppingMode = () => {
+    void liveActivity.end().catch((error) => {
+      console.error("Failed to end grocery Live Activity:", error);
+      Alert.alert(
+        "Couldn't Remove Lock Screen List",
+        "Please try again."
+      );
+    });
+  };
 
   const handleStartAdding = async () => {
     // Cancel any item editing first
@@ -172,6 +223,17 @@ export default function GroceryListScreen() {
           </ScreenHeaderAction>
         </View>
       </LinearGradient>
+
+      {liveActivity.isSupported &&
+      (liveActivity.isActive || liveActivity.uncheckedCount > 0) ? (
+        <GroceryLiveActivityControl
+          isActive={liveActivity.isActive}
+          isChanging={liveActivity.isChanging}
+          uncheckedCount={liveActivity.uncheckedCount}
+          onStart={handleStartShoppingMode}
+          onEnd={handleEndShoppingMode}
+        />
+      ) : null}
 
       <FlatList
         testID="grocery-list"

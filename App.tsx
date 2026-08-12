@@ -18,6 +18,7 @@ import { theme } from '@styles/theme';
 import { initSharedSessionSync } from '@services/sharedSession';
 import { useSocialImportStatus } from '@features/recipe/hooks/useSocialImportStatus';
 import { ToastViewport } from '@components/ui';
+import { useGroceryLiveActivityCoordinator } from '@features/grocery';
 
 // Mirror the Supabase session into App Group storage for the share extension
 // (and adopt sessions the extension refreshed). Module-level like the api.ts
@@ -73,6 +74,11 @@ function SocialImportReconciler() {
   return null;
 }
 
+function GroceryLiveActivityReconciler() {
+  useGroceryLiveActivityCoordinator();
+  return null;
+}
+
 export default function App() {
   const fontsLoaded = useCustomFonts();
 
@@ -97,6 +103,7 @@ export default function App() {
               <NavigationContainer linking={linking} ref={navigationRef}>
                 <PushNotificationsProvider>
                   <SocialImportReconciler />
+                  <GroceryLiveActivityReconciler />
                   <InviteRedirectHandler />
                   <MainNavigator />
                   <StatusBar

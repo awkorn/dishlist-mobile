@@ -1,5 +1,5 @@
 import React from "react";
-import { FlatList, StyleSheet } from "react-native";
+import { Alert, FlatList, StyleSheet } from "react-native";
 import {
   fireEvent,
   render,
@@ -34,7 +34,22 @@ describe("GroceryListScreen", () => {
     handleClearChecked: jest.fn(),
     handleToggleAll: jest.fn(),
     refresh: jest.fn(),
+    liveActivity: {
+      isSupported: false,
+      areActivitiesEnabled: false,
+      isActive: false,
+      isLoading: false,
+      isChanging: false,
+      uncheckedCount: 0,
+      start: jest.fn(),
+      end: jest.fn(),
+      refreshStatus: jest.fn(),
+    },
     ...overrides,
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
   });
 
   it("shows a retryable error without showing an empty list", () => {
@@ -133,5 +148,37 @@ describe("GroceryListScreen", () => {
     });
     expect(setIsAddingItem).not.toHaveBeenCalled();
     expect(setEditingText).not.toHaveBeenCalled();
+  });
+
+  it("asks for privacy confirmation before starting Shopping Mode", () => {
+    const start = jest.fn().mockResolvedValue(undefined);
+    const alert = jest.spyOn(Alert, "alert").mockImplementation(jest.fn());
+
+    (useGroceryList as jest.Mock).mockReturnValue(createHookValue({
+      liveActivity: {
+        isSupported: true,
+        areActivitiesEnabled: true,
+        isActive: false,
+        isLoading: false,
+        isChanging: false,
+        uncheckedCount: 1,
+        start,
+        end: jest.fn(),
+        refreshStatus: jest.fn(),
+      },
+    }));
+
+    const { getByTestId } = render(<GroceryListScreen />);
+    fireEvent.press(getByTestId("start-shopping-mode"));
+
+    expect(alert).toHaveBeenCalledWith(
+      "Add List to Lock Screen?",
+      expect.stringContaining("visible to anyone"),
+      expect.any(Array)
+    );
+
+    const actions = alert.mock.calls[0][2];
+    actions?.find((action) => action.text === "Start Shopping")?.onPress?.();
+    expect(start).toHaveBeenCalledTimes(1);
   });
 });

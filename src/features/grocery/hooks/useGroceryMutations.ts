@@ -8,8 +8,18 @@ import { groceryStorage } from '../services/groceryStorage';
 import type { GroceryItem } from '../types';
 import { queryKeys } from '@lib/queryKeys';
 import { useAuth } from '@providers/AuthProvider/AuthContext';
+import { groceryLockScreenService } from '../services/groceryLockScreenService';
 
 type GroceryQueryKey = ReturnType<typeof queryKeys.grocery.list>;
+
+const commitConfirmedItems = (
+  queryClient: QueryClient,
+  queryKey: GroceryQueryKey,
+  items: GroceryItem[]
+) => {
+  queryClient.setQueryData(queryKey, items);
+  void groceryLockScreenService.sync(items);
+};
 
 const rollbackItems = (
   queryClient: QueryClient,
@@ -85,7 +95,7 @@ export function useAddGroceryItems() {
 
     onSuccess: (data) => {
       // Update with real server data (with real IDs from AsyncStorage)
-      queryClient.setQueryData(queryKey, data);
+      commitConfirmedItems(queryClient, queryKey, data);
     },
   });
 }
@@ -125,7 +135,7 @@ export function useToggleGroceryItem() {
     },
 
     onSuccess: (data) => {
-      queryClient.setQueryData(queryKey, data);
+      commitConfirmedItems(queryClient, queryKey, data);
     },
   });
 }
@@ -163,7 +173,7 @@ export function useDeleteGroceryItem() {
     },
 
     onSuccess: (data) => {
-      queryClient.setQueryData(queryKey, data);
+      commitConfirmedItems(queryClient, queryKey, data);
     },
   });
 }
@@ -203,7 +213,7 @@ export function useUpdateGroceryItem() {
     },
 
     onSuccess: (data) => {
-      queryClient.setQueryData(queryKey, data);
+      commitConfirmedItems(queryClient, queryKey, data);
     },
   });
 }
@@ -240,7 +250,7 @@ export function useClearCheckedGroceryItems() {
     },
 
     onSuccess: (data) => {
-      queryClient.setQueryData(queryKey, data);
+      commitConfirmedItems(queryClient, queryKey, data);
     },
   });
 }
@@ -277,7 +287,7 @@ export function useCheckAllGroceryItems() {
     },
 
     onSuccess: (data) => {
-      queryClient.setQueryData(queryKey, data);
+      commitConfirmedItems(queryClient, queryKey, data);
     },
   });
 }
@@ -314,7 +324,7 @@ export function useUncheckAllGroceryItems() {
     },
 
     onSuccess: (data) => {
-      queryClient.setQueryData(queryKey, data);
+      commitConfirmedItems(queryClient, queryKey, data);
     },
   });
 }

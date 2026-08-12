@@ -219,6 +219,24 @@ describe('groceryStorage', () => {
     });
   });
 
+  describe('checkItems', () => {
+    it('marks only the Lock Screen-selected items as checked', async () => {
+      const mockItems = [
+        { id: '1', text: 'Milk', checked: false, addedAt: 123 },
+        { id: '2', text: 'Bread', checked: false, addedAt: 124 },
+      ];
+      (AsyncStorage.getItem as jest.Mock).mockResolvedValueOnce(
+        JSON.stringify(mockItems)
+      );
+      (AsyncStorage.setItem as jest.Mock).mockResolvedValueOnce(undefined);
+
+      const result = await groceryStorage.checkItems(userId, ['2']);
+
+      expect(result[0].checked).toBe(false);
+      expect(result[1].checked).toBe(true);
+    });
+  });
+
   describe('uncheckAll', () => {
     it('marks all items as unchecked', async () => {
       const mockItems = [

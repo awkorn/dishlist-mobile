@@ -1,0 +1,7 @@
+{
+  "name": "dishlist-live-activity",
+  "version": "1.0.0",
+  "description": "DishList's local iOS Live Activity bridge",
+  "main": "index.ts",
+  "private": true
+}

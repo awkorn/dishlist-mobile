@@ -9,6 +9,7 @@ export const linking: LinkingOptions<RootStackParamList> = {
       Home: {
         screens: {
           DishListsTab: "home",
+          GroceryTab: "grocery",
         },
       },
       DishListDetail: {

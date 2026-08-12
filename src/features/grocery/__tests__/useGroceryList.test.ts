@@ -7,6 +7,11 @@ import { groceryStorage } from "../services/groceryStorage";
 
 const mockUserId = "user-123";
 
+jest.mock("@modules/dishlist-live-activity", () => ({
+  __esModule: true,
+  default: null,
+}));
+
 jest.mock("@providers/AuthProvider/AuthContext", () => ({
   useAuth: () => ({
     user: { id: mockUserId },

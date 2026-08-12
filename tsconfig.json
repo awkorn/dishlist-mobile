@@ -14,6 +14,7 @@
       "@app-types": ["src/types"],
       "@app-types/*": ["src/types/*"],
       "@styles/*": ["src/styles/*"],
+      "@modules/*": ["modules/*"],
       "@utils": ["src/utils"],
       "@utils/*": ["src/utils/*"]
     },

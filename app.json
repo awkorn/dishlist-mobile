@@ -25,6 +25,7 @@
         ]
       },
       "infoPlist": {
+        "NSSupportsLiveActivities": true,
         "UIBackgroundModes": [
           "remote-notification",
           "remote-notification",
@@ -83,11 +84,13 @@
             "expo-linear-gradient",
             "expo-haptics",
             "expo-clipboard",
-            "expo-device"
+            "expo-device",
+            "dishlist-live-activity"
           ]
         }
       ],
-      "./plugins/withShareExtensionLocalNetworking"
+      "./plugins/withShareExtensionLocalNetworking",
+      "./plugins/withGroceryLiveActivity"
     ],
     "assetBundlePatterns": [
       "assets/fonts/*"
