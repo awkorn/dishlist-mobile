@@ -10,6 +10,24 @@ const {
 } = require("expo/config-plugins");
 
 const TARGET_NAME = "DishListGroceryLiveActivity";
+const GEIST_FONT_FILES = [
+  {
+    sourcePath: "node_modules/@expo-google-fonts/geist/400Regular/Geist_400Regular.ttf",
+    name: "Geist_400Regular.ttf",
+  },
+  {
+    sourcePath: "node_modules/@expo-google-fonts/geist/500Medium/Geist_500Medium.ttf",
+    name: "Geist_500Medium.ttf",
+  },
+  {
+    sourcePath: "node_modules/@expo-google-fonts/geist/600SemiBold/Geist_600SemiBold.ttf",
+    name: "Geist_600SemiBold.ttf",
+  },
+  {
+    sourcePath: "node_modules/@expo-google-fonts/geist/700Bold/Geist_700Bold.ttf",
+    name: "Geist_700Bold.ttf",
+  },
+];
 
 function getBundleIdentifier(config) {
   const appBundleIdentifier = config.ios?.bundleIdentifier;
@@ -96,6 +114,7 @@ function withLiveActivityInfoPlist(config) {
         NSExtension: {
           NSExtensionPointIdentifier: "com.apple.widgetkit-extension",
         },
+        UIAppFonts: GEIST_FONT_FILES.map((font) => font.name),
       })
     );
 
@@ -150,8 +169,12 @@ function addTargetToProject(xcodeProject, config) {
       name: "GroceryLiveActivityWidget.swift",
     },
   ];
+  const resourceFiles = GEIST_FONT_FILES.map((font) => ({
+    source: path.join(config.modRequest.projectRoot, font.sourcePath),
+    name: font.name,
+  }));
 
-  for (const file of sourceFiles) {
+  for (const file of [...sourceFiles, ...resourceFiles]) {
     fs.copyFileSync(file.source, path.join(targetPath, file.name));
   }
 
@@ -252,7 +275,7 @@ function addTargetToProject(xcodeProject, config) {
   // Info.plist and entitlements are referenced through build settings. Keeping
   // them out of PBXGroup avoids node-xcode reusing the share extension's
   // same-named Info.plist file reference and producing a malformed project.
-  const files = sourceFiles.map((file) => file.name);
+  const files = [...sourceFiles, ...resourceFiles].map((file) => file.name);
   const { uuid: groupUuid } = xcodeProject.addPbxGroup(
     files,
     TARGET_NAME,
@@ -286,7 +309,7 @@ function addTargetToProject(xcodeProject, config) {
     "app_extension"
   );
   xcodeProject.addBuildPhase(
-    [],
+    resourceFiles.map((file) => file.name),
     "PBXResourcesBuildPhase",
     "Resources",
     targetUuid,

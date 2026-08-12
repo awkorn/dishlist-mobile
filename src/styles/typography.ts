@@ -65,8 +65,8 @@ export const typography = {
   },
   pageTitle: {
     fontFamily: fontFamilies.uiMedium,
-    fontSize: 28,
-    lineHeight: 34,
+    fontSize: 26,
+    lineHeight: 32,
     letterSpacing: -0.5,
   },
   navigationTitle: {

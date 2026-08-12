@@ -6,6 +6,7 @@
     "start": "expo start --dev-client",
     "android": "expo run:android",
     "ios": "expo run:ios",
+    "prebuild:ios": "expo prebuild --clean --platform ios",
     "web": "expo start --web",
     "build:ios": "eas build --platform ios",
     "build:android": "eas build --platform android",
