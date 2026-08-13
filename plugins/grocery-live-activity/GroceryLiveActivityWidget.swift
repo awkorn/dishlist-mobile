@@ -5,9 +5,9 @@ import WidgetKit
 
 private enum DishListLiveActivityColors {
   static let background = Color(
-    red: 247.0 / 255.0,
-    green: 245.0 / 255.0,
-    blue: 243.0 / 255.0
+    red: 0.0 / 255.0,
+    green: 41.0 / 255.0,
+    blue: 91.0 / 255.0
   )
   static let navy = Color(
     red: 0.0 / 255.0,
@@ -19,16 +19,8 @@ private enum DishListLiveActivityColors {
     green: 99.0 / 255.0,
     blue: 235.0 / 255.0
   )
-  static let softBlue = Color(
-    red: 221.0 / 255.0,
-    green: 236.0 / 255.0,
-    blue: 255.0 / 255.0
-  )
-  static let disabled = Color(
-    red: 156.0 / 255.0,
-    green: 163.0 / 255.0,
-    blue: 175.0 / 255.0
-  )
+  static let lockScreenForeground = Color.white
+  static let lockScreenDisabled = Color.white.opacity(0.4)
   static let green = Color(
     red: 75.0 / 255.0,
     green: 212.0 / 255.0,
@@ -63,15 +55,18 @@ private struct GroceryItemRowView: View {
     HStack(spacing: 9) {
       ZStack {
         RoundedRectangle(cornerRadius: 4)
-          .fill(DishListLiveActivityColors.softBlue)
+          .fill(DishListLiveActivityColors.background)
         RoundedRectangle(cornerRadius: 4)
-          .stroke(DishListLiveActivityColors.blue.opacity(0.3), lineWidth: 0.75)
+          .stroke(
+            DishListLiveActivityColors.lockScreenForeground,
+            lineWidth: 1
+          )
       }
-      .frame(width: 18, height: 18)
+      .frame(width: 14, height: 14)
 
       Text(item.text)
         .font(DishListLiveActivityFonts.medium(14))
-        .foregroundStyle(DishListLiveActivityColors.navy)
+        .foregroundStyle(DishListLiveActivityColors.lockScreenForeground)
         .lineLimit(1)
 
       Spacer(minLength: 4)
@@ -90,8 +85,8 @@ private struct GroceryPagingButtonLabel: View {
       .font(.system(size: 13, weight: .bold))
       .foregroundStyle(
         isEnabled
-          ? DishListLiveActivityColors.navy
-          : DishListLiveActivityColors.disabled
+          ? DishListLiveActivityColors.lockScreenForeground
+          : DishListLiveActivityColors.lockScreenDisabled
       )
       .frame(width: 28, height: 24)
   }
@@ -99,6 +94,10 @@ private struct GroceryPagingButtonLabel: View {
 
 private struct GroceryLockScreenView: View {
   let state: GroceryLiveActivityAttributes.ContentState
+
+  // Five 22pt rows with 3pt spacing between them. Keeping this viewport fixed
+  // prevents the Live Activity from resizing as the remaining item count drops.
+  private let viewportHeight: CGFloat = 122
 
   private var pageCount: Int {
     max(
@@ -122,84 +121,89 @@ private struct GroceryLockScreenView: View {
   }
 
   var body: some View {
-    VStack(alignment: .leading, spacing: 6) {
+    Group {
       if state.isComplete {
         HStack(spacing: 8) {
           Image(systemName: "checkmark.circle.fill")
-            .foregroundStyle(DishListLiveActivityColors.green)
+            .foregroundStyle(DishListLiveActivityColors.lockScreenForeground)
           Text("Everything is checked off")
             .font(DishListLiveActivityFonts.medium(14))
-            .foregroundStyle(DishListLiveActivityColors.navy)
+            .foregroundStyle(DishListLiveActivityColors.lockScreenForeground)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.vertical, 8)
       } else {
-        VStack(spacing: 3) {
-          ForEach(visibleItems, id: \.id) { item in
-            if #available(iOS 17.0, *) {
-              Button(intent: CheckGroceryItemIntent(itemId: item.id)) {
+        HStack(alignment: .top, spacing: 0) {
+          VStack(spacing: 3) {
+            ForEach(visibleItems, id: \.id) { item in
+              if #available(iOS 17.0, *) {
+                Button(intent: CheckGroceryItemIntent(itemId: item.id)) {
+                  GroceryItemRowView(item: item)
+                }
+                .buttonStyle(.plain)
+              } else {
                 GroceryItemRowView(item: item)
               }
-              .buttonStyle(.plain)
-            } else {
-              GroceryItemRowView(item: item)
             }
           }
-        }
+          .frame(maxWidth: .infinity, alignment: .topLeading)
+          .padding(.trailing, 8)
 
-        if pageCount > 1 {
+          Rectangle()
+            .fill(DishListLiveActivityColors.lockScreenForeground)
+            .frame(width: 1, height: viewportHeight)
+
           if #available(iOS 17.0, *) {
-            HStack(spacing: 8) {
+            VStack(spacing: 0) {
               Button(intent: ChangeGroceryPageIntent(direction: -1)) {
                 GroceryPagingButtonLabel(
-                  systemName: "chevron.left",
+                  systemName: "chevron.up",
                   isEnabled: currentPage > 0
                 )
               }
               .buttonStyle(.plain)
               .disabled(currentPage == 0)
+              .accessibilityLabel("Previous grocery items")
 
-              Spacer(minLength: 8)
-
-              Text("Page \(currentPage + 1) of \(pageCount)")
-                .font(DishListLiveActivityFonts.medium(12))
-                .foregroundStyle(DishListLiveActivityColors.navy)
-
-              Spacer(minLength: 8)
+              Spacer(minLength: 0)
 
               Button(intent: ChangeGroceryPageIntent(direction: 1)) {
                 GroceryPagingButtonLabel(
-                  systemName: "chevron.right",
+                  systemName: "chevron.down",
                   isEnabled: currentPage < pageCount - 1
                 )
               }
               .buttonStyle(.plain)
               .disabled(currentPage == pageCount - 1)
+              .accessibilityLabel("Next grocery items")
             }
+            .frame(height: viewportHeight)
+            .padding(.leading, 8)
           } else {
-            HStack(spacing: 8) {
+            VStack(spacing: 0) {
               GroceryPagingButtonLabel(
-                systemName: "chevron.left",
+                systemName: "chevron.up",
                 isEnabled: false
               )
-              Spacer(minLength: 8)
-              Text("Page \(currentPage + 1) of \(pageCount)")
-                .font(DishListLiveActivityFonts.medium(12))
-                .foregroundStyle(DishListLiveActivityColors.navy)
-              Spacer(minLength: 8)
+              Spacer(minLength: 0)
               GroceryPagingButtonLabel(
-                systemName: "chevron.right",
+                systemName: "chevron.down",
                 isEnabled: false
               )
             }
+            .frame(height: viewportHeight)
+            .padding(.leading, 8)
           }
         }
       }
     }
+    .frame(height: viewportHeight, alignment: .topLeading)
     .padding(.horizontal, 16)
     .padding(.vertical, 12)
     .activityBackgroundTint(DishListLiveActivityColors.background)
-    .activitySystemActionForegroundColor(DishListLiveActivityColors.navy)
+    .activitySystemActionForegroundColor(
+      DishListLiveActivityColors.lockScreenForeground
+    )
     .widgetURL(URL(string: "dishlist://grocery"))
   }
 }

@@ -3,7 +3,7 @@ import AppIntents
 import Foundation
 
 enum GroceryLiveActivityPaging {
-  static let pageSize = 4
+  static let pageSize = 5
 }
 
 enum GroceryLiveActivitySharedStore {
