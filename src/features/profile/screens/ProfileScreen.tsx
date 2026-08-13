@@ -23,7 +23,7 @@ import { ProfileHeader, ProfileTopBar } from "../components/ProfileHeader";
 import { ProfileTabs } from "../components/ProfileTabs";
 import { EditProfileSheet } from "../components/EditProfileSheet";
 import { DishListTile } from "@features/dishlist";
-import RecipeTile from "@features/recipe/components/RecipeTile";
+import { RecipeTile } from "@features/recipe";
 import { ProfileEmptyState } from "../components/ProfileEmptyState";
 import { ProfileSkeleton } from "../components/ProfileSkeleton";
 import { ShareModal } from "@features/share";
@@ -396,7 +396,7 @@ export default function ProfileScreen({ navigation, route }: Props) {
               )}
               keyExtractor={(item) => item.id}
               numColumns={2}
-              columnWrapperStyle={styles.row}
+              columnWrapperStyle={styles.recipeRow}
               contentContainerStyle={[
                 styles.listContent,
                 { paddingTop: collapsibleHeaderHeight },
@@ -592,6 +592,11 @@ const styles = StyleSheet.create({
     paddingBottom: theme.spacing.xl + 20,
   },
   row: {
+    justifyContent: "space-between",
+    gap: theme.spacing.lg,
+    paddingHorizontal: theme.spacing.xl,
+  },
+  recipeRow: {
     justifyContent: "space-between",
     gap: theme.spacing.lg,
     paddingHorizontal: theme.spacing.xl,

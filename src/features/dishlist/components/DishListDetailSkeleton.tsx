@@ -17,6 +17,7 @@ interface DishListDetailSkeletonProps {
 
 const { width } = Dimensions.get("window");
 const TILE_WIDTH = (width - theme.spacing.xl * 2 - theme.spacing.lg) / 2;
+const IMAGE_ASPECT_RATIO = 4 / 3;
 const SKELETON_RECIPE_IDS = [
   "recipe-1",
   "recipe-2",
@@ -114,9 +115,10 @@ export function DishListDetailSkeleton({
           {SKELETON_RECIPE_IDS.map((recipeId, index) => (
             <Animated.View
               key={recipeId}
+              testID="recipe-skeleton-tile"
               style={[styles.recipeTile, { opacity }]}
             >
-              <View style={styles.recipeImage} />
+              <View testID="recipe-skeleton-image" style={styles.recipeImage} />
               <View style={styles.recipeContent}>
                 <View style={styles.recipeTitle} />
                 <View
@@ -126,10 +128,6 @@ export function DishListDetailSkeleton({
                     index % 2 === 0 && styles.recipeTitleShortest,
                   ]}
                 />
-                <View style={styles.recipeMetaRow}>
-                  <View style={styles.recipeMeta} />
-                  <View style={styles.recipeMetaShort} />
-                </View>
               </View>
             </Animated.View>
           ))}
@@ -240,22 +238,22 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: theme.spacing.lg,
-    padding: theme.spacing.lg,
+    paddingVertical: theme.spacing.lg,
+    paddingHorizontal: theme.spacing.xl,
     paddingBottom: theme.spacing["4xl"],
   },
   recipeTile: {
     width: TILE_WIDTH,
-    overflow: "hidden",
-    borderRadius: theme.borderRadius.lg,
-    backgroundColor: theme.colors.surface,
   },
   recipeImage: {
     width: "100%",
-    height: TILE_WIDTH * 0.75,
+    aspectRatio: IMAGE_ASPECT_RATIO,
+    borderRadius: theme.borderRadius.md,
     backgroundColor: skeletonColor,
   },
   recipeContent: {
-    padding: theme.spacing.md,
+    height: theme.spacing.sm + 36,
+    paddingTop: theme.spacing.sm,
   },
   recipeTitle: {
     width: "88%",
@@ -266,25 +264,8 @@ const styles = StyleSheet.create({
   },
   recipeTitleShort: {
     width: "68%",
-    marginBottom: theme.spacing.sm,
   },
   recipeTitleShortest: {
     width: "48%",
-  },
-  recipeMetaRow: {
-    flexDirection: "row",
-    gap: theme.spacing.md,
-  },
-  recipeMeta: {
-    width: 48,
-    height: 10,
-    borderRadius: theme.borderRadius.sm,
-    backgroundColor: skeletonColor,
-  },
-  recipeMetaShort: {
-    width: 28,
-    height: 10,
-    borderRadius: theme.borderRadius.sm,
-    backgroundColor: skeletonColor,
   },
 });

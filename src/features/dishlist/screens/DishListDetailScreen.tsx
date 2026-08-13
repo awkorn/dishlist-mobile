@@ -27,7 +27,7 @@ import {
 import { typography } from "@styles/typography";
 import { theme } from "@styles/theme";
 import { getErrorMessage } from "@utils";
-import RecipeTile from "@features/recipe/components/RecipeTile";
+import { RecipeTile } from "@features/recipe";
 import ActionSheet, { ActionSheetOption } from "@components/ui/ActionSheet";
 import { QueryErrorBoundary } from "@providers/ErrorBoundary";
 import { DishListDetailScreenProps } from "@app-types/navigation";
@@ -504,7 +504,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    padding: theme.spacing.lg,
+    paddingVertical: theme.spacing.lg,
+    paddingHorizontal: theme.spacing.xl,
   },
   emptyScrollContent: {
     flexGrow: 1,
