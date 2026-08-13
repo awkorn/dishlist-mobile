@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { Check, Crown, Handshake } from "lucide-react-native";
+import { Check } from "lucide-react-native";
 import { EmptyState } from "@components/ui";
 import Modal from "@components/ui/Modal";
 import { theme } from "@styles/theme";
@@ -23,6 +23,9 @@ interface DishListPickerModalProps {
   onSelect: (dishListId: string) => void;
   title: string;
   alreadySelectedDishListIds?: readonly string[];
+  selectedDishListIds?: readonly string[];
+  selectionMode?: "single" | "multiple";
+  onDone?: () => void;
   isSelecting?: boolean;
   loading?: boolean;
   notice?: ReactNode;
@@ -37,6 +40,9 @@ export function DishListPickerModal({
   onSelect,
   title,
   alreadySelectedDishListIds = EMPTY_DISH_LIST_IDS,
+  selectedDishListIds = EMPTY_DISH_LIST_IDS,
+  selectionMode = "single",
+  onDone,
   isSelecting = false,
   loading = false,
   notice,
@@ -63,11 +69,22 @@ export function DishListPickerModal({
     () => new Set(alreadySelectedDishListIds),
     [alreadySelectedDishListIds],
   );
+  const selectedIds = useMemo(
+    () => new Set(selectedDishListIds),
+    [selectedDishListIds],
+  );
   const isLoading = loadingDishLists || loading;
+  const isMultipleSelection = selectionMode === "multiple";
 
   const renderDishList = ({ item }: { item: DishList }) => {
     const alreadySelected = alreadySelectedIds.has(item.id);
-    const role = item.isOwner ? "Owner" : "Collaborator";
+    const selected = alreadySelected || selectedIds.has(item.id);
+    const disabled = alreadySelected || isSelecting;
+    const accessibilityLabel = alreadySelected
+      ? `${item.title}, already added`
+      : isMultipleSelection
+        ? `${item.title}, ${selected ? "selected" : "not selected"}`
+        : `Select ${item.title}`;
 
     return (
       <TouchableOpacity
@@ -76,41 +93,46 @@ export function DishListPickerModal({
           alreadySelected && styles.dishListItemDisabled,
         ]}
         onPress={() => onSelect(item.id)}
-        disabled={alreadySelected || isSelecting}
-        accessibilityRole="button"
-        accessibilityState={{ disabled: alreadySelected || isSelecting }}
-        accessibilityLabel={
-          alreadySelected
-            ? `${item.title}, already added`
-            : `Select ${item.title}, ${role}`
+        disabled={disabled}
+        accessibilityRole={isMultipleSelection ? "checkbox" : "button"}
+        accessibilityState={
+          isMultipleSelection
+            ? { checked: selected, disabled }
+            : { disabled }
         }
+        accessibilityLabel={accessibilityLabel}
         accessibilityHint={
-          alreadySelected ? undefined : "Selects this DishList"
+          alreadySelected
+            ? undefined
+            : isMultipleSelection
+              ? "Toggles this DishList selection"
+              : "Selects this DishList"
         }
         activeOpacity={0.7}
       >
         <View style={styles.dishListInfo}>
-          <View style={styles.dishListHeader}>
-            <Text style={styles.dishListTitle} numberOfLines={1}>
-              {item.title}
-            </Text>
-            <View style={styles.badges}>
-              {item.isOwner && (
-                <Crown size={14} color={theme.colors.warning} />
-              )}
-              {item.isCollaborator && (
-                <Handshake size={14} color={theme.colors.success} />
-              )}
-            </View>
-          </View>
+          <Text style={styles.dishListTitle} numberOfLines={1}>
+            {item.title}
+          </Text>
           <Text style={styles.dishListMeta}>
             {item.recipeCount} {item.recipeCount === 1 ? "recipe" : "recipes"}
           </Text>
         </View>
 
-        {alreadySelected && (
-          <View style={styles.checkContainer}>
-            <Check size={20} color={theme.colors.success} />
+        {(isMultipleSelection || alreadySelected) && (
+          <View
+            style={[
+              styles.selectionControl,
+              selected && styles.selectionControlSelected,
+            ]}
+          >
+            {selected && (
+              <Check
+                size={17}
+                color={theme.colors.onPrimary}
+                strokeWidth={3}
+              />
+            )}
           </View>
         )}
       </TouchableOpacity>
@@ -118,7 +140,37 @@ export function DishListPickerModal({
   };
 
   return (
-    <Modal visible={visible} onClose={onClose} title={title}>
+    <Modal
+      visible={visible}
+      onClose={onClose}
+      title={title}
+      closeButtonDisabled={isSelecting}
+      rightAction={
+        isMultipleSelection && onDone ? (
+          <TouchableOpacity
+            onPress={onDone}
+            disabled={selectedDishListIds.length === 0 || isSelecting}
+            style={styles.doneButton}
+            accessibilityRole="button"
+            accessibilityLabel="Done selecting DishLists"
+            accessibilityState={{
+              disabled: selectedDishListIds.length === 0 || isSelecting,
+              busy: isSelecting,
+            }}
+          >
+            <Text
+              style={[
+                styles.doneButtonText,
+                (selectedDishListIds.length === 0 || isSelecting) &&
+                  styles.doneButtonTextDisabled,
+              ]}
+            >
+              {isSelecting ? "Saving" : "Done"}
+            </Text>
+          </TouchableOpacity>
+        ) : undefined
+      }
+    >
       <View style={styles.container}>
         {notice && <View style={styles.notice}>{notice}</View>}
 
@@ -194,7 +246,8 @@ const styles = StyleSheet.create({
     marginTop: theme.spacing.lg,
   },
   listContent: {
-    padding: theme.spacing.xl,
+    paddingHorizontal: theme.spacing.xl,
+    paddingBottom: theme.spacing["2xl"],
   },
   footerLoader: {
     paddingVertical: theme.spacing.md,
@@ -204,11 +257,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     backgroundColor: theme.colors.surface,
-    padding: theme.spacing.lg,
-    borderRadius: theme.borderRadius.md,
-    marginBottom: theme.spacing.md,
-    borderWidth: 1,
-    borderColor: theme.colors.neutral[200],
+    minHeight: 72,
+    paddingVertical: theme.spacing.lg,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: theme.colors.neutral[200],
   },
   dishListItemDisabled: {
     opacity: 0.5,
@@ -216,28 +268,44 @@ const styles = StyleSheet.create({
   dishListInfo: {
     flex: 1,
   },
-  dishListHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: theme.spacing.sm,
-    marginBottom: theme.spacing.xs,
-  },
   dishListTitle: {
     ...typography.subtitle,
     fontSize: 16,
     color: theme.colors.textPrimary,
-    flex: 1,
-  },
-  badges: {
-    flexDirection: "row",
-    gap: theme.spacing.xs,
+    marginBottom: theme.spacing.xs,
   },
   dishListMeta: {
     ...typography.caption,
     color: theme.colors.neutral[500],
   },
-  checkContainer: {
-    marginLeft: theme.spacing.md,
+  selectionControl: {
+    width: 28,
+    height: 28,
+    marginLeft: theme.spacing.lg,
+    borderRadius: 14,
+    borderWidth: 2,
+    borderColor: theme.colors.neutral[400],
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  selectionControlSelected: {
+    backgroundColor: theme.colors.primary[500],
+    borderColor: theme.colors.primary[500],
+  },
+  doneButton: {
+    minHeight: 44,
+    minWidth: 44,
+    marginRight: -theme.spacing.md,
+    paddingHorizontal: theme.spacing.md,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  doneButtonText: {
+    ...typography.button,
+    color: theme.colors.primary[500],
+  },
+  doneButtonTextDisabled: {
+    color: theme.colors.neutral[400],
   },
   errorContainer: {
     padding: theme.spacing.lg,

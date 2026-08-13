@@ -6,7 +6,6 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
-  Alert,
   TouchableOpacity,
 } from "react-native";
 import { RefreshCcw, SquarePen } from "lucide-react-native";
@@ -15,7 +14,11 @@ import { theme } from "@styles/theme";
 import { typography } from "@styles/typography";
 import { ScreenHeader } from "@components/ui";
 import { useRecipeBuilder } from "../hooks";
-import { useCreateRecipe } from "@features/recipe/hooks";
+import {
+  useAddRecipeToDishList,
+  useCreateRecipe,
+} from "@features/recipe/hooks";
+import { toast } from "@components/ui/toast";
 import {
   BuilderChatInput,
   GeneratedRecipeCard,
@@ -53,7 +56,10 @@ export default function RecipeBuilderScreen() {
   );
   const [showPreferences, setShowPreferences] = useState(false);
 
-  const createRecipeMutation = useCreateRecipe();
+  const createRecipeMutation = useCreateRecipe({ showSuccessToast: false });
+  const addRecipeMutation = useAddRecipeToDishList();
+  const [isSavingRecipe, setIsSavingRecipe] = useState(false);
+  const createdRecipeIdRef = useRef<string | null>(null);
 
   const handleSend = useCallback(
     async (text: string) => {
@@ -93,41 +99,63 @@ export default function RecipeBuilderScreen() {
   const handleSaveRecipe = useCallback((recipe: GeneratedRecipe) => {
     setShowDetail(false);
     setRecipeToSave(recipe);
+    createdRecipeIdRef.current = null;
     setShowDishListPicker(true);
   }, []);
 
-  const handleDishListSelected = useCallback(
-    (dishListId: string) => {
-      if (!recipeToSave) return;
+  const handleDishListsSelected = useCallback(
+    async (dishListIds: string[]) => {
+      if (!recipeToSave || dishListIds.length === 0 || isSavingRecipe) return;
 
-      createRecipeMutation.mutate(
-        {
-          title: recipeToSave.title,
-          ingredients: recipeToSave.ingredients,
-          instructions: recipeToSave.instructions,
-          prepTime: recipeToSave.prepTime ?? undefined,
-          cookTime: recipeToSave.cookTime ?? undefined,
-          servings: recipeToSave.servings ?? undefined,
-          tags: [],
-          dishListId,
-        },
-        {
-          onSuccess: () => {
-            setShowDishListPicker(false);
-            setRecipeToSave(null);
-            // useCreateRecipe presents the global success toast.
-          },
-          onError: () => {
-            // Keep the picker open so the user can retry; surface the failure.
-            Alert.alert(
-              "Couldn't save recipe",
-              "Something went wrong saving this recipe. Please try again."
-            );
-          },
+      setIsSavingRecipe(true);
+      try {
+        let createdRecipeId = createdRecipeIdRef.current;
+        let destinationIds = dishListIds;
+
+        if (!createdRecipeId) {
+          const [firstDishListId, ...remainingDishListIds] = dishListIds;
+          const createdRecipe = await createRecipeMutation.mutateAsync({
+            title: recipeToSave.title,
+            ingredients: recipeToSave.ingredients,
+            instructions: recipeToSave.instructions,
+            prepTime: recipeToSave.prepTime ?? undefined,
+            cookTime: recipeToSave.cookTime ?? undefined,
+            servings: recipeToSave.servings ?? undefined,
+            tags: [],
+            dishListId: firstDishListId,
+          });
+          createdRecipeId = createdRecipe.id;
+          createdRecipeIdRef.current = createdRecipe.id;
+          destinationIds = remainingDishListIds;
         }
-      );
+
+        for (const dishListId of destinationIds) {
+          await addRecipeMutation.mutateAsync({
+            dishListId,
+            recipeId: createdRecipeId,
+          });
+        }
+
+        toast.success(
+          dishListIds.length === 1
+            ? "Recipe added to DishList"
+            : `Recipe added to ${dishListIds.length} DishLists`,
+        );
+        setShowDishListPicker(false);
+        setRecipeToSave(null);
+        createdRecipeIdRef.current = null;
+      } catch {
+        // Mutation hooks present the error; keep selections open for retry.
+      } finally {
+        setIsSavingRecipe(false);
+      }
     },
-    [recipeToSave, createRecipeMutation]
+    [
+      addRecipeMutation,
+      createRecipeMutation,
+      isSavingRecipe,
+      recipeToSave,
+    ],
   );
 
   const handlePreferencesPress = () => {
@@ -235,9 +263,10 @@ export default function RecipeBuilderScreen() {
           onClose={() => {
             setShowDishListPicker(false);
             setRecipeToSave(null);
+            createdRecipeIdRef.current = null;
           }}
-          onSelect={handleDishListSelected}
-          saving={createRecipeMutation.isPending}
+          onDone={handleDishListsSelected}
+          saving={isSavingRecipe}
         />
       </View>
     </KeyboardAvoidingView>

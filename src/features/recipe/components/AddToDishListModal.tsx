@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { StyleSheet, Text } from "react-native";
 import { useQuery } from "@tanstack/react-query";
 import { DishListPickerModal } from "@features/dishlist";
@@ -31,29 +31,68 @@ export default function AddToDishListModal({
       enabled: visible,
     });
   const addMutation = useAddRecipeToDishList();
+  const [selectedDishListIds, setSelectedDishListIds] = useState<Set<string>>(
+    () => new Set(),
+  );
+  const [isSaving, setIsSaving] = useState(false);
 
-  const handleSelectDishList = (dishListId: string) => {
-    addMutation.mutate(
-      { dishListId, recipeId },
-      {
-        onSuccess: () => {
-          toast.success(
-            createsCopy ? "Recipe saved to DishList" : "Recipe added to DishList",
-          );
-          onClose();
-        },
-      },
-    );
-  };
+  useEffect(() => {
+    if (visible) {
+      setSelectedDishListIds(new Set());
+      addMutation.reset();
+    }
+  }, [visible]);
+
+  const handleToggleDishList = useCallback((dishListId: string) => {
+    setSelectedDishListIds((current) => {
+      const next = new Set(current);
+      if (next.has(dishListId)) {
+        next.delete(dishListId);
+      } else {
+        next.add(dishListId);
+      }
+      return next;
+    });
+  }, []);
+
+  const handleDone = useCallback(async () => {
+    const dishListIds = Array.from(selectedDishListIds);
+    if (dishListIds.length === 0 || isSaving) return;
+
+    setIsSaving(true);
+    try {
+      for (const dishListId of dishListIds) {
+        await addMutation.mutateAsync({ dishListId, recipeId });
+      }
+
+      toast.success(
+        dishListIds.length === 1
+          ? createsCopy
+            ? "Recipe saved to DishList"
+            : "Recipe added to DishList"
+          : createsCopy
+            ? `Recipe saved to ${dishListIds.length} DishLists`
+            : `Recipe added to ${dishListIds.length} DishLists`,
+      );
+      onClose();
+    } catch {
+      // The mutation hook presents the API error and the picker stays open.
+    } finally {
+      setIsSaving(false);
+    }
+  }, [addMutation, createsCopy, isSaving, onClose, recipeId, selectedDishListIds]);
 
   return (
     <DishListPickerModal
       visible={visible}
       onClose={onClose}
-      onSelect={handleSelectDishList}
+      onSelect={handleToggleDishList}
+      onDone={handleDone}
       title={createsCopy ? "Save to DishList" : "Add to DishList"}
       alreadySelectedDishListIds={existingDishListIds}
-      isSelecting={addMutation.isPending}
+      selectedDishListIds={Array.from(selectedDishListIds)}
+      selectionMode="multiple"
+      isSelecting={isSaving}
       loading={loadingExisting}
       emptyMessage="Create a DishList first to add recipes to it."
       errorMessage={

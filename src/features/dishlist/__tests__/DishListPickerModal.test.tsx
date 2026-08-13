@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { fireEvent, render } from "@testing-library/react-native";
 import { useDishLists } from "../hooks";
 import { DishListPickerModal } from "../components/DishListPickerModal";
@@ -66,9 +66,59 @@ describe("DishListPickerModal", () => {
     fireEvent.press(getByLabelText("Weeknight dinners, already added"));
     expect(onSelect).not.toHaveBeenCalled();
 
-    fireEvent.press(
-      getByLabelText("Select Shared favorites, Collaborator"),
-    );
+    fireEvent.press(getByLabelText("Select Shared favorites"));
     expect(onSelect).toHaveBeenCalledWith("shared");
+  });
+
+  it("toggles multiple DishLists and enables Done", () => {
+    jest.mocked(useDishLists).mockReturnValue({
+      dishLists,
+      isLoading: false,
+      isError: false,
+      isFetching: false,
+      isFetchingNextPage: false,
+      hasNextPage: false,
+      fetchNextPage: jest.fn(),
+      dataUpdatedAt: 0,
+      refetch: jest.fn(),
+    });
+    const onDone = jest.fn();
+
+    function MultiSelectPicker() {
+      const [selectedIds, setSelectedIds] = useState<string[]>([]);
+      const handleToggle = (dishListId: string) => {
+        setSelectedIds((current) =>
+          current.includes(dishListId)
+            ? current.filter((id) => id !== dishListId)
+            : [...current, dishListId],
+        );
+      };
+
+      return (
+        <DishListPickerModal
+          visible
+          onClose={() => {}}
+          onSelect={handleToggle}
+          onDone={onDone}
+          title="Add to DishList"
+          alreadySelectedDishListIds={["owned"]}
+          selectedDishListIds={selectedIds}
+          selectionMode="multiple"
+        />
+      );
+    }
+
+    const { getByLabelText } = render(<MultiSelectPicker />);
+    const doneButton = getByLabelText("Done selecting DishLists");
+
+    expect(doneButton).toBeDisabled();
+    expect(getByLabelText("Weeknight dinners, already added")).toBeDisabled();
+
+    fireEvent.press(getByLabelText("Shared favorites, not selected"));
+    expect(getByLabelText("Shared favorites, selected")).toBeChecked();
+    expect(doneButton).toBeEnabled();
+
+    fireEvent.press(doneButton);
+    expect(onDone).toHaveBeenCalledTimes(1);
   });
 });

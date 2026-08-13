@@ -57,7 +57,9 @@ function createDishListRecipePatchFromRecipe(
 /**
  * Hook for creating a new recipe
  */
-export function useCreateRecipe() {
+export function useCreateRecipe(
+  { showSuccessToast = true }: { showSuccessToast?: boolean } = {},
+) {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -96,7 +98,9 @@ export function useCreateRecipe() {
       });
       // Background invalidation for list views
       queryClient.invalidateQueries({ queryKey: queryKeys.dishLists.all });
-      toast.success('Recipe added to DishList');
+      if (showSuccessToast) {
+        toast.success('Recipe added to DishList');
+      }
     },
 
     onError: (error: any) => {
