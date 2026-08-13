@@ -181,4 +181,25 @@ describe("GroceryListScreen", () => {
     actions?.find((action) => action.text === "Start Shopping")?.onPress?.();
     expect(start).toHaveBeenCalledTimes(1);
   });
+
+  it("does not show redundant off text beside the Lock Screen toggle", () => {
+    (useGroceryList as jest.Mock).mockReturnValue(createHookValue({
+      liveActivity: {
+        isSupported: true,
+        areActivitiesEnabled: true,
+        isActive: false,
+        isLoading: false,
+        isChanging: false,
+        uncheckedCount: 1,
+        start: jest.fn(),
+        end: jest.fn(),
+        refreshStatus: jest.fn(),
+      },
+    }));
+
+    const { getByText, queryByText } = render(<GroceryListScreen />);
+
+    expect(getByText("Lock Screen list")).toBeTruthy();
+    expect(queryByText("Off")).toBeNull();
+  });
 });

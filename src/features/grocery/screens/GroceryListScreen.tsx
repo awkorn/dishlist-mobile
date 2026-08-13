@@ -312,6 +312,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: theme.spacing.md,
+    marginTop: -theme.spacing.md,
     paddingHorizontal: theme.spacing.xl,
     paddingBottom: theme.spacing.sm,
   },

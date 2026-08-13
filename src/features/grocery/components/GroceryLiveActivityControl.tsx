@@ -33,11 +33,11 @@ export function GroceryLiveActivityControl({
 
       <View style={styles.copy}>
         <Text style={styles.title}>Lock Screen list</Text>
-        <Text style={styles.subtitle} numberOfLines={1}>
-          {isActive
-            ? `${uncheckedCount} ${uncheckedCount === 1 ? "item" : "items"} remaining`
-            : "Off"}
-        </Text>
+        {isActive ? (
+          <Text style={styles.subtitle} numberOfLines={1}>
+            {`${uncheckedCount} ${uncheckedCount === 1 ? "item" : "items"} remaining`}
+          </Text>
+        ) : null}
       </View>
 
       <TouchableOpacity
