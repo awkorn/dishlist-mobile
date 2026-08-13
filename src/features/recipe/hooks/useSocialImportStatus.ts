@@ -56,6 +56,7 @@ export function useSocialImportStatus(): void {
               : "Recipe was successfully added to My Recipes.",
             {
               duration: 5000,
+              hideIcon: true,
               action: recipeId
                 ? {
                     label: "View",

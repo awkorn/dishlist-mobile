@@ -28,7 +28,6 @@ const colors = {
   primary: "#2563eb",
   textPrimary: "#00295B",
   textMuted: "#6B7280",
-  success: "#28af1b",
   error: "#EF4444",
 };
 
@@ -113,9 +112,6 @@ export default function ShareExtensionRoot(initialProps: {
 
       {state === "saved" && (
         <View style={styles.body}>
-          <View style={styles.checkCircle}>
-            <T style={styles.checkMark}>✓</T>
-          </View>
           <T style={styles.title}>Recipe saving</T>
           <T style={styles.subtitle}>We&apos;ll notify you when it&apos;s ready</T>
         </View>
@@ -199,19 +195,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.textMuted,
     textAlign: "center",
-  },
-  checkCircle: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: colors.success,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  checkMark: {
-    color: colors.surface,
-    fontSize: 24,
-    fontWeight: "700",
   },
   buttonRow: {
     flexDirection: "row",

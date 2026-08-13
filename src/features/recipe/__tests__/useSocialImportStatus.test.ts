@@ -130,7 +130,7 @@ describe("useSocialImportStatus banner presentation", () => {
 
     expect(mockToastSuccess).toHaveBeenCalledWith(
       '"Garlic Noodles" was successfully added to My Recipes.',
-      expect.objectContaining({ duration: 5000 })
+      expect.objectContaining({ duration: 5000, hideIcon: true })
     );
   });
 

@@ -7,6 +7,7 @@ import {
 } from "@testing-library/react-native";
 import GroceryListScreen from "../screens/GroceryListScreen";
 import { useGroceryList } from "../hooks/useGroceryList";
+import { theme } from "@styles/theme";
 
 jest.mock("../hooks/useGroceryList", () => ({
   useGroceryList: jest.fn(),
@@ -201,5 +202,28 @@ describe("GroceryListScreen", () => {
 
     expect(getByText("Lock Screen list")).toBeTruthy();
     expect(queryByText("Off")).toBeNull();
+  });
+
+  it("uses brand navy for the active Lock Screen toggle", () => {
+    (useGroceryList as jest.Mock).mockReturnValue(createHookValue({
+      liveActivity: {
+        isSupported: true,
+        areActivitiesEnabled: true,
+        isActive: true,
+        isLoading: false,
+        isChanging: false,
+        uncheckedCount: 1,
+        start: jest.fn(),
+        end: jest.fn(),
+        refreshStatus: jest.fn(),
+      },
+    }));
+
+    const { getByTestId } = render(<GroceryListScreen />);
+    const toggle = getByTestId("end-shopping-mode");
+
+    expect(StyleSheet.flatten(toggle.props.style)).toMatchObject({
+      backgroundColor: theme.colors.textPrimary,
+    });
   });
 });

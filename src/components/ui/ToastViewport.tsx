@@ -130,14 +130,17 @@ export function ToastViewport() {
           },
         ]}
       >
-        <View
-          style={[
-            styles.iconContainer,
-            { backgroundColor: colors.backgroundColor },
-          ]}
-        >
-          <ToastIcon variant={currentToast.variant} />
-        </View>
+        {!currentToast.hideIcon ? (
+          <View
+            testID="toast-icon"
+            style={[
+              styles.iconContainer,
+              { backgroundColor: colors.backgroundColor },
+            ]}
+          >
+            <ToastIcon variant={currentToast.variant} />
+          </View>
+        ) : null}
         <Text
           accessible
           accessibilityLiveRegion="polite"

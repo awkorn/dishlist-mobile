@@ -39,4 +39,15 @@ describe("ToastViewport", () => {
     fireEvent.press(getByLabelText("View"));
     expect(onView).toHaveBeenCalledTimes(1);
   });
+
+  it("can render a message without an icon", () => {
+    const { getByText, queryByTestId } = render(<ToastViewport />);
+
+    act(() => {
+      toast.success("Recipe saved to My Recipes", { hideIcon: true });
+    });
+
+    expect(getByText("Recipe saved to My Recipes")).toBeTruthy();
+    expect(queryByTestId("toast-icon")).toBeNull();
+  });
 });

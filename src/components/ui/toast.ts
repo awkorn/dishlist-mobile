@@ -8,6 +8,7 @@ export interface ToastAction {
 export interface ToastOptions {
   action?: ToastAction;
   duration?: number;
+  hideIcon?: boolean;
 }
 
 export interface ToastMessage extends Omit<ToastOptions, "duration"> {
@@ -33,6 +34,7 @@ function show(
     message,
     duration: options.duration ?? 2600,
     action: options.action,
+    hideIcon: options.hideIcon,
   };
 
   listeners.forEach((listener) => listener(toastMessage));

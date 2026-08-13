@@ -103,7 +103,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.neutral[300],
   },
   switchTrackActive: {
-    backgroundColor: theme.colors.success,
+    backgroundColor: theme.colors.textPrimary,
   },
   switchTrackDisabled: {
     opacity: 0.55,
