@@ -128,7 +128,7 @@ export function DishListPickerModal({
           >
             {selected && (
               <Check
-                size={17}
+                size={14}
                 color={theme.colors.onPrimary}
                 strokeWidth={3}
               />
@@ -279,10 +279,10 @@ const styles = StyleSheet.create({
     color: theme.colors.neutral[500],
   },
   selectionControl: {
-    width: 28,
-    height: 28,
+    width: 24,
+    height: 24,
     marginLeft: theme.spacing.lg,
-    borderRadius: 14,
+    borderRadius: 12,
     borderWidth: 2,
     borderColor: theme.colors.neutral[400],
     alignItems: "center",
