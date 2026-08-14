@@ -88,8 +88,8 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.lg,
   },
   logo: {
-    width: 38,
-    height: 38,
+    width: 39,
+    height: 39,
   },
   brandName: {
     fontFamily: typography.families.uiBold,
@@ -97,7 +97,6 @@ const styles = StyleSheet.create({
     lineHeight: 26,
     letterSpacing: -0.4,
     color: theme.colors.textPrimary,
-    marginLeft: theme.spacing.sm,
   },
   intro: {
     marginBottom: theme.spacing["2xl"],

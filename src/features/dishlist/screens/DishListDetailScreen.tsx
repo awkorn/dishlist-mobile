@@ -485,7 +485,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: theme.spacing.xs,
     marginBottom: theme.spacing.xs,
-    marginTop: theme.spacing.sm,
+    marginTop: theme.spacing.xs,
   },
   infoText: {
     ...typography.body,

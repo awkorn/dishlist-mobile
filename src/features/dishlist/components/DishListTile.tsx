@@ -84,7 +84,7 @@ function DishListTileContent({ dishList, onPress }: DishListTileProps) {
         </View>
         {isBookmarked && (
           <Bookmark
-            size={20}
+            size={16}
             color={theme.colors.collection.tomato}
             fill={theme.colors.collection.tomato}
             strokeWidth={1.5}
@@ -161,7 +161,7 @@ const styles = StyleSheet.create({
   bookmarkIcon: {
     position: "absolute",
     top: -theme.spacing.sm,
-    right: theme.spacing.md,
+    right: theme.spacing.sm,
   },
   content: {
     minHeight: 50,
