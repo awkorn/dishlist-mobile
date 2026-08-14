@@ -85,7 +85,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     alignSelf: "flex-start",
-    marginBottom: theme.spacing["3xl"],
+    marginBottom: theme.spacing.lg,
   },
   logo: {
     width: 38,

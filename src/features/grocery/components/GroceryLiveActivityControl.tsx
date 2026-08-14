@@ -78,7 +78,7 @@ const styles = StyleSheet.create({
     borderTopWidth: StyleSheet.hairlineWidth,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderColor: theme.colors.navyBorder,
-    marginBottom: theme.spacing.xs,
+    marginBottom: theme.spacing.sm,
   },
   copy: {
     flex: 1,
