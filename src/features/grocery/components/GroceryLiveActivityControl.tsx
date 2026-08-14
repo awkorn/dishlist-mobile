@@ -28,7 +28,7 @@ export function GroceryLiveActivityControl({
     <View testID="grocery-live-activity-control" style={styles.container}>
       <LockKeyhole
         size={17}
-        color={isActive ? theme.colors.successText : theme.colors.neutral[500]}
+        color={isActive ? theme.colors.textPrimary : theme.colors.neutral[500]}
       />
 
       <View style={styles.copy}>
