@@ -92,7 +92,7 @@ const styles = StyleSheet.create({
     height: 39,
   },
   brandName: {
-    fontFamily: typography.families.uiBold,
+    fontFamily: typography.families.editorialSemiBold,
     fontSize: 21,
     lineHeight: 26,
     letterSpacing: -0.4,
