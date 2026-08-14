@@ -25,7 +25,7 @@ export function GroceryLiveActivityControl({
   onEnd,
 }: GroceryLiveActivityControlProps) {
   return (
-    <View style={styles.container}>
+    <View testID="grocery-live-activity-control" style={styles.container}>
       <LockKeyhole
         size={17}
         color={isActive ? theme.colors.successText : theme.colors.neutral[500]}
@@ -78,7 +78,7 @@ const styles = StyleSheet.create({
     borderTopWidth: StyleSheet.hairlineWidth,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderColor: theme.colors.navyBorder,
-    marginBottom: theme.spacing.sm,
+    marginBottom: theme.spacing.md,
   },
   copy: {
     flex: 1,

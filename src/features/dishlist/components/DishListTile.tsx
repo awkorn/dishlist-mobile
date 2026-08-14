@@ -160,7 +160,7 @@ const styles = StyleSheet.create({
   },
   bookmarkIcon: {
     position: "absolute",
-    top: -theme.spacing.sm,
+    top: -theme.spacing.sm - 2,
     right: theme.spacing.sm,
   },
   content: {

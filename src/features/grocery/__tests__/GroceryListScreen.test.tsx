@@ -96,6 +96,30 @@ describe("GroceryListScreen", () => {
     expect(queryByText("Your list is empty")).toBeNull();
   });
 
+  it("matches the Lock Screen control's bottom gap to the header button inset", () => {
+    const items = [
+      { id: "1", text: "Milk", checked: false, addedAt: 123 },
+    ];
+
+    (useGroceryList as jest.Mock).mockReturnValue(
+      createHookValue({
+        items,
+        liveActivity: {
+          ...createHookValue().liveActivity,
+          isSupported: true,
+          uncheckedCount: 1,
+        },
+      })
+    );
+
+    const { getByTestId } = render(<GroceryListScreen />);
+    const control = getByTestId("grocery-live-activity-control");
+
+    expect(StyleSheet.flatten(control.props.style)).toMatchObject({
+      marginBottom: 12,
+    });
+  });
+
   it("centers the empty state within the available list space", () => {
     (useGroceryList as jest.Mock).mockReturnValue(createHookValue());
 
