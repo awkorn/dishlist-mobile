@@ -81,6 +81,7 @@ const styles = StyleSheet.create({
   },
   copy: {
     flex: 1,
+    marginBottom: 4,
   },
   title: {
     ...typography.button,
