@@ -22,7 +22,7 @@ export function useGroceryList() {
   const [isAddingItem, setIsAddingItem] = useState(false);
   const [editingText, setEditingText] = useState('');
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
-  const isSavingCurrentItem = useRef(false);
+  const addItemQueue = useRef<Promise<void>>(Promise.resolve());
 
   // Query for fetching items
   const {
@@ -76,19 +76,26 @@ export function useGroceryList() {
   );
 
   const saveCurrentItem = useCallback(async (): Promise<boolean> => {
-    if (!editingText.trim()) return true;
-    if (isSavingCurrentItem.current) return false;
+    const submittedText = editingText.trim();
+    if (!submittedText) return true;
 
-    isSavingCurrentItem.current = true;
+    // Clear immediately so the user can start typing the next item. Queueing
+    // keeps the optimistic cache and AsyncStorage writes in submission order.
+    setEditingText('');
+    const save = addItemQueue.current.then(() =>
+      addItemsMutation.mutateAsync([submittedText]).then(() => undefined)
+    );
+    addItemQueue.current = save.catch(() => undefined);
 
     try {
-      await addItemsMutation.mutateAsync([editingText]);
-      setEditingText('');
+      await save;
       return true;
     } catch {
+      // Do not overwrite the next item if the user has already started it.
+      setEditingText((currentText) =>
+        currentText.trim() ? currentText : submittedText
+      );
       return false;
-    } finally {
-      isSavingCurrentItem.current = false;
     }
   }, [editingText, addItemsMutation]);
 

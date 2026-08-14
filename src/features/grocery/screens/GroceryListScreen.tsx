@@ -96,25 +96,30 @@ export default function GroceryListScreen() {
     });
   };
 
-  const handleStartAdding = async () => {
+  const handleStartAdding = () => {
     // Cancel any item editing first
     if (editingItemId) {
       cancelEditing();
     }
 
-    if (isAddingItem && editingText.trim()) {
-      const didSave = await saveCurrentItem();
-      if (!didSave) return;
+    if (isAddingItem) {
+      if (editingText.trim()) {
+        void saveCurrentItem();
+      }
+      return;
     }
+
     setIsAddingItem(true);
     setEditingText("");
   };
 
   const handleDoneEditing = async () => {
-    const didSave = await saveCurrentItem();
-    if (didSave) {
+    if (!editingText.trim()) {
       setIsAddingItem(false);
+      return;
     }
+
+    await saveCurrentItem();
   };
 
   const handleBlur = () => {

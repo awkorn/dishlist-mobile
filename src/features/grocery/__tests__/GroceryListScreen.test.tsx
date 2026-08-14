@@ -128,6 +128,62 @@ describe("GroceryListScreen", () => {
     expect(setIsAddingItem).not.toHaveBeenCalledWith(false);
   });
 
+  it("keeps the add row open after saving so another item can be entered", async () => {
+    const saveCurrentItem = jest.fn().mockResolvedValue(true);
+    const setIsAddingItem = jest.fn();
+
+    (useGroceryList as jest.Mock).mockReturnValue(createHookValue({
+      isAddingItem: true,
+      editingText: "Milk",
+      saveCurrentItem,
+      setIsAddingItem,
+    }));
+
+    const { getByTestId } = render(<GroceryListScreen />);
+    const input = getByTestId("grocery-input");
+
+    expect(input.props.returnKeyType).toBe("next");
+    fireEvent(input, "submitEditing");
+
+    await waitFor(() => {
+      expect(saveCurrentItem).toHaveBeenCalledTimes(1);
+    });
+    expect(setIsAddingItem).not.toHaveBeenCalledWith(false);
+  });
+
+  it("closes the add row when submitting an empty item", () => {
+    const saveCurrentItem = jest.fn();
+    const setIsAddingItem = jest.fn();
+
+    (useGroceryList as jest.Mock).mockReturnValue(createHookValue({
+      isAddingItem: true,
+      editingText: "   ",
+      saveCurrentItem,
+      setIsAddingItem,
+    }));
+
+    const { getByTestId } = render(<GroceryListScreen />);
+    fireEvent(getByTestId("grocery-input"), "submitEditing");
+
+    expect(saveCurrentItem).not.toHaveBeenCalled();
+    expect(setIsAddingItem).toHaveBeenCalledWith(false);
+  });
+
+  it("closes an empty add row when it loses focus", () => {
+    const setIsAddingItem = jest.fn();
+
+    (useGroceryList as jest.Mock).mockReturnValue(createHookValue({
+      isAddingItem: true,
+      editingText: "",
+      setIsAddingItem,
+    }));
+
+    const { getByTestId } = render(<GroceryListScreen />);
+    fireEvent(getByTestId("grocery-input"), "blur");
+
+    expect(setIsAddingItem).toHaveBeenCalledWith(false);
+  });
+
   it("does not clear a pending item when add-another fails", async () => {
     const saveCurrentItem = jest.fn().mockResolvedValue(false);
     const setIsAddingItem = jest.fn();

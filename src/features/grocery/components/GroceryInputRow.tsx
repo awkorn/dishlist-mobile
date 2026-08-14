@@ -53,7 +53,7 @@ export function GroceryInputRow({
         onSubmitEditing={onSubmit}
         onBlur={onBlur}
         submitBehavior="submit"
-        returnKeyType="done"
+        returnKeyType="next"
         autoCapitalize="sentences"
         testID="grocery-input"
       />

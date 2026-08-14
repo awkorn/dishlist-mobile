@@ -431,6 +431,95 @@ describe("useGroceryList", () => {
       });
     });
 
+    it("clears each draft immediately and saves rapid submissions in order", async () => {
+      let resolveFirstSave: ((items: typeof mockItems) => void) | undefined;
+      const firstSave = new Promise<typeof mockItems>((resolve) => {
+        resolveFirstSave = resolve;
+      });
+      const itemsWithEggs = [
+        { id: "3", text: "Eggs", checked: false, addedAt: 125 },
+        ...mockItems,
+      ];
+      const itemsWithBread = [
+        { id: "4", text: "Bread", checked: false, addedAt: 126 },
+        ...itemsWithEggs,
+      ];
+
+      (groceryStorage.addItems as jest.Mock)
+        .mockReturnValueOnce(firstSave)
+        .mockResolvedValueOnce(itemsWithBread);
+
+      const { result } = renderHook(() => useGroceryList(), {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false);
+      });
+
+      act(() => {
+        result.current.setEditingText("Eggs");
+      });
+
+      let firstResult: Promise<boolean>;
+      act(() => {
+        firstResult = result.current.saveCurrentItem();
+      });
+
+      expect(result.current.editingText).toBe("");
+
+      act(() => {
+        result.current.setEditingText("Bread");
+      });
+
+      let secondResult: Promise<boolean>;
+      act(() => {
+        secondResult = result.current.saveCurrentItem();
+      });
+
+      expect(result.current.editingText).toBe("");
+      await waitFor(() => {
+        expect(groceryStorage.addItems).toHaveBeenCalledTimes(1);
+      });
+
+      await act(async () => {
+        resolveFirstSave?.(itemsWithEggs);
+        await firstResult;
+        await secondResult;
+      });
+
+      expect((groceryStorage.addItems as jest.Mock).mock.calls).toEqual([
+        [mockUserId, ["Eggs"]],
+        [mockUserId, ["Bread"]],
+      ]);
+    });
+
+    it("restores a failed draft when the input is still empty", async () => {
+      (groceryStorage.addItems as jest.Mock).mockRejectedValue(
+        new Error("storage unavailable")
+      );
+
+      const { result } = renderHook(() => useGroceryList(), {
+        wrapper: createWrapper(),
+      });
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false);
+      });
+
+      act(() => {
+        result.current.setEditingText("Eggs");
+      });
+
+      let didSave = true;
+      await act(async () => {
+        didSave = await result.current.saveCurrentItem();
+      });
+
+      expect(didSave).toBe(false);
+      expect(result.current.editingText).toBe("Eggs");
+    });
+
     it("does not add item when text is empty", async () => {
       const { result } = renderHook(() => useGroceryList(), {
         wrapper: createWrapper(),
