@@ -332,7 +332,7 @@ const styles = StyleSheet.create({
   },
   successIcon: {
     fontSize: 64,
-    color: theme.colors.success,
+    color: theme.colors.primary[500],
     marginBottom: theme.spacing.lg,
   },
   successText: {

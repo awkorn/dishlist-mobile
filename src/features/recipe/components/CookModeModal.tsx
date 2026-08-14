@@ -159,7 +159,7 @@ export default function CookModeModal({
               <View style={styles.finalStepBadge}>
                 <CheckCircle2
                   size={16}
-                  color={theme.colors.success}
+                  color={theme.colors.primary[500]}
                   style={{ marginRight: 4 }}
                 />
                 <Text style={styles.finalStepText}>Final Step</Text>
@@ -319,7 +319,7 @@ const styles = StyleSheet.create({
   },
   finalStepText: {
     ...typography.label,
-    color: theme.colors.success,
+    color: theme.colors.primary[500],
   },
   instructionSection: {
     marginBottom: theme.spacing.xl,
@@ -394,8 +394,8 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surface,
   },
   doneButton: {
-    backgroundColor: theme.colors.success,
-    borderColor: theme.colors.success,
+    backgroundColor: theme.colors.primary[500],
+    borderColor: theme.colors.primary[500],
   },
   navButtonText: {
     ...typography.button,
