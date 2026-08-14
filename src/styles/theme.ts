@@ -39,6 +39,7 @@ export const theme = {
     avatarSage: "#D8E5D3",
     infoTile: "#DDECFF",
     recipeAccent: "#E86842",
+    recipePlaceholderBowl: "#bccfe1",
     avoidanceSelected: "#FFE0D7",
     nutritionAccent: "#327C16",
     nutritionSelected: "#D8E5D3",

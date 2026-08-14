@@ -7,6 +7,7 @@ import {
   Dimensions,
 } from "react-native";
 import { Image } from "expo-image";
+import Svg, { Line, Path } from "react-native-svg";
 import { typography } from "@styles/typography";
 import { theme } from "@styles/theme";
 import { ComponentErrorBoundary } from "@providers/ErrorBoundary";
@@ -55,7 +56,30 @@ function RecipeTileContent({ recipe, onPress }: RecipeTileProps) {
         />
       ) : (
         <View style={styles.placeholderImage}>
-          <Text style={styles.placeholderEmoji}>🍽️</Text>
+          <Svg
+            testID="recipe-placeholder-art"
+            width="40%"
+            height="46%"
+            viewBox="0 0 160 120"
+            accessible={false}
+          >
+            <Path
+              d="M25 28 H135 C135 70 111 94 80 94 C49 94 25 70 25 28 Z"
+              fill="none"
+              stroke={theme.colors.recipePlaceholderBowl}
+              strokeWidth={8}
+              strokeLinejoin="round"
+            />
+            <Line
+              x1={35}
+              y1={109}
+              x2={125}
+              y2={109}
+              stroke={theme.colors.recipePlaceholderBowl}
+              strokeWidth={8}
+              strokeLinecap="round"
+            />
+          </Svg>
         </View>
       )}
 
@@ -91,19 +115,16 @@ const styles = StyleSheet.create({
   image: {
     width: "100%",
     aspectRatio: IMAGE_ASPECT_RATIO,
-    borderRadius: theme.borderRadius.md,
+    borderRadius: theme.borderRadius.sm,
     backgroundColor: theme.colors.neutral[200],
   },
   placeholderImage: {
     width: "100%",
     aspectRatio: IMAGE_ASPECT_RATIO,
-    borderRadius: theme.borderRadius.md,
-    backgroundColor: theme.colors.neutral[50],
+    borderRadius: theme.borderRadius.sm,
+    backgroundColor: theme.colors.surface,
     justifyContent: "center",
     alignItems: "center",
-  },
-  placeholderEmoji: {
-    fontSize: 32,
   },
   content: {
     justifyContent: "flex-start",

@@ -2,6 +2,7 @@ import React from "react";
 import { StyleSheet } from "react-native";
 import { fireEvent, render } from "@testing-library/react-native";
 import RecipeTile from "../components/RecipeTile";
+import { theme } from "@styles/theme";
 
 jest.mock("expo-image", () => ({
   Image: require("react-native").Image,
@@ -49,6 +50,16 @@ describe("RecipeTile", () => {
     ).toMatchObject({
       height: 36,
     });
+  });
+
+  it("renders the branded placeholder art on a white tile", () => {
+    const { getByTestId, queryByText } = render(
+      <RecipeTile recipe={{ id: "recipe-placeholder", title: "No Photo" }} />
+    );
+
+    expect(getByTestId("recipe-placeholder-art")).toBeTruthy();
+    expect(queryByText("🍽️")).toBeNull();
+    expect(theme.colors.recipePlaceholderBowl).toBe("#bccfe1");
   });
 
   it("crops the first recipe image to a 4:3 frame without stretching it", () => {

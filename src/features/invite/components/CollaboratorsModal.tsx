@@ -112,7 +112,7 @@ export function CollaboratorsModal({
                 </View>
               </View>
               <View style={styles.ownerBadge}>
-                <Crown size={14} color={theme.colors.warning} />
+                <Crown size={14} color={theme.colors.secondary[50]} />
                 <Text style={styles.ownerText}>Owner</Text>
               </View>
             </View>
@@ -337,14 +337,14 @@ const styles = StyleSheet.create({
   ownerBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: theme.colors.warning + '15',
+    backgroundColor: theme.colors.primary[50],
     paddingHorizontal: theme.spacing.sm,
     paddingVertical: theme.spacing.xs,
     borderRadius: theme.borderRadius.lg,
   },
   ownerText: {
     ...typography.label,
-    color: theme.colors.warning,
+    color: theme.colors.secondary[50],
     marginLeft: 4,
   },
   pendingBadge: {

@@ -248,7 +248,7 @@ const styles = StyleSheet.create({
   recipeImage: {
     width: "100%",
     aspectRatio: IMAGE_ASPECT_RATIO,
-    borderRadius: theme.borderRadius.md,
+    borderRadius: theme.borderRadius.sm,
     backgroundColor: skeletonColor,
   },
   recipeContent: {
