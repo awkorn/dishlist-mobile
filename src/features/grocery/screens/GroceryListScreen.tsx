@@ -318,6 +318,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: theme.spacing.md,
     marginTop: -theme.spacing.md,
+    marginBottom: -theme.spacing.sm,
     paddingHorizontal: theme.spacing.xl,
     paddingBottom: theme.spacing.sm,
   },
