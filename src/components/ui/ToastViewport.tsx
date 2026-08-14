@@ -24,8 +24,8 @@ const variantStyles: Record<
   { backgroundColor: string; foregroundColor: string }
 > = {
   success: {
-    backgroundColor: theme.colors.successBg,
-    foregroundColor: theme.colors.successText,
+    backgroundColor: theme.colors.primary[50],
+    foregroundColor: theme.colors.primary[500],
   },
   error: {
     backgroundColor: theme.colors.errorBg,
