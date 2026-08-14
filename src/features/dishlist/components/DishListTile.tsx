@@ -7,12 +7,12 @@ import {
   Dimensions,
 } from "react-native";
 import {
+  Bookmark,
   Crown,
   Globe2,
   Handshake,
   Heart,
   Lock,
-  Pin,
   type LucideIcon,
 } from "lucide-react-native";
 import { useNavigation } from "@react-navigation/native";
@@ -50,6 +50,7 @@ function DishListTileContent({ dishList, onPress }: DishListTileProps) {
     dishList.visibility === "PUBLIC" ? Globe2 : Lock;
   const visibilityLabel =
     dishList.visibility === "PUBLIC" ? "Public" : "Private";
+  const isBookmarked = dishList.isDefault || dishList.isPinned;
 
   const handlePress = () => {
     if (onPress) {
@@ -67,7 +68,9 @@ function DishListTileContent({ dishList, onPress }: DishListTileProps) {
       accessibilityRole="button"
       accessibilityLabel={`${dishList.title}, ${dishList.recipeCount} ${
         dishList.recipeCount === 1 ? "recipe" : "recipes"
-      }, ${statusLabel}, ${visibilityLabel}`}
+      }, ${statusLabel}, ${visibilityLabel}${
+        isBookmarked ? ", Bookmarked" : ""
+      }`}
     >
       <View style={styles.cover}>
         <View style={styles.titleCopy}>
@@ -79,12 +82,14 @@ function DishListTileContent({ dishList, onPress }: DishListTileProps) {
             {dishList.recipeCount === 1 ? "recipe" : "recipes"}
           </Text>
         </View>
-        {(dishList.isDefault || dishList.isPinned) && (
-          <Pin
-            size={12}
-            color={theme.colors.textPrimary}
-            fill={theme.colors.textPrimary}
-            style={styles.pinIcon}
+        {isBookmarked && (
+          <Bookmark
+            size={20}
+            color={theme.colors.collection.tomato}
+            fill={theme.colors.collection.tomato}
+            strokeWidth={1.5}
+            style={styles.bookmarkIcon}
+            accessible={false}
           />
         )}
       </View>
@@ -140,7 +145,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.spacing.md,
     paddingVertical: theme.spacing.sm,
     backgroundColor: theme.colors.surface,
-    overflow: "hidden",
     borderTopLeftRadius: theme.borderRadius.md - 1,
     borderTopRightRadius: theme.borderRadius.md - 1,
     marginTop: theme.spacing.sm,
@@ -152,10 +156,12 @@ const styles = StyleSheet.create({
   titleCopy: {
     flex: 1,
     gap: 2,
+    paddingRight: theme.spacing["2xl"],
   },
-  pinIcon: {
-    marginTop: 2,
-    transform: [{ rotate: "32deg" }],
+  bookmarkIcon: {
+    position: "absolute",
+    top: -theme.spacing.sm,
+    right: theme.spacing.md,
   },
   content: {
     minHeight: 50,

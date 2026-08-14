@@ -11,10 +11,10 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
+  Bookmark,
+  BookmarkX,
   ChevronLeft,
   MoreHorizontal,
-  Pin,
-  PinOff,
   Plus,
   Edit3,
   Trash2,
@@ -173,7 +173,7 @@ export default function DishListDetailScreen({
     ) {
       options.push({
         title: dishList.isPinned ? "Unpin DishList" : "Pin DishList",
-        icon: dishList.isPinned ? PinOff : Pin,
+        icon: dishList.isPinned ? BookmarkX : Bookmark,
         onPress: () =>
           pinMutation.mutate({
             dishListId,
