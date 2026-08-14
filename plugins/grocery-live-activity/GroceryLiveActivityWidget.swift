@@ -98,6 +98,7 @@ private struct GroceryLockScreenView: View {
   // Five 22pt rows with 3pt spacing between them. Keeping this viewport fixed
   // prevents the Live Activity from resizing as the remaining item count drops.
   private let viewportHeight: CGFloat = 122
+  private let contentVerticalPadding: CGFloat = 12
 
   private var pageCount: Int {
     max(
@@ -151,7 +152,11 @@ private struct GroceryLockScreenView: View {
 
           Rectangle()
             .fill(DishListLiveActivityColors.lockScreenForeground)
-            .frame(width: 1, height: viewportHeight)
+            .frame(
+              width: 1,
+              height: viewportHeight + (contentVerticalPadding * 2)
+            )
+            .offset(y: -contentVerticalPadding)
 
           if #available(iOS 17.0, *) {
             VStack(spacing: 0) {
@@ -199,7 +204,7 @@ private struct GroceryLockScreenView: View {
     }
     .frame(height: viewportHeight, alignment: .topLeading)
     .padding(.horizontal, 16)
-    .padding(.vertical, 12)
+    .padding(.vertical, contentVerticalPadding)
     .activityBackgroundTint(DishListLiveActivityColors.background)
     .activitySystemActionForegroundColor(
       DishListLiveActivityColors.lockScreenForeground
