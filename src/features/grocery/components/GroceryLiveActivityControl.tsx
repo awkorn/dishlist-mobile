@@ -78,10 +78,10 @@ const styles = StyleSheet.create({
     borderTopWidth: StyleSheet.hairlineWidth,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderColor: theme.colors.navyBorder,
+    marginBottom: theme.spacing.xs,
   },
   copy: {
     flex: 1,
-    marginBottom: 4,
   },
   title: {
     ...typography.button,
