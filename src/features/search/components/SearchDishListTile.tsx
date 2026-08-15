@@ -70,7 +70,6 @@ const styles = StyleSheet.create({
     minHeight: 96,
     backgroundColor: theme.colors.surface,
     borderRadius: theme.borderRadius.md,
-    ...theme.shadows.collectionCard,
   },
   content: {
     flex: 1,
