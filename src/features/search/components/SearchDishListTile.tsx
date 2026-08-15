@@ -67,11 +67,14 @@ export function SearchDishListTile({ dishList, onPress }: SearchDishListTileProp
 const styles = StyleSheet.create({
   container: {
     width: TILE_WIDTH,
+    minHeight: 96,
     backgroundColor: theme.colors.surface,
     borderRadius: theme.borderRadius.md,
     ...theme.shadows.collectionCard,
   },
   content: {
+    flex: 1,
+    justifyContent: "center",
     padding: theme.spacing.lg,
   },
   title: {
