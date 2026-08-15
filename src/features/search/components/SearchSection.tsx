@@ -70,7 +70,7 @@ const styles = StyleSheet.create({
   title: {
     ...typography.subtitle,
     fontSize: 15,
-    color: theme.colors.textPrimary,
+    color: theme.colors.neutral[600],
   },
   seeAllButton: {
     padding: theme.spacing.xs,

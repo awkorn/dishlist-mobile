@@ -6,7 +6,6 @@ import {
   StyleSheet,
   Dimensions,
 } from "react-native";
-import { Eye, Heart, Handshake } from "lucide-react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { theme } from "@styles/theme";
@@ -42,76 +41,24 @@ export function SearchDishListTile({ dishList, onPress }: SearchDishListTileProp
     dishList.owner?.username ||
     "Unknown";
 
-  const getBadges = () => {
-    const badges = [];
-
-    if (dishList.isFollowing) {
-      badges.push({
-        type: "following",
-        icon: Heart,
-        color: theme.colors.error,
-        label: "Following",
-      });
-    }
-
-    if (dishList.isCollaborator) {
-      badges.push({
-        type: "collaborator",
-        icon: Handshake,
-        color: theme.colors.success,
-        label: "Collaborator",
-      });
-    }
-
-    if (dishList.visibility === "PUBLIC") {
-      badges.push({
-        type: "public",
-        icon: Eye,
-        color: theme.colors.neutral[500],
-        label: "Public",
-      });
-    }
-
-    return badges;
-  };
-
   return (
     <TouchableOpacity
       style={styles.container}
       onPress={handlePress}
       accessibilityRole="button"
-      accessibilityLabel={`DishList: ${dishList.title} by ${ownerName}`}
+      accessibilityLabel={`${dishList.title} by ${ownerName}, ${dishList.recipeCount} ${
+        dishList.recipeCount === 1 ? "recipe" : "recipes"
+      }`}
     >
       <View style={styles.content}>
         <Text style={styles.title} numberOfLines={2}>
           {dishList.title}
         </Text>
 
-        <Text style={styles.owner} numberOfLines={1}>
-          {ownerName}
+        <Text style={styles.metadata} numberOfLines={1}>
+          {ownerName} • {dishList.recipeCount}{" "}
+          {dishList.recipeCount === 1 ? "recipe" : "recipes"}
         </Text>
-
-        <Text style={styles.stats}>
-          {dishList.recipeCount}{" "}
-          {dishList.recipeCount === 1 ? "Recipe" : "Recipes"}
-          {dishList.followerCount > 0 &&
-            ` • ${dishList.followerCount} ${
-              dishList.followerCount === 1 ? "Follower" : "Followers"
-            }`}
-        </Text>
-
-        <View style={styles.badges}>
-          {getBadges().map((badge) => (
-            <View
-              key={badge.type}
-              style={styles.badge}
-              accessible
-              accessibilityLabel={badge.label}
-            >
-              <badge.icon size={14} color={badge.color} />
-            </View>
-          ))}
-        </View>
       </View>
     </TouchableOpacity>
   );
@@ -122,7 +69,7 @@ const styles = StyleSheet.create({
     width: TILE_WIDTH,
     backgroundColor: theme.colors.surface,
     borderRadius: theme.borderRadius.md,
-    ...theme.shadows.sm,
+    ...theme.shadows.collectionCard,
   },
   content: {
     padding: theme.spacing.lg,
@@ -132,22 +79,8 @@ const styles = StyleSheet.create({
     color: theme.colors.textPrimary,
     marginBottom: theme.spacing.xs,
   },
-  owner: {
+  metadata: {
     ...typography.caption,
     color: theme.colors.neutral[600],
-    marginBottom: theme.spacing.xs,
-  },
-  stats: {
-    ...typography.caption,
-    color: theme.colors.neutral[500],
-    marginBottom: theme.spacing.sm,
-  },
-  badges: {
-    flexDirection: "row",
-    gap: theme.spacing.xs,
-    minHeight: 22,
-  },
-  badge: {
-    padding: theme.spacing.xs,
   },
 });
