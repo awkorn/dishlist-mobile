@@ -8,8 +8,6 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import {
-  Crown,
-  Clock,
   Trash2,
   RefreshCw,
 } from 'lucide-react-native';
@@ -111,10 +109,6 @@ export function CollaboratorsModal({
                   )}
                 </View>
               </View>
-              <View style={styles.ownerBadge}>
-                <Crown size={14} color={theme.colors.secondary[50]} />
-                <Text style={styles.ownerText}>Owner</Text>
-              </View>
             </View>
           );
 
@@ -174,10 +168,6 @@ export function CollaboratorsModal({
                 />
                 <View style={styles.nameContainer}>
                   <Text style={styles.userName}>{getDisplayName(item.data.user)}</Text>
-                  <View style={styles.pendingBadge}>
-                    <Clock size={12} color={theme.colors.warning} />
-                    <Text style={styles.pendingText}>Pending</Text>
-                  </View>
                 </View>
               </View>
               <View style={styles.pendingActions}>
@@ -333,29 +323,6 @@ const styles = StyleSheet.create({
     ...typography.caption,
     color: theme.colors.neutral[500],
     marginTop: 2,
-  },
-  ownerBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.primary[50],
-    paddingHorizontal: theme.spacing.sm,
-    paddingVertical: theme.spacing.xs,
-    borderRadius: theme.borderRadius.lg,
-  },
-  ownerText: {
-    ...typography.label,
-    color: theme.colors.secondary[50],
-    marginLeft: 4,
-  },
-  pendingBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 4,
-  },
-  pendingText: {
-    ...typography.caption,
-    color: theme.colors.warning,
-    marginLeft: 4,
   },
   pendingActions: {
     flexDirection: 'row',
