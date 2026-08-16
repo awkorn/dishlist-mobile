@@ -208,9 +208,9 @@ const styles = StyleSheet.create({
   brandMark: {
     position: "absolute",
     top: 4,
-    left: 20,
-    width: 56,
-    height: 56,
+    left: 14,
+    width: 50,
+    height: 50,
   },
   body: {
     flex: 1,
@@ -233,8 +233,8 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   successIcon: {
-    width: 40,
-    height: 40,
+    width: 36,
+    height: 36,
     borderRadius: 20,
     marginTop: 18,
     alignItems: "center",
@@ -243,8 +243,8 @@ const styles = StyleSheet.create({
   },
   successCheck: {
     color: colors.primary,
-    fontSize: 24,
-    lineHeight: 28,
+    fontSize: 20,
+    lineHeight: 24,
     fontWeight: "700",
   },
   buttonRow: {
