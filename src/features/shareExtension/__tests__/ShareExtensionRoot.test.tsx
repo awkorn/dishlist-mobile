@@ -35,11 +35,15 @@ describe("ShareExtensionRoot authentication recovery", () => {
       .mockResolvedValueOnce({ status: "auth-failed" })
       .mockResolvedValueOnce({ status: "accepted" });
 
-    const { getByText, unmount } = render(
+    const { getByLabelText, getByText, unmount } = render(
       <ShareExtensionRoot url="https://instagram.com/reel/example" />
     );
 
-    await waitFor(() => expect(getByText("Recipe saving")).toBeTruthy());
+    await waitFor(() => expect(getByText("Saving recipe")).toBeTruthy());
+    expect(
+      getByText("We'll notify you when it's been added")
+    ).toBeTruthy();
+    expect(getByLabelText("Recipe saved")).toBeTruthy();
     expect(mockGetAccessToken).toHaveBeenNthCalledWith(1);
     expect(mockGetAccessToken).toHaveBeenNthCalledWith(2, {
       forceRefresh: true,
@@ -50,6 +54,22 @@ describe("ShareExtensionRoot authentication recovery", () => {
       expect.any(String),
       "refreshed"
     );
+    unmount();
+  });
+
+  it("renders the designed failure message and actions", async () => {
+    mockGetAccessToken.mockResolvedValue({ status: "error" });
+
+    const { getByText, unmount } = render(
+      <ShareExtensionRoot url="https://instagram.com/reel/example" />
+    );
+
+    await waitFor(() =>
+      expect(getByText("Couldn't save recipe")).toBeTruthy()
+    );
+    expect(getByText("Check your connection and try again")).toBeTruthy();
+    expect(getByText("Cancel")).toBeTruthy();
+    expect(getByText("Retry")).toBeTruthy();
     unmount();
   });
 });

@@ -7,6 +7,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  Image,
   Pressable,
   StyleSheet,
   Text,
@@ -29,6 +30,8 @@ const colors = {
   textPrimary: "#00295B",
   textMuted: "#6B7280",
   error: "#EF4444",
+  successSurface: "#DCE8FC",
+  secondaryAction: "#E1E3E6",
 };
 
 const AUTO_CLOSE_DELAY_MS = 1500;
@@ -118,7 +121,12 @@ export default function ShareExtensionRoot(initialProps: {
 
   return (
     <View style={styles.container}>
-      <T style={styles.brand}>DishList</T>
+      <Image
+        source={require("../../../assets/images/dishlist-logo.png")}
+        style={styles.brandMark}
+        resizeMode="contain"
+        accessibilityLabel="DishList"
+      />
 
       {state === "saving" && (
         <View style={styles.body}>
@@ -128,9 +136,17 @@ export default function ShareExtensionRoot(initialProps: {
       )}
 
       {state === "saved" && (
-        <View style={styles.body}>
-          <T style={styles.title}>Recipe saving</T>
-          <T style={styles.subtitle}>We&apos;ll notify you when it&apos;s ready</T>
+        <View style={styles.body} accessibilityLiveRegion="polite">
+          <T style={styles.title}>Saving recipe</T>
+          <T style={styles.subtitle}>
+            We&apos;ll notify you when it&apos;s been added
+          </T>
+          <View
+            style={styles.successIcon}
+            accessibilityLabel="Recipe saved"
+          >
+            <T style={styles.successCheck}>✓</T>
+          </View>
         </View>
       )}
 
@@ -186,60 +202,86 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
-    borderRadius: 16,
-    paddingVertical: 20,
+    borderRadius: 8,
     paddingHorizontal: 24,
-    alignItems: "center",
   },
-  brand: {
-    fontSize: 15,
-    fontWeight: "700",
-    color: colors.primary,
+  brandMark: {
+    position: "absolute",
+    top: 4,
+    left: 20,
+    width: 56,
+    height: 56,
   },
   body: {
     flex: 1,
+    width: "100%",
     alignItems: "center",
     justifyContent: "center",
-    gap: 10,
   },
   title: {
-    fontSize: 17,
+    fontSize: 18,
+    lineHeight: 24,
     fontWeight: "600",
     color: colors.textPrimary,
     textAlign: "center",
   },
   subtitle: {
     fontSize: 14,
+    lineHeight: 20,
     color: colors.textMuted,
     textAlign: "center",
+    marginTop: 8,
+  },
+  successIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginTop: 18,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.successSurface,
+  },
+  successCheck: {
+    color: colors.primary,
+    fontSize: 24,
+    lineHeight: 28,
+    fontWeight: "700",
   },
   buttonRow: {
     flexDirection: "row",
     gap: 12,
-    marginTop: 6,
+    marginTop: 18,
   },
   primaryButton: {
     backgroundColor: colors.primary,
-    borderRadius: 10,
-    paddingVertical: 10,
-    paddingHorizontal: 22,
-    marginTop: 6,
+    minWidth: 90,
+    minHeight: 36,
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 18,
+    alignItems: "center",
+    justifyContent: "center",
   },
   primaryButtonText: {
     color: colors.surface,
-    fontSize: 15,
+    fontSize: 14,
+    lineHeight: 20,
     fontWeight: "600",
   },
   secondaryButton: {
-    backgroundColor: colors.surface,
-    borderRadius: 10,
-    paddingVertical: 10,
-    paddingHorizontal: 22,
-    marginTop: 6,
+    backgroundColor: colors.secondaryAction,
+    minWidth: 90,
+    minHeight: 36,
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 18,
+    alignItems: "center",
+    justifyContent: "center",
   },
   secondaryButtonText: {
     color: colors.textPrimary,
-    fontSize: 15,
+    fontSize: 14,
+    lineHeight: 20,
     fontWeight: "600",
   },
 });
