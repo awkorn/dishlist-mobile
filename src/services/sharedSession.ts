@@ -40,6 +40,21 @@ export function initSharedSessionSync(): void {
     ) {
       return;
     }
+
+    // On cold app launch Supabase emits INITIAL_SESSION from AsyncStorage.
+    // If the extension refreshed while the app was terminated, that local
+    // session contains the now-stale refresh token. Never overwrite the newer
+    // shared copy before adoptNewerSharedSession() has a chance to install it.
+    const shared = readSharedSession();
+    if (
+      shared &&
+      shared.accessToken !== session.access_token &&
+      shared.expiresAt > session.expires_at
+    ) {
+      void adoptNewerSharedSession();
+      return;
+    }
+
     lastMirroredAccessToken = session.access_token;
     writeSharedSession({
       accessToken: session.access_token,

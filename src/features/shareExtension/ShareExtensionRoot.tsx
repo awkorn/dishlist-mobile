@@ -71,7 +71,24 @@ export default function ShareExtensionRoot(initialProps: {
       return;
     }
 
-    const result = await startSocialImport(url, auth.accessToken);
+    let result = await startSocialImport(url, auth.accessToken);
+
+    // The cached token can be rejected before its local expiry (for example
+    // after server-side revocation or a clock skew). Refresh once and retry the
+    // idempotent import-start request instead of requiring the host app to run.
+    if (result.status === "auth-failed") {
+      shareLog.info("Import authentication failed — refreshing and retrying");
+      const refreshedAuth = await getShareExtensionAccessToken({
+        forceRefresh: true,
+      });
+      if (refreshedAuth.status === "ok") {
+        result = await startSocialImport(url, refreshedAuth.accessToken);
+      } else if (refreshedAuth.status === "error") {
+        setState("error");
+        return;
+      }
+    }
+
     shareLog.info(`Import result: ${result.status}`);
     switch (result.status) {
       case "accepted":

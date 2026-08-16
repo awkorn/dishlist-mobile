@@ -16,13 +16,18 @@ import {
 import { shareLog } from "./logger";
 
 const EXPIRY_MARGIN_SEC = 60;
+const REFRESH_TIMEOUT_MS = 10_000;
+const MAX_REFRESH_ATTEMPTS = 3;
+const RETRY_BASE_DELAY_MS = 200;
 
 export type SharedAuthResult =
   | { status: "ok"; accessToken: string }
   | { status: "signed-out" }
   | { status: "error" };
 
-export async function getShareExtensionAccessToken(): Promise<SharedAuthResult> {
+export async function getShareExtensionAccessToken(options?: {
+  forceRefresh?: boolean;
+}): Promise<SharedAuthResult> {
   const session = readSharedSession();
   if (!session) {
     // Empty shared storage: either the user isn't signed in, or the App Group
@@ -34,7 +39,7 @@ export async function getShareExtensionAccessToken(): Promise<SharedAuthResult> 
   }
 
   const nowSec = Math.floor(Date.now() / 1000);
-  if (session.expiresAt > nowSec + EXPIRY_MARGIN_SEC) {
+  if (!options?.forceRefresh && session.expiresAt > nowSec + EXPIRY_MARGIN_SEC) {
     shareLog.info("Using cached access token from shared session");
     return { status: "ok", accessToken: session.accessToken };
   }
@@ -55,55 +60,88 @@ async function refreshSharedSession(
     return { status: "error" };
   }
 
-  try {
-    const response = await fetch(
-      `${supabaseUrl}/auth/v1/token?grant_type=refresh_token`,
-      {
+  const endpoint = `${supabaseUrl}/auth/v1/token?grant_type=refresh_token`;
+  const deadline = Date.now() + REFRESH_TIMEOUT_MS;
+
+  for (let attempt = 0; attempt < MAX_REFRESH_ATTEMPTS; attempt += 1) {
+    if (attempt > 0) {
+      const delay = RETRY_BASE_DELAY_MS * 2 ** (attempt - 1);
+      if (Date.now() + delay >= deadline) break;
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    }
+
+    const remainingMs = deadline - Date.now();
+    if (remainingMs <= 0) break;
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), remainingMs);
+
+    try {
+      // Match the headers used by supabase-js. The Authorization header is
+      // important for publishable keys and keeps this small client compatible
+      // with Supabase's API gateway as key formats evolve.
+      const response = await fetch(endpoint, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type": "application/json;charset=UTF-8",
+          Authorization: `Bearer ${anonKey}`,
           apikey: anonKey,
+          "X-Client-Info": "dishlist-share-extension/1.0",
         },
         body: JSON.stringify({ refresh_token: session.refreshToken }),
+        signal: controller.signal,
+      });
+
+      if (response.status === 400 || response.status === 401) {
+        // Refresh token revoked/expired — the user must open the app to sign in.
+        shareLog.warn(
+          `Token refresh rejected (${response.status}) — signing out`
+        );
+        return { status: "signed-out" };
       }
-    );
 
-    if (response.status === 400 || response.status === 401) {
-      // Refresh token revoked/expired — the user must open the app to sign in.
-      shareLog.warn(`Token refresh rejected (${response.status}) — signing out`);
-      return { status: "signed-out" };
+      const isRetryable = response.status === 429 || response.status >= 500;
+      if (!response.ok) {
+        shareLog.error(`Token refresh failed with status ${response.status}`);
+        if (isRetryable && attempt < MAX_REFRESH_ATTEMPTS - 1) continue;
+        return { status: "error" };
+      }
+
+      const data = (await response.json()) as {
+        access_token?: string;
+        refresh_token?: string;
+        expires_at?: number;
+        expires_in?: number;
+      };
+      if (!data.access_token || !data.refresh_token) {
+        shareLog.error("Token refresh response was missing session fields");
+        return { status: "error" };
+      }
+
+      const expiresAt =
+        data.expires_at ??
+        Math.floor(Date.now() / 1000) + (data.expires_in ?? 3600);
+
+      writeSharedSession({
+        accessToken: data.access_token,
+        refreshToken: data.refresh_token,
+        expiresAt,
+      });
+
+      shareLog.info("Token refreshed and written back to shared session");
+      return { status: "ok", accessToken: data.access_token };
+    } catch (error) {
+      shareLog.error(
+        `Token refresh attempt ${attempt + 1} threw: ${(error as Error)?.message ?? String(error)}`
+      );
+      if (attempt === MAX_REFRESH_ATTEMPTS - 1) {
+        return { status: "error" };
+      }
+    } finally {
+      clearTimeout(timeoutId);
     }
-    if (!response.ok) {
-      shareLog.error(`Token refresh failed with status ${response.status}`);
-      return { status: "error" };
-    }
-
-    const data = (await response.json()) as {
-      access_token?: string;
-      refresh_token?: string;
-      expires_at?: number;
-      expires_in?: number;
-    };
-    if (!data.access_token || !data.refresh_token) {
-      return { status: "error" };
-    }
-
-    const expiresAt =
-      data.expires_at ??
-      Math.floor(Date.now() / 1000) + (data.expires_in ?? 3600);
-
-    writeSharedSession({
-      accessToken: data.access_token,
-      refreshToken: data.refresh_token,
-      expiresAt,
-    });
-
-    shareLog.info("Token refreshed and written back to shared session");
-    return { status: "ok", accessToken: data.access_token };
-  } catch (error) {
-    shareLog.error(
-      `Token refresh threw: ${(error as Error)?.message ?? String(error)}`
-    );
-    return { status: "error" };
   }
+
+  shareLog.error(`Token refresh timed out after ${REFRESH_TIMEOUT_MS}ms`);
+  return { status: "error" };
 }
