@@ -1,18 +1,13 @@
 import React from "react";
-import { TouchableOpacity, Text, StyleSheet } from "react-native";
+import { TouchableOpacity, StyleSheet } from "react-native";
 import { SlidersHorizontal } from "lucide-react-native";
 import { theme } from "@styles/theme";
-import { typography } from "@styles/typography";
 
 interface PreferencesButtonProps {
   onPress: () => void;
-  activeCount?: number;
 }
 
-export function PreferencesButton({
-  onPress,
-  activeCount = 0,
-}: PreferencesButtonProps) {
+export function PreferencesButton({ onPress }: PreferencesButtonProps) {
   return (
     <TouchableOpacity
       style={styles.button}
@@ -21,28 +16,16 @@ export function PreferencesButton({
       accessibilityRole="button"
       accessibilityLabel="Open recipe preferences"
     >
-      <SlidersHorizontal size={14} color={theme.colors.onPrimary} />
-      <Text style={styles.text}>
-        Preferences{activeCount > 0 ? ` (${activeCount})` : ""}
-      </Text>
+      <SlidersHorizontal size={22} color={theme.colors.primary[500]} />
     </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
   button: {
-    minHeight: 36,
-    flexDirection: "row",
+    width: 44,
+    height: 44,
     alignItems: "center",
-    gap: 6,
-    backgroundColor: theme.colors.primary[500],
-    borderRadius: 20,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-  },
-  text: {
-    ...typography.label,
-    color: theme.colors.onPrimary,
-    fontSize: 13,
+    justifyContent: "center",
   },
 });

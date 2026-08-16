@@ -12,7 +12,6 @@ import { RefreshCcw, SquarePen } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { theme } from "@styles/theme";
 import { typography } from "@styles/typography";
-import { ScreenHeader } from "@components/ui";
 import { useRecipeBuilder } from "../hooks";
 import {
   useAddRecipeToDishList,
@@ -181,18 +180,9 @@ export default function RecipeBuilderScreen() {
           { paddingTop: insets.top },
         ]}
       >
-        <ScreenHeader
-          title="Recipe Builder"
-          titleAlign="left"
-          style={styles.header}
-          titleStyle={styles.title}
-          rightSlot={
-            <PreferencesButton
-              onPress={handlePreferencesPress}
-              activeCount={preferences.length}
-            />
-          }
-        />
+        <View style={styles.header}>
+          <PreferencesButton onPress={handlePreferencesPress} />
+        </View>
 
         {/* Chat Area */}
         <ScrollView
@@ -391,10 +381,9 @@ const styles = StyleSheet.create({
   },
   header: {
     minHeight: theme.layout.pageHeaderMinHeight,
-  },
-  title: {
-    ...typography.pageTitle,
-    color: theme.colors.textPrimary,
+    alignItems: "flex-end",
+    justifyContent: "center",
+    paddingHorizontal: theme.spacing.xl,
   },
   chatArea: {
     flex: 1,
