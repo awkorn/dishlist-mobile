@@ -40,13 +40,13 @@ const styles = StyleSheet.create({
     gap: theme.spacing.sm,
   },
   tag: {
-    backgroundColor: theme.colors.primary[50],
+    backgroundColor: theme.colors.textPrimary,
     borderRadius: theme.borderRadius.md,
     paddingVertical: theme.spacing.xs,
     paddingHorizontal: theme.spacing.md,
   },
   tagText: {
     ...typography.label,
-    color: theme.colors.neutral[700],
+    color: theme.colors.neutral[50],
   },
 });
