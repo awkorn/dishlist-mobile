@@ -7,6 +7,7 @@ import {
   Dimensions,
 } from "react-native";
 import { Clock, Users } from "lucide-react-native";
+import Svg, { Line, Path } from "react-native-svg";
 import { theme } from "@styles/theme";
 import { typography } from "@styles/typography";
 import type { GeneratedRecipe } from "../types";
@@ -36,9 +37,32 @@ export function GeneratedRecipeCard({
       onPress={onPress}
       activeOpacity={0.7}
     >
-      {/* Emoji placeholder */}
-      <View style={styles.emojiContainer}>
-        <Text style={styles.emoji}>🍽️</Text>
+      {/* Recipe placeholder */}
+      <View style={styles.placeholderContainer}>
+        <Svg
+          testID="builder-recipe-placeholder-art"
+          width="40%"
+          height="46%"
+          viewBox="0 0 160 120"
+          accessible={false}
+        >
+          <Path
+            d="M25 28 H135 C135 70 111 94 80 94 C49 94 25 70 25 28 Z"
+            fill="none"
+            stroke={theme.colors.recipePlaceholderBowl}
+            strokeWidth={8}
+            strokeLinejoin="round"
+          />
+          <Line
+            x1={35}
+            y1={109}
+            x2={125}
+            y2={109}
+            stroke={theme.colors.recipePlaceholderBowl}
+            strokeWidth={8}
+            strokeLinecap="round"
+          />
+        </Svg>
       </View>
 
       {/* Content */}
@@ -76,15 +100,12 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     ...theme.shadows.sm,
   },
-  emojiContainer: {
+  placeholderContainer: {
     width: "100%",
     height: CARD_WIDTH * 0.55,
     backgroundColor: theme.colors.neutral[50],
     justifyContent: "center",
     alignItems: "center",
-  },
-  emoji: {
-    fontSize: 32,
   },
   content: {
     padding: theme.spacing.md,
