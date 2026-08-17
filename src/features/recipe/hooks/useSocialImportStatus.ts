@@ -1,12 +1,6 @@
-// Foreground reconciliation for share-extension imports. Push notifications
-// are the primary completion signal; this hook covers users who declined push
-// permission (and races where the user switches straight back to the app):
-// on every foreground, poll the ids the extension queued in App Group storage.
-// Results completed while the app was inactive reconcile silently; only work
-// observed in progress during the current active session gets an in-app banner.
-
 import { useCallback, useEffect, useRef } from "react";
 import { AppState } from "react-native";
+import * as Notifications from "expo-notifications";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "@app-types/navigation";
@@ -16,140 +10,170 @@ import { queryKeys } from "@lib/queryKeys";
 import { toast } from "@components/ui/toast";
 import { recipeService } from "../services/recipeService";
 import {
+  appendPendingImportId,
+  clearPendingSharedUrl,
   readPendingImportIds,
+  readPendingSharedImages,
+  readPendingSharedUrl,
   removePendingImportId,
 } from "@features/shareExtension/sharedStorage";
+import type { SocialImportStatus } from "../types";
 
-const POLL_INTERVAL_MS = 3000;
-const POLL_BUDGET_MS = 60_000;
-
+const POLL_INTERVAL_MS = 3500;
+const POLL_BUDGET_MS = 2 * 60_000;
 type Nav = NativeStackNavigationProp<RootStackParamList>;
+
+const isTerminal = (status: SocialImportStatus["status"]) =>
+  ["COMPLETED", "REVIEW_REQUIRED", "FAILED", "CANCELLED"].includes(status);
 
 export function useSocialImportStatus(): void {
   const navigation = useNavigation<Nav>();
   const queryClient = useQueryClient();
   const { user } = useAuth();
-  const isPollingRef = useRef(false);
-  const observedWhileActiveRef = useRef(new Set<string>());
+  const polling = useRef(false);
+  const openedSharedImages = useRef(false);
+  const cancelled = useRef(false);
+  const pollTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const wakePoll = useRef<(() => void) | null>(null);
 
-  const settleImport = useCallback(
-    (
-      importId: string,
-      outcome: "completed" | "failed",
-      detail?: string | null,
-      recipeId?: string | null,
-      recipeTitle?: string | null,
-      shouldShowBanner = false
-    ) => {
-      removePendingImportId(importId);
-      observedWhileActiveRef.current.delete(importId);
-
-      if (outcome === "completed") {
-        void queryClient.invalidateQueries({
-          queryKey: queryKeys.dishLists.all,
-        });
+  const presentTerminal = useCallback(
+    async (record: SocialImportStatus, pushGranted: boolean) => {
+      removePendingImportId(record.importId);
+      if (record.status === "COMPLETED") {
+        void queryClient.invalidateQueries({ queryKey: queryKeys.dishLists.all });
         void queryClient.invalidateQueries({ queryKey: queryKeys.recipes.all });
-        if (shouldShowBanner) {
-          toast.success(
-            recipeTitle
-              ? `"${recipeTitle}" was successfully added to My Recipes.`
-              : "Recipe was successfully added to My Recipes.",
-            {
-              duration: 5000,
-              hideIcon: true,
-              action: recipeId
-                ? {
-                    label: "View",
-                    onPress: () =>
-                      navigation.navigate("RecipeDetail", { recipeId }),
-                  }
-                : undefined,
-            }
-          );
+        toast.success(
+          record.recipeTitle
+            ? `“${record.recipeTitle}” was added to My Recipes.`
+            : "Recipe was added to My Recipes.",
+          {
+            duration: 5000,
+            action: record.recipeId
+              ? {
+                  label: "View",
+                  onPress: () =>
+                    navigation.navigate("RecipeDetail", { recipeId: record.recipeId! }),
+                }
+              : undefined,
+          }
+        );
+      } else if (record.status === "REVIEW_REQUIRED") {
+        void queryClient.invalidateQueries({ queryKey: queryKeys.dishLists.all });
+        void queryClient.invalidateQueries({ queryKey: queryKeys.recipes.all });
+        if (!pushGranted) {
+          toast.info("Imported recipe needs a quick review.", {
+            duration: 6000,
+            action: record.recipeId
+              ? {
+                  label: "Review",
+                  onPress: () =>
+                    navigation.navigate("RecipeDetail", { recipeId: record.recipeId! }),
+                }
+              : undefined,
+          });
         }
-      } else if (shouldShowBanner) {
-        toast.error(detail ?? "Couldn't import recipe", { duration: 4500 });
+      } else if (record.status === "FAILED" && !pushGranted) {
+        toast.error(record.errorMessage ?? "Recipe import failed.", {
+          duration: 5500,
+          action: {
+            label: "Details",
+            onPress: () => navigation.navigate("ImportActivity"),
+          },
+        });
       }
+      await recipeService.markImportPresented(record.importId).catch(() => {});
     },
     [navigation, queryClient]
   );
 
-  const pollPendingImports = useCallback(async () => {
-    if (isPollingRef.current) return;
-    const pending = readPendingImportIds();
-    if (pending.length === 0) return;
-
-    isPollingRef.current = true;
+  const reconcile = useCallback(async () => {
+    if (polling.current || !user) return;
+    polling.current = true;
     const deadline = Date.now() + POLL_BUDGET_MS;
-    const remaining = new Set(pending);
-
     try {
-      while (remaining.size > 0 && Date.now() < deadline) {
-        for (const importId of [...remaining]) {
-          try {
-            const status = await recipeService.getImportStatus(importId);
-            if (status.status === "COMPLETED") {
-              remaining.delete(importId);
-              settleImport(
-                importId,
-                "completed",
-                null,
-                status.recipeId,
-                status.recipeTitle,
-                observedWhileActiveRef.current.has(importId) &&
-                  AppState.currentState === "active"
-              );
-            } else if (status.status === "FAILED") {
-              remaining.delete(importId);
-              settleImport(
-                importId,
-                "failed",
-                status.errorMessage,
-                null,
-                null,
-                observedWhileActiveRef.current.has(importId) &&
-                  AppState.currentState === "active"
-              );
-            } else if (AppState.currentState === "active") {
-              // Only imports first observed as in progress during this active
-              // session may produce an in-app banner. A terminal result found
-              // immediately after launch/foreground was already represented by
-              // its system notification and is reconciled silently.
-              observedWhileActiveRef.current.add(importId);
-            }
-          } catch (error: any) {
-            if (error?.response?.status === 404) {
-              // Unknown id (e.g. account switch) — drop it silently.
-              remaining.delete(importId);
-              removePendingImportId(importId);
-            }
-            // Transient errors: keep polling until the budget runs out.
-          }
-        }
-        if (remaining.size > 0) {
-          await new Promise((resolve) =>
-            setTimeout(resolve, POLL_INTERVAL_MS)
+      const pendingShare = readPendingSharedUrl();
+      if (pendingShare) {
+        try {
+          const started = await recipeService.startSocialImport(pendingShare.url);
+          if (!started.alreadySaved) appendPendingImportId(started.importId);
+          clearPendingSharedUrl();
+          toast.info(
+            started.alreadySaved
+              ? "That recipe is already in My Recipes."
+              : "Your shared recipe import has started."
           );
+        } catch {
+          // Keep the payload: a later foreground/reconnect can safely retry.
         }
       }
+
+      if (readPendingSharedImages() && !openedSharedImages.current) {
+        openedSharedImages.current = true;
+        navigation.navigate("SharedImageImport");
+      }
+
+      const permissions = await Promise.resolve(
+        Notifications.getPermissionsAsync?.()
+      ).catch(() => null);
+      const pushGranted = permissions?.status === "granted";
+
+      while (
+        !cancelled.current &&
+        Date.now() < deadline &&
+        AppState.currentState !== "background" &&
+        AppState.currentState !== "inactive"
+      ) {
+        const records = await recipeService.getSocialImports({ unpresented: true });
+        const serverIds = new Set(records.map((record) => record.importId));
+        for (const orphanedId of (readPendingImportIds() ?? []).filter(
+          (importId) => !serverIds.has(importId)
+        )) {
+          removePendingImportId(orphanedId);
+        }
+        const terminal = records.filter((record) => isTerminal(record.status));
+        for (const record of terminal) {
+          await presentTerminal(record, pushGranted);
+        }
+
+        const locallyPending = readPendingImportIds() ?? [];
+        const hasWork =
+          records.some((record) =>
+            record.status === "PENDING" || record.status === "PROCESSING"
+          ) || locallyPending.length > 0;
+        if (!hasWork) break;
+        await new Promise<void>((resolve) => {
+          wakePoll.current = resolve;
+          pollTimer.current = setTimeout(resolve, POLL_INTERVAL_MS);
+        });
+        pollTimer.current = null;
+        wakePoll.current = null;
+      }
+    } catch {
+      // Network errors are intentionally quiet; React Query and the next
+      // foreground event provide another durable reconciliation attempt.
     } finally {
-      isPollingRef.current = false;
+      polling.current = false;
+      void queryClient.invalidateQueries({ queryKey: queryKeys.socialImports.all });
     }
-  }, [settleImport]);
+  }, [navigation, presentTerminal, queryClient, user]);
 
   useEffect(() => {
-    if (!user) return;
-
-    void pollPendingImports();
+    if (!user) {
+      openedSharedImages.current = false;
+      return;
+    }
+    cancelled.current = false;
+    void reconcile();
     const subscription = AppState.addEventListener("change", (state) => {
-      if (state === "active") {
-        void pollPendingImports();
-      } else {
-        // An import that completes after this point belongs to the background
-        // system-notification path, even if polling continues briefly.
-        observedWhileActiveRef.current.clear();
-      }
+      if (state === "active") void reconcile();
     });
-    return () => subscription.remove();
-  }, [user, pollPendingImports]);
+    return () => {
+      cancelled.current = true;
+      subscription?.remove();
+      if (pollTimer.current) clearTimeout(pollTimer.current);
+      wakePoll.current?.();
+      pollTimer.current = null;
+      wakePoll.current = null;
+    };
+  }, [reconcile, user]);
 }

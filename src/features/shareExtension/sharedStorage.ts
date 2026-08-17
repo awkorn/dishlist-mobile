@@ -47,6 +47,8 @@ export const sharedStorage: SharedKeyValueStorage = isExpoGo()
 
 const SESSION_KEY = "supabase.sharedSession";
 const PENDING_IMPORTS_KEY = "socialImport.pendingIds";
+const PENDING_SHARE_KEY = "socialImport.pendingShare";
+const PENDING_IMAGES_KEY = "socialImport.pendingImages";
 
 export interface SharedSession {
   accessToken: string;
@@ -105,13 +107,66 @@ export function readPendingImportIds(): string[] {
 export function appendPendingImportId(importId: string): void {
   const ids = readPendingImportIds();
   if (!ids.includes(importId)) {
-    // Cap the backlog — anything older is stale far beyond the server's
-    // 10-minute processing backstop.
     sharedStorage.set(
       PENDING_IMPORTS_KEY,
-      JSON.stringify([...ids, importId].slice(-10))
+      JSON.stringify([...ids, importId].slice(-100))
     );
   }
+}
+
+export interface PendingSharedUrl {
+  url: string;
+  createdAt: number;
+}
+
+export function writePendingSharedUrl(url: string): void {
+  sharedStorage.set(PENDING_SHARE_KEY, JSON.stringify({ url, createdAt: Date.now() }));
+}
+
+export function readPendingSharedUrl(): PendingSharedUrl | null {
+  const raw = sharedStorage.getString(PENDING_SHARE_KEY);
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw) as PendingSharedUrl;
+    return typeof parsed.url === "string" && typeof parsed.createdAt === "number"
+      ? parsed
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+export function clearPendingSharedUrl(): void {
+  sharedStorage.delete(PENDING_SHARE_KEY);
+}
+
+export interface PendingSharedImages {
+  paths: string[];
+  createdAt: number;
+}
+
+export function writePendingSharedImages(paths: string[]): void {
+  sharedStorage.set(
+    PENDING_IMAGES_KEY,
+    JSON.stringify({ paths: paths.slice(0, 5), createdAt: Date.now() })
+  );
+}
+
+export function readPendingSharedImages(): PendingSharedImages | null {
+  const raw = sharedStorage.getString(PENDING_IMAGES_KEY);
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw) as PendingSharedImages;
+    return Array.isArray(parsed.paths) && parsed.paths.every((path) => typeof path === "string")
+      ? parsed
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+export function clearPendingSharedImages(): void {
+  sharedStorage.delete(PENDING_IMAGES_KEY);
 }
 
 export function removePendingImportId(importId: string): void {

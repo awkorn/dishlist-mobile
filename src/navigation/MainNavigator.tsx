@@ -14,7 +14,12 @@ import {
   DishListDetailScreen,
   CreateDishListScreen,
 } from "@features/dishlist";
-import { AddRecipeScreen, RecipeDetailScreen } from "@features/recipe";
+import {
+  AddRecipeScreen,
+  RecipeDetailScreen,
+  ImportActivityScreen,
+  SharedImageImportScreen,
+} from "@features/recipe";
 import { InviteLandingScreen } from "@features/invite";
 import { FollowersFollowingScreen } from "@features/profile";
 import TabNavigator from "./TabNavigator";
@@ -80,6 +85,12 @@ export default function MainNavigator() {
             name="RecipeDetail"
             component={RecipeDetailScreen}
             options={{ headerShown: false }}
+          />
+          <Stack.Screen name="ImportActivity" component={ImportActivityScreen} />
+          <Stack.Screen
+            name="SharedImageImport"
+            component={SharedImageImportScreen}
+            options={{ gestureEnabled: false }}
           />
           <Stack.Screen
             name="Profile"

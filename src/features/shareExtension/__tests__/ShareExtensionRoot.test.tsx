@@ -33,17 +33,17 @@ describe("ShareExtensionRoot authentication recovery", () => {
       .mockResolvedValueOnce({ status: "ok", accessToken: "refreshed" });
     mockStartSocialImport
       .mockResolvedValueOnce({ status: "auth-failed" })
-      .mockResolvedValueOnce({ status: "accepted" });
+      .mockResolvedValueOnce({ status: "accepted", importId: "import-1" });
 
     const { getByLabelText, getByText, unmount } = render(
       <ShareExtensionRoot url="https://instagram.com/reel/example" />
     );
 
-    await waitFor(() => expect(getByText("Saving recipe")).toBeTruthy());
+    await waitFor(() => expect(getByText("Import started")).toBeTruthy());
     expect(
-      getByText("We'll notify you when it's been added")
+      getByText("Track progress in Import Activity. We’ll alert you only if something needs attention.")
     ).toBeTruthy();
-    expect(getByLabelText("Recipe saved")).toBeTruthy();
+    expect(getByLabelText("Import started")).toBeTruthy();
     expect(mockGetAccessToken).toHaveBeenNthCalledWith(1);
     expect(mockGetAccessToken).toHaveBeenNthCalledWith(2, {
       forceRefresh: true,
@@ -65,11 +65,13 @@ describe("ShareExtensionRoot authentication recovery", () => {
     );
 
     await waitFor(() =>
-      expect(getByText("Couldn't save recipe")).toBeTruthy()
+      expect(getByText("Couldn’t start import")).toBeTruthy()
     );
-    expect(getByText("Check your connection and try again")).toBeTruthy();
+    expect(
+      getByText("DishList couldn't verify your sign-in. Open the app and try again.")
+    ).toBeTruthy();
     expect(getByText("Cancel")).toBeTruthy();
-    expect(getByText("Retry")).toBeTruthy();
+    expect(getByText("Try again")).toBeTruthy();
     unmount();
   });
 });

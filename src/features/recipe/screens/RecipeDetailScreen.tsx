@@ -20,6 +20,7 @@ import {
   Trash2,
   Share,
   Flag,
+  AlertCircle,
 } from "lucide-react-native";
 import { typography } from "@styles/typography";
 import { theme } from "@styles/theme";
@@ -422,6 +423,36 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
             </View>
           )}
 
+          {recipe.importNeedsReview && (
+            <View style={styles.reviewCard} accessibilityRole="alert">
+              <AlertCircle size={22} color={theme.colors.warning} />
+              <View style={styles.reviewCopy}>
+                <Text style={styles.reviewTitle}>Review imported details</Text>
+                <Text style={styles.reviewText}>
+                  {recipe.importWarnings?.length
+                    ? recipe.importWarnings.join(" • ")
+                    : "Compare this recipe with the original post before cooking."}
+                </Text>
+                {recipe.creator.uid === user?.id && (
+                  <TouchableOpacity
+                    style={styles.reviewAction}
+                    onPress={() =>
+                      navigation.navigate("AddRecipe", {
+                        dishListId: "",
+                        recipeId: recipe.id,
+                        recipe,
+                      })
+                    }
+                    accessibilityRole="button"
+                    accessibilityLabel="Review and edit imported recipe"
+                  >
+                    <Text style={styles.reviewActionText}>Review & edit</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            </View>
+          )}
+
           {/* Social-import attribution: links back to the original post */}
           {recipe.sourceUrl && (
             <TouchableOpacity
@@ -438,6 +469,10 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
                     ? "Instagram"
                     : recipe.sourcePlatform === "FACEBOOK"
                       ? "Facebook"
+                      : recipe.sourcePlatform === "YOUTUBE"
+                        ? "YouTube"
+                        : recipe.sourcePlatform === "PINTEREST"
+                          ? "Pinterest"
                       : "the web"}
                 {recipe.sourceAuthor ? ` • ${recipe.sourceAuthor}` : ""}{" "}
                 <Text style={styles.attributionLink}>View original</Text>
@@ -752,6 +787,22 @@ const styles = StyleSheet.create({
     ...typography.utilityCaptionEmphasis,
     color: theme.colors.primary[500],
   },
+  reviewCard: {
+    flexDirection: "row",
+    gap: theme.spacing.md,
+    marginHorizontal: theme.spacing.xl,
+    marginTop: theme.spacing.lg,
+    padding: theme.spacing.lg,
+    borderRadius: theme.borderRadius.md,
+    backgroundColor: theme.colors.warningBg,
+    borderWidth: 1,
+    borderColor: "#F8D68A",
+  },
+  reviewCopy: { flex: 1 },
+  reviewTitle: { ...typography.label, color: theme.colors.textPrimary },
+  reviewText: { ...typography.body, color: theme.colors.neutral[700], marginTop: 4 },
+  reviewAction: { minHeight: 44, justifyContent: "center", alignSelf: "flex-start" },
+  reviewActionText: { ...typography.body, color: theme.colors.primary[500], fontWeight: "700" },
   metaRow: {
     flexDirection: "row",
     justifyContent: "space-between",

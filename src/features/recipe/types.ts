@@ -125,8 +125,13 @@ export interface Recipe {
   // Social-import provenance (set for recipes imported via the share
   // extension); drives the attribution row on RecipeDetail.
   sourceUrl?: string | null;
-  sourcePlatform?: "TIKTOK" | "INSTAGRAM" | "FACEBOOK" | null;
+  sourcePlatform?: SocialPlatform | null;
   sourceAuthor?: string | null;
+  sourceLanguage?: string | null;
+  importWarnings?: string[];
+  importConfidence?: number | null;
+  importNeedsReview?: boolean;
+  importSource?: string | null;
   originalRecipeId?: string;
   originalRecipe?: {
     id: string;
@@ -153,18 +158,35 @@ export type SocialImportStatusValue =
   | "PENDING"
   | "PROCESSING"
   | "COMPLETED"
-  | "FAILED";
+  | "REVIEW_REQUIRED"
+  | "FAILED"
+  | "CANCELLED";
+
+export type SocialPlatform =
+  | "TIKTOK"
+  | "INSTAGRAM"
+  | "FACEBOOK"
+  | "YOUTUBE"
+  | "PINTEREST";
 
 export interface SocialImportStatus {
   importId: string;
   status: SocialImportStatusValue;
+  phase: string;
+  attempt: number;
   errorCode: string | null;
   errorMessage: string | null;
   recipeId: string | null;
   recipeTitle: string | null;
+  warnings: string[];
+  confidence: number | null;
+  extractionSource: string | null;
   sourceUrl: string;
-  platform: "TIKTOK" | "INSTAGRAM" | "FACEBOOK";
+  platform: SocialPlatform;
   createdAt: string;
+  updatedAt: string;
+  presentedAt: string | null;
+  alreadySaved: boolean;
 }
 
 export type AddRecipeToDishListMode = "LINKED" | "FORKED" | "REUSED_FORK";

@@ -24,6 +24,8 @@ export const linking: LinkingOptions<RootStackParamList> = {
           recipeId: (recipeId: string) => recipeId,
         },
       },
+      ImportActivity: "imports",
+      SharedImageImport: "shared-image-import",
       Profile: {
         path: "profile/:userId",
         parse: {

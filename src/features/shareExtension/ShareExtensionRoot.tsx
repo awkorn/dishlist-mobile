@@ -1,11 +1,6 @@
-// Root component of the iOS share extension (registered in index.share.tsx).
-// Runs in a separate process with a tiny RN bundle: React, RN primitives,
-// react-native-mmkv and bare fetch only — no navigation, supabase-js, axios,
-// react-query, or icon fonts. RN <Text> needs allowFontScaling={false} inside
-// share extensions (font-scaling bug), hence the local T wrapper.
-
 import React, { useCallback, useEffect, useState } from "react";
 import {
+  AccessibilityInfo,
   ActivityIndicator,
   Image,
   Pressable,
@@ -14,97 +9,120 @@ import {
   View,
   type TextProps,
 } from "react-native";
-import { close, openHostApp } from "expo-share-extension";
+import {
+  close,
+  openHostApp,
+  type InitialProps,
+} from "expo-share-extension";
 import { getShareExtensionAccessToken } from "./sharedAuth";
 import {
   extractSharedUrl,
-  isSupportedSocialUrl,
   startSocialImport,
 } from "./shareExtensionApi";
+import {
+  writePendingSharedImages,
+  writePendingSharedUrl,
+} from "./sharedStorage";
 import { shareLog } from "./logger";
 
 const colors = {
   background: "#F7F5F3",
   surface: "#FFFFFF",
-  primary: "#2563eb",
+  primary: "#1658C7",
   textPrimary: "#00295B",
-  textMuted: "#6B7280",
-  error: "#EF4444",
+  textMuted: "#4B5563",
+  error: "#B42318",
   successSurface: "#DCE8FC",
   secondaryAction: "#E1E3E6",
 };
 
-const AUTO_CLOSE_DELAY_MS = 1500;
+const AUTO_CLOSE_DELAY_MS = 3000;
 
 type ExtensionState =
-  | "saving"
-  | "saved"
-  | "needs-signin"
-  | "unsupported"
-  | "error";
+  | { name: "starting" }
+  | { name: "started" }
+  | { name: "already-saved"; recipeId: string }
+  | { name: "needs-signin" }
+  | { name: "shared-images" }
+  | { name: "unsupported" }
+  | { name: "rate-limited"; message: string }
+  | { name: "error"; message: string };
 
-const T = (props: TextProps) => <Text allowFontScaling={false} {...props} />;
+// Native Text is retained for the extension-target font-scaling workaround;
+// the sheet has larger base sizes, generous height, VoiceOver announcements,
+// and never auto-dismisses while a screen reader is active.
+const T = (props: TextProps) => (
+  <Text allowFontScaling={false} maxFontSizeMultiplier={1.4} {...props} />
+);
 
-export default function ShareExtensionRoot(initialProps: {
-  url?: string;
-  text?: string;
-}) {
-  const [state, setState] = useState<ExtensionState>("saving");
+export default function ShareExtensionRoot(initialProps: InitialProps) {
+  const [state, setState] = useState<ExtensionState>({ name: "starting" });
+  const [screenReaderEnabled, setScreenReaderEnabled] = useState(false);
+
+  useEffect(() => {
+    void Promise.resolve(
+      AccessibilityInfo.isScreenReaderEnabled?.() ?? false
+    ).then(setScreenReaderEnabled);
+  }, []);
 
   const runImport = useCallback(async () => {
-    setState("saving");
+    setState({ name: "starting" });
 
-    const url = extractSharedUrl(initialProps);
-    if (!url || !isSupportedSocialUrl(url)) {
-      shareLog.warn(`Unsupported or missing URL: ${url ?? "none"}`);
-      setState("unsupported");
+    if (initialProps.images?.length) {
+      writePendingSharedImages(initialProps.images);
+      setState({ name: "shared-images" });
       return;
     }
-    shareLog.info(`Starting import for ${url}`);
+
+    const url = extractSharedUrl(initialProps);
+    if (!url) {
+      setState({ name: "unsupported" });
+      return;
+    }
 
     const auth = await getShareExtensionAccessToken();
     if (auth.status === "signed-out") {
-      shareLog.info("Auth: signed-out → needs-signin");
-      setState("needs-signin");
+      writePendingSharedUrl(url);
+      setState({ name: "needs-signin" });
       return;
     }
     if (auth.status === "error") {
-      shareLog.error("Auth: error → showing error state");
-      setState("error");
+      setState({
+        name: "error",
+        message: "DishList couldn't verify your sign-in. Open the app and try again.",
+      });
       return;
     }
 
     let result = await startSocialImport(url, auth.accessToken);
-
-    // The cached token can be rejected before its local expiry (for example
-    // after server-side revocation or a clock skew). Refresh once and retry the
-    // idempotent import-start request instead of requiring the host app to run.
     if (result.status === "auth-failed") {
-      shareLog.info("Import authentication failed — refreshing and retrying");
-      const refreshedAuth = await getShareExtensionAccessToken({
-        forceRefresh: true,
-      });
-      if (refreshedAuth.status === "ok") {
-        result = await startSocialImport(url, refreshedAuth.accessToken);
-      } else if (refreshedAuth.status === "error") {
-        setState("error");
-        return;
+      const refreshed = await getShareExtensionAccessToken({ forceRefresh: true });
+      if (refreshed.status === "ok") {
+        result = await startSocialImport(url, refreshed.accessToken);
       }
     }
 
     shareLog.info(`Import result: ${result.status}`);
     switch (result.status) {
       case "accepted":
-        setState("saved");
+        setState({ name: "started" });
+        break;
+      case "already-saved":
+        setState({ name: "already-saved", recipeId: result.recipeId });
         break;
       case "auth-failed":
-        setState("needs-signin");
+        writePendingSharedUrl(url);
+        setState({ name: "needs-signin" });
         break;
       case "unsupported-url":
-        setState("unsupported");
+        setState({ name: "unsupported" });
         break;
-      default:
-        setState("error");
+      case "rate-limited":
+        setState({ name: "rate-limited", message: result.message });
+        break;
+      case "error":
+        setState({ name: "error", message: result.message });
+        break;
     }
   }, [initialProps]);
 
@@ -113,14 +131,47 @@ export default function ShareExtensionRoot(initialProps: {
   }, [runImport]);
 
   useEffect(() => {
-    if (state === "saved") {
-      const timer = setTimeout(() => close(), AUTO_CLOSE_DELAY_MS);
+    const announcements: Partial<Record<ExtensionState["name"], string>> = {
+      started: "Import started. DishList will show it in Import Activity.",
+      "already-saved": "This recipe is already in My Recipes.",
+      "needs-signin": "Sign in required. The shared link will be saved.",
+      unsupported: "This shared item is not supported.",
+      "rate-limited": "Import limit reached.",
+      error: "Import could not start.",
+    };
+    const announcement = announcements[state.name];
+    if (announcement) AccessibilityInfo.announceForAccessibility?.(announcement);
+  }, [state.name]);
+
+  useEffect(() => {
+    if (
+      !screenReaderEnabled &&
+      (state.name === "started" || state.name === "already-saved")
+    ) {
+      const timer = setTimeout(close, AUTO_CLOSE_DELAY_MS);
       return () => clearTimeout(timer);
     }
-  }, [state]);
+  }, [screenReaderEnabled, state.name]);
+
+  const button = (
+    label: string,
+    onPress: () => void,
+    primary = false
+  ) => (
+    <Pressable
+      style={primary ? styles.primaryButton : styles.secondaryButton}
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+    >
+      <T style={primary ? styles.primaryButtonText : styles.secondaryButtonText}>
+        {label}
+      </T>
+    </Pressable>
+  );
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container} accessibilityViewIsModal>
       <Image
         source={require("../../../assets/images/dishlist-logo.png")}
         style={styles.brandMark}
@@ -128,69 +179,89 @@ export default function ShareExtensionRoot(initialProps: {
         accessibilityLabel="DishList"
       />
 
-      {state === "saving" && (
-        <View style={styles.body}>
+      {state.name === "starting" && (
+        <View style={styles.body} accessibilityLiveRegion="polite">
           <ActivityIndicator size="large" color={colors.primary} />
-          <T style={styles.title}>Saving to My Recipes…</T>
+          <T style={styles.title}>Starting import…</T>
+          <T style={styles.subtitle}>You can close this after it starts</T>
         </View>
       )}
 
-      {state === "saved" && (
+      {state.name === "started" && (
         <View style={styles.body} accessibilityLiveRegion="polite">
-          <T style={styles.title}>Saving recipe</T>
-          <T style={styles.subtitle}>
-            We&apos;ll notify you when it&apos;s been added
-          </T>
-          <View
-            style={styles.successIcon}
-            accessibilityLabel="Recipe saved"
-          >
+          <View style={styles.successIcon} accessibilityLabel="Import started">
             <T style={styles.successCheck}>✓</T>
+          </View>
+          <T style={styles.title}>Import started</T>
+          <T style={styles.subtitle}>
+            Track progress in Import Activity. We’ll alert you only if something needs attention.
+          </T>
+          {button("Close", close)}
+        </View>
+      )}
+
+      {state.name === "already-saved" && (
+        <View style={styles.body} accessibilityLiveRegion="polite">
+          <View style={styles.successIcon}><T style={styles.successCheck}>✓</T></View>
+          <T style={styles.title}>Already in My Recipes</T>
+          <T style={styles.subtitle}>DishList found the recipe you saved earlier.</T>
+          <View style={styles.buttonRow}>
+            {button("Close", close)}
+            {button("View recipe", () => {
+              openHostApp(`recipe/${state.recipeId}`);
+              close();
+            }, true)}
           </View>
         </View>
       )}
 
-      {state === "needs-signin" && (
+      {state.name === "needs-signin" && (
         <View style={styles.body}>
-          <T style={styles.title}>Sign in to save recipes</T>
-          <Pressable
-            style={styles.primaryButton}
-            onPress={() => {
-              openHostApp("login");
-              close();
-            }}
-          >
-            <T style={styles.primaryButtonText}>Open DishList</T>
-          </Pressable>
+          <T style={styles.title}>Sign in to start import</T>
+          <T style={styles.subtitle}>We saved this link and will resume after you sign in.</T>
+          {button("Open DishList", () => {
+            openHostApp("login");
+            close();
+          }, true)}
         </View>
       )}
 
-      {state === "unsupported" && (
+      {state.name === "shared-images" && (
         <View style={styles.body}>
-          <T style={styles.title}>Link not supported</T>
+          <T style={styles.title}>Import recipe screenshots</T>
+          <T style={styles.subtitle}>Open DishList to review the images and choose where to save the recipe.</T>
+          {button("Continue in DishList", () => {
+            openHostApp("shared-image-import");
+            close();
+          }, true)}
+        </View>
+      )}
+
+      {state.name === "unsupported" && (
+        <View style={styles.body}>
+          <T style={styles.title}>Post not supported</T>
           <T style={styles.subtitle}>
-            Share a TikTok, Instagram or Facebook post
+            Share a TikTok, Instagram, Facebook, YouTube, or Pinterest post—or recipe screenshots.
           </T>
-          <Pressable style={styles.secondaryButton} onPress={() => close()}>
-            <T style={styles.secondaryButtonText}>Close</T>
-          </Pressable>
+          {button("Close", close)}
         </View>
       )}
 
-      {state === "error" && (
-        <View style={styles.body}>
-          <T style={styles.title}>Couldn&apos;t save recipe</T>
-          <T style={styles.subtitle}>Check your connection and try again</T>
+      {state.name === "rate-limited" && (
+        <View style={styles.body} accessibilityLiveRegion="assertive">
+          <T style={styles.title}>Import limit reached</T>
+          <T style={styles.subtitle}>{state.message}</T>
+          {button("Close", close)}
+        </View>
+      )}
+
+      {state.name === "error" && (
+        <View style={styles.body} accessibilityLiveRegion="assertive">
+          <T style={[styles.title, styles.errorTitle]}>Couldn’t start import</T>
+          <T style={styles.subtitle}>{state.message}</T>
           <View style={styles.buttonRow}>
-            <Pressable style={styles.secondaryButton} onPress={() => close()}>
-              <T style={styles.secondaryButtonText}>Cancel</T>
-            </Pressable>
-            <Pressable
-              style={styles.primaryButton}
-              onPress={() => void runImport()}
-            >
-              <T style={styles.primaryButtonText}>Retry</T>
-            </Pressable>
+            {button("Cancel", close)}
+            {button("Try again", () => void runImport(), true)}
           </View>
         </View>
       )}
@@ -202,86 +273,66 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
-    borderRadius: 8,
+    borderRadius: 12,
     paddingHorizontal: 24,
   },
-  brandMark: {
-    position: "absolute",
-    top: 4,
-    left: 14,
-    width: 50,
-    height: 50,
-  },
+  brandMark: { position: "absolute", top: 8, left: 14, width: 50, height: 50 },
   body: {
     flex: 1,
     width: "100%",
     alignItems: "center",
     justifyContent: "center",
+    paddingTop: 18,
   },
   title: {
-    fontSize: 18,
-    lineHeight: 24,
-    fontWeight: "600",
+    fontSize: 20,
+    lineHeight: 27,
+    fontWeight: "700",
     color: colors.textPrimary,
     textAlign: "center",
+    marginTop: 12,
   },
+  errorTitle: { color: colors.error },
   subtitle: {
-    fontSize: 14,
-    lineHeight: 20,
+    fontSize: 15,
+    lineHeight: 21,
     color: colors.textMuted,
     textAlign: "center",
-    marginTop: 8,
+    marginTop: 7,
+    maxWidth: 320,
   },
   successIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 20,
-    marginTop: 18,
+    width: 42,
+    height: 42,
+    borderRadius: 21,
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: colors.successSurface,
   },
-  successCheck: {
-    color: colors.primary,
-    fontSize: 20,
-    lineHeight: 24,
-    fontWeight: "700",
-  },
-  buttonRow: {
-    flexDirection: "row",
-    gap: 12,
-    marginTop: 18,
-  },
+  successCheck: { color: colors.primary, fontSize: 23, lineHeight: 27, fontWeight: "700" },
+  buttonRow: { flexDirection: "row", gap: 12, marginTop: 20 },
   primaryButton: {
     backgroundColor: colors.primary,
-    minWidth: 90,
-    minHeight: 36,
-    borderRadius: 8,
-    paddingVertical: 8,
+    minWidth: 110,
+    minHeight: 44,
+    borderRadius: 10,
+    paddingVertical: 11,
     paddingHorizontal: 18,
     alignItems: "center",
     justifyContent: "center",
+    marginTop: 20,
   },
-  primaryButtonText: {
-    color: colors.surface,
-    fontSize: 14,
-    lineHeight: 20,
-    fontWeight: "600",
-  },
+  primaryButtonText: { color: colors.surface, fontSize: 15, lineHeight: 20, fontWeight: "700" },
   secondaryButton: {
     backgroundColor: colors.secondaryAction,
-    minWidth: 90,
-    minHeight: 36,
-    borderRadius: 8,
-    paddingVertical: 8,
+    minWidth: 100,
+    minHeight: 44,
+    borderRadius: 10,
+    paddingVertical: 11,
     paddingHorizontal: 18,
     alignItems: "center",
     justifyContent: "center",
+    marginTop: 20,
   },
-  secondaryButtonText: {
-    color: colors.textPrimary,
-    fontSize: 14,
-    lineHeight: 20,
-    fontWeight: "600",
-  },
+  secondaryButtonText: { color: colors.textPrimary, fontSize: 15, lineHeight: 20, fontWeight: "700" },
 });

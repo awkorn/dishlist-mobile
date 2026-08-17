@@ -21,6 +21,11 @@ import {
   readSharedSession,
   writeSharedSession,
   clearSharedSession,
+  clearPendingSharedUrl,
+  readPendingSharedImages,
+  readPendingSharedUrl,
+  writePendingSharedImages,
+  writePendingSharedUrl,
 } from "../sharedStorage";
 
 beforeEach(() => mockStore.clear());
@@ -32,12 +37,14 @@ describe("isSupportedSocialUrl", () => {
     "https://instagram.com/reel/C0abc/",
     "https://www.facebook.com/reel/123",
     "https://fb.watch/xyz/",
+    "https://youtube.com/watch?v=1",
+    "https://youtu.be/abc",
+    "https://pinterest.com/pin/123",
   ])("accepts %s", (url) => {
     expect(isSupportedSocialUrl(url)).toBe(true);
   });
 
   it.each([
-    "https://youtube.com/watch?v=1",
     "https://eviltiktok.com/x",
     "https://tiktok.com.evil.io/x",
     "not a url",
@@ -47,10 +54,13 @@ describe("isSupportedSocialUrl", () => {
 });
 
 describe("extractSharedUrl", () => {
-  it("prefers the url prop", () => {
+  it("chooses a supported URL instead of an unrelated first link", () => {
     expect(
-      extractSharedUrl({ url: "https://a.com", text: "https://b.com" })
-    ).toBe("https://a.com");
+      extractSharedUrl({
+        url: "https://a.com",
+        text: "Creator site https://b.com then https://youtu.be/recipe",
+      })
+    ).toBe("https://youtu.be/recipe");
   });
 
   it("falls back to a URL inside shared text", () => {
@@ -75,11 +85,11 @@ describe("sharedStorage — pending import ids", () => {
     expect(readPendingImportIds()).toEqual(["b"]);
   });
 
-  it("caps the backlog at 10", () => {
-    for (let i = 0; i < 15; i++) appendPendingImportId(`id-${i}`);
+  it("keeps a larger durable reconciliation backlog", () => {
+    for (let i = 0; i < 115; i++) appendPendingImportId(`id-${i}`);
     const ids = readPendingImportIds();
-    expect(ids).toHaveLength(10);
-    expect(ids[0]).toBe("id-5");
+    expect(ids).toHaveLength(100);
+    expect(ids[0]).toBe("id-15");
   });
 });
 
@@ -104,5 +114,19 @@ describe("sharedStorage — session", () => {
 
     mockStore.set("supabase.sharedSession", "{not json");
     expect(readSharedSession()).toBeNull();
+  });
+});
+
+describe("sharedStorage — resumable share payloads", () => {
+  it("round-trips a URL across sign-in", () => {
+    writePendingSharedUrl("https://youtu.be/recipe");
+    expect(readPendingSharedUrl()?.url).toBe("https://youtu.be/recipe");
+    clearPendingSharedUrl();
+    expect(readPendingSharedUrl()).toBeNull();
+  });
+
+  it("caps shared screenshots to the supported maximum", () => {
+    writePendingSharedImages(["1", "2", "3", "4", "5", "6"]);
+    expect(readPendingSharedImages()?.paths).toEqual(["1", "2", "3", "4", "5"]);
   });
 });
