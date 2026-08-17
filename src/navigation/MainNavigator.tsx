@@ -1,7 +1,6 @@
 import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useAuth } from "@providers/AuthProvider/AuthContext";
-import { View, ActivityIndicator, StyleSheet } from "react-native";
 import {
   LoginScreen,
   ResetPasswordScreen,
@@ -25,21 +24,15 @@ import { FollowersFollowingScreen } from "@features/profile";
 import TabNavigator from "./TabNavigator";
 import { RootStackParamList } from "@app-types/navigation";
 import { ChangePasswordScreen, ChangeEmailScreen } from "@features/settings";
-import { theme } from "@styles/theme";
+import { BrandedLoadingScreen } from "@components/ui";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
-
-const LoadingScreen = () => (
-  <View style={styles.loadingContainer}>
-    <ActivityIndicator size="large" color={theme.colors.primary[500]} />
-  </View>
-);
 
 export default function MainNavigator() {
   const { user, loading, isPasswordRecovery } = useAuth();
 
   if (loading) {
-    return <LoadingScreen />;
+    return <BrandedLoadingScreen />;
   }
 
   return (
@@ -124,12 +117,3 @@ export default function MainNavigator() {
     </Stack.Navigator>
   );
 }
-
-const styles = StyleSheet.create({
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: theme.colors.background,
-  },
-});
