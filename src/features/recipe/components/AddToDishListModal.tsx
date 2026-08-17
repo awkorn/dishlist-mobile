@@ -1,7 +1,10 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { StyleSheet, Text } from "react-native";
 import { useQuery } from "@tanstack/react-query";
-import { DishListPickerModal } from "@features/dishlist";
+import {
+  DishListPickerModal,
+  useRemoveRecipeFromDishList,
+} from "@features/dishlist";
 import { typography } from "@styles/typography";
 import { theme } from "@styles/theme";
 import { toast } from "@components/ui/toast";
@@ -24,24 +27,45 @@ export default function AddToDishListModal({
   recipeTitle,
   createsCopy,
 }: AddToDishListModalProps) {
-  const { data: existingDishListIds = [], isLoading: loadingExisting } =
-    useQuery({
-      queryKey: ["recipe", recipeId, "dishlists"],
-      queryFn: () => recipeService.getRecipeDishLists(recipeId),
-      enabled: visible,
-    });
+  const {
+    data: existingDishListIds = [],
+    isLoading: loadingExisting,
+    isSuccess: loadedExisting,
+  } = useQuery({
+    queryKey: ["recipe", recipeId, "dishlists"],
+    queryFn: () => recipeService.getRecipeDishLists(recipeId),
+    enabled: visible,
+  });
   const addMutation = useAddRecipeToDishList();
+  const removeMutation = useRemoveRecipeFromDishList({
+    showSuccessToast: false,
+  });
   const [selectedDishListIds, setSelectedDishListIds] = useState<Set<string>>(
     () => new Set(),
   );
   const [isSaving, setIsSaving] = useState(false);
+  const initializedForCurrentOpen = useRef(false);
 
   useEffect(() => {
-    if (visible) {
-      setSelectedDishListIds(new Set());
-      addMutation.reset();
+    if (!visible) {
+      initializedForCurrentOpen.current = false;
+      return;
     }
+
+    addMutation.reset();
+    removeMutation.reset();
   }, [visible]);
+
+  useEffect(() => {
+    if (
+      visible &&
+      loadedExisting &&
+      !initializedForCurrentOpen.current
+    ) {
+      setSelectedDishListIds(new Set(existingDishListIds));
+      initializedForCurrentOpen.current = true;
+    }
+  }, [existingDishListIds, loadedExisting, visible]);
 
   const handleToggleDishList = useCallback((dishListId: string) => {
     setSelectedDishListIds((current) => {
@@ -56,31 +80,56 @@ export default function AddToDishListModal({
   }, []);
 
   const handleDone = useCallback(async () => {
-    const dishListIds = Array.from(selectedDishListIds);
-    if (dishListIds.length === 0 || isSaving) return;
+    const selectedIds = Array.from(selectedDishListIds);
+    if (selectedIds.length === 0 || isSaving) return;
+
+    const existingIds = new Set(existingDishListIds);
+    const idsToAdd = selectedIds.filter((id) => !existingIds.has(id));
+    const idsToRemove = existingDishListIds.filter(
+      (id) => !selectedDishListIds.has(id),
+    );
 
     setIsSaving(true);
     try {
-      for (const dishListId of dishListIds) {
+      // Add first so moving a recipe never leaves it without a DishList if a
+      // later request fails. The API resolves a saved fork when removing an
+      // externally-created recipe by its original ID.
+      for (const dishListId of idsToAdd) {
         await addMutation.mutateAsync({ dishListId, recipeId });
       }
+      for (const dishListId of idsToRemove) {
+        await removeMutation.mutateAsync({ dishListId, recipeId });
+      }
 
-      toast.success(
-        dishListIds.length === 1
-          ? createsCopy
-            ? "Recipe saved to DishList"
-            : "Recipe added to DishList"
-          : createsCopy
-            ? `Recipe saved to ${dishListIds.length} DishLists`
-            : `Recipe added to ${dishListIds.length} DishLists`,
-      );
+      if (idsToAdd.length > 0 || idsToRemove.length > 0) {
+        toast.success(
+          idsToRemove.length > 0
+            ? "Recipe DishLists updated"
+            : idsToAdd.length === 1
+              ? createsCopy
+                ? "Recipe saved to DishList"
+                : "Recipe added to DishList"
+              : createsCopy
+                ? `Recipe saved to ${idsToAdd.length} DishLists`
+                : `Recipe added to ${idsToAdd.length} DishLists`,
+        );
+      }
       onClose();
     } catch {
       // The mutation hook presents the API error and the picker stays open.
     } finally {
       setIsSaving(false);
     }
-  }, [addMutation, createsCopy, isSaving, onClose, recipeId, selectedDishListIds]);
+  }, [
+    addMutation,
+    createsCopy,
+    existingDishListIds,
+    isSaving,
+    onClose,
+    recipeId,
+    removeMutation,
+    selectedDishListIds,
+  ]);
 
   return (
     <DishListPickerModal
@@ -96,10 +145,10 @@ export default function AddToDishListModal({
       loading={loadingExisting}
       emptyMessage="Create a DishList first to add recipes to it."
       errorMessage={
-        addMutation.isError
+        addMutation.isError || removeMutation.isError
           ? getErrorMessage(
-              addMutation.error,
-              "Failed to add recipe. Please try again.",
+              addMutation.error ?? removeMutation.error,
+              "Failed to update recipe DishLists. Please try again.",
             )
           : undefined
       }

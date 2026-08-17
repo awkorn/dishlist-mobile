@@ -78,19 +78,21 @@ export function DishListPickerModal({
 
   const renderDishList = ({ item }: { item: DishList }) => {
     const alreadySelected = alreadySelectedIds.has(item.id);
-    const selected = alreadySelected || selectedIds.has(item.id);
-    const disabled = alreadySelected || isSelecting;
-    const accessibilityLabel = alreadySelected
-      ? `${item.title}, already added`
-      : isMultipleSelection
-        ? `${item.title}, ${selected ? "selected" : "not selected"}`
+    const selected = isMultipleSelection
+      ? selectedIds.has(item.id)
+      : alreadySelected || selectedIds.has(item.id);
+    const disabled = isSelecting || (!isMultipleSelection && alreadySelected);
+    const accessibilityLabel = isMultipleSelection
+      ? `${item.title}, ${selected ? "selected" : "not selected"}`
+      : alreadySelected
+        ? `${item.title}, already added`
         : `Select ${item.title}`;
 
     return (
       <TouchableOpacity
         style={[
           styles.dishListItem,
-          alreadySelected && styles.dishListItemDisabled,
+          disabled && styles.dishListItemDisabled,
         ]}
         onPress={() => onSelect(item.id)}
         disabled={disabled}
@@ -102,10 +104,10 @@ export function DishListPickerModal({
         }
         accessibilityLabel={accessibilityLabel}
         accessibilityHint={
-          alreadySelected
-            ? undefined
-            : isMultipleSelection
-              ? "Toggles this DishList selection"
+          isMultipleSelection
+            ? "Toggles this DishList selection"
+            : alreadySelected
+              ? undefined
               : "Selects this DishList"
         }
         activeOpacity={0.7}

@@ -70,7 +70,7 @@ describe("DishListPickerModal", () => {
     expect(onSelect).toHaveBeenCalledWith("shared");
   });
 
-  it("toggles multiple DishLists and enables Done", () => {
+  it("allows existing selections to be unchecked and disables Done when none remain", () => {
     jest.mocked(useDishLists).mockReturnValue({
       dishLists,
       isLoading: false,
@@ -85,7 +85,7 @@ describe("DishListPickerModal", () => {
     const onDone = jest.fn();
 
     function MultiSelectPicker() {
-      const [selectedIds, setSelectedIds] = useState<string[]>([]);
+      const [selectedIds, setSelectedIds] = useState<string[]>(["owned"]);
       const handleToggle = (dishListId: string) => {
         setSelectedIds((current) =>
           current.includes(dishListId)
@@ -111,8 +111,12 @@ describe("DishListPickerModal", () => {
     const { getByLabelText } = render(<MultiSelectPicker />);
     const doneButton = getByLabelText("Done selecting DishLists");
 
+    expect(doneButton).toBeEnabled();
+    expect(getByLabelText("Weeknight dinners, selected")).toBeChecked();
+
+    fireEvent.press(getByLabelText("Weeknight dinners, selected"));
+    expect(getByLabelText("Weeknight dinners, not selected")).not.toBeChecked();
     expect(doneButton).toBeDisabled();
-    expect(getByLabelText("Weeknight dinners, already added")).toBeDisabled();
 
     fireEvent.press(getByLabelText("Shared favorites, not selected"));
     expect(getByLabelText("Shared favorites, selected")).toBeChecked();

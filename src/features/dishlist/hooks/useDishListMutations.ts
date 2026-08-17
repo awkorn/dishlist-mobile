@@ -327,7 +327,9 @@ export function useDeleteDishList() {
 /**
  * Hook for removing a recipe from a DishList
  */
-export function useRemoveRecipeFromDishList() {
+export function useRemoveRecipeFromDishList(
+  { showSuccessToast = true }: { showSuccessToast?: boolean } = {},
+) {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -360,7 +362,9 @@ export function useRemoveRecipeFromDishList() {
       queryClient.invalidateQueries({ queryKey: queryKeys.dishLists.detail(variables.dishListId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.dishLists.all });
       queryClient.invalidateQueries({ queryKey: ['recipe', variables.recipeId, 'dishlists'] });
-      toast.success('Recipe removed from DishList');
+      if (showSuccessToast) {
+        toast.success('Recipe removed from DishList');
+      }
     },
   });
 }
