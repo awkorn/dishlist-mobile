@@ -39,9 +39,9 @@ describe("ShareExtensionRoot authentication recovery", () => {
       <ShareExtensionRoot url="https://instagram.com/reel/example" />
     );
 
-    await waitFor(() => expect(getByText("Import started")).toBeTruthy());
+    await waitFor(() => expect(getByText("Recipe import started")).toBeTruthy());
     expect(
-      getByText("DishList will notify you when your recipe is ready.")
+      getByText("DishList will notify you when it’s added to My Recipes.")
     ).toBeTruthy();
     expect(getByLabelText("Import started")).toBeTruthy();
     expect(mockGetAccessToken).toHaveBeenNthCalledWith(1);

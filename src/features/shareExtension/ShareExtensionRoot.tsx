@@ -132,7 +132,8 @@ export default function ShareExtensionRoot(initialProps: InitialProps) {
 
   useEffect(() => {
     const announcements: Partial<Record<ExtensionState["name"], string>> = {
-      started: "Import started. DishList will notify you when it is ready.",
+      started:
+        "Recipe import started. DishList will notify you when it is added to My Recipes.",
       "already-saved": "This recipe is already in My Recipes.",
       "needs-signin": "Sign in required. The shared link will be saved.",
       unsupported: "This shared item is not supported.",
@@ -192,9 +193,9 @@ export default function ShareExtensionRoot(initialProps: InitialProps) {
           <View style={styles.successIcon} accessibilityLabel="Import started">
             <T style={styles.successCheck}>✓</T>
           </View>
-          <T style={styles.title}>Import started</T>
+          <T style={styles.title}>Recipe import started</T>
           <T style={styles.subtitle}>
-            DishList will notify you when your recipe is ready.
+            DishList will notify you when it’s added to My Recipes.
           </T>
           {button("Close", close)}
         </View>
