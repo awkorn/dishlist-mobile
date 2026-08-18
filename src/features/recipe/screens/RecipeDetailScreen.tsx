@@ -266,12 +266,6 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
     () => (recipe ? (recipe.prepTime || 0) + (recipe.cookTime || 0) : 0),
     [recipe],
   );
-  const hasRecipeMetadata = Boolean(
-    recipe &&
-      ((recipe.prepTime ?? 0) > 0 ||
-        (recipe.cookTime ?? 0) > 0 ||
-        (recipe.servings ?? 0) > 0),
-  );
   const recipeImages = useMemo(() => {
     if (!recipe) return [];
     if (recipe.imageUrls?.length) return recipe.imageUrls;
@@ -378,38 +372,63 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
             </Text>
             <Text style={styles.recipeTitle}>{recipe.title}</Text>
 
-            {hasRecipeMetadata ? (
-              <View style={styles.metaSection}>
-                <View style={styles.metaRow}>
-                  {recipe.prepTime && recipe.prepTime > 0 && (
-                    <View style={styles.metaItem}>
-                      <Text style={styles.metaLabel}>Prep Time</Text>
-                      <Text style={styles.metaValue}>{recipe.prepTime} min</Text>
-                    </View>
-                  )}
-                  {recipe.cookTime && recipe.cookTime > 0 && (
-                    <View style={styles.metaItem}>
-                      <Text style={styles.metaLabel}>Cook Time</Text>
-                      <Text style={styles.metaValue}>{recipe.cookTime} min</Text>
-                    </View>
-                  )}
-                  {totalTime > 0 && (
-                    <View style={styles.metaItem}>
-                      <Text style={styles.metaLabel}>Total Time</Text>
-                      <Text style={styles.metaValue}>{totalTime} min</Text>
-                    </View>
-                  )}
-                  {recipe.servings && recipe.servings > 0 && (
-                    <View style={styles.metaItem}>
-                      <Text style={styles.metaLabel}>Servings</Text>
-                      <Text style={styles.metaValue}>{recipe.servings}</Text>
-                    </View>
-                  )}
+            <View style={styles.metaSection}>
+              <View style={styles.metaRow}>
+                <View style={styles.metaItem}>
+                  <Text style={styles.metaLabel}>Prep Time</Text>
+                  <Text
+                    style={[
+                      styles.metaValue,
+                      !(recipe.prepTime && recipe.prepTime > 0) &&
+                        styles.metaPlaceholder,
+                    ]}
+                  >
+                    {recipe.prepTime && recipe.prepTime > 0
+                      ? `${recipe.prepTime} min`
+                      : "—"}
+                  </Text>
+                </View>
+                <View style={styles.metaItem}>
+                  <Text style={styles.metaLabel}>Cook Time</Text>
+                  <Text
+                    style={[
+                      styles.metaValue,
+                      !(recipe.cookTime && recipe.cookTime > 0) &&
+                        styles.metaPlaceholder,
+                    ]}
+                  >
+                    {recipe.cookTime && recipe.cookTime > 0
+                      ? `${recipe.cookTime} min`
+                      : "—"}
+                  </Text>
+                </View>
+                <View style={styles.metaItem}>
+                  <Text style={styles.metaLabel}>Total Time</Text>
+                  <Text
+                    style={[
+                      styles.metaValue,
+                      totalTime <= 0 && styles.metaPlaceholder,
+                    ]}
+                  >
+                    {totalTime > 0 ? `${totalTime} min` : "—"}
+                  </Text>
+                </View>
+                <View style={styles.metaItem}>
+                  <Text style={styles.metaLabel}>Servings</Text>
+                  <Text
+                    style={[
+                      styles.metaValue,
+                      !(recipe.servings && recipe.servings > 0) &&
+                        styles.metaPlaceholder,
+                    ]}
+                  >
+                    {recipe.servings && recipe.servings > 0
+                      ? recipe.servings
+                      : "—"}
+                  </Text>
                 </View>
               </View>
-            ) : (
-              <View style={styles.metadataDivider} />
-            )}
+            </View>
           </View>
 
           {recipe.originalRecipe && (
@@ -770,10 +789,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.neutral[300],
   },
-  metadataDivider: {
-    height: StyleSheet.hairlineWidth,
-    backgroundColor: theme.colors.neutral[300],
-  },
   attribution: {
     paddingHorizontal: theme.spacing.xl,
     paddingTop: theme.spacing.lg,
@@ -827,6 +842,9 @@ const styles = StyleSheet.create({
     color: theme.colors.neutral[700],
     marginTop: theme.spacing.xs,
     textAlign: "center",
+  },
+  metaPlaceholder: {
+    color: theme.colors.neutral[400],
   },
   cookModeButton: {
     marginHorizontal: theme.spacing.xl,
