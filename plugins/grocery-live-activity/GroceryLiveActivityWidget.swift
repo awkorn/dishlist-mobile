@@ -4,11 +4,6 @@ import SwiftUI
 import WidgetKit
 
 private enum DishListLiveActivityColors {
-  static let background = Color(
-    red: 0.0 / 255.0,
-    green: 41.0 / 255.0,
-    blue: 91.0 / 255.0
-  )
   static let navy = Color(
     red: 0.0 / 255.0,
     green: 41.0 / 255.0,
@@ -19,8 +14,8 @@ private enum DishListLiveActivityColors {
     green: 99.0 / 255.0,
     blue: 235.0 / 255.0
   )
-  static let lockScreenForeground = Color.white
-  static let lockScreenDisabled = Color.white.opacity(0.4)
+  static let lockScreenForeground = Color.primary
+  static let lockScreenDisabled = Color.primary.opacity(0.4)
   static let green = Color(
     red: 75.0 / 255.0,
     green: 212.0 / 255.0,
@@ -55,7 +50,7 @@ private struct GroceryItemRowView: View {
     HStack(spacing: 9) {
       ZStack {
         RoundedRectangle(cornerRadius: 4)
-          .fill(DishListLiveActivityColors.background)
+          .fill(Color.clear)
         RoundedRectangle(cornerRadius: 4)
           .stroke(
             DishListLiveActivityColors.lockScreenForeground,
@@ -205,10 +200,10 @@ private struct GroceryLockScreenView: View {
     .frame(height: viewportHeight, alignment: .topLeading)
     .padding(.horizontal, 16)
     .padding(.vertical, contentVerticalPadding)
-    .activityBackgroundTint(DishListLiveActivityColors.background)
-    .activitySystemActionForegroundColor(
-      DishListLiveActivityColors.lockScreenForeground
-    )
+    // Let WidgetKit choose the native Lock Screen material, including the
+    // system appearance on newer iOS releases.
+    .activityBackgroundTint(nil)
+    .activitySystemActionForegroundColor(nil)
     .widgetURL(URL(string: "dishlist://grocery"))
   }
 }
