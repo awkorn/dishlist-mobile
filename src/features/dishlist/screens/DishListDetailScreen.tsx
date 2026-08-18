@@ -36,7 +36,12 @@ import type { ImportRecipeResponse } from "@features/recipe/types";
 import { ShareModal } from "@features/share";
 import { InviteCollaboratorModal, CollaboratorPreview } from "@features/invite";
 import { CollaboratorsModal } from "@features/invite";
-import { AnimatedSearchInput, EmptyState, ErrorState } from "@components/ui";
+import {
+  AnimatedSearchInput,
+  EmptyState,
+  ErrorState,
+  LoadingTransition,
+} from "@components/ui";
 import { ReportContentModal } from "@components/moderation/ReportContentModal";
 import Button from "@components/ui/Button";
 import {
@@ -240,12 +245,7 @@ export default function DishListDetailScreen({
     dishListId,
   ]);
 
-  // Loading state
-  if (isLoading && !dishList) {
-    return <DishListDetailSkeleton onBack={navigation.goBack} />;
-  }
-
-  if (isError || !dishList) {
+  if (!isLoading && (isError || !dishList)) {
     return (
       <SafeAreaView style={styles.container}>
         <ErrorState
@@ -261,12 +261,17 @@ export default function DishListDetailScreen({
   }
 
   return (
-    <QueryErrorBoundary
-      onRetry={handleRefresh}
-      title="Something went wrong"
-      message="Unable to display DishList content."
+    <LoadingTransition
+      loading={isLoading && !dishList}
+      loadingView={<DishListDetailSkeleton onBack={navigation.goBack} />}
     >
-      <SafeAreaView style={styles.container}>
+      {dishList ? (
+        <QueryErrorBoundary
+          onRetry={handleRefresh}
+          title="Something went wrong"
+          message="Unable to display DishList content."
+        >
+          <SafeAreaView style={styles.container}>
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.topRow}>
@@ -448,8 +453,10 @@ export default function DishListDetailScreen({
             targetLabel="DishList"
           />
         )}
-      </SafeAreaView>
-    </QueryErrorBoundary>
+          </SafeAreaView>
+        </QueryErrorBoundary>
+      ) : null}
+    </LoadingTransition>
   );
 }
 

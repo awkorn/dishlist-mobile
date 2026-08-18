@@ -22,7 +22,12 @@ import { queryKeys } from "@lib/queryKeys";
 import { profileService } from "@features/profile/services/profileService";
 import { RootStackParamList } from "@app-types/navigation";
 import Avatar from "@components/ui/Avatar";
-import { ScreenHeader, ScreenHeaderAction, SearchInput } from "@components/ui";
+import {
+  LoadingTransition,
+  ScreenHeader,
+  ScreenHeaderAction,
+  SearchInput,
+} from "@components/ui";
 import { useDishLists } from "../hooks";
 import {
   DishListGrid,
@@ -134,71 +139,75 @@ export default function DishListsScreen() {
   const headerProfile = userProfile ?? currentUserProfile?.user;
 
   const renderContent = () => {
-    if (isLoading) {
-      return (
-        <View style={styles.grid}>
-          {[...Array(6)].map((_, index) => (
-            <SkeletonTile key={index} index={index} />
-          ))}
-        </View>
-      );
-    }
+    const loadingView = (
+      <View style={styles.grid}>
+        {[...Array(6)].map((_, index) => (
+          <SkeletonTile key={index} index={index} />
+        ))}
+      </View>
+    );
+
+    let content: React.ReactNode;
 
     if (isError) {
-      return (
+      content = (
         <DishListErrorState isOffline={!isOnline} onRetry={handleRefresh} />
       );
-    }
-
-    if (dishLists.length === 0) {
-      return (
+    } else if (dishLists.length === 0) {
+      content = (
         <DishListEmptyState
           searchQuery={searchQuery}
           activeTab={TAB_LABELS[activeTab]}
           onCreatePress={handleCreateDishList}
         />
       );
+    } else {
+      content = (
+        <DishListGrid
+          dishLists={dishLists}
+          isFetching={isFetching}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
+              colors={[theme.colors.primary[500]]}
+              tintColor={theme.colors.primary[500]}
+              title={
+                refreshing
+                  ? "Updating..."
+                  : getDataFreshness() || "Pull to refresh"
+              }
+              titleColor={theme.colors.neutral[500]}
+            />
+          }
+          onEndReached={handleEndReached}
+          ListFooterComponent={
+            <>
+              {isFetchingNextPage && (
+                <ActivityIndicator
+                  size="small"
+                  color={theme.colors.primary[500]}
+                  style={styles.footerLoader}
+                />
+              )}
+              {!isOnline && dishLists.length > 0 && (
+                <View style={styles.offlineMessage}>
+                  <WifiOff size={16} color={theme.colors.neutral[500]} />
+                  <Text style={styles.offlineText}>
+                    Showing cached data • Last updated {getDataFreshness()}
+                  </Text>
+                </View>
+              )}
+            </>
+          }
+        />
+      );
     }
 
     return (
-      <DishListGrid
-        dishLists={dishLists}
-        isFetching={isFetching}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={handleRefresh}
-            colors={[theme.colors.primary[500]]}
-            tintColor={theme.colors.primary[500]}
-            title={
-              refreshing
-                ? "Updating..."
-                : getDataFreshness() || "Pull to refresh"
-            }
-            titleColor={theme.colors.neutral[500]}
-          />
-        }
-        onEndReached={handleEndReached}
-        ListFooterComponent={
-          <>
-            {isFetchingNextPage && (
-              <ActivityIndicator
-                size="small"
-                color={theme.colors.primary[500]}
-                style={styles.footerLoader}
-              />
-            )}
-            {!isOnline && dishLists.length > 0 && (
-              <View style={styles.offlineMessage}>
-                <WifiOff size={16} color={theme.colors.neutral[500]} />
-                <Text style={styles.offlineText}>
-                  Showing cached data • Last updated {getDataFreshness()}
-                </Text>
-              </View>
-            )}
-          </>
-        }
-      />
+      <LoadingTransition loading={isLoading} loadingView={loadingView}>
+        {content}
+      </LoadingTransition>
     );
   };
 

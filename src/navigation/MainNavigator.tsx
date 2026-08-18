@@ -23,95 +23,101 @@ import { FollowersFollowingScreen } from "@features/profile";
 import TabNavigator from "./TabNavigator";
 import { RootStackParamList } from "@app-types/navigation";
 import { ChangePasswordScreen, ChangeEmailScreen } from "@features/settings";
-import { BrandedLoadingScreen } from "@components/ui";
+import { BrandedLoadingScreen, LoadingTransition } from "@components/ui";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function MainNavigator() {
   const { user, loading, isPasswordRecovery } = useAuth();
 
-  if (loading) {
-    return <BrandedLoadingScreen />;
-  }
-
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
-      {isPasswordRecovery ? (
-        <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} />
-      ) : user ? (
-        <Stack.Group>
-          <Stack.Screen name="Home" component={TabNavigator} />
-          <Stack.Screen
-            name="CreateDishList"
-            component={CreateDishListScreen}
-            options={{
-              presentation: "modal",
-              gestureEnabled: true,
-              gestureDirection: "vertical",
-            }}
-          />
-          <Stack.Screen
-            name="EditDishList"
-            component={CreateDishListScreen}
-            options={{
-              presentation: "modal",
-              gestureEnabled: true,
-              gestureDirection: "vertical",
-            }}
-          />
-          <Stack.Screen
-            name="DishListDetail"
-            component={DishListDetailScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="AddRecipe"
-            component={AddRecipeScreen}
-            options={{
-              presentation: "modal",
-              gestureEnabled: true,
-              gestureDirection: "vertical",
-            }}
-          />
-          <Stack.Screen
-            name="RecipeDetail"
-            component={RecipeDetailScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="SharedImageImport"
-            component={SharedImageImportScreen}
-            options={{ gestureEnabled: false }}
-          />
-          <Stack.Screen
-            name="Profile"
-            component={ProfileScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="Settings"
-            component={SettingsScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />
-          <Stack.Screen name="ChangeEmail" component={ChangeEmailScreen} />
-          <Stack.Screen
-            name="FollowersFollowing"
-            component={FollowersFollowingScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="InviteLanding"
-            component={InviteLandingScreen}
-            options={{ headerShown: false }}
-          />
-        </Stack.Group>
-      ) : (
-        <>
-          <Stack.Screen name="Login" component={LoginScreen} />
-          <Stack.Screen name="SignUp" component={SignUpScreen} />
-        </>
-      )}
-    </Stack.Navigator>
+    <LoadingTransition
+      loading={loading}
+      loadingView={<BrandedLoadingScreen />}
+    >
+      {!loading ? (
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+          {isPasswordRecovery ? (
+            <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} />
+          ) : user ? (
+            <Stack.Group>
+              <Stack.Screen name="Home" component={TabNavigator} />
+              <Stack.Screen
+                name="CreateDishList"
+                component={CreateDishListScreen}
+                options={{
+                  presentation: "modal",
+                  gestureEnabled: true,
+                  gestureDirection: "vertical",
+                }}
+              />
+              <Stack.Screen
+                name="EditDishList"
+                component={CreateDishListScreen}
+                options={{
+                  presentation: "modal",
+                  gestureEnabled: true,
+                  gestureDirection: "vertical",
+                }}
+              />
+              <Stack.Screen
+                name="DishListDetail"
+                component={DishListDetailScreen}
+                options={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="AddRecipe"
+                component={AddRecipeScreen}
+                options={{
+                  presentation: "modal",
+                  gestureEnabled: true,
+                  gestureDirection: "vertical",
+                }}
+              />
+              <Stack.Screen
+                name="RecipeDetail"
+                component={RecipeDetailScreen}
+                options={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="SharedImageImport"
+                component={SharedImageImportScreen}
+                options={{ gestureEnabled: false }}
+              />
+              <Stack.Screen
+                name="Profile"
+                component={ProfileScreen}
+                options={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="Settings"
+                component={SettingsScreen}
+                options={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="ChangePassword"
+                component={ChangePasswordScreen}
+              />
+              <Stack.Screen name="ChangeEmail" component={ChangeEmailScreen} />
+              <Stack.Screen
+                name="FollowersFollowing"
+                component={FollowersFollowingScreen}
+                options={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="InviteLanding"
+                component={InviteLandingScreen}
+                options={{ headerShown: false }}
+              />
+            </Stack.Group>
+          ) : (
+            <>
+              <Stack.Screen name="Login" component={LoginScreen} />
+              <Stack.Screen name="SignUp" component={SignUpScreen} />
+            </>
+          )}
+        </Stack.Navigator>
+      ) : null}
+    </LoadingTransition>
   );
 }

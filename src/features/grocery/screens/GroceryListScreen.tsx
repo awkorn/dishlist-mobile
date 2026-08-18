@@ -21,7 +21,11 @@ import {
   GroceryLiveActivityControl,
 } from "../components";
 import InlineError from "@components/ui/InlineError";
-import { ScreenHeader, ScreenHeaderAction } from "@components/ui";
+import {
+  LoadingTransition,
+  ScreenHeader,
+  ScreenHeaderAction,
+} from "@components/ui";
 
 export default function GroceryListScreen() {
   const insets = useSafeAreaInsets();
@@ -136,15 +140,7 @@ export default function GroceryListScreen() {
     startEditing(id, text);
   };
 
-  if (isLoading) {
-    return (
-      <View style={[styles.container, styles.loadingContainer]}>
-        <ActivityIndicator size="large" color={theme.colors.primary[500]} />
-      </View>
-    );
-  }
-
-  if (isError) {
+  if (!isLoading && isError) {
     return (
       <View style={styles.container}>
         <LinearGradient
@@ -174,21 +170,29 @@ export default function GroceryListScreen() {
   }
 
   return (
-    <View style={styles.container}>
-      <LinearGradient
-        colors={[theme.colors.surface, theme.colors.background]}
-        locations={[0, 1]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 0, y: 1 }}
-        style={{ paddingTop: insets.top }}
-      >
-        <ScreenHeader
-          title="Grocery List"
-          titleAlign="left"
-          style={styles.header}
-          titleStyle={styles.title}
-        />
-        <View style={styles.headerButtons}>
+    <LoadingTransition
+      loading={isLoading}
+      loadingView={
+        <View style={[styles.container, styles.loadingContainer]}>
+          <ActivityIndicator size="large" color={theme.colors.primary[500]} />
+        </View>
+      }
+    >
+      <View style={styles.container}>
+        <LinearGradient
+          colors={[theme.colors.surface, theme.colors.background]}
+          locations={[0, 1]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 0, y: 1 }}
+          style={{ paddingTop: insets.top }}
+        >
+          <ScreenHeader
+            title="Grocery List"
+            titleAlign="left"
+            style={styles.header}
+            titleStyle={styles.title}
+          />
+          <View style={styles.headerButtons}>
           <ScreenHeaderAction
             style={styles.headerButton}
             onPress={handleToggleAll}
@@ -226,8 +230,8 @@ export default function GroceryListScreen() {
           >
             <Plus size={20} color={theme.colors.primary[500]} />
           </ScreenHeaderAction>
-        </View>
-      </LinearGradient>
+          </View>
+        </LinearGradient>
 
       {liveActivity.isSupported &&
       (liveActivity.isActive || liveActivity.uncheckedCount > 0) ? (
@@ -288,7 +292,8 @@ export default function GroceryListScreen() {
         maxToRenderPerBatch={10}
         windowSize={7}
       />
-    </View>
+      </View>
+    </LoadingTransition>
   );
 }
 

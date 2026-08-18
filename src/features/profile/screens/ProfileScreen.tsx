@@ -29,7 +29,7 @@ import { ProfileSkeleton } from "../components/ProfileSkeleton";
 import { ShareModal } from "@features/share";
 import { ReportContentModal } from "@components/moderation/ReportContentModal";
 import Button from "@components/ui/Button";
-import { ErrorState } from "@components/ui";
+import { ErrorState, LoadingTransition } from "@components/ui";
 import { theme } from "@styles/theme";
 import { typography } from "@styles/typography";
 import { getErrorMessage } from "@utils";
@@ -276,11 +276,7 @@ export default function ProfileScreen({ navigation, route }: Props) {
       : "No public DishLists";
   };
 
-  if (isLoading) {
-    return <ProfileSkeleton onBack={handleBack} />;
-  }
-
-  if (isError || !user) {
+  if (!isLoading && (isError || !user)) {
     return (
       <View style={styles.loadingWrapper}>
         <SafeAreaView style={styles.loadingSafeArea} edges={["top"]} />
@@ -296,46 +292,67 @@ export default function ProfileScreen({ navigation, route }: Props) {
     );
   }
 
+  if (!user) {
+    return (
+      <LoadingTransition
+        loading={isLoading}
+        loadingView={<ProfileSkeleton onBack={handleBack} />}
+      />
+    );
+  }
+
   if (isBlockedProfile) {
     const blockedByCurrentUser =
       user.blockStatus === "BLOCKED_BY_ME" || user.blockStatus === "MUTUAL_BLOCK";
 
     return (
-      <View style={styles.container}>
-        <SafeAreaView style={styles.safeArea} edges={["top"]} />
-        <View style={styles.blockedHeader}>
-          <TouchableOpacity onPress={handleBack} style={styles.blockedBackButton}>
-            <ChevronLeft size={24} color={theme.colors.neutral[700]} />
-          </TouchableOpacity>
-        </View>
+      <LoadingTransition
+        loading={isLoading}
+        loadingView={<ProfileSkeleton onBack={handleBack} />}
+      >
+        <View style={styles.container}>
+          <SafeAreaView style={styles.safeArea} edges={["top"]} />
+          <View style={styles.blockedHeader}>
+            <TouchableOpacity
+              onPress={handleBack}
+              style={styles.blockedBackButton}
+            >
+              <ChevronLeft size={24} color={theme.colors.neutral[700]} />
+            </TouchableOpacity>
+          </View>
 
-        <View style={styles.blockedContent}>
-          <Text style={styles.blockedTitle}>
-            {blockedByCurrentUser
-              ? "You blocked this user"
-              : "This profile is unavailable"}
-          </Text>
-          <Text style={styles.blockedText}>
-            {blockedByCurrentUser
-              ? "They cannot follow, invite, notify, or interact with you."
-              : "You cannot view or interact with this profile."}
-          </Text>
-          {blockedByCurrentUser && (
-            <Button
-              title="Unblock"
-              onPress={handleUnblockUser}
-              disabled={isBlockPending}
-              loading={isBlockPending}
-              size="md"
-            />
-          )}
+          <View style={styles.blockedContent}>
+            <Text style={styles.blockedTitle}>
+              {blockedByCurrentUser
+                ? "You blocked this user"
+                : "This profile is unavailable"}
+            </Text>
+            <Text style={styles.blockedText}>
+              {blockedByCurrentUser
+                ? "They cannot follow, invite, notify, or interact with you."
+                : "You cannot view or interact with this profile."}
+            </Text>
+            {blockedByCurrentUser && (
+              <Button
+                title="Unblock"
+                onPress={handleUnblockUser}
+                disabled={isBlockPending}
+                loading={isBlockPending}
+                size="md"
+              />
+            )}
+          </View>
         </View>
-      </View>
+      </LoadingTransition>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <LoadingTransition
+      loading={isLoading}
+      loadingView={<ProfileSkeleton onBack={handleBack} />}
+    >
+      <View style={styles.container}>
       {/* White safe area for status bar */}
       <SafeAreaView style={styles.safeArea} edges={["top"]} />
 
@@ -517,7 +534,8 @@ export default function ProfileScreen({ navigation, route }: Props) {
           targetLabel="user"
         />
       )}
-    </View>
+      </View>
+    </LoadingTransition>
   );
 }
 

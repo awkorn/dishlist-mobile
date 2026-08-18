@@ -50,7 +50,7 @@ import * as Haptics from "expo-haptics";
 import { ShareModal } from "@features/share";
 import { ReportContentModal } from "@components/moderation/ReportContentModal";
 import Button from "@components/ui/Button";
-import { ErrorState } from "@components/ui";
+import { ErrorState, LoadingTransition } from "@components/ui";
 import { toast } from "@components/ui/toast";
 
 type Props = NativeStackScreenProps<RootStackParamList, "RecipeDetail">;
@@ -294,13 +294,8 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
     extrapolate: "clamp",
   });
 
-  // Loading state
-  if (isLoading) {
-    return <RecipeDetailSkeleton onBack={navigation.goBack} />;
-  }
-
   // Error state
-  if (isError || !recipe) {
+  if (!isLoading && (isError || !recipe)) {
     return (
       <SafeAreaView style={styles.container}>
         <ErrorState
@@ -316,12 +311,17 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
   }
 
   return (
-    <QueryErrorBoundary
-      onRetry={() => refetch()}
-      title="Something went wrong"
-      message="Unable to display recipe content."
+    <LoadingTransition
+      loading={isLoading}
+      loadingView={<RecipeDetailSkeleton onBack={navigation.goBack} />}
     >
-      <SafeAreaView style={styles.container}>
+      {recipe ? (
+        <QueryErrorBoundary
+          onRetry={() => refetch()}
+          title="Something went wrong"
+          message="Unable to display recipe content."
+        >
+          <SafeAreaView style={styles.container}>
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity
@@ -729,8 +729,10 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
           contentId={recipeId}
           contentTitle={recipe.title}
         />
-      </SafeAreaView>
-    </QueryErrorBoundary>
+          </SafeAreaView>
+        </QueryErrorBoundary>
+      ) : null}
+    </LoadingTransition>
   );
 }
 

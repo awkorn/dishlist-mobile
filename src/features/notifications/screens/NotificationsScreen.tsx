@@ -16,7 +16,12 @@ import { theme } from "@styles/theme";
 import { typography } from "@styles/typography";
 import { queryKeys } from "@lib/queryKeys";
 import { RootStackParamList } from "@app-types/navigation";
-import { ErrorState, ScreenHeader, ScreenHeaderAction } from "@components/ui";
+import {
+  ErrorState,
+  LoadingTransition,
+  ScreenHeader,
+  ScreenHeaderAction,
+} from "@components/ui";
 import { useNotifications, getSectionTitle } from "../hooks/useNotifications";
 import {
   NotificationItem,
@@ -232,25 +237,25 @@ export default function NotificationsScreen() {
   // Key extractor
   const keyExtractor = useCallback((item: Notification) => item.id, []);
 
-  if (isLoading) {
-    return (
-      <View style={[styles.container, styles.loadingContainer]}>
-        <ActivityIndicator size="large" color={theme.colors.primary[500]} />
-      </View>
-    );
-  }
-
   return (
-    <View style={styles.container}>
-      {/* Header */}
-      <LinearGradient
-        colors={[theme.colors.surface, theme.colors.background]}
-        locations={[0, 1]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 0, y: 1 }}
-        style={{ paddingTop: insets.top }}
-      >
-        <ScreenHeader
+    <LoadingTransition
+      loading={isLoading}
+      loadingView={
+        <View style={[styles.container, styles.loadingContainer]}>
+          <ActivityIndicator size="large" color={theme.colors.primary[500]} />
+        </View>
+      }
+    >
+      <View style={styles.container}>
+        {/* Header */}
+        <LinearGradient
+          colors={[theme.colors.surface, theme.colors.background]}
+          locations={[0, 1]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 0, y: 1 }}
+          style={{ paddingTop: insets.top }}
+        >
+          <ScreenHeader
           title="Notifications"
           titleAlign="left"
           style={styles.header}
@@ -281,11 +286,11 @@ export default function NotificationsScreen() {
               )}
             </ScreenHeaderAction>
           }
-        />
-      </LinearGradient>
+          />
+        </LinearGradient>
 
       {/* Notification List */}
-      {hasNotifications ? (
+        {hasNotifications ? (
         <SectionList
           sections={sections}
           renderItem={renderItem}
@@ -317,16 +322,17 @@ export default function NotificationsScreen() {
           }
           showsVerticalScrollIndicator={false}
         />
-      ) : isError ? (
-        <ErrorState
-          title="Couldn't Load Notifications"
-          message="Please check your connection and try again."
-          onRetry={() => refetch()}
-        />
-      ) : (
-        <NotificationsEmptyState />
-      )}
-    </View>
+        ) : isError ? (
+          <ErrorState
+            title="Couldn't Load Notifications"
+            message="Please check your connection and try again."
+            onRetry={() => refetch()}
+          />
+        ) : (
+          <NotificationsEmptyState />
+        )}
+      </View>
+    </LoadingTransition>
   );
 }
 
