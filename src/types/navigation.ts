@@ -44,7 +44,6 @@ export type RootStackParamList = {
     recipeId: string;
     dishListId?: string;
   };
-  ImportActivity: undefined;
   SharedImageImport: undefined;
   Profile: { userId: string };
   Settings: undefined;

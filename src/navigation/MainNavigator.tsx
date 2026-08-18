@@ -16,7 +16,6 @@ import {
 import {
   AddRecipeScreen,
   RecipeDetailScreen,
-  ImportActivityScreen,
   SharedImageImportScreen,
 } from "@features/recipe";
 import { InviteLandingScreen } from "@features/invite";
@@ -79,7 +78,6 @@ export default function MainNavigator() {
             component={RecipeDetailScreen}
             options={{ headerShown: false }}
           />
-          <Stack.Screen name="ImportActivity" component={ImportActivityScreen} />
           <Stack.Screen
             name="SharedImageImport"
             component={SharedImageImportScreen}

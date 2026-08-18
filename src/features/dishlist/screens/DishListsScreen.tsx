@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import PagerView from "react-native-pager-view";
-import { History, Plus, WifiOff } from "lucide-react-native";
+import { Plus, WifiOff } from "lucide-react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import NetInfo from "@react-native-community/netinfo";
@@ -20,7 +20,6 @@ import { useAuth } from "@providers/AuthProvider/AuthContext";
 import { QueryErrorBoundary } from "@providers/ErrorBoundary";
 import { queryKeys } from "@lib/queryKeys";
 import { profileService } from "@features/profile/services/profileService";
-import { recipeService } from "@features/recipe/services";
 import { RootStackParamList } from "@app-types/navigation";
 import Avatar from "@components/ui/Avatar";
 import { ScreenHeader, ScreenHeaderAction, SearchInput } from "@components/ui";
@@ -89,16 +88,6 @@ export default function DishListsScreen() {
     enabled: !!user?.id && !userProfile,
     staleTime: 10 * 60 * 1000,
   });
-  const { data: importActivity = [] } = useQuery({
-    queryKey: queryKeys.socialImports.activity(),
-    queryFn: () => recipeService.getSocialImports(),
-    staleTime: 20_000,
-    refetchInterval: 30_000,
-  });
-  const activeImportCount = importActivity.filter((item) =>
-    ["PENDING", "PROCESSING", "REVIEW_REQUIRED"].includes(item.status)
-  ).length;
-
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
     await refetch();
@@ -232,24 +221,6 @@ export default function DishListsScreen() {
               />
             )}
             <ScreenHeaderAction
-              style={styles.importButton}
-              onPress={() => navigation.navigate("ImportActivity")}
-              accessibilityLabel={
-                activeImportCount
-                  ? `Import Activity, ${activeImportCount} items need attention`
-                  : "Import Activity"
-              }
-            >
-              <History size={23} color={theme.colors.primary[500]} />
-              {activeImportCount > 0 && (
-                <View style={styles.importBadge}>
-                  <Text style={styles.importBadgeText}>
-                    {Math.min(activeImportCount, 9)}
-                  </Text>
-                </View>
-              )}
-            </ScreenHeaderAction>
-            <ScreenHeaderAction
               style={styles.addButton}
               onPress={handleCreateDishList}
               accessibilityLabel="Create DishList"
@@ -338,20 +309,6 @@ const styles = StyleSheet.create({
   },
   headerLoader: { marginRight: theme.spacing.md },
   addButton: { padding: theme.spacing.sm },
-  importButton: { padding: theme.spacing.sm },
-  importBadge: {
-    position: "absolute",
-    right: 2,
-    top: 2,
-    minWidth: 17,
-    height: 17,
-    borderRadius: 9,
-    paddingHorizontal: 4,
-    backgroundColor: theme.colors.recipeAccent,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  importBadgeText: { color: theme.colors.surface, fontSize: 10, fontWeight: "700" },
   profileButton: { padding: theme.spacing.xs },
   searchInput: {
     marginHorizontal: theme.spacing.xl,

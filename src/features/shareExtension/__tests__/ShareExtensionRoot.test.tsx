@@ -41,7 +41,7 @@ describe("ShareExtensionRoot authentication recovery", () => {
 
     await waitFor(() => expect(getByText("Import started")).toBeTruthy());
     expect(
-      getByText("Track progress in Import Activity. We’ll alert you only if something needs attention.")
+      getByText("DishList will notify you when your recipe is ready.")
     ).toBeTruthy();
     expect(getByLabelText("Import started")).toBeTruthy();
     expect(mockGetAccessToken).toHaveBeenNthCalledWith(1);

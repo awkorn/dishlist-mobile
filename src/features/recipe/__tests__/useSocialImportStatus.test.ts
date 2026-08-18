@@ -2,14 +2,14 @@ import { act, renderHook } from "@testing-library/react-native";
 import { toast } from "@components/ui/toast";
 import { useSocialImportStatus } from "../hooks/useSocialImportStatus";
 import { recipeService } from "../services/recipeService";
-import { removePendingImportId } from "@features/shareExtension/sharedStorage";
+import {
+  readPendingImportIds,
+  removePendingImportId,
+} from "@features/shareExtension/sharedStorage";
 
 const mockNavigate = jest.fn();
 const mockInvalidateQueries = jest.fn();
 
-jest.mock("expo-notifications", () => ({
-  getPermissionsAsync: jest.fn(async () => ({ status: "denied" })),
-}));
 jest.mock("@react-navigation/native", () => ({
   useNavigation: () => ({ navigate: mockNavigate }),
 }));
@@ -21,8 +21,7 @@ jest.mock("@providers/AuthProvider/AuthContext", () => ({
 }));
 jest.mock("../services/recipeService", () => ({
   recipeService: {
-    getSocialImports: jest.fn(),
-    markImportPresented: jest.fn(async () => undefined),
+    getImportStatus: jest.fn(),
     startSocialImport: jest.fn(),
   },
 }));
@@ -69,41 +68,45 @@ async function flushEffects() {
 describe("useSocialImportStatus server reconciliation", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    (readPendingImportIds as jest.Mock).mockReturnValue([]);
   });
 
-  it("presents an unpresented completion even when no local id survived", async () => {
-    (recipeService.getSocialImports as jest.Mock).mockResolvedValue([completed]);
+  it("settles a completed import through notifications without replaying a toast", async () => {
+    (readPendingImportIds as jest.Mock)
+      .mockReturnValueOnce(["completed"])
+      .mockReturnValue([]);
+    (recipeService.getImportStatus as jest.Mock).mockResolvedValue(completed);
     const { unmount } = renderHook(() => useSocialImportStatus());
     await flushEffects();
 
     expect(removePendingImportId).toHaveBeenCalledWith("completed");
-    expect(toast.success).toHaveBeenCalledWith(
-      "“Garlic Noodles” was added to My Recipes.",
-      expect.objectContaining({ duration: 5000 })
+    expect(toast.success).not.toHaveBeenCalled();
+    expect(mockInvalidateQueries).toHaveBeenCalledWith(
+      expect.objectContaining({ queryKey: ["notifications"] })
     );
-    expect(recipeService.markImportPresented).toHaveBeenCalledWith("completed");
     unmount();
   });
 
-  it("keeps failed imports actionable when push is unavailable", async () => {
-    (recipeService.getSocialImports as jest.Mock).mockResolvedValue([
-      {
-        ...completed,
-        importId: "failed",
-        status: "FAILED",
-        recipeId: null,
-        recipeTitle: null,
-        errorMessage: "That post is private.",
-      },
-    ]);
+  it("records failed imports in notifications without replaying an error toast", async () => {
+    (readPendingImportIds as jest.Mock)
+      .mockReturnValueOnce(["failed"])
+      .mockReturnValue([]);
+    (recipeService.getImportStatus as jest.Mock).mockResolvedValue({
+      ...completed,
+      importId: "failed",
+      status: "FAILED",
+      recipeId: null,
+      recipeTitle: null,
+      errorMessage: "That post is private.",
+    });
     const { unmount } = renderHook(() => useSocialImportStatus());
     await flushEffects();
 
-    expect(toast.error).toHaveBeenCalledWith(
-      "That post is private.",
-      expect.objectContaining({ duration: 5500 })
+    expect(removePendingImportId).toHaveBeenCalledWith("failed");
+    expect(toast.error).not.toHaveBeenCalled();
+    expect(mockInvalidateQueries).toHaveBeenCalledWith(
+      expect.objectContaining({ queryKey: ["notifications"] })
     );
-    expect(recipeService.markImportPresented).toHaveBeenCalledWith("failed");
     unmount();
   });
 });

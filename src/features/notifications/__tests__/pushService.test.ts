@@ -36,7 +36,7 @@ const foregroundNotificationHandler = (
 ).mock.calls[0][0].handleNotification;
 
 describe("pushService foreground presentation", () => {
-  it("suppresses duplicate import banners while keeping the notification in the list", async () => {
+  it("shows import results as normal foreground notifications", async () => {
     const result = await foregroundNotificationHandler({
       request: {
         content: { data: { type: "RECIPE_IMPORT_COMPLETED" } },
@@ -45,9 +45,9 @@ describe("pushService foreground presentation", () => {
 
     expect(result).toEqual(
       expect.objectContaining({
-        shouldShowAlert: false,
-        shouldPlaySound: false,
-        shouldShowBanner: false,
+        shouldShowAlert: true,
+        shouldPlaySound: true,
+        shouldShowBanner: true,
         shouldShowList: true,
       })
     );

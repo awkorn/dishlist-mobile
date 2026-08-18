@@ -12,11 +12,6 @@ export const queryKeys = {
     list: (filters: string) => [...queryKeys.recipes.lists(), filters] as const,
     detail: (id: string) => [...queryKeys.recipes.all, "detail", id] as const,
   },
-  socialImports: {
-    all: ["socialImports"] as const,
-    activity: () => [...queryKeys.socialImports.all, "activity"] as const,
-    unpresented: () => [...queryKeys.socialImports.all, "unpresented"] as const,
-  },
   users: {
     all: ["users"] as const,
     me: () => [...queryKeys.users.all, "me"] as const,

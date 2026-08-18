@@ -182,7 +182,6 @@ export function useUpdateRecipe() {
       // Refetch in the background while keeping the confirmed title visible.
       queryClient.invalidateQueries({ queryKey: [RECIPE_QUERY_KEY, variables.recipeId] });
       queryClient.invalidateQueries({ queryKey: queryKeys.dishLists.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.socialImports.all });
       toast.success('Recipe updated');
     },
   });

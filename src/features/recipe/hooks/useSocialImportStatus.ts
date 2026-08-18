@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef } from "react";
 import { AppState } from "react-native";
-import * as Notifications from "expo-notifications";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "@app-types/navigation";
@@ -36,54 +35,23 @@ export function useSocialImportStatus(): void {
   const pollTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const wakePoll = useRef<(() => void) | null>(null);
 
-  const presentTerminal = useCallback(
-    async (record: SocialImportStatus, pushGranted: boolean) => {
+  const settleTerminal = useCallback(
+    (record: SocialImportStatus) => {
       removePendingImportId(record.importId);
-      if (record.status === "COMPLETED") {
+      if (
+        record.status === "COMPLETED" ||
+        record.status === "REVIEW_REQUIRED"
+      ) {
         void queryClient.invalidateQueries({ queryKey: queryKeys.dishLists.all });
         void queryClient.invalidateQueries({ queryKey: queryKeys.recipes.all });
-        toast.success(
-          record.recipeTitle
-            ? `“${record.recipeTitle}” was added to My Recipes.`
-            : "Recipe was added to My Recipes.",
-          {
-            duration: 5000,
-            action: record.recipeId
-              ? {
-                  label: "View",
-                  onPress: () =>
-                    navigation.navigate("RecipeDetail", { recipeId: record.recipeId! }),
-                }
-              : undefined,
-          }
-        );
-      } else if (record.status === "REVIEW_REQUIRED") {
-        void queryClient.invalidateQueries({ queryKey: queryKeys.dishLists.all });
-        void queryClient.invalidateQueries({ queryKey: queryKeys.recipes.all });
-        if (!pushGranted) {
-          toast.info("Imported recipe needs a quick review.", {
-            duration: 6000,
-            action: record.recipeId
-              ? {
-                  label: "Review",
-                  onPress: () =>
-                    navigation.navigate("RecipeDetail", { recipeId: record.recipeId! }),
-                }
-              : undefined,
-          });
-        }
-      } else if (record.status === "FAILED" && !pushGranted) {
-        toast.error(record.errorMessage ?? "Recipe import failed.", {
-          duration: 5500,
-          action: {
-            label: "Details",
-            onPress: () => navigation.navigate("ImportActivity"),
-          },
-        });
       }
-      await recipeService.markImportPresented(record.importId).catch(() => {});
+      // Import outcomes are durable Notification records. Refresh that source
+      // of truth instead of replaying an ephemeral toast on every app launch.
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.notifications.all,
+      });
     },
-    [navigation, queryClient]
+    [queryClient]
   );
 
   const reconcile = useCallback(async () => {
@@ -112,27 +80,32 @@ export function useSocialImportStatus(): void {
         navigation.navigate("SharedImageImport");
       }
 
-      const permissions = await Promise.resolve(
-        Notifications.getPermissionsAsync?.()
-      ).catch(() => null);
-      const pushGranted = permissions?.status === "granted";
-
       while (
         !cancelled.current &&
         Date.now() < deadline &&
         AppState.currentState !== "background" &&
         AppState.currentState !== "inactive"
       ) {
-        const records = await recipeService.getSocialImports({ unpresented: true });
-        const serverIds = new Set(records.map((record) => record.importId));
-        for (const orphanedId of (readPendingImportIds() ?? []).filter(
-          (importId) => !serverIds.has(importId)
-        )) {
-          removePendingImportId(orphanedId);
-        }
+        const pendingIds = readPendingImportIds();
+        const records = (
+          await Promise.all(
+            pendingIds.map(async (importId) => {
+              try {
+                return await recipeService.getImportStatus(importId);
+              } catch (error) {
+                const status = (error as { response?: { status?: number } })
+                  ?.response?.status;
+                if (status === 404) {
+                  removePendingImportId(importId);
+                }
+                return null;
+              }
+            })
+          )
+        ).filter((record): record is SocialImportStatus => record !== null);
         const terminal = records.filter((record) => isTerminal(record.status));
         for (const record of terminal) {
-          await presentTerminal(record, pushGranted);
+          settleTerminal(record);
         }
 
         const locallyPending = readPendingImportIds() ?? [];
@@ -153,9 +126,8 @@ export function useSocialImportStatus(): void {
       // foreground event provide another durable reconciliation attempt.
     } finally {
       polling.current = false;
-      void queryClient.invalidateQueries({ queryKey: queryKeys.socialImports.all });
     }
-  }, [navigation, presentTerminal, queryClient, user]);
+  }, [navigation, settleTerminal, user]);
 
   useEffect(() => {
     if (!user) {

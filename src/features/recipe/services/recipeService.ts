@@ -81,28 +81,6 @@ export const recipeService = {
     return response.data;
   },
 
-  async getSocialImports(options: { unpresented?: boolean } = {}): Promise<SocialImportStatus[]> {
-    const response = await api.get<{ imports: SocialImportStatus[] }>(
-      `/recipes/imports${options.unpresented ? "?unpresented=true" : ""}`
-    );
-    return response.data.imports;
-  },
-
-  async markImportPresented(importId: string): Promise<void> {
-    await api.patch(`/recipes/imports/${importId}/presented`);
-  },
-
-  async retrySocialImport(importId: string): Promise<SocialImportStatus> {
-    const response = await api.post<SocialImportStatus>(
-      `/recipes/imports/${importId}/retry`
-    );
-    return response.data;
-  },
-
-  async cancelSocialImport(importId: string): Promise<void> {
-    await api.post(`/recipes/imports/${importId}/cancel`);
-  },
-
   async importFromImages(images: ImageData[]): Promise<ImportRecipeResponse> {
     const payload = {
       images: images.map((img) => ({
