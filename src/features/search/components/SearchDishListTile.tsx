@@ -58,7 +58,7 @@ export function SearchDishListTile({ dishList, onPress }: SearchDishListTileProp
         </Text>
 
         <View style={styles.ownerRow}>
-          <Avatar {...dishList.owner} size={28} />
+          <Avatar {...dishList.owner} size={24} />
           <Text style={styles.ownerName} numberOfLines={1}>
             {ownerName}
           </Text>
