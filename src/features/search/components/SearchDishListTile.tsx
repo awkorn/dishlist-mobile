@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
   },
   title: {
     ...typography.button,
-    fontSize: 16,
+    fontSize: 18,
     lineHeight: 21,
     color: theme.colors.textPrimary,
     marginBottom: theme.spacing.sm,
@@ -111,12 +111,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.spacing.sm,
     paddingVertical: theme.spacing.xs,
     backgroundColor: theme.colors.collection.tomatoSoft,
-    borderRadius: theme.borderRadius.lg,
+    borderRadius: theme.borderRadius.md,
   },
   recipeCount: {
     ...typography.caption,
     fontSize: 12,
     lineHeight: 16,
-    color: theme.colors.textPrimary,
+    color: theme.colors.collection.tomato,
   },
 });
