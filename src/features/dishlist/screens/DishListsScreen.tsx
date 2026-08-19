@@ -353,10 +353,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   grid: {
+    flex: 1,
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "space-between",
     paddingHorizontal: theme.spacing.xl,
+    backgroundColor: theme.colors.background,
   },
   footerLoader: {
     paddingVertical: theme.spacing.md,
