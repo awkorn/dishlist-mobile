@@ -10,6 +10,7 @@ import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { theme } from "@styles/theme";
 import { typography } from "@styles/typography";
+import Avatar from "@components/ui/Avatar";
 import { RootStackParamList } from "@app-types/navigation";
 import type { SearchDishList } from "../types";
 
@@ -49,16 +50,26 @@ export function SearchDishListTile({ dishList, onPress }: SearchDishListTileProp
       accessibilityLabel={`${dishList.title} by ${ownerName}, ${dishList.recipeCount} ${
         dishList.recipeCount === 1 ? "recipe" : "recipes"
       }`}
+      activeOpacity={0.82}
     >
       <View style={styles.content}>
         <Text style={styles.title} numberOfLines={2}>
           {dishList.title}
         </Text>
 
-        <Text style={styles.metadata} numberOfLines={1}>
-          {ownerName} • {dishList.recipeCount}{" "}
-          {dishList.recipeCount === 1 ? "recipe" : "recipes"}
-        </Text>
+        <View style={styles.ownerRow}>
+          <Avatar {...dishList.owner} size={28} />
+          <Text style={styles.ownerName} numberOfLines={1}>
+            {ownerName}
+          </Text>
+        </View>
+
+        <View style={styles.recipeBadge}>
+          <Text style={styles.recipeCount}>
+            {dishList.recipeCount}{" "}
+            {dishList.recipeCount === 1 ? "recipe" : "recipes"}
+          </Text>
+        </View>
       </View>
     </TouchableOpacity>
   );
@@ -70,18 +81,42 @@ const styles = StyleSheet.create({
     minHeight: 96,
     backgroundColor: theme.colors.surface,
     borderRadius: theme.borderRadius.md,
+    ...theme.shadows.collectionCard,
   },
   content: {
     flex: 1,
-    padding: theme.spacing.lg,
+    alignItems: "flex-start",
+    padding: theme.spacing.md,
   },
   title: {
-    ...typography.subtitle,
+    ...typography.button,
+    fontSize: 16,
+    lineHeight: 21,
     color: theme.colors.textPrimary,
-    marginBottom: theme.spacing.xs,
+    marginBottom: theme.spacing.sm,
   },
-  metadata: {
+  ownerRow: {
+    width: "100%",
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: theme.spacing.md,
+  },
+  ownerName: {
     ...typography.caption,
+    flex: 1,
+    marginLeft: theme.spacing.sm,
     color: theme.colors.neutral[600],
+  },
+  recipeBadge: {
+    paddingHorizontal: theme.spacing.sm,
+    paddingVertical: theme.spacing.xs,
+    backgroundColor: theme.colors.collection.tomatoSoft,
+    borderRadius: theme.borderRadius.lg,
+  },
+  recipeCount: {
+    ...typography.caption,
+    fontSize: 12,
+    lineHeight: 16,
+    color: theme.colors.textPrimary,
   },
 });

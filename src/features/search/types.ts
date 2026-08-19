@@ -50,6 +50,7 @@ export interface SearchDishList {
     username: string | null;
     firstName: string | null;
     lastName: string | null;
+    avatarUrl: string | null;
   };
   isFollowing: boolean;
   isCollaborator: boolean;
