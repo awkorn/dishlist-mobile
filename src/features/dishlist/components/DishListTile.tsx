@@ -12,9 +12,10 @@ import {
   Globe2,
   Handshake,
   Heart,
-  Lock,
   type LucideIcon,
 } from "lucide-react-native";
+import { HugeiconsIcon } from "@hugeicons/react-native";
+import { BookLockIcon } from "@hugeicons/core-free-icons";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { typography } from "@styles/typography";
@@ -46,8 +47,6 @@ function getPrimaryStatus(dishList: DishList): {
 function DishListTileContent({ dishList, onPress }: DishListTileProps) {
   const navigation = useNavigation<NavigationProp>();
   const { label: statusLabel, Icon: StatusIcon } = getPrimaryStatus(dishList);
-  const VisibilityIcon =
-    dishList.visibility === "PUBLIC" ? Globe2 : Lock;
   const visibilityLabel =
     dishList.visibility === "PUBLIC" ? "Public" : "Private";
   const isBookmarked = dishList.isDefault || dishList.isPinned;
@@ -104,7 +103,15 @@ function DishListTileContent({ dishList, onPress }: DishListTileProps) {
           <View style={styles.badgeDivider} />
 
           <View style={styles.visibilityBadge}>
-            <VisibilityIcon size={11} color={theme.colors.collection.sky} />
+            {dishList.visibility === "PUBLIC" ? (
+              <Globe2 size={11} color={theme.colors.collection.sky} />
+            ) : (
+              <HugeiconsIcon
+                icon={BookLockIcon}
+                size={11}
+                color={theme.colors.collection.sky}
+              />
+            )}
             <Text style={styles.visibilityText}>{visibilityLabel}</Text>
           </View>
         </View>

@@ -5,8 +5,9 @@ import {
   BookOpen,
   ShoppingCart,
   Search,
-  ChefHat,
 } from "lucide-react-native";
+import { HugeiconsIcon } from "@hugeicons/react-native";
+import { AiContentGenerator01Icon } from "@hugeicons/core-free-icons";
 import { theme } from "../styles/theme";
 import { DishListsScreen } from "@features/dishlist";
 import { GroceryListScreen } from "@features/grocery";
@@ -77,7 +78,11 @@ export default function TabNavigator() {
         component={RecipeBuilderScreen}
         options={{
           tabBarIcon: ({ color, size }) => (
-            <ChefHat size={size} color={color} />
+            <HugeiconsIcon
+              icon={AiContentGenerator01Icon}
+              size={size}
+              color={color}
+            />
           ),
         }}
       />

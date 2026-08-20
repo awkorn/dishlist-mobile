@@ -10,7 +10,9 @@ import {
   ScrollView,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { X, Globe, Lock } from "lucide-react-native";
+import { X, Globe } from "lucide-react-native";
+import { HugeiconsIcon } from "@hugeicons/react-native";
+import { BookLockIcon } from "@hugeicons/core-free-icons";
 import { typography } from "@styles/typography";
 import { theme } from "@styles/theme";
 import Button from "@components/ui/Button";
@@ -216,7 +218,8 @@ export default function CreateDishListScreen({
                 disabled={isLoading}
               >
                 <View style={styles.visibilityHeader}>
-                  <Lock
+                  <HugeiconsIcon
+                    icon={BookLockIcon}
                     size={20}
                     color={
                       visibility === "PRIVATE"
