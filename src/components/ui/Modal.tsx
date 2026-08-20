@@ -7,6 +7,7 @@ import {
   Text,
   type StyleProp,
   type TextStyle,
+  type ViewStyle,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { X } from 'lucide-react-native';
@@ -23,6 +24,7 @@ interface ModalProps {
   closeButtonDisabled?: boolean;
   rightAction?: ReactNode;
   showDragHandle?: boolean;
+  safeAreaStyle?: StyleProp<ViewStyle>;
 }
 
 export default function Modal({
@@ -35,6 +37,7 @@ export default function Modal({
   closeButtonDisabled = false,
   rightAction,
   showDragHandle = false,
+  safeAreaStyle,
 }: ModalProps) {
   return (
     <RNModal
@@ -43,7 +46,7 @@ export default function Modal({
       presentationStyle="pageSheet"
       onRequestClose={onClose}
     >
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, safeAreaStyle]}>
         {showDragHandle && (
           <View style={styles.dragHandleContainer} testID="modal-drag-handle">
             <View style={styles.dragHandle} />

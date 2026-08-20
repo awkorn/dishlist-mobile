@@ -198,8 +198,11 @@ export default function RecipeBuilderScreen() {
           {!hasMessages && !isGenerating ? (
             // Empty state
             <View style={styles.emptyState}>
-              <Text style={styles.emptyText}>
+              <Text style={styles.emptyTitle}>
                 Describe what you want to cook
+              </Text>
+              <Text style={styles.emptyDescription}>
+                We’ll generate a few recipes for you.
               </Text>
             </View>
           ) : (
@@ -400,11 +403,18 @@ const styles = StyleSheet.create({
   emptyState: {
     alignItems: "center",
     justifyContent: "center",
+    gap: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.xl,
   },
-  emptyText: {
+  emptyTitle: {
+    ...typography.heading3,
+    color: theme.colors.neutral[800],
+    textAlign: "center",
+  },
+  emptyDescription: {
     ...typography.body,
     color: theme.colors.neutral[500],
-    fontSize: 16,
+    textAlign: "center",
   },
   // User bubble
   userBubble: {

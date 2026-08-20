@@ -68,6 +68,7 @@ export function EditProfileSheet({
       visible={visible}
       onClose={handleCancel}
       title="Edit Profile"
+      safeAreaStyle={styles.modalSafeArea}
       rightAction={
         <TouchableOpacity
           onPress={handleSubmit}
@@ -183,6 +184,9 @@ export function EditProfileSheet({
 }
 
 const styles = StyleSheet.create({
+  modalSafeArea: {
+    backgroundColor: theme.colors.background,
+  },
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
