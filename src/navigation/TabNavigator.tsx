@@ -1,13 +1,13 @@
 import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import {
-  BookOpen,
-  ShoppingCart,
-  Search,
-} from "lucide-react-native";
 import { HugeiconsIcon } from "@hugeicons/react-native";
-import { AiContentGenerator01Icon } from "@hugeicons/core-free-icons";
+import {
+  AiContentGenerator01Icon,
+  CookBookIcon,
+  Search01Icon,
+  ShoppingCart02Icon,
+} from "@hugeicons/core-free-icons";
 import { theme } from "../styles/theme";
 import { DishListsScreen } from "@features/dishlist";
 import { GroceryListScreen } from "@features/grocery";
@@ -53,7 +53,7 @@ export default function TabNavigator() {
         component={DishListsScreen}
         options={{
           tabBarIcon: ({ color, size }) => (
-            <BookOpen size={size} color={color} />
+            <HugeiconsIcon icon={CookBookIcon} size={size} color={color} />
           ),
         }}
       />
@@ -62,7 +62,11 @@ export default function TabNavigator() {
         component={GroceryListScreen}
         options={{
           tabBarIcon: ({ color, size }) => (
-            <ShoppingCart size={size} color={color} />
+            <HugeiconsIcon
+              icon={ShoppingCart02Icon}
+              size={size}
+              color={color}
+            />
           ),
         }}
       />
@@ -70,7 +74,9 @@ export default function TabNavigator() {
         name="SearchTab"
         component={SearchScreen}
         options={{
-          tabBarIcon: ({ color, size }) => <Search size={size} color={color} />,
+          tabBarIcon: ({ color, size }) => (
+            <HugeiconsIcon icon={Search01Icon} size={size} color={color} />
+          ),
         }}
       />
       <Tab.Screen

@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
-import { Bell } from "lucide-react-native";
+import { HugeiconsIcon } from "@hugeicons/react-native";
+import { Notification02Icon } from "@hugeicons/core-free-icons";
 import { theme } from "@styles/theme";
 import { typography } from "@styles/typography";
 
@@ -11,7 +12,7 @@ interface NotificationBadgeProps {
 }
 
 /**
- * Bell icon with notification badge for tab bar
+ * Notification icon with notification badge for tab bar
  * Shows red dot with count when there are unread notifications
  */
 export function NotificationBadge({ count, color, size }: NotificationBadgeProps) {
@@ -28,7 +29,7 @@ export function NotificationBadge({ count, color, size }: NotificationBadgeProps
           : "Notifications"
       }
     >
-      <Bell size={size} color={color} />
+      <HugeiconsIcon icon={Notification02Icon} size={size} color={color} />
       {showBadge && (
         <View style={styles.badge}>
           <Text style={styles.badgeText}>{displayCount}</Text>

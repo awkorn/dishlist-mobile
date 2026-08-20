@@ -16,12 +16,13 @@ import {
   PlayCircle,
   Plus,
   Edit3,
-  ShoppingCart,
   Trash2,
   Share,
   Flag,
   AlertCircle,
 } from "lucide-react-native";
+import { HugeiconsIcon } from "@hugeicons/react-native";
+import { ShoppingCart02Icon } from "@hugeicons/core-free-icons";
 import { typography } from "@styles/typography";
 import { theme } from "@styles/theme";
 import { getErrorMessage } from "@utils";
@@ -57,6 +58,18 @@ type Props = NativeStackScreenProps<RootStackParamList, "RecipeDetail">;
 
 const HEADER_REVEAL_DISTANCE = 76;
 const DEFAULT_METADATA_BOTTOM = 380;
+
+function ShoppingCartActionIcon({
+  size,
+  color,
+}: {
+  size: number;
+  color: string;
+}) {
+  return (
+    <HugeiconsIcon icon={ShoppingCart02Icon} size={size} color={color} />
+  );
+}
 
 // Helper to get display step number (excluding headers)
 function getDisplayStepNumber(items: RecipeItem[], index: number): number {
@@ -186,7 +199,7 @@ export default function RecipeDetailScreen({ route, navigation }: Props) {
 
     opts.push({
       title: "Add to Grocery List",
-      icon: ShoppingCart,
+      icon: ShoppingCartActionIcon,
       onPress: () => {
         // Convert and filter: only items (not headers), and only unchecked ones
         const items = convertLegacyToStructured(recipe.ingredients || []);

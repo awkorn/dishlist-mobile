@@ -8,9 +8,10 @@ import {
 } from "react-native";
 import {
   ChevronLeft,
-  Search,
   EllipsisVertical,
 } from "lucide-react-native";
+import { HugeiconsIcon } from "@hugeicons/react-native";
+import { Search01Icon } from "@hugeicons/core-free-icons";
 import { theme } from "@styles/theme";
 import { typography } from "@styles/typography";
 import { InlineSearchInput } from "@components/ui";
@@ -103,7 +104,11 @@ export function ProfileTopBar({
             accessibilityRole="button"
             accessibilityLabel="Search profile content"
           >
-            <Search size={22} color={theme.colors.neutral[700]} />
+            <HugeiconsIcon
+              icon={Search01Icon}
+              size={22}
+              color={theme.colors.neutral[700]}
+            />
           </TouchableOpacity>
 
           {onMenuPress && (

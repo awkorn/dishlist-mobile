@@ -15,7 +15,9 @@ import {
   type TextStyle,
   type ViewStyle,
 } from "react-native";
-import { Search, X } from "lucide-react-native";
+import { X } from "lucide-react-native";
+import { HugeiconsIcon } from "@hugeicons/react-native";
+import { Search01Icon } from "@hugeicons/core-free-icons";
 import { theme } from "@styles/theme";
 import { typography } from "@styles/typography";
 
@@ -78,7 +80,11 @@ export const SearchInput = forwardRef<TextInput, SearchInputProps>(
               : undefined
           }
         >
-          <Search size={20} color={theme.colors.neutral[500]} />
+          <HugeiconsIcon
+            icon={Search01Icon}
+            size={20}
+            color={theme.colors.neutral[500]}
+          />
           <View style={styles.inputWrapper}>
             {placeholderOverlay ? (
               <View style={styles.placeholderOverlay} pointerEvents="none">

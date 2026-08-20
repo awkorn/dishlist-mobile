@@ -18,7 +18,6 @@ import {
   LogOut,
   Trash2,
   Crown,
-  Bell,
   CircleHelp,
   MessageSquare,
   Flag,
@@ -27,6 +26,8 @@ import {
   FileText,
   Shield,
 } from "lucide-react-native";
+import { HugeiconsIcon } from "@hugeicons/react-native";
+import { Notification02Icon } from "@hugeicons/core-free-icons";
 import { useAuth } from "@providers/AuthProvider/AuthContext";
 import { usePushNotifications } from "@features/notifications";
 import { api } from "@services/api";
@@ -226,7 +227,13 @@ export default function SettingsScreen({ navigation }: Props) {
         {/* ── Notifications ─────────────────────────────────── */}
         <SettingsSection title="Notifications">
           <SettingsRow
-            icon={<Bell size={18} color={theme.colors.neutral[600]} />}
+            icon={
+              <HugeiconsIcon
+                icon={Notification02Icon}
+                size={18}
+                color={theme.colors.neutral[600]}
+              />
+            }
             label="Push Notifications"
             type="toggle"
             value={pushEnabled}
